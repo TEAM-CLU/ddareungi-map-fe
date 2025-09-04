@@ -1,35 +1,104 @@
-name: Auto Add Issues to Project
+name: Auto Add Issues to Project (with Status)
 
 on:
   issues:
     types: [opened]
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   add-issue-to-project:
     runs-on: ubuntu-latest
     steps:
-      - name: Add new issue to GitHub Project
+      - name: Add issue to Project and set Status
         uses: actions/github-script@v6
+        env:
+          PERSONAL_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          PROJECT_ID: PVT_kwDOC2OpwM4BCR9-
+          TARGET_STATUS_NAME: Todo
         with:
           script: |
-            const projectId = "PVT_kwDOC2OpwM4BCR9-"; 
+            const projectId = process.env.PROJECT_ID;
             const contentId = context.payload.issue.node_id;
+            const targetStatusName = process.env.TARGET_STATUS_NAME || "To do";
 
-            await github.graphql(`
-              mutation {
-                addProjectV2ItemById(input: {
-                  projectId: "${projectId}",
-                  contentId: "${contentId}"
-                }) {
-                  item {
+            const headers = {
+              headers: { authorization: `Bearer ${process.env.PERSONAL_TOKEN}` }
+            };
+
+            const projectRes = await github.graphql(`
+              query ($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
                     id
+                    fields(first: 50) {
+                      nodes {
+                        id
+                        name
+                        dataType
+                        ... on ProjectV2SingleSelectField {
+                          options { id name }
+                        }
+                      }
+                    }
                   }
                 }
               }
-            `, {
-              headers: {
-                authorization: `Bearer ${process.env.PERSONAL_TOKEN}`
+            `, { projectId }, headers);
+
+            if (!projectRes?.node) {
+              core.setFailed("Project not found. Check PROJECT_ID.");
+              return;
+            }
+
+            const fields = projectRes.node.fields.nodes || [];
+            const statusField = fields.find(f => f.name === "Status" && f.dataType === "SINGLE_SELECT");
+            if (!statusField) {
+              core.setFailed('Status field not found in the project.');
+              return;
+            }
+
+            const option = (statusField.options || []).find(o => o.name === targetStatusName);
+            if (!option) {
+              core.setFailed(`Status option "${targetStatusName}" not found. Available: ${(statusField.options || []).map(o=>o.name).join(", ")}`);
+              return;
+            }
+
+            const addRes = await github.graphql(`
+              mutation ($projectId: ID!, $contentId: ID!) {
+                addProjectV2ItemById(input: {
+                  projectId: $projectId,
+                  contentId: $contentId
+                }) {
+                  item { id }
+                }
               }
-            });
-      env:
-  PERSONAL_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+            `, { projectId, contentId }, headers);
+
+            const itemId = addRes?.addProjectV2ItemById?.item?.id;
+            if (!itemId) {
+              core.setFailed("Failed to add issue to project.");
+              return;
+            }
+
+            const updRes = await github.graphql(`
+              mutation ($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId,
+                  itemId: $itemId,
+                  fieldId: $fieldId,
+                  value: { singleSelectOptionId: $optionId }
+                }) {
+                  projectV2Item { id }
+                }
+              }
+            `, {
+              projectId,
+              itemId,
+              fieldId: statusField.id,
+              optionId: option.id
+            }, headers);
+
+            core.info(`✅ Added issue to project and set Status="${targetStatusName}" (itemId=${itemId}).`);
