@@ -12,17 +12,34 @@ jobs:
   add-issue-to-project:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Add issue to Project and set Status'
+      - name: Add issue to Project and set Status
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           script: |
             const PROJECT_ID = "PVT_kwDOC2OpwM4BCR9-";
             const TARGET_STATUS = "Todo";
-            const issueId = context.payload.issue.node_id;
-            const wanted  = TARGET_STATUS.trim().toLowerCase();
             const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
+            const owner  = context.repo.owner;
+            const repo   = context.repo.repo;
+            const number = context.payload.issue.number;
+
+            // 0) 이슈의 GraphQL ID를 확실히 조회
+            const issueQ = `
+              query($owner:String!, $repo:String!, $number:Int!) {
+                repository(owner:$owner, name:$repo) {
+                  issue(number:$number) { id number }
+                }
+              }`;
+            const issueRes = await github.graphql(issueQ, { owner, repo, number });
+            const issueId = issueRes?.repository?.issue?.id;
+            if (!issueId) {
+              core.setFailed("Could not resolve issue node id via GraphQL. Check PAT repo access (Issues: read).");
+              return;
+            }
+
+            // 1) Status 필드 조회 (이름 직접 → 실패 시 폴백)
             async function fetchStatusField(projectId) {
               const q1 = `
                 query($projectId: ID!) {
@@ -31,9 +48,7 @@ jobs:
                       field(name:"Status") {
                         __typename
                         ... on ProjectV2SingleSelectField {
-                          id
-                          name
-                          options { id name }
+                          id name options { id name }
                         }
                       }
                     }
@@ -52,16 +67,8 @@ jobs:
                           ... on ProjectV2FieldConfiguration {
                             field {
                               __typename
-                              ... on ProjectV2SingleSelectField {
-                                id
-                                name
-                                options { id name }
-                              }
-                              ... on ProjectV2Field {
-                                id
-                                name
-                                dataType
-                              }
+                              ... on ProjectV2SingleSelectField { id name options { id name } }
+                              ... on ProjectV2Field { id name dataType }
                             }
                           }
                         }
@@ -80,21 +87,16 @@ jobs:
             }
 
             const statusField = await fetchStatusField(PROJECT_ID);
-            if (!statusField) {
-              core.setFailed("No SINGLE_SELECT 'Status' field found on this project.");
-              return;
-            }
+            if (!statusField) { core.setFailed("No SINGLE_SELECT 'Status' field found."); return; }
 
-            const option = (statusField.options || []).find(
-              o => o.name.trim().toLowerCase() === wanted
-            );
+            const wanted = TARGET_STATUS.trim().toLowerCase();
+            const option = (statusField.options || []).find(o => o.name.trim().toLowerCase() === wanted);
             if (!option) {
-              core.setFailed(
-                `Status option "${TARGET_STATUS}" not found. Available: ${statusField.options.map(o=>o.name).join(", ")}`
-              );
+              core.setFailed(`Status option "${TARGET_STATUS}" not found. Available: ${statusField.options.map(o=>o.name).join(", ")}`);
               return;
             }
 
+            // 2) 프로젝트에 아이템 추가
             const add = await github.graphql(`
               mutation($projectId: ID!, $contentId: ID!) {
                 addProjectV2ItemById(input:{ projectId:$projectId, contentId:$contentId }) {
@@ -120,11 +122,9 @@ jobs:
                 itemId = found?.id || null;
               }
             }
-            if (!itemId) {
-              core.setFailed("Project item ID could not be resolved after retries.");
-              return;
-            }
+            if (!itemId) { core.setFailed("Project item ID could not be resolved after retries."); return; }
 
+            // 3) Status 업데이트
             let ok = false, lastErr = null;
             for (let i = 0; i < 5 && !ok; i++) {
               try {
@@ -142,15 +142,8 @@ jobs:
                   optionId: option.id
                 });
                 ok = true;
-              } catch (e) {
-                lastErr = e;
-                await sleep(1000);
-              }
+              } catch (e) { lastErr = e; await sleep(1000); }
             }
 
-            if (!ok) {
-              core.setFailed(`Failed to set Status="${option.name}". ${lastErr}`);
-              return;
-            }
-
-            core.info(`✅ Added to Project & set Status="${option.name}" (itemId=${itemId}).`);
+            if (!ok) { core.setFailed(`Failed to set Status="${option.name}". ${lastErr}`); return; }
+            core.info(`Added to Project & set Status="${option.name}" (itemId=${itemId}).`);
