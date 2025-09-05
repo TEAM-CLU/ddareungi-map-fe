@@ -4,85 +4,144 @@ on:
   issues:
     types: [opened]
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   add-issue-to-project:
     runs-on: ubuntu-latest
     steps:
-      - name: Add issue to Project and set Status
+      - name: 'Add issue to Project and set Status (works with new schema)'
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           script: |
-            const projectId = "PVT_kwDOC2OpwM4BCR9-"; 
-            const contentId = context.payload.issue.node_id;
-            const targetStatusName = "Todo";
+            const projectId = "PVT_kwDOC2OpwM4BCR9-";          
+            const issueId   = context.payload.issue.node_id;
+            const wantedRaw = "Todo";                          
+            const wanted    = wantedRaw.trim().toLowerCase();
+            const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-            const projectRes = await github.graphql(`
-              query ($projectId: ID!) {
-                node(id: $projectId) {
-                  ... on ProjectV2 {
-                    id
-                    fields(first: 50) {
-                      nodes {
-                        id
-                        name
-                        dataType
+            async function fetchStatusField() {
+              const q1 = `
+                query($projectId: ID!) {
+                  node(id:$projectId) {
+                    ... on ProjectV2 {
+                      field(name:"Status") {
+                        __typename
                         ... on ProjectV2SingleSelectField {
+                          id
+                          name
                           options { id name }
                         }
                       }
                     }
                   }
-                }
-              }
-            `, { projectId });
+                }`;
+              const r1 = await github.graphql(q1, { projectId });
+              let field = r1?.node?.field;
+              if (field?.__typename === "ProjectV2SingleSelectField") return field;
 
-            const fields = projectRes.node.fields.nodes || [];
-            const statusField = fields.find(f => f.name === "Status" && f.dataType === "SINGLE_SELECT");
+              const q2 = `
+                query($projectId: ID!) {
+                  node(id:$projectId) {
+                    ... on ProjectV2 {
+                      fields(first: 100) {
+                        nodes {
+                          ... on ProjectV2FieldConfiguration {
+                            field {
+                              __typename
+                              ... on ProjectV2SingleSelectField {
+                                id
+                                name
+                                options { id name }
+                              }
+                              ... on ProjectV2Field {
+                                id
+                                name
+                                dataType
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }`;
+              const r2 = await github.graphql(q2, { projectId });
+              const nodes = r2?.node?.fields?.nodes ?? [];
+              const fields = nodes.map(n => n?.field).filter(Boolean);
+
+              return (
+                fields.find(f => f.__typename === "ProjectV2SingleSelectField" && f.name === "Status") ||
+                fields.find(f => f.__typename === "ProjectV2SingleSelectField") ||
+                null
+              );
+            }
+
+            const statusField = await fetchStatusField();
             if (!statusField) {
-              core.setFailed("❌ Status field not found in the project.");
+              core.setFailed("❌ No SINGLE_SELECT Status-like field found on this project.");
               return;
             }
 
-            const option = (statusField.options || []).find(o => o.name === targetStatusName);
+            const option = (statusField.options || []).find(
+              o => o.name.trim().toLowerCase() === wanted
+            );
             if (!option) {
-              core.setFailed(`❌ Status option "${targetStatusName}" not found. Available: ${(statusField.options || []).map(o=>o.name).join(", ")}`);
+              core.setFailed(`❌ Option "${wantedRaw}" not found. Available: ${statusField.options.map(o=>o.name).join(", ")}`);
               return;
             }
 
             const addRes = await github.graphql(`
-              mutation ($projectId: ID!, $contentId: ID!) {
-                addProjectV2ItemById(input: {
-                  projectId: $projectId,
-                  contentId: $contentId
-                }) {
+              mutation($projectId: ID!, $contentId: ID!) {
+                addProjectV2ItemById(input:{ projectId:$projectId, contentId:$contentId }) {
                   item { id }
                 }
               }
-            `, { projectId, contentId });
+            `, { projectId, contentId: issueId });
 
-            const itemId = addRes?.addProjectV2ItemById?.item?.id;
+            let itemId = addRes?.addProjectV2ItemById?.item?.id;
+
             if (!itemId) {
-              core.setFailed("❌ Failed to add issue to project.");
+              for (let i = 0; i < 10 && !itemId; i++) {
+                await sleep(1000);
+                const r = await github.graphql(`
+                  query($issueId: ID!) {
+                    node(id:$issueId) {
+                      ... on Issue {
+                        projectItems(first:50) { nodes { id project { id } } }
+                      }
+                    }
+                  }
+                `, { issueId });
+                const found = r?.node?.projectItems?.nodes?.find(n => n.project?.id === projectId);
+                itemId = found?.id || null;
+              }
+            }
+            if (!itemId) {
+              core.setFailed("❌ ItemId not resolved after retries.");
               return;
             }
 
-            await github.graphql(`
-              mutation ($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
-                updateProjectV2ItemFieldValue(input: {
-                  projectId: $projectId,
-                  itemId: $itemId,
-                  fieldId: $fieldId,
-                  value: { singleSelectOptionId: $optionId }
-                }) {
-                  projectV2Item { id }
-                }
-              }
-            `, {
-              projectId,
-              itemId,
-              fieldId: statusField.id,
-              optionId: option.id
-            });
+            let ok=false, lastErr=null;
+            for (let i=0;i<5 && !ok;i++){
+              try{
+                await github.graphql(`
+                  mutation($projectId:ID!, $itemId:ID!, $fieldId:ID!, $optionId:String!){
+                    updateProjectV2ItemFieldValue(input:{
+                      projectId:$projectId, itemId:$itemId, fieldId:$fieldId,
+                      value:{ singleSelectOptionId:$optionId }
+                    }) { projectV2Item { id } }
+                  }
+                `, { projectId, itemId, fieldId: statusField.id, optionId: option.id });
+                ok = true;
+              } catch(e){ lastErr = e; await sleep(1000); }
+            }
+            if (!ok) {
+              core.setFailed(`❌ Failed to set Status "${option.name}". ${lastErr}`);
+              return;
+            }
 
-            core.info(`✅ Issue added to project and set Status="${targetStatusName}" (itemId=${itemId}).`);
+            core.info(`✅ Added to project + Status="${option.name}" set (itemId=${itemId}).`);
