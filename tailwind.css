@@ -1,3 +1,265 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  * {
+    font-family: 'Pretendard Variable';
+  }
+}
+
+@layer utilities {
+  /* === Brand === */
+  .bg-brand-primary {
+    background-color: theme('colors.brand.primary');
+  }
+  .text-brand-primary {
+    color: theme('colors.brand.primary');
+  }
+  .border-brand-primary {
+    border-color: theme('colors.brand.primary');
+  }
+
+  /* === Text (on-surface.*) === */
+  .text-on-surface-primary {
+    color: theme('colors.on-surface.primary');
+  }
+  .text-on-surface-secondary {
+    color: theme('colors.on-surface.secondary');
+  }
+  .text-on-surface-tertiary {
+    color: theme('colors.on-surface.tertiary');
+  }
+  .text-on-surface-quaternary {
+    color: theme('colors.on-surface.quaternary');
+  }
+  .text-input-label {
+    color: theme('colors.on-surface.input-label');
+  }
+  .text-placeholder {
+    color: theme('colors.on-surface.placeholder');
+  }
+
+  /* === Background (surface.* / brand.* / etc.) === */
+  .bg-surface-primary {
+    background-color: theme('colors.surface.primary');
+  }
+  .bg-surface-secondary {
+    background-color: theme('colors.surface.secondary');
+  }
+
+  /* === Border (line.*) === */
+  .border-line-default {
+    border-color: theme('colors.line.default');
+  }
+
+  /* === Button === */
+  .bg-button-container {
+    background-color: theme('colors.button.container');
+  }
+
+  /* === Icon === */
+  .bg-icon-container-primary {
+    background-color: theme('colors.icon.container.primary');
+  }
+  .bg-icon-container-secondary {
+    background-color: theme('colors.icon.container.secondary');
+  }
+  .text-icon-content-primary {
+    color: theme('colors.icon.content.primary');
+  }
+  .text-icon-content-secondary {
+    color: theme('colors.icon.content.secondary');
+  }
+
+  /* === Decorative === */
+  .bg-decorative-default {
+    background-color: theme('colors.decorative.default');
+  }
+
+  /* === Markers === */
+  .bg-marker-destination {
+    background-color: theme('colors.marker.destination');
+  }
+  .bg-marker-origin {
+    background-color: theme('colors.marker.origin');
+  }
+
+  /* === GAP (row) === */
+  .g-x-2 {
+    flex-direction: row;
+    margin-left: -8px;
+    margin-right: -8px;
+  }
+  .g-x-3 {
+    flex-direction: row;
+    margin-left: -12px;
+    margin-right: -12px;
+  }
+  .g-x-4 {
+    flex-direction: row;
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+  .g-x-6 {
+    flex-direction: row;
+    margin-left: -24px;
+    margin-right: -24px;
+  }
+  .g-x-8 {
+    flex-direction: row;
+    margin-left: -32px;
+    margin-right: -32px;
+  }
+
+  .g-item-x-2 {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+  .g-item-x-3 {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+  .g-item-x-4 {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  .g-item-x-6 {
+    margin-left: 24px;
+    margin-right: 24px;
+  }
+  .g-item-x-8 {
+    margin-left: 32px;
+    margin-right: 32px;
+  }
+
+  /* === GAP (column) === */
+  .g-y-2 {
+    flex-direction: column;
+    margin-top: -8px;
+    margin-bottom: -8px;
+  }
+  .g-y-3 {
+    flex-direction: column;
+    margin-top: -12px;
+    margin-bottom: -12px;
+  }
+  .g-y-4 {
+    flex-direction: column;
+    margin-top: -16px;
+    margin-bottom: -16px;
+  }
+  .g-y-6 {
+    flex-direction: column;
+    margin-top: -24px;
+    margin-bottom: -24px;
+  }
+  .g-y-8 {
+    flex-direction: column;
+    margin-top: -32px;
+    margin-bottom: -32px;
+  }
+
+  .g-item-y-2 {
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+  .g-item-y-3 {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+  .g-item-y-4 {
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+  .g-item-y-6 {
+    margin-top: 24px;
+    margin-bottom: 24px;
+  }
+  .g-item-y-8 {
+    margin-top: 32px;
+    margin-bottom: 32px;
+  }
+
+  /* === Shadows === */
+  .shadow-sm {
+    shadow-color: #000000;
+    shadow-offset: 0px 1px;
+    shadow-opacity: 0.1;
+    shadow-radius: 2px;
+    elevation: 1;
+  }
+  .shadow-md {
+    shadow-color: #000000;
+    shadow-offset: 0px 3px;
+    shadow-opacity: 0.15;
+    shadow-radius: 4px;
+    elevation: 3;
+  }
+  .shadow-lg {
+    shadow-color: #000000;
+    shadow-offset: 0px 6px;
+    shadow-opacity: 0.2;
+    shadow-radius: 6px;
+    elevation: 6;
+  }
+  .shadow-xl {
+    shadow-color: #000000;
+    shadow-offset: 0px 10px;
+    shadow-opacity: 0.25;
+    shadow-radius: 12px;
+    elevation: 10;
+  }
+  .shadow-2xl {
+    shadow-color: #000000;
+    shadow-offset: 0px 15px;
+    shadow-opacity: 0.3;
+    shadow-radius: 20px;
+    elevation: 15;
+  }
+
+  /* === Fonts === */
+  .font-primary-400 {
+    font-family: 'Pretendard-Regular';
+  }
+  .font-primary-500 {
+    font-family: 'Pretendard-Medium';
+  }
+  .font-primary-600 {
+    font-family: 'Pretendard-SemiBold';
+  }
+  .font-primary-700 {
+    font-family: 'Pretendard-Bold';
+  }
+  .font-p-thin {
+    font-family: 'Pretendard-Thin';
+  }
+  .font-p-extlight {
+    font-family: 'Pretendard-ExtraLight';
+  }
+  .font-p-light {
+    font-family: 'Pretendard-Light';
+  }
+  .font-p-regular {
+    font-family: 'Pretendard-Regular';
+  }
+  .font-p-medium {
+    font-family: 'Pretendard-Medium';
+  }
+  .font-p-semibold {
+    font-family: 'Pretendard-SemiBold';
+  }
+  .font-p-bold {
+    font-family: 'Pretendard-Bold';
+  }
+  .font-p-extbold {
+    font-family: 'Pretendard-ExtraBold';
+  }
+  .font-p-black {
+    font-family: 'Pretendard-Black';
+  }
+
+  .font-secondary {
+    font-family: system-ui;
+  }
+}

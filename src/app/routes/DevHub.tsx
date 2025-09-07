@@ -50,7 +50,7 @@ const DevHubScreen = ({ navigation }: any) => {
             marginBottom: 8,
           }}
         >
-          <Text style={{ fontSize: 16 }}>{name}</Text>
+          <Text style={tw('text-onSurface-primary')}>{name}</Text>
         </TouchableOpacity>
       ))}
     </View>
