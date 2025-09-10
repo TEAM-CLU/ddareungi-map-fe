@@ -3,34 +3,38 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { tw } from '@/shared/libs/tw-helper';
 import OnboardingScreen from '@/app/screens/OnboardingScreen';
 import LoginScreen from '@/app/screens/LoginScreen';
 import RegisterScreen from '@/app/screens/RegisterScreen';
-import MainScreen from '@/app/screens/MainScreen';
 import MyPageScreen from '@/app/screens/MyPageScreen';
-import NavigationScreen from '@/app/screens/NavigationScreen';
-import { tw } from '@/shared/libs/tw-helper';
+import LandingScreen from '@/app/screens/LandingScreen';
+import HomeScreen from '@/app/screens/MapScreen';
+import MapScreen from '@/app/screens/MapScreen';
+import RouteSelectScreen from '@/app/screens/RouteSelectScreen';
 
 type RootStackParamList = {
   DevHub: undefined;
+  Landing: undefined;
   Onboarding: undefined;
   Login: undefined;
   Register: undefined;
-  Main: undefined;
+  Map: undefined;
+  RouteSelect: undefined;
   MyPage: undefined;
-  Navigation: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const DevHubScreen = ({ navigation }: any) => {
   const routes: Array<keyof RootStackParamList> = [
+    'Landing',
     'Onboarding',
     'Login',
     'Register',
-    'Main',
+    'Map',
+    'RouteSelect',
     'MyPage',
-    'Navigation',
   ];
 
   return (
@@ -70,12 +74,13 @@ const DevHub = () => {
           initialRouteName="DevHub"
         >
           <Stack.Screen name="DevHub" component={DevHubScreen} />
+          <Stack.Screen name="Landing" component={LandingScreen} />
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
-          <Stack.Screen name="Main" component={MainScreen} />
+          <Stack.Screen name="Map" component={MapScreen} />
           <Stack.Screen name="MyPage" component={MyPageScreen} />
-          <Stack.Screen name="Navigation" component={NavigationScreen} />
+          <Stack.Screen name="RouteSelect" component={RouteSelectScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>
