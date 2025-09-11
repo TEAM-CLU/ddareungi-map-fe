@@ -14,13 +14,16 @@ jobs:
     steps:
       - name: Add issue to Project and set Status
         uses: actions/github-script@v6
+        env:
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
+          TARGET_STATUS: 'Todo'
         with:
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           script: |
-            const PROJECT_ID = "PVT_kwDOC2OpwM4BCR9-";
-            const TARGET_STATUS = "Todo";
-            const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+            const projectId = process.env.PROJECT_ID;
+            const targetStatus = process.env.TARGET_STATUS;
 
+            const sleep = (ms) => new Promise(r => setTimeout(r, ms));
             const owner  = context.repo.owner;
             const repo   = context.repo.repo;
             const number = context.payload.issue.number;
@@ -84,13 +87,13 @@ jobs:
               );
             }
 
-            const statusField = await fetchStatusField(PROJECT_ID);
+            const statusField = await fetchStatusField(projectId);
             if (!statusField) { core.setFailed("No SINGLE_SELECT 'Status' field found."); return; }
 
-            const wanted = TARGET_STATUS.trim().toLowerCase();
+            const wanted = targetStatus.trim().toLowerCase();
             const option = (statusField.options || []).find(o => o.name.trim().toLowerCase() === wanted);
             if (!option) {
-              core.setFailed(`Status option "${TARGET_STATUS}" not found. Available: ${statusField.options.map(o=>o.name).join(", ")}`);
+              core.setFailed(`Status option "${targetStatus}" not found. Available: ${statusField.options.map(o=>o.name).join(", ")}`);
               return;
             }
 
@@ -100,7 +103,7 @@ jobs:
                   item { id }
                 }
               }
-            `, { projectId: PROJECT_ID, contentId: issueId });
+            `, { projectId: projectId, contentId: issueId });
 
             let itemId = add?.addProjectV2ItemById?.item?.id;
             if (!itemId) {
@@ -115,7 +118,7 @@ jobs:
                     }
                   }
                 `, { issueId });
-                const found = r?.node?.projectItems?.nodes?.find(n => n.project?.id === PROJECT_ID);
+                const found = r?.node?.projectItems?.nodes?.find(n => n.project?.id === projectId);
                 itemId = found?.id || null;
               }
             }
@@ -132,7 +135,7 @@ jobs:
                     }) { projectV2Item { id } }
                   }
                 `, {
-                  projectId: PROJECT_ID,
+                  projectId: projectId,
                   itemId,
                   fieldId: statusField.id,
                   optionId: option.id

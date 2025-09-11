@@ -11,7 +11,7 @@ jobs:
       - name: Move closed issue to Done column
         uses: actions/github-script@v6
         env:
-          PROJECT_ID: PVT_kwDOC2OpwM4BCR9-
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
           TARGET_STATUS_NAME: Done
         with:
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -60,7 +60,10 @@ jobs:
             `, { projectId, contentId });
 
             const itemId = searchRes.node.items.nodes[0]?.id;
-            if (!itemId) throw new Error("⚠️ Issue not found in project items");
+            if (!itemId) {
+                core.info("Issue was not found in the project. Skipping.");
+                return;
+            }
 
             await github.graphql(`
               mutation ($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
