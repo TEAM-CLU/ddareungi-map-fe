@@ -12,6 +12,7 @@ import LandingScreen from '@/app/screens/LandingScreen';
 import HomeScreen from '@/app/screens/MapScreen';
 import MapScreen from '@/app/screens/MapScreen';
 import RouteSelectScreen from '@/app/screens/RouteSelectScreen';
+import TestScreen from '@/app/screens/TestScreen';
 
 type RootStackParamList = {
   DevHub: undefined;
@@ -22,6 +23,7 @@ type RootStackParamList = {
   Map: undefined;
   RouteSelect: undefined;
   MyPage: undefined;
+  Test: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -35,6 +37,7 @@ const DevHubScreen = ({ navigation }: any) => {
     'Map',
     'RouteSelect',
     'MyPage',
+    'Test',
   ];
 
   return (
@@ -81,6 +84,7 @@ const DevHub = () => {
           <Stack.Screen name="Map" component={MapScreen} />
           <Stack.Screen name="MyPage" component={MyPageScreen} />
           <Stack.Screen name="RouteSelect" component={RouteSelectScreen} />
+          <Stack.Screen name="Test" component={TestScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>
