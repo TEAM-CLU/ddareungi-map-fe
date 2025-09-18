@@ -12,7 +12,7 @@ const TreeBadge = ({ value }: TreeBadgeProps) => (
       tw(
         'min-h-5 flex-row justify-center items-center bg-icon-container-primary',
       ),
-      { minWidth: 44, borderRadius: 20, gap: 1.5 },
+      { minWidth: 44, borderRadius: 20 },
     ]}
   >
     <Text
@@ -25,7 +25,7 @@ const TreeBadge = ({ value }: TreeBadgeProps) => (
     </Text>
     <Text
       style={[
-        tw('text-on-surface-secondary leading-6'),
+        tw('text-on-surface-secondary leading-6 ml-0.5'),
         { fontFamily: 'Pretendard-Medium', fontSize: 10 },
       ]}
     >
