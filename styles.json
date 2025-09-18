@@ -7474,6 +7474,11 @@
 			"color": "#979797"
 		}
 	},
+		"text-on-surface-placeholder": {
+		"style": {
+			"color": "#A7A7A7"
+		}
+	},
 	"text-orange-100": {
 		"style": {
 			"--tw-text-opacity": 1,
