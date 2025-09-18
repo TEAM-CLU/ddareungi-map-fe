@@ -2,15 +2,17 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 
-interface CalorieBadgeProps {
+interface TreeBadgeProps {
   value: number;
 }
 
-const CalorieBadge = ({ value }: CalorieBadgeProps) => (
+const TreeBadge = ({ value }: TreeBadgeProps) => (
   <View
     style={[
-      tw('min-h-5 flex-row justify-center items-center bg-brand-primary'),
-      { minWidth: 70, borderRadius: 20, gap: 1 },
+      tw(
+        'min-h-5 flex-row justify-center items-center bg-icon-container-primary',
+      ),
+      { minWidth: 44, borderRadius: 20, gap: 1.5 },
     ]}
   >
     <Text
@@ -19,7 +21,7 @@ const CalorieBadge = ({ value }: CalorieBadgeProps) => (
         { fontFamily: 'Pretendard-Medium', fontSize: 10 },
       ]}
     >
-      🔥
+      🌲
     </Text>
     <Text
       style={[
@@ -27,9 +29,9 @@ const CalorieBadge = ({ value }: CalorieBadgeProps) => (
         { fontFamily: 'Pretendard-Medium', fontSize: 10 },
       ]}
     >
-      {value}kcal
+      +{value}
     </Text>
   </View>
 );
 
-export default CalorieBadge;
+export default TreeBadge;
