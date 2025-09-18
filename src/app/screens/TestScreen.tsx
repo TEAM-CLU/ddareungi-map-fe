@@ -12,7 +12,11 @@ const TestScreen = () => {
     <View style={tw('flex-1 items-center justify-center bg-surface-secondary')}>
       <SquareButton title="스퀘어 버튼" onPress={() => {}} />
       <View style={tw('h-4')} />
-      <RoundButton title="라운드 버튼" onPress={() => {}} />
+      <RoundButton preset="lg" title="라운드 버튼" onPress={() => {}} />
+      <RoundButton preset="sm" title="인증하기" onPress={() => {}} />
+      <RoundButton preset="origin" title="출발" onPress={() => {}} />
+      <RoundButton preset="destination" title="도착" onPress={() => {}} />
+      <RoundButton preset="destination" title="반환점" onPress={() => {}} />
       <View style={tw('h-4')} />
       <View style={tw('flex-row')}>
         <GenderButton

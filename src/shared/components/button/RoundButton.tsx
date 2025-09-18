@@ -1,37 +1,44 @@
 import { tw } from '@/shared/libs/tw-helper';
 import React from 'react';
 import { Text, TouchableOpacity } from 'react-native';
+import { BUTTON_PRESETS } from '@/shared/model/index.constants';
+
+type ButtonPresetKey = keyof typeof BUTTON_PRESETS;
 
 interface RoundButtonProps {
   title: string;
   onPress: () => void;
+  preset: ButtonPresetKey;
   disabled?: boolean;
 }
 
 const RoundButton = ({
   title,
   onPress,
+  preset,
   disabled = false,
 }: RoundButtonProps) => {
+  const presetStyle = BUTTON_PRESETS[preset];
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      style={[
-        tw('justify-center items-center bg-brand-primary'),
+      style={[tw('justify-center items-center'),
         {
-          width: 264,
-          height: 42,
-          borderRadius: 20,
+          backgroundColor: presetStyle.backgroundColor,
+          minWidth: presetStyle.minWidth,
+          height: presetStyle.height,
+          borderRadius: presetStyle.borderRadius,
+          paddingHorizontal: presetStyle.paddingHorizontal,
         },
       ]}
     >
       <Text
-        style={[
-          tw('text-on-surface-secondary text-center text-base'),
+        style={[tw('text-center text-on-surface-secondary'),
           {
-            fontFamily: 'Pretendard-Bold',
-            lineHeight: 42,
+            fontSize: presetStyle.fontSize,
+            fontFamily: presetStyle.fontFamily,
+            lineHeight: presetStyle.lineHeight,
           },
         ]}
       >
