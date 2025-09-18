@@ -10,7 +10,7 @@ const CalorieBadge = ({ value }: CalorieBadgeProps) => (
   <View
     style={[
       tw('min-h-5 flex-row justify-center items-center bg-brand-primary'),
-      { minWidth: 70, borderRadius: 20 },
+      { minWidth: 70, borderRadius: 20, paddingHorizontal: 13, paddingVertical: 4 },
     ]}
   >
     <Text

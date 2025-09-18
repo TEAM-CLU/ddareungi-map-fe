@@ -12,7 +12,7 @@ const TreeBadge = ({ value }: TreeBadgeProps) => (
       tw(
         'min-h-5 flex-row justify-center items-center bg-icon-container-primary',
       ),
-      { minWidth: 44, borderRadius: 20 },
+      { minWidth: 44, borderRadius: 20, paddingHorizontal: 11, paddingVertical: 4 },
     ]}
   >
     <Text

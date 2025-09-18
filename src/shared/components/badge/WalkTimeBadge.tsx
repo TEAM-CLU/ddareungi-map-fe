@@ -12,7 +12,7 @@ const WalkTimeBadge = ({ minutes }: WalkTimeBadgeProps) => (
       tw(
         'min-h-6 flex-row justify-center items-center bg-decorative-default',
       ),
-      { minWidth: 69, borderRadius: 20  },
+      { minWidth: 69, borderRadius: 20, paddingHorizontal: 15, paddingVertical: 6 },
     ]}
   >
     <Text
