@@ -15,14 +15,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 1) pnpm 먼저 설치
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      # 2) Node + pnpm 캐시
       - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: pnpm
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -32,8 +35,9 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # gradlew 실행권한 + Android 빌드
       - name: Make gradlew executable
-        run: chmod +x gradlew
+        run: chmod +x ./gradlew
         working-directory: android
 
       - name: Build Android (assembleDebug)
@@ -47,29 +51,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 1) pnpm 먼저 설치
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      # 2) Node + pnpm 캐시
       - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: pnpm
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
       - name: Install CocoaPods
         run: |
-          cd ios
           pod install --repo-update
+        working-directory: ios
 
       - name: Build iOS (iphonesimulator)
         run: |
           xcodebuild \
-            -workspace ios/DdareungiMap.xcworkspace \
+            -workspace DdareungiMap.xcworkspace \
             -scheme DdareungiMap \
             -sdk iphonesimulator \
             -configuration Debug \
             -destination 'generic/platform=iOS Simulator' \
             build
+        working-directory: ios
