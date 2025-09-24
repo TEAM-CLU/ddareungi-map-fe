@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import IconBackArrow from '@/shared/components/icons/IconBackArrow';
-import { RootStackParamList } from '@/app/routes/DevHub';
+import { RootStackParamList } from '@/app/types';
 
 interface BackButtonProps {
   type: 'previous' | 'custom';
