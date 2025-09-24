@@ -8,43 +8,46 @@ permissions:
   contents: read
 
 jobs:
-  js-quick:
-    name: Install + Typecheck + Bundle (no native build)
+  quick-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: pnpm
-
+      # 1. pnpm 먼저 설치
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
-      - name: Install deps
+      # 2. Node + pnpm 캐시 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
+      # 3. 의존성 설치
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 4. 타입체크만 수행 (출력물 없음, 빠르게 검증)
       - name: Typecheck
         run: pnpm exec tsc --noEmit
 
-      - name: Bundle iOS (dry run)
+      # 5. 번들 테스트 (iOS)
+      - name: Bundle iOS
         run: |
-          node node_modules/react-native/cli.js bundle \
+          pnpm exec react-native bundle \
             --platform ios \
             --dev false \
             --entry-file index.js \
             --bundle-output /tmp/main.ios.jsbundle \
             --assets-dest /tmp/ios-assets
 
-      - name: Bundle Android (dry run)
+      # 6. 번들 테스트 (Android)
+      - name: Bundle Android
         run: |
-          node node_modules/react-native/cli.js bundle \
+          pnpm exec react-native bundle \
             --platform android \
             --dev false \
             --entry-file index.js \
