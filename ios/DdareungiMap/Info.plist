@@ -37,6 +37,7 @@
 	<false/>
 	<key>UIAppFonts</key>
 	<array>
+		<string>HSYeolumMulbit.ttf</string>
 		<string>Pretendard-Black.ttf</string>
 		<string>Pretendard-Bold.ttf</string>
 		<string>Pretendard-ExtraBold.ttf</string>
@@ -46,7 +47,6 @@
 		<string>Pretendard-Regular.ttf</string>
 		<string>Pretendard-SemiBold.ttf</string>
 		<string>Pretendard-Thin.ttf</string>
-		<string>HSYeolumMulbit.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
