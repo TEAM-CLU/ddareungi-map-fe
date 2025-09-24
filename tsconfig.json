@@ -15,7 +15,9 @@
     "baseUrl": "./src",
     "paths": { "@/*": ["*"] },
     "resolveJsonModule": true,
+    "jsx": "react-native",
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "jsx": "react-jsx"
+    "skipLibCheck": true
   }
 }

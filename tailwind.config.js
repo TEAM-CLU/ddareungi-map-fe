@@ -90,7 +90,10 @@ module.exports = {
           destination: '#006AFF',
           origin: '#FF0000',
         },
+
+        error: '#ef4444',
       },
+
       fontFamily: {
         primary: {
           400: 'Pretendard-Regular',
