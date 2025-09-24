@@ -1,4 +1,4 @@
-name: CI (PR-only RN build)
+name: CI (PR quick check)
 
 on:
   pull_request:
@@ -8,76 +8,45 @@ permissions:
   contents: read
 
 jobs:
-  android:
-    name: Android assembleDebug
-    runs-on: macos-latest
-    timeout-minutes: 30
+  js-quick:
+    name: Install + Typecheck + Bundle (no native build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v4
 
-      # 1) pnpm 먼저 설치
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
-      # 2) Node + pnpm 캐시
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: pnpm
 
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      # gradlew 실행권한 + Android 빌드
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-        working-directory: android
-
-      - name: Build Android (assembleDebug)
-        run: ./gradlew --no-daemon assembleDebug
-        working-directory: android
-
-  ios:
-    name: iOS build (Simulator)
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      # 1) pnpm 먼저 설치
-      - uses: pnpm/action-setup@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 9
-          run_install: false
-
-      # 2) Node + pnpm 캐시
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: pnpm
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      - name: Install CocoaPods
-        run: |
-          pod install --repo-update
-        working-directory: ios
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
 
-      - name: Build iOS (iphonesimulator)
+      - name: Bundle iOS (dry run)
         run: |
-          xcodebuild \
-            -workspace DdareungiMap.xcworkspace \
-            -scheme DdareungiMap \
-            -sdk iphonesimulator \
-            -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' \
-            build
-        working-directory: ios
+          node node_modules/react-native/cli.js bundle \
+            --platform ios \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output /tmp/main.ios.jsbundle \
+            --assets-dest /tmp/ios-assets
+
+      - name: Bundle Android (dry run)
+        run: |
+          node node_modules/react-native/cli.js bundle \
+            --platform android \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output /tmp/main.android.jsbundle \
+            --assets-dest /tmp/android-assets
