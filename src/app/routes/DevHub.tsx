@@ -9,22 +9,10 @@ import LoginScreen from '@/app/screens/LoginScreen';
 import RegisterScreen from '@/app/screens/RegisterScreen';
 import MyPageScreen from '@/app/screens/MyPageScreen';
 import LandingScreen from '@/app/screens/LandingScreen';
-import HomeScreen from '@/app/screens/MapScreen';
 import MapScreen from '@/app/screens/MapScreen';
 import RouteSelectScreen from '@/app/screens/RouteSelectScreen';
 import TestScreen from '@/app/screens/TestScreen';
-
-type RootStackParamList = {
-  DevHub: undefined;
-  Landing: undefined;
-  Onboarding: undefined;
-  Login: undefined;
-  Register: undefined;
-  Map: undefined;
-  RouteSelect: undefined;
-  MyPage: undefined;
-  Test: undefined;
-};
+import { RootStackParamList } from '@/app/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

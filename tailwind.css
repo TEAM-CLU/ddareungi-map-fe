@@ -262,4 +262,15 @@
   .font-secondary {
     font-family: system-ui;
   }
+
+  /* === Fall back - error === */
+  .text-error {
+    color: theme('colors.error');
+  }
+  .bg-error {
+    background-color: theme('colors.error');
+  }
+  .border-error {
+    border-color: theme('colors.error');
+  }
 }
