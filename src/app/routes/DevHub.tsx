@@ -10,9 +10,9 @@ import MyPageScreen from '@/app/screens/MyPageScreen';
 import LandingScreen from '@/app/screens/LandingScreen';
 import MapScreen from '@/app/screens/MapScreen';
 import RouteSelectScreen from '@/app/screens/RouteSelectScreen';
-import { RootStackParamList } from '@/app/types';
 import TestScreenForCho from '@/app/screens/TestScreenForCho';
 import TestScreenForPark from '@/app/screens/TestScreenForPark';
+import { RootStackParamList } from '@/app/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
