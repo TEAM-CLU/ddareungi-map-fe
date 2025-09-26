@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import IconBackArrow from '@/shared/components/icons/IconBackArrow';
 import { RootStackParamList } from '@/app/types';
@@ -38,9 +38,9 @@ const BackButton = ({
   };
 
   return (
-    <Pressable onPress={handlePress}>
+    <TouchableOpacity onPress={handlePress}>
       <IconBackArrow color={iconColor} width={iconWidth} height={iconHeight} />
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 
