@@ -17,16 +17,16 @@ const TreeBadge = ({ value }: TreeBadgeProps) => (
   >
     <Text
       style={[
-        tw('text-on-surface-secondary leading-6'),
-        { fontFamily: 'Pretendard-Medium', fontSize: 10 },
+        tw('text-on-surface-secondary font-primary-500 leading-6'),
+        { fontSize: 10 },
       ]}
     >
       🌲
     </Text>
     <Text
       style={[
-        tw('text-on-surface-secondary leading-6 ml-0.5'),
-        { fontFamily: 'Pretendard-Medium', fontSize: 10 },
+        tw('text-on-surface-secondary font-primary-500 leading-6 ml-0.5'),
+        { fontSize: 10 },
       ]}
     >
       +{value}

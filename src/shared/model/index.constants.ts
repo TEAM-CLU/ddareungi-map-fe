@@ -7,7 +7,6 @@ export const BUTTON_PRESETS = {
     backgroundColor: '#01DA86',
     fontSize: 16,
     fontFamily: 'Pretendard-Bold',
-    lineHeight: 42,
     paddingHorizontal: 16,
   },
   // 인증하기, 확인하기 버튼
@@ -18,7 +17,6 @@ export const BUTTON_PRESETS = {
     backgroundColor: '#77838F',
     fontSize: 10,
     fontFamily: 'Pretendard-Bold',
-    lineHeight: 26,
     paddingHorizontal: 18,
   },
   // 출발, 원점 버튼
@@ -29,7 +27,6 @@ export const BUTTON_PRESETS = {
     backgroundColor: '#01DA86',
     fontSize: 15,
     fontFamily: 'Pretendard-SemiBold',
-    lineHeight: 24,
     paddingHorizontal: 16,
   },
   // 도착, 반환점 버튼
@@ -40,7 +37,6 @@ export const BUTTON_PRESETS = {
     backgroundColor: '#77838F',
     fontSize: 15,
     fontFamily: 'Pretendard-SemiBold',
-    lineHeight: 24,
     paddingHorizontal: 16,
   },
 };    

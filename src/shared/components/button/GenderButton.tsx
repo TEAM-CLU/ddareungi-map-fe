@@ -3,12 +3,12 @@ import { TouchableOpacity, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 
 interface GenderButtonProps {
-  label: string;
+  title: string;
   selected: boolean;
   onPress: () => void;
 }
 
-const GenderButton = ({ label, selected, onPress }: GenderButtonProps) => {
+const GenderButton = ({ title, selected, onPress }: GenderButtonProps) => {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -27,15 +27,13 @@ const GenderButton = ({ label, selected, onPress }: GenderButtonProps) => {
     >
       <Text
         style={[
-          tw(`text-center ${selected ? 'text-brand-primary' : 'text-on-surface-placeholder'}`),
+          tw(`text-center  ${selected ? 'text-brand-primary' : 'text-on-surface-placeholder'}`),
           {
-            fontFamily: 'Pretendard-SemiBold',
             fontSize: 15,
-            lineHeight: 34,
           },
         ]}
       >
-        {label}
+        {title}
       </Text>
     </TouchableOpacity>
   );

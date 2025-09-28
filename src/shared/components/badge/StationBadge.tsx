@@ -15,16 +15,16 @@ const StationBadge = ({ name }: StationBadgeProps) => (
   >
     <Text
       style={[
-        tw('text-on-surface-secondary leading-6 mr-1'),
-        { fontFamily: 'Pretendard-SemiBold', fontSize: 13 },
+        tw('text-on-surface-secondary font-primary-600 leading-6 mr-1'),
+        { fontSize: 13 },
       ]}
     >
       🚲
     </Text>
     <Text
       style={[
-        tw('text-on-surface-secondary leading-6'),
-        { fontFamily: 'Pretendard-SemiBold', fontSize: 13 },
+        tw('text-on-surface-secondary font-primary-600 leading-6'),
+        { fontSize: 13 },
       ]}
     >
       {name}
