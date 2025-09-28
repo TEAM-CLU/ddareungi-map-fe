@@ -28,6 +28,7 @@ const Input = ({
 
   return (
     <TextInput
+      returnKeyType="done"
       value={value}
       placeholder={placeholder}
       placeholderTextColor={'#A7A7A7'}
