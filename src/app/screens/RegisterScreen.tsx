@@ -53,7 +53,7 @@ const RegisterScreen = () => {
           setGender={setGender}
           address={address}
           setAddress={setAddress}
-          signUpStep={signUpStep}
+          setSignUpStep={setSignUpStep}
         />
       ) : (
         <SignUpEmailStep
