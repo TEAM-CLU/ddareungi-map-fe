@@ -3,7 +3,7 @@ import { tw } from '@/shared/libs/tw-helper';
 import { View } from 'react-native';
 
 interface StepIndicatorProps {
-  step: 'email' | 'password' | 'profile';
+  step: 'email' | 'password' | 'profile' | 'finish';
 }
 const StepIndicator = ({ step }: StepIndicatorProps) => {
   return (

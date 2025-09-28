@@ -4,12 +4,12 @@ import { tw } from '@/shared/libs/tw-helper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StepIndicator from '@/features/auth/components/signUp/StepIndicator';
 import SignUpEmailStep from '@/features/auth/components/signUp/SignUpEmailStep';
-import SignUpPwdStep from '@/features/auth/components/signUp/SignUpProfileStep';
-import SignUpProfileStep from '@/features/auth/components/signUp/SignUpPwdStep';
+import SignUpPwdStep from '@/features/auth/components/signUp/SignUpPwdStep';
+import SignUpProfileStep from '@/features/auth/components/signUp/SignUpProfileStep';
 
 const RegisterScreen = () => {
   const [signUpStep, setSignUpStep] = useState<
-    'email' | 'password' | 'profile'
+    'email' | 'password' | 'profile' | 'finish'
   >('email');
 
   const [email, setEmail] = useState<string>('');
@@ -61,11 +61,7 @@ const RegisterScreen = () => {
           setEmail={function (value: React.SetStateAction<string>): void {
             throw new Error('Function not implemented.');
           }}
-          setSignUpStep={function (
-            value: React.SetStateAction<'email' | 'password' | 'profile'>,
-          ): void {
-            throw new Error('Function not implemented.');
-          }}
+          setSignUpStep={setSignUpStep}
         />
       )}
     </SafeAreaView>

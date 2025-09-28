@@ -10,7 +10,7 @@ interface SignUpEmailStepProps {
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string>>;
   setSignUpStep: React.Dispatch<
-    React.SetStateAction<'email' | 'password' | 'profile'>
+    React.SetStateAction<'email' | 'password' | 'profile' | 'finish'>
   >;
 }
 const SignUpEmailStep = ({
@@ -33,7 +33,7 @@ const SignUpEmailStep = ({
             { fontSize: 24 },
           ]}
         >
-          번호를
+          이메일을
         </Text>
         <Text
           style={[

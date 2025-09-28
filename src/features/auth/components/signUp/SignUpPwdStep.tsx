@@ -1,48 +1,46 @@
 import Input from '@/shared/components/Input/Input';
-import { SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import SquareButton from '@/shared/components/button/SquareButton';
 import RoundButton from '@/shared/components/button/RoundButton';
-import BirthDateInput from '@/shared/components/Input/BirthDateInput';
-import GenderButton from '@/shared/components/button/GenderButton';
+import { checkPassword } from '@/features/auth/utils/checkPassword';
 
-interface SignUpProfileStepProps {
-  name: string;
-  setName: React.Dispatch<React.SetStateAction<string>>;
-  birthDate: string;
-  setBirthDate: React.Dispatch<React.SetStateAction<string>>;
-  gender: 'male' | 'female' | undefined;
-  setGender: React.Dispatch<
-    React.SetStateAction<'male' | 'female' | undefined>
-  >;
-  address: string;
-  setAddress: React.Dispatch<React.SetStateAction<string>>;
+interface SignUpEmailStepProps {
+  pwd: string;
+  setPwd: React.Dispatch<React.SetStateAction<string>>;
+  confirmPwd: string;
+  setConfirmPwd: React.Dispatch<React.SetStateAction<string>>;
   setSignUpStep: React.Dispatch<
     React.SetStateAction<'email' | 'password' | 'profile'>
   >;
 }
-const SignUpProfileStep = ({
-  name,
-  setName,
-  birthDate,
-  setBirthDate,
-  gender,
-  setGender,
-  address,
-  setAddress,
+const SignUpPwdStep = ({
+  pwd,
+  setPwd,
+  confirmPwd,
+  setConfirmPwd,
   setSignUpStep,
-}: SignUpProfileStepProps) => {
-  const [isValidName, setIsValidName] = useState<boolean>(true);
-  const [isValidGender, setIsValidGender] = useState<boolean>(true);
-  const [isValidBirthDate, setIsValidBirthDate] = useState<boolean>(true);
-  const [isValidAddress, setIsValidAddress] = useState<boolean>(true);
+}: SignUpEmailStepProps) => {
+  const [isValidPwd, setIsValidPwd] = useState<boolean>(true);
+  const [isValidConfirmPwd, setIsValidConfirmPwd] = useState<boolean>(true);
+  const [showValidation, setShowValidation] = useState(false);
 
-  const [year, setYear] = useState<number | null>(null);
-  const [month, setMonth] = useState<number | null>(null);
-  const [day, setDay] = useState<number | null>(null);
+  const handleProvePwdButtonPress = () => {
+    const isOkPwd = checkPassword(pwd);
+    setIsValidPwd(isOkPwd);
 
+    if (!isOkPwd) {
+      Alert.alert('양식 확인', '비밀번호 양식이 올바르지 않습니다.');
+      return;
+    }
+
+    const isOkConfirmPwd = pwd === confirmPwd;
+    setIsValidConfirmPwd(isOkConfirmPwd);
+
+    setShowValidation(true);
+  };
   return (
     <View
       style={[
@@ -57,7 +55,7 @@ const SignUpProfileStep = ({
             { fontSize: 24 },
           ]}
         >
-          본인 정보를
+          비밀번호를
         </Text>
         <Text
           style={[
@@ -71,60 +69,65 @@ const SignUpProfileStep = ({
       <View
         style={[tw('flex flex-col w-full'), { gap: 12, marginBottom: 100 }]}
       >
-        <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-label-input text-left'),
-              { fontSize: 15 },
-            ]}
-          >
-            이름
-          </Text>
-          <Input
-            type="text"
-            placeholder="이름을 입력하세요."
-            value={name}
-            onChangeText={setName}
-            isValid={isValidName}
+        <Input
+          type="password"
+          placeholder="비밀번호를 입력하세요."
+          value={pwd}
+          onChangeText={setPwd}
+          isValid={isValidPwd}
+        />
+        <Text
+          style={[tw('font-primary-500 text-brand-primary'), { fontSize: 13 }]}
+        >
+          8자 이상, 특수기호 1개 이상 포함
+        </Text>
+        <Input
+          type="password"
+          placeholder="비밀번호를 다시 한번 입력하세요."
+          value={confirmPwd}
+          onChangeText={setConfirmPwd}
+          isValid={isValidConfirmPwd}
+        />
+        <View
+          style={[
+            tw('flex flex-row w-full items-center justify-between flex-nowrap'),
+            { gap: 1 },
+          ]}
+        >
+          <View>
+            {showValidation &&
+              (isValidConfirmPwd ? (
+                <Text
+                  style={[
+                    tw('font-primary-500 text-brand-primary'),
+                    { fontSize: 13 },
+                  ]}
+                >
+                  비밀번호가 일치합니다.
+                </Text>
+              ) : (
+                <Text
+                  style={[tw('font-primary-500 text-error'), { fontSize: 13 }]}
+                >
+                  비밀번호가 일치하지 않습니다.
+                </Text>
+              ))}
+          </View>
+
+          <RoundButton
+            title="인증하기"
+            onPress={handleProvePwdButtonPress}
+            preset="sm"
           />
-        </View>
-        <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-label-input text-left'),
-              { fontSize: 15 },
-            ]}
-          >
-            생년월일
-          </Text>
-          <BirthDateInput
-            year={year}
-            month={month}
-            day={day}
-            setYear={setYear}
-            setMonth={setMonth}
-            setDay={setDay}
-          />
-        </View>
-        <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-label-input text-left'),
-              { fontSize: 15 },
-            ]}
-          >
-            성별
-          </Text>
         </View>
       </View>
-
       <SquareButton
         title="다음"
-        onPress={() => setSignUpStep('password')}
-        // disabled={!isValidEmail}
+        onPress={() => setSignUpStep('profile')}
+        disabled={!(isValidPwd && isValidConfirmPwd)}
       />
     </View>
   );
 };
 
-export default SignUpProfileStep;
+export default SignUpPwdStep;
