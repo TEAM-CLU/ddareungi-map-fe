@@ -20,7 +20,7 @@ const RegisterScreen = () => {
   const [gender, setGender] = useState<'male' | 'female' | undefined>(
     undefined,
   );
-  const [address, setAddress] = useState<string | null>(null);
+  const [address, setAddress] = useState<string>('');
   return (
     <SafeAreaView
       style={[
@@ -44,7 +44,17 @@ const RegisterScreen = () => {
           setSignUpStep={setSignUpStep}
         />
       ) : signUpStep === 'profile' ? (
-        <View></View>
+        <SignUpProfileStep
+          name={name}
+          setName={setName}
+          birthDate={birthDate}
+          setBirthDate={setBirthDate}
+          gender={gender}
+          setGender={setGender}
+          address={address}
+          setAddress={setAddress}
+          signUpStep={signUpStep}
+        />
       ) : (
         <SignUpEmailStep
           email={''}

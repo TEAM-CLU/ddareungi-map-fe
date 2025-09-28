@@ -6,15 +6,16 @@ import { Text, View } from 'react-native';
 import SquareButton from '@/shared/components/button/SquareButton';
 import RoundButton from '@/shared/components/button/RoundButton';
 import BirthDateInput from '@/shared/components/Input/BirthDateInput';
+import GenderButton from '@/shared/components/button/GenderButton';
 
 interface SignUpProfileStepProps {
   name: string;
   setName: React.Dispatch<React.SetStateAction<string>>;
   birthDate: string;
   setBirthDate: React.Dispatch<React.SetStateAction<string>>;
-  gender: 'male' | 'female';
+  gender: 'male' | 'female' | undefined;
   setGender: React.Dispatch<
-    React.SetStateAction<'male' | 'femail' | undefined>
+    React.SetStateAction<'male' | 'female' | undefined>
   >;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
@@ -112,16 +113,8 @@ const SignUpProfileStep = ({
               { fontSize: 15 },
             ]}
           >
-            생년월일
+            성별
           </Text>
-          <BirthDateInput
-            year={year}
-            month={month}
-            day={day}
-            setYear={setYear}
-            setMonth={setMonth}
-            setDay={setDay}
-          />
         </View>
       </View>
 
