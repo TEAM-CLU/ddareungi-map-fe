@@ -27,13 +27,7 @@ const SquareButton = ({
       ]}
     >
       <Text
-        style={[
-          tw('text-on-surface-secondary text-center text-base '),
-          {
-            fontFamily: 'Pretendard-Medium',
-            lineHeight: 42,
-          },
-        ]}
+        style={tw('text-on-surface-secondary font-primary-500 text-center text-base')}
       >
         {title}
       </Text>
