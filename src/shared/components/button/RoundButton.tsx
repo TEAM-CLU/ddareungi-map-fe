@@ -38,7 +38,6 @@ const RoundButton = ({
           {
             fontSize: presetStyle.fontSize,
             fontFamily: presetStyle.fontFamily,
-            lineHeight: presetStyle.lineHeight,
           },
         ]}
       >
