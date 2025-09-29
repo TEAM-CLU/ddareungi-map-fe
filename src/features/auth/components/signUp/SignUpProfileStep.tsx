@@ -16,10 +16,8 @@ interface SignUpProfileStepProps {
   setName: React.Dispatch<React.SetStateAction<string>>;
   birthDate: string;
   setBirthDate: React.Dispatch<React.SetStateAction<string>>;
-  gender: 'male' | 'female' | undefined;
-  setGender: React.Dispatch<
-    React.SetStateAction<'male' | 'female' | undefined>
-  >;
+  gender: 'M' | 'F' | undefined;
+  setGender: React.Dispatch<React.SetStateAction<'M' | 'F' | undefined>>;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
   setSignUpStep: React.Dispatch<
@@ -59,9 +57,9 @@ const SignUpProfileStep = ({
   }, [gu, dong]);
 
   const isValidName = name.trim().length > 0;
-  const isValidGender = gender === 'male' || gender === 'female';
-  const isValidBirthDate = !!formattedBirthDate;
-  const isValidAddress = !!formattedAddress;
+  const isValidGender = gender === 'M' || gender === 'F';
+  const isValidBirthDate = !!formattedBirthDate && !!birthDate;
+  const isValidAddress = !!formattedAddress && !!address;
 
   const isFormReady =
     isValidName && isValidGender && isValidBirthDate && isValidAddress;
@@ -153,13 +151,13 @@ const SignUpProfileStep = ({
           >
             <GenderButton
               title="남성"
-              onPress={() => setGender('male')}
-              selected={gender === 'male'}
+              onPress={() => setGender('M')}
+              selected={gender === 'M'}
             />
             <GenderButton
               title="여성"
-              onPress={() => setGender('female')}
-              selected={gender === 'female'}
+              onPress={() => setGender('F')}
+              selected={gender === 'F'}
             />
           </View>
         </View>

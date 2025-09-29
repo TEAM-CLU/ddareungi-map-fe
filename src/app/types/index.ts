@@ -7,5 +7,6 @@ export type RootStackParamList = {
   Map: undefined;
   RouteSelect: undefined;
   MyPage: undefined;
-  Test: undefined;
+  TestCho: undefined;
+  TestPark: undefined
 };

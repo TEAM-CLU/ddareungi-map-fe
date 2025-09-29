@@ -146,7 +146,7 @@ const BirthDateInput = ({
         placeholder="일"
         placeholderStyle={tw('text-base  font-primary-500 text-placeholder')}
         closeAfterSelecting
-        containerStyle={tw('flex-1 min-w-0 ')}
+        containerStyle={tw('flex-1 min-w-0')}
         style={tw('border border-line-default h-12 bg-transparent')}
         ArrowDownIconComponent={() => <IconChevronDown />}
         labelStyle={tw('text-base font-primary-500 text-on-surface-primary')}

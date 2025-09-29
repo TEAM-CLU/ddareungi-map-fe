@@ -4,7 +4,7 @@ import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
 import { tw } from '@/shared/libs/tw-helper';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,8 +17,18 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   const [pwd, setPwd] = useState<string>('');
   const [isIdValid, setIsIdValid] = useState<boolean>(true);
   const [isPwdValid, setIsPwdValid] = useState<boolean>(true);
+  const [isAvailable, setIsAvailable] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!!id && !!pwd) {
+      setIsAvailable(true);
+    }
+  }, [id, pwd]);
 
   const handleCloseButtonPress = () => setLoginScreenStep('step1');
+  const handleLoginButtonPress = () => {
+    
+  }
   return (
     <SafeAreaView style={tw('w-full flex-1')}>
       <TouchableOpacity
@@ -66,7 +76,11 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
             />
           </View>
           {/* loginButton */}
-          <SquareButton title="로그인" onPress={() => {}} />
+          <SquareButton
+            title="로그인"
+            onPress={() => {}}
+            disabled={!isAvailable}
+          />
           {/* relatedwithAuthFeatures */}
           <AccountLinks />
           <View

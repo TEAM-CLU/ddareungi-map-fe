@@ -1,5 +1,5 @@
 import Input from '@/shared/components/Input/Input';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 
 import { Text, View } from 'react-native';
@@ -18,7 +18,18 @@ const SignUpEmailStep = ({
   setEmail,
   setSignUpStep,
 }: SignUpEmailStepProps) => {
-  const [isValidEmail, setIsValidEmail] = useState<boolean>(true);
+  const [isValidEmail, setIsValidEmail] = useState<boolean>(true); // 중복확인
+  const [code, setCode] = useState<string>('');
+  const [isAvailable, setIsAvailable] = useState<boolean>(false);
+  const [isValidCode, setIsValidCode] = useState<boolean>(false);
+  const [showCodeInput, setShowCodeInput] = useState<boolean>(false);
+
+  const handleCheckRedundancyButton = () => {
+    //TODO: API쏴서 중복확인후 isValidEmail 상태변경, false라면 바로 종료 true라면 타이머와 함께 코드기입 input 렌더링
+  };
+  useEffect(() => {
+    if (!!email && isValidEmail && isValidCode) setIsAvailable(true);
+  }, [email, isValidEmail, isValidCode]);
   return (
     <View
       style={[
@@ -56,24 +67,42 @@ const SignUpEmailStep = ({
         />
         <View
           style={[
-            tw('flex flex-row w-full items-center justify-between flex-nowrap'),
-            { gap: 1 },
+            tw('flex w-full items-center justify-between flex-nowrap'),
+            showCodeInput ? tw('flex-col items-end') : tw(' flex-row'),
+            { gap: 10 },
           ]}
         >
-          {isValidEmail ? (
+          {showCodeInput ? (
+            <Input
+              type="number"
+              placeholder="코드를 입력하세요."
+              value="code"
+              onChangeText={setCode}
+              isValid={isValidCode}
+            />
+          ) : isValidEmail ? (
             <View></View>
           ) : (
             <Text style={[tw('font-primary-500 text-error'), { fontSize: 13 }]}>
               중복된 이메일 입니다.
             </Text>
           )}
-          <RoundButton title="인증하기" onPress={() => {}} preset="sm" />
+          {showCodeInput ? (
+            <RoundButton
+              title="코드확인"
+              onPress={() => {}}
+              preset="sm"
+              disabled={!isValidCode}
+            />
+          ) : (
+            <RoundButton title="중복확인" onPress={() => {}} preset="sm" />
+          )}
         </View>
       </View>
       <SquareButton
         title="다음"
         onPress={() => setSignUpStep('password')}
-        disabled={!isValidEmail}
+        disabled={!isAvailable}
       />
     </View>
   );

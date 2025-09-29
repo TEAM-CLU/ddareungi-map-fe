@@ -19,7 +19,7 @@ const RegisterScreen = () => {
   const [confirmPwd, setConfirmPwd] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [birthDate, setBirthDate] = useState<string>('');
-  const [gender, setGender] = useState<'male' | 'female' | undefined>(
+  const [gender, setGender] = useState<'M' | 'F' | undefined>(
     undefined,
   );
   const [address, setAddress] = useState<string>('');
