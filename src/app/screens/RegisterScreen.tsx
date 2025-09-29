@@ -19,15 +19,13 @@ const RegisterScreen = () => {
   const [confirmPwd, setConfirmPwd] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [birthDate, setBirthDate] = useState<string>('');
-  const [gender, setGender] = useState<'M' | 'F' | undefined>(
-    undefined,
-  );
+  const [gender, setGender] = useState<'M' | 'F' | undefined>(undefined);
   const [address, setAddress] = useState<string>('');
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView
         style={[
-          tw('flex flex-1 bg-surface-secondary mt-8'),
+          tw('flex flex-1 bg-surface-secondary pt-8'),
           { paddingHorizontal: 36 },
         ]}
       >

@@ -3,9 +3,17 @@ import { tw } from '@/shared/libs/tw-helper';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { View, TouchableOpacity, Text } from 'react-native';
 
-const AccountLinks = () => {
+interface AccountLinksProps {
+  setAccountFeatures: React.Dispatch<
+    React.SetStateAction<'findId' | 'resetPwd' | null>
+  >;
+}
+
+const AccountLinks = ({ setAccountFeatures }: AccountLinksProps) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const handleSignUpbuttonPress = () => navigation.navigate('Register');
+  const handleFindIdButtonPress = () => setAccountFeatures('findId');
+  const handleFindPwdButtonPress = () => setAccountFeatures('resetPwd');
 
   return (
     <View
@@ -35,7 +43,10 @@ const AccountLinks = () => {
       >
         ㅣ
       </Text>
-      <TouchableOpacity style={tw('flex justify-center items-center')}>
+      <TouchableOpacity
+        onPress={handleFindPwdButtonPress}
+        style={tw('flex justify-center items-center')}
+      >
         <Text
           style={[
             tw('font-primary-500 text-on-surface-placeholder text-center'),
@@ -53,7 +64,10 @@ const AccountLinks = () => {
       >
         ㅣ
       </Text>
-      <TouchableOpacity style={tw('flex justify-center items-center')}>
+      <TouchableOpacity
+        onPress={handleFindIdButtonPress}
+        style={tw('flex justify-center items-center')}
+      >
         <Text
           style={[
             tw('font-primary-500 text-on-surface-placeholder text-center'),

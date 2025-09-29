@@ -1,4 +1,6 @@
 import AccountLinks from '@/features/auth/components/AccountLinks';
+import IdFinder from '@/features/auth/components/IdFinder';
+import PwdResetterContainer from '@/features/auth/components/pwdRest/PwdResetContainer';
 import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
@@ -18,6 +20,9 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   const [isIdValid, setIsIdValid] = useState<boolean>(true);
   const [isPwdValid, setIsPwdValid] = useState<boolean>(true);
   const [isAvailable, setIsAvailable] = useState<boolean>(false);
+  const [accountFeatures, setAccountFeatures] = useState<
+    'findId' | 'resetPwd' | null
+  >(null);
 
   useEffect(() => {
     if (!!id && !!pwd) {
@@ -26,9 +31,13 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   }, [id, pwd]);
 
   const handleCloseButtonPress = () => setLoginScreenStep('step1');
-  const handleLoginButtonPress = () => {
-    
-  }
+  const handleLoginButtonPress = () => {};
+
+  if (accountFeatures === 'findId')
+    return <IdFinder setAccountFeatures={setAccountFeatures} />;
+  if (accountFeatures === 'resetPwd')
+    return <PwdResetterContainer setAccountFeatures={setAccountFeatures} />;
+
   return (
     <SafeAreaView style={tw('w-full flex-1')}>
       <TouchableOpacity
@@ -82,7 +91,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
             disabled={!isAvailable}
           />
           {/* relatedwithAuthFeatures */}
-          <AccountLinks />
+          <AccountLinks setAccountFeatures={setAccountFeatures} />
           <View
             style={[
               tw('flex flex-row justify-center items-center my-3'),
@@ -112,7 +121,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
           </View>
           <SocialLoginLinks />
         </View>
-        <View></View>
+        <View />
       </View>
     </SafeAreaView>
   );
