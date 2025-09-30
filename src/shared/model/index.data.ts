@@ -79,8 +79,23 @@ export const guList = [
   { label: '구로구', value: '구로구' },
   { label: '금천구', value: '금천구' },
   { label: '노원구', value: '노원구' },
+  { label: '도봉구', value: '도봉구' },
+  { label: '동대문구', value: '동대문구' },
+  { label: '동작구', value: '동작구' },
+  { label: '마포구', value: '마포구' },
+  { label: '서대문구', value: '서대문구' },
+  { label: '서초구', value: '서초구' },
+  { label: '성동구', value: '성동구' },
+  { label: '성북구', value: '성북구' },
+  { label: '송파구', value: '송파구' },
+  { label: '양천구', value: '양천구' },
+  { label: '영등포구', value: '영등포구' },
+  { label: '용산구', value: '용산구' },
+  { label: '은평구', value: '은평구' },
+  { label: '종로구', value: '종로구' },
+  { label: '중구', value: '중구' },
+  { label: '중랑구', value: '중랑구' },
 ];
-
 export const dongMap: Record<string, { label: string; value: string }[]> = {
   강남구: [
     { label: '개포동', value: '개포동' },
