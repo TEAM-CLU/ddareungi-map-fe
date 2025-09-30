@@ -32,7 +32,9 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>현위치 기반 대여소 검색 및 길찾기 기능을 제공하기 위해 위치 정보가 필요합니다.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>네비게이션 음성 안내 기능을 제공하기 위해 음성 권한이 필요합니다.</string>
 	<key>RCTNewArchEnabled</key>
 	<false/>
 	<key>UIAppFonts</key>

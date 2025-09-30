@@ -8,6 +8,7 @@ import SignUpPwdStep from '@/features/auth/components/signUp/SignUpPwdStep';
 import SignUpProfileStep from '@/features/auth/components/signUp/SignUpProfileStep';
 import { TouchableWithoutFeedback } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
+import SignUpPermissionStep from '@/features/auth/components/signUp/SignUpPermissionStep';
 
 const RegisterScreen = () => {
   const [signUpStep, setSignUpStep] = useState<
@@ -21,6 +22,8 @@ const RegisterScreen = () => {
   const [birthDate, setBirthDate] = useState<string>('');
   const [gender, setGender] = useState<'M' | 'F' | undefined>(undefined);
   const [address, setAddress] = useState<string>('');
+
+  const [isReadyToSignUp, setIsReadyToSignUp] = useState<boolean>(false);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -58,7 +61,7 @@ const RegisterScreen = () => {
             setSignUpStep={setSignUpStep}
           />
         ) : signUpStep === 'step4' ? (
-          <View></View> // 만들 예정
+          <SignUpPermissionStep setIsReadyToSignUp={setIsReadyToSignUp} />
         ) : (
           <SignUpEmailStep
             email={''}

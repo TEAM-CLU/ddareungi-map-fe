@@ -62,6 +62,9 @@ importers:
       react-native-paper-dropdown:
         specifier: ^2.3.1
         version: 2.3.1(react-native-paper@5.14.5(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0)
+      react-native-permissions:
+        specifier: ^5.4.2
+        version: 5.4.2(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0)
       react-native-picker-select:
         specifier: ^9.3.1
         version: 9.3.1(@react-native-picker/picker@2.11.2(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0))
@@ -77,6 +80,9 @@ importers:
       react-native-svg:
         specifier: ^15.13.0
         version: 15.13.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0)
+      react-native-tts:
+        specifier: ^4.1.1
+        version: 4.1.1
       react-native-vector-icons:
         specifier: ^10.3.0
         version: 10.3.0
@@ -3650,6 +3656,16 @@ packages:
       react-native: '*'
       react-native-safe-area-context: '*'
 
+  react-native-permissions@5.4.2:
+    resolution: {integrity: sha512-XNMoG1fxrB9q73MLn/ZfTaP7pS8qPu0KWypbeFKVTvoR+JJ3O7uedMOTH/mts9bTG+GKhShOoZ+k0CR63q9jwA==}
+    peerDependencies:
+      react: '>=18.1.0'
+      react-native: '>=0.70.0'
+      react-native-windows: '>=0.70.0'
+    peerDependenciesMeta:
+      react-native-windows:
+        optional: true
+
   react-native-picker-select@9.3.1:
     resolution: {integrity: sha512-o621HcsKJfJkpYeP/PZQiZTKbf8W7FT08niLFL0v1pGkIQyak5IfzfinV2t+/l1vktGwAH2Tt29LrP/Hc5fk3A==}
     peerDependencies:
@@ -3685,6 +3701,9 @@ packages:
     peerDependencies:
       react: '*'
       react-native: '*'
+
+  react-native-tts@4.1.1:
+    resolution: {integrity: sha512-VL0TgCwkUWggbbFGIXAPKC3rM1baluAYtgOdgnaTm7UYsWf/y8n5VgmVB0J2Wa8qt1dldZ1cSsdQY9iz3evcAg==}
 
   react-native-vector-icons@10.3.0:
     resolution: {integrity: sha512-IFQ0RE57819hOUdFvgK4FowM5aMXg7C7XKsuGLevqXkkIJatc3QopN0wYrb2IrzUgmdpfP+QVIbI3S6h7M0btw==}
@@ -8940,6 +8959,11 @@ snapshots:
       react-native-safe-area-context: 5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0)
       use-latest-callback: 0.2.4(react@19.1.0)
 
+  react-native-permissions@5.4.2(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0)
+
   react-native-picker-select@9.3.1(@react-native-picker/picker@2.11.2(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0)):
     dependencies:
       '@react-native-picker/picker': 2.11.2(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0))(react@19.1.0)
@@ -8998,6 +9022,8 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.2))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.1.16)(react@19.1.0)
       warn-once: 0.1.1
+
+  react-native-tts@4.1.1: {}
 
   react-native-vector-icons@10.3.0:
     dependencies:
