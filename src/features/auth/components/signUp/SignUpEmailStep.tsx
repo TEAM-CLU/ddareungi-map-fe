@@ -51,6 +51,8 @@ const SignUpEmailStep = ({
   const [codeSuccessDescription, setCodeSuccessDescription] =
     useState<string>(''); // 인증코드 성공 메시지
 
+  const [canGoNextStep, setCanGoNextStep] = useState(false);
+
   // 이메일 중복 확인
   const handleCheckEmailRedundancyButtonPress = async () => {
     //이메일 입력 확인
@@ -181,6 +183,7 @@ const SignUpEmailStep = ({
       setCodeErrorDescription('');
       setIsValidCode(true);
       setCodeSuccessDescription(`${Response.message}`);
+      setCanGoNextStep(true);
     } catch (e) {
       // 네트워크 또는 서버 오류 처리
       setCodeSuccessDescription('');
@@ -194,10 +197,17 @@ const SignUpEmailStep = ({
 
   // 다음 단계 버튼 활성화 로직
   useEffect(() => {
-    if (isValidCode && isValidEmail && showCodeInput) {
+    if (
+      isValidCode &&
+      isValidEmail &&
+      showCodeInput &&
+      !!email &&
+      !!code &&
+      canGoNextStep
+    ) {
       setIsNextStepAvailable(true);
     }
-  }, [isValidCode, isValidEmail, showCodeInput]);
+  }, [isValidCode, isValidEmail, showCodeInput, email, code, canGoNextStep]);
 
   return (
     <View
