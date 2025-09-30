@@ -2,7 +2,15 @@ ENV['RCT_NEW_ARCH_ENABLED'] = '0'
 platform :ios, '15.1'
 
 require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/react-native-permissions/scripts/setup'
+
 prepare_react_native_project!
+
+setup_permissions([
+  'LocationWhenInUse',
+  'SpeechRecognition',
+  'Microphone',
+])
 
 linkage = ENV['USE_FRAMEWORKS']
 use_frameworks! :linkage => linkage.to_sym if linkage
