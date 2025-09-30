@@ -1,5 +1,7 @@
 /********** 인증 **********/
 
+import { Permission, PermissionStatus } from 'react-native-permissions';
+
 // 이메일 인증 코드 발송
 export interface SendVerificationEmailPayload {
   email: string;
@@ -123,4 +125,14 @@ interface CheckEmailResponseSuccess {
 interface CheckEmailResponseFailed {
   statusCode: number;
   message: string;
+}
+
+// 권한 타입
+export interface PermissionItem {
+  name: string;
+  permission: Permission | 'NOTIFICATIONS';
+  required: boolean;
+  status: PermissionStatus;
+  icon: React.ReactNode;
+  description: string;
 }

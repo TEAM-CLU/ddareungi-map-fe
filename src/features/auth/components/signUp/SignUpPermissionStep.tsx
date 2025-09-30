@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 import RoundButton from '@/shared/components/button/RoundButton';
 import IconAudio from '@/shared/components/icons/IconAudio';
 import IconInfo from '@/shared/components/icons/IconInfo';
@@ -14,19 +14,13 @@ import {
   Permission,
   PermissionStatus,
   openSettings,
+  checkNotifications,
+  requestNotifications,
 } from 'react-native-permissions';
+import { PermissionItem } from '@/features/auth/model/auth.types';
 
 interface SignUpPermissionStepProps {
   setIsReadyToSignUp: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-interface PermissionItem {
-  name: string;
-  permission: Permission;
-  required: boolean;
-  status: PermissionStatus;
-  icon: React.ReactNode;
-  description: string;
 }
 
 const SignUpPermissionStep = ({
@@ -45,11 +39,11 @@ const SignUpPermissionStep = ({
       description: '현위치 기반 대여소 검색 및 길찾기 기능 제공',
     },
     {
-      name: '오디오(필수)',
+      name: '마이크(필수)',
       permission:
         Platform.OS === 'ios'
-          ? PERMISSIONS.IOS.SPEECH_RECOGNITION
-          : PERMISSIONS.ANDROID.RECORD_AUDIO, // 올바른 권한으로 수정
+          ? PERMISSIONS.IOS.MICROPHONE
+          : PERMISSIONS.ANDROID.RECORD_AUDIO,
       required: true,
       status: RESULTS.UNAVAILABLE,
       icon: <IconAudio />,
@@ -57,10 +51,7 @@ const SignUpPermissionStep = ({
     },
     {
       name: '알림(선택)',
-      permission:
-        Platform.OS === 'ios'
-          ? PERMISSIONS.IOS.MICROPHONE // 대체 권한으로 수정
-          : PERMISSIONS.ANDROID.CAMERA, // 대체 권한으로 수정
+      permission: 'NOTIFICATIONS', // 특별 처리
       required: false,
       status: RESULTS.UNAVAILABLE,
       icon: <IconInfo />,
@@ -68,7 +59,7 @@ const SignUpPermissionStep = ({
     },
   ]);
 
-  const [hasRequestedPermissions, setHasRequestedPermissions] = useState(false); // 새로운 상태 추가
+  const [hasRequestedPermissions, setHasRequestedPermissions] = useState(false);
 
   // 초기 권한 상태 확인
   useEffect(() => {
@@ -79,27 +70,84 @@ const SignUpPermissionStep = ({
     try {
       const updatedPermissions = await Promise.all(
         permissions.map(async perm => {
-          const status = await check(perm.permission);
+          let status: PermissionStatus;
+
+          if (perm.permission === 'NOTIFICATIONS') {
+            // 알림 권한 특별 처리
+            try {
+              const notificationStatus = await checkNotifications();
+              status = notificationStatus.status;
+            } catch (_) {
+              status = RESULTS.UNAVAILABLE;
+            }
+          } else {
+            // 일반 권한 처리
+            status = await check(perm.permission as Permission);
+          }
+
           return { ...perm, status };
         }),
       );
       setPermissions(updatedPermissions);
-    } catch (error) {
-      console.error('권한 확인 실패:', error);
+    } catch (_) {
+      Alert.alert(
+        '권한 확인 오류',
+        '권한을 확인할 수 없습니다. 설정에서 권한을 확인해주세요.',
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '설정으로 이동', onPress: () => openSettings() },
+        ],
+      );
     }
   };
 
   const requestPermission = async (permissionItem: PermissionItem) => {
     try {
-      const status = await request(permissionItem.permission);
+      let status: PermissionStatus;
+
+      if (permissionItem.permission === 'NOTIFICATIONS') {
+        // 알림 권한 특별 처리
+        try {
+          const notificationResult = await requestNotifications([
+            'alert',
+            'badge',
+            'sound',
+          ]);
+          status = notificationResult.status;
+        } catch (_) {
+          status = RESULTS.DENIED;
+        }
+      } else {
+        // 일반 권한 처리
+        status = await request(permissionItem.permission as Permission);
+      }
 
       setPermissions(prev =>
         prev.map(p =>
           p.permission === permissionItem.permission ? { ...p, status } : p,
         ),
       );
-    } catch (error) {
-      console.error('권한 요청 실패:', error);
+
+      // 차단된 권한에 대해 설정 이동 제안
+      if (status === RESULTS.BLOCKED) {
+        Alert.alert(
+          '권한 차단됨',
+          `${permissionItem.name} 권한이 차단되었습니다. 설정에서 권한을 허용해주세요.`,
+          [
+            { text: '취소', style: 'cancel' },
+            { text: '설정으로 이동', onPress: () => openSettings() },
+          ],
+        );
+      }
+    } catch (_) {
+      Alert.alert(
+        '권한 요청 오류',
+        '권한 요청 중 오류가 발생했습니다. 설정에서 권한을 확인해주세요.',
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '설정으로 이동', onPress: () => openSettings() },
+        ],
+      );
     }
   };
 
@@ -112,7 +160,7 @@ const SignUpPermissionStep = ({
       }
     }
 
-    setHasRequestedPermissions(true); // 권한 요청 완료 표시
+    setHasRequestedPermissions(true);
   };
 
   const canProceed = () => {
@@ -120,13 +168,21 @@ const SignUpPermissionStep = ({
     return requiredPermissions.every(p => p.status === RESULTS.GRANTED);
   };
 
-  const handleComplete = () => {
+  const handleCompleteSignUp = () => {
+    if (!canProceed()) {
+      Alert.alert(
+        '권한 필요',
+        '필수 권한을 모두 허용해야 회원가입을 완료할 수 있습니다.',
+        [{ text: '확인' }],
+      );
+      return;
+    }
     setIsReadyToSignUp(true);
   };
 
   const getStatusColor = (permission: PermissionItem) => {
     if (permission.status === RESULTS.GRANTED) {
-      return tw('text-success');
+      return tw('text-brand-primary');
     } else if (permission.required) {
       return tw('text-error');
     } else {
@@ -142,6 +198,10 @@ const SignUpPermissionStep = ({
         return '거부됨';
       case RESULTS.BLOCKED:
         return '차단됨';
+      case RESULTS.LIMITED:
+        return '제한됨';
+      case RESULTS.UNAVAILABLE:
+        return '사용불가';
       default:
         return '미설정';
     }
@@ -158,7 +218,7 @@ const SignUpPermissionStep = ({
     } else {
       return {
         title: '회원가입 완료',
-        onPress: handleComplete,
+        onPress: handleCompleteSignUp,
         disabled: !canProceed(),
       };
     }
@@ -251,10 +311,10 @@ const SignUpPermissionStep = ({
       </View>
 
       <RoundButton
-        title={bottomButtonProps.title} // 동적으로 변경
-        onPress={bottomButtonProps.onPress} // 동적으로 변경
+        title={bottomButtonProps.title}
+        onPress={bottomButtonProps.onPress}
         preset="lg"
-        disabled={bottomButtonProps.disabled} // 동적으로 변경
+        disabled={bottomButtonProps.disabled}
       />
     </View>
   );
