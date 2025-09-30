@@ -68,7 +68,7 @@ const SignUpProfileStep = ({
     if (!isFormReady) return;
     setBirthDate(formattedBirthDate);
     setAddress(formattedAddress);
-    setSignUpStep('finish');
+    setSignUpStep('permission');
   };
 
   return (

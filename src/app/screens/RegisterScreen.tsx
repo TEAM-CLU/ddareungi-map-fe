@@ -57,12 +57,12 @@ const RegisterScreen = () => {
             setAddress={setAddress}
             setSignUpStep={setSignUpStep}
           />
+        ) : signUpStep === 'permission' ? (
+          <View></View>
         ) : (
           <SignUpEmailStep
             email={''}
-            setEmail={function (value: React.SetStateAction<string>): void {
-              throw new Error('Function not implemented.');
-            }}
+            setEmail={setEmail}
             setSignUpStep={setSignUpStep}
           />
         )}
