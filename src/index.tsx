@@ -5,13 +5,18 @@ import { name as appName } from '../app.json';
 import App from './app/App';
 import { TailwindProvider } from '@/app/providers';
 import { PaperProvider } from 'react-native-paper';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const Root = () => {
+  const queryClient = new QueryClient();
+
   return (
     <TailwindProvider>
       <SafeAreaProvider>
         <PaperProvider>
-          <App />
+          <QueryClientProvider client={queryClient}>
+            <App />
+          </QueryClientProvider>
         </PaperProvider>
       </SafeAreaProvider>
     </TailwindProvider>

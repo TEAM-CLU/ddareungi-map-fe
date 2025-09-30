@@ -18,9 +18,12 @@ export const useSendVerificationEmailMutation = () => {
     mutationFn: (payload: SendVerificationEmailPayload) =>
       postSendVerificationEmail(payload),
   });
+
+  return mutation;
 };
+
 // 이메일 인증 코드 확인
-export const useVerifyEmailCodeMutation = () => {
+export const useVerifyEmailMutation = () => {
   const mutation = useMutation({
     mutationFn: (payload: VerifyEmailPayload) => postVerifyEmail(payload),
   });

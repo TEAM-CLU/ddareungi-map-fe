@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Keyboard, Platform, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import StepIndicator from '@/features/auth/components/signUp/StepIndicator';
+import StepIndicator from '@/shared/components/StepIndicator';
 import SignUpEmailStep from '@/features/auth/components/signUp/SignUpEmailStep';
 import SignUpPwdStep from '@/features/auth/components/signUp/SignUpPwdStep';
 import SignUpProfileStep from '@/features/auth/components/signUp/SignUpProfileStep';
@@ -11,8 +11,8 @@ import { KeyboardAvoidingView } from 'react-native';
 
 const RegisterScreen = () => {
   const [signUpStep, setSignUpStep] = useState<
-    'email' | 'password' | 'profile' | 'permission'
-  >('email');
+    'step1' | 'step2' | 'step3' | 'step4'
+  >('step1');
 
   const [email, setEmail] = useState<string>('');
   const [pwd, setPwd] = useState<string>('');
@@ -31,13 +31,13 @@ const RegisterScreen = () => {
         ]}
       >
         <StepIndicator step={signUpStep} />
-        {signUpStep === 'email' ? (
+        {signUpStep === 'step1' ? (
           <SignUpEmailStep
             email={email}
             setEmail={setEmail}
             setSignUpStep={setSignUpStep}
           />
-        ) : signUpStep === 'password' ? (
+        ) : signUpStep === 'step2' ? (
           <SignUpPwdStep
             pwd={pwd}
             setPwd={setPwd}
@@ -45,7 +45,7 @@ const RegisterScreen = () => {
             setConfirmPwd={setConfirmPwd}
             setSignUpStep={setSignUpStep}
           />
-        ) : signUpStep === 'profile' ? (
+        ) : signUpStep === 'step3' ? (
           <SignUpProfileStep
             name={name}
             setName={setName}
@@ -57,12 +57,12 @@ const RegisterScreen = () => {
             setAddress={setAddress}
             setSignUpStep={setSignUpStep}
           />
+        ) : signUpStep === 'step4' ? (
+          <View></View> // 만들 예정
         ) : (
           <SignUpEmailStep
             email={''}
-            setEmail={function (value: React.SetStateAction<string>): void {
-              throw new Error('Function not implemented.');
-            }}
+            setEmail={setEmail}
             setSignUpStep={setSignUpStep}
           />
         )}

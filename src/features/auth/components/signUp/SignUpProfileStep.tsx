@@ -21,7 +21,7 @@ interface SignUpProfileStepProps {
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
   setSignUpStep: React.Dispatch<
-    React.SetStateAction<'email' | 'password' | 'profile' | 'permission'>
+    React.SetStateAction<'step1' | 'step2' | 'step3' | 'step4'>
   >;
 }
 const SignUpProfileStep = ({
@@ -51,24 +51,26 @@ const SignUpProfileStep = ({
 
   const formattedAddress = useMemo(() => {
     if (gu && dong) {
+      // null 검사를 안해도 되는 이유: string은 falsy한 값이기 때문에
       return formatAddress(gu, dong);
     }
     return '';
   }, [gu, dong]);
 
-  const isValidName = name.trim().length > 0;
+  // 단순히 값만 입력하면 될 경우 상태보단 이런식이 더 최적화된 방향
+  const isValidName = name.trim().length > 0 && name.trim() !== ''; // isValie* 상태로 선언안해도 값이 변하는 이유: 상태값으로 할당하기 때문에 상태가변하면 리렌더링됨
   const isValidGender = gender === 'M' || gender === 'F';
-  const isValidBirthDate = !!formattedBirthDate && !!birthDate;
-  const isValidAddress = !!formattedAddress && !!address;
+  const isValidBirthDate = !!formattedBirthDate;
+  const isValidAddress = !!formattedAddress;
 
   const isFormReady =
     isValidName && isValidGender && isValidBirthDate && isValidAddress;
 
-  const handleNextButtonPress = () => {
+  const handleNextStepButtonPress = () => {
     if (!isFormReady) return;
     setBirthDate(formattedBirthDate);
     setAddress(formattedAddress);
-    setSignUpStep('finish');
+    setSignUpStep('step4');
   };
 
   return (
@@ -97,7 +99,7 @@ const SignUpProfileStep = ({
         </Text>
       </View>
       <View
-        style={[tw('flex flex-col w-full'), { gap: 12, marginBottom: 100 }]}
+        style={[tw('flex flex-col w-full'), { gap: 14, marginBottom: 100 }]}
       >
         <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
           <Text
@@ -183,10 +185,8 @@ const SignUpProfileStep = ({
 
       <SquareButton
         title="다음"
-        onPress={handleNextButtonPress}
-        disabled={
-          !(isValidAddress && isValidBirthDate && isValidGender && isValidName)
-        }
+        onPress={handleNextStepButtonPress}
+        disabled={!isFormReady}
       />
     </View>
   );

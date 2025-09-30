@@ -31,7 +31,7 @@ const AuthChoice = ({ setLoginScreenStep }: AuthChoiceProps) => {
       />
       <View
         style={[
-          tw('flex flex-1 flex-col justify-around items-center p-22 mt-32'),
+          tw('flex flex-1 flex-col justify-around items-center mt-32'),
           { gap: 240 },
         ]}
       >

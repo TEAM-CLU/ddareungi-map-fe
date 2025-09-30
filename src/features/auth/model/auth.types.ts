@@ -21,7 +21,7 @@ interface SendVerificationEmailResponseFailed {
 // 이메일 인증 코드 확인
 export interface VerifyEmailPayload {
   email: string;
-  verficationCode: number;
+  verificationCode: string;
 }
 
 export type VerifyEmailResponse =
@@ -117,7 +117,6 @@ export type CheckEmailResponse =
   | CheckEmailResponseFailed;
 
 interface CheckEmailResponseSuccess {
-  isAvailable: boolean;
   message: string;
 }
 
