@@ -51,7 +51,7 @@ const SignUpEmailStep = ({
   const [codeSuccessDescription, setCodeSuccessDescription] =
     useState<string>(''); // 인증코드 성공 메시지
 
-  const [canGoNextStep, setCanGoNextStep] = useState(false);
+  const [canGoNextStep, setCanGoNextStep] = useState(false); // 다음 단계로 넘어갈 수 있는지 여부
 
   // 이메일 중복 확인
   const handleCheckEmailRedundancyButtonPress = async () => {
