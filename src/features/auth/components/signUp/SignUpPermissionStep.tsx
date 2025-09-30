@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Platform, Alert } from 'react-native';
 import RoundButton from '@/shared/components/button/RoundButton';
-import IconAudio from '@/shared/components/icons/IconAudio';
 import IconInfo from '@/shared/components/icons/IconInfo';
 import IconLocation from '@/shared/components/icons/IconLocation';
 import { tw } from '@/shared/libs/tw-helper';
@@ -39,19 +38,8 @@ const SignUpPermissionStep = ({
       description: '현위치 기반 대여소 검색 및 길찾기 기능 제공',
     },
     {
-      name: '마이크(필수)',
-      permission:
-        Platform.OS === 'ios'
-          ? PERMISSIONS.IOS.MICROPHONE
-          : PERMISSIONS.ANDROID.RECORD_AUDIO,
-      required: true,
-      status: RESULTS.UNAVAILABLE,
-      icon: <IconAudio />,
-      description: '네비게이션 음성 안내 기능 제공',
-    },
-    {
       name: '알림(선택)',
-      permission: 'NOTIFICATIONS', // 특별 처리
+      permission: 'NOTIFICATIONS',
       required: false,
       status: RESULTS.UNAVAILABLE,
       icon: <IconInfo />,
@@ -73,7 +61,6 @@ const SignUpPermissionStep = ({
           let status: PermissionStatus;
 
           if (perm.permission === 'NOTIFICATIONS') {
-            // 알림 권한 특별 처리
             try {
               const notificationStatus = await checkNotifications();
               status = notificationStatus.status;
@@ -81,7 +68,6 @@ const SignUpPermissionStep = ({
               status = RESULTS.UNAVAILABLE;
             }
           } else {
-            // 일반 권한 처리
             status = await check(perm.permission as Permission);
           }
 
@@ -106,7 +92,6 @@ const SignUpPermissionStep = ({
       let status: PermissionStatus;
 
       if (permissionItem.permission === 'NOTIFICATIONS') {
-        // 알림 권한 특별 처리
         try {
           const notificationResult = await requestNotifications([
             'alert',
@@ -118,7 +103,6 @@ const SignUpPermissionStep = ({
           status = RESULTS.DENIED;
         }
       } else {
-        // 일반 권한 처리
         status = await request(permissionItem.permission as Permission);
       }
 
@@ -128,7 +112,6 @@ const SignUpPermissionStep = ({
         ),
       );
 
-      // 차단된 권한에 대해 설정 이동 제안
       if (status === RESULTS.BLOCKED) {
         Alert.alert(
           '권한 차단됨',
@@ -207,7 +190,6 @@ const SignUpPermissionStep = ({
     }
   };
 
-  // 버튼 상태에 따른 제목과 핸들러 결정
   const getBottomButtonProps = () => {
     if (!hasRequestedPermissions) {
       return {

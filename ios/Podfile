@@ -8,8 +8,6 @@ prepare_react_native_project!
 
 setup_permissions([
   'LocationWhenInUse',
-  'SpeechRecognition',
-  'Microphone',
 ])
 
 linkage = ENV['USE_FRAMEWORKS']
