@@ -11,7 +11,7 @@ import { KeyboardAvoidingView } from 'react-native';
 
 const RegisterScreen = () => {
   const [signUpStep, setSignUpStep] = useState<
-    'email' | 'password' | 'profile' | 'finish'
+    'email' | 'password' | 'profile' | 'permission'
   >('email');
 
   const [email, setEmail] = useState<string>('');
@@ -21,6 +21,7 @@ const RegisterScreen = () => {
   const [birthDate, setBirthDate] = useState<string>('');
   const [gender, setGender] = useState<'M' | 'F' | undefined>(undefined);
   const [address, setAddress] = useState<string>('');
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView

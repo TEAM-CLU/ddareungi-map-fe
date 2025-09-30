@@ -13,7 +13,7 @@ interface SignUpEmailStepProps {
   confirmPwd: string;
   setConfirmPwd: React.Dispatch<React.SetStateAction<string>>;
   setSignUpStep: React.Dispatch<
-    React.SetStateAction<'email' | 'password' | 'profile' | 'finish'>
+    React.SetStateAction<'email' | 'password' | 'profile' | 'permission'>
   >;
 }
 const SignUpPwdStep = ({

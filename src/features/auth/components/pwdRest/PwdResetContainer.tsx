@@ -8,7 +8,13 @@ import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
 import { tw } from '@/shared/libs/tw-helper';
 import { useState } from 'react';
-import { TouchableOpacity, View, Text } from 'react-native';
+import {
+  TouchableOpacity,
+  View,
+  Text,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface PwdResetterContainerProps {
@@ -27,33 +33,38 @@ const PwdResetterContainer = ({
   const handleCloseButtonPress = () => setAccountFeatures(null);
 
   return (
-    <SafeAreaView style={tw('w-full flex-1')}>
-      <TouchableOpacity
-        onPress={handleCloseButtonPress}
-        style={tw('fixed top-5 left-4')}
-      >
-        <IconClose />
-      </TouchableOpacity>
-      <View
-        style={[tw('w-full flex-1'), { paddingHorizontal: 36, marginTop: 55 }]}
-      >
-        {resetPwdStep === 'step1' ? (
-          <PwdResetVerifyEmailStep
-            email={email}
-            setEmail={setEmail}
-            setPwdResetStep={setResetPwdStep}
-          />
-        ) : resetPwdStep === 'step2' ? (
-          <PwdResetSetPasswordStep setAccountFeatures={setAccountFeatures} />
-        ) : (
-          <PwdResetVerifyEmailStep
-            email={email}
-            setEmail={setEmail}
-            setPwdResetStep={setResetPwdStep}
-          />
-        )}
-      </View>
-    </SafeAreaView>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={tw('w-full flex-1')}>
+        <TouchableOpacity
+          onPress={handleCloseButtonPress}
+          style={tw('fixed top-5 left-4')}
+        >
+          <IconClose />
+        </TouchableOpacity>
+        <View
+          style={[
+            tw('w-full flex-1'),
+            { paddingHorizontal: 36, marginTop: 30 },
+          ]}
+        >
+          {resetPwdStep === 'step1' ? (
+            <PwdResetVerifyEmailStep
+              email={email}
+              setEmail={setEmail}
+              setPwdResetStep={setResetPwdStep}
+            />
+          ) : resetPwdStep === 'step2' ? (
+            <PwdResetSetPasswordStep setAccountFeatures={setAccountFeatures} />
+          ) : (
+            <PwdResetVerifyEmailStep
+              email={email}
+              setEmail={setEmail}
+              setPwdResetStep={setResetPwdStep}
+            />
+          )}
+        </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
 

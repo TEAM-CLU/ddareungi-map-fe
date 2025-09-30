@@ -3,7 +3,7 @@ import { tw } from '@/shared/libs/tw-helper';
 import { View } from 'react-native';
 
 interface StepIndicatorProps {
-  step: 'email' | 'password' | 'profile' | 'finish';
+  step: 'email' | 'password' | 'profile' | 'permission';
 }
 const StepIndicator = ({ step }: StepIndicatorProps) => {
   return (
@@ -22,6 +22,11 @@ const StepIndicator = ({ step }: StepIndicatorProps) => {
       />
       <IconEclipse
         color={step === 'profile' ? '#01DA86' : '#D9D9D9'}
+        width={10}
+        height={10}
+      />
+      <IconEclipse
+        color={step === 'permission' ? '#01DA86' : '#D9D9D9'}
         width={10}
         height={10}
       />

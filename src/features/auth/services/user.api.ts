@@ -1,4 +1,6 @@
 import {
+  CheckEmailPayload,
+  CheckEmailResponse,
   CreateUserPayload,
   CreateUserResponse,
   LoginUserPayload,
@@ -35,3 +37,12 @@ export const postLoginUser = async (
 // 내 정보 조회
 // 내 정보 수정
 // 비밀번호 변경
+// 마이페이지 정보 조회
+
+// 이메일 중복 확인
+export const postCheckEmail = async (
+  payload: CheckEmailPayload,
+): Promise<CheckEmailResponse> => {
+  const response = await userApi.post('/check-email', payload);
+  return response.data;
+};

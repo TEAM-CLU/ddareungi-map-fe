@@ -15,8 +15,7 @@ interface SendVerificationEmailResponseSuccess {
 
 interface SendVerificationEmailResponseFailed {
   statusCode: number;
-  messae: string;
-  error: string;
+  message: string;
 }
 
 // 이메일 인증 코드 확인
@@ -36,7 +35,6 @@ interface VerifyEmailResponseSuccess {
 interface VerifyEmailResponseFailed {
   statusCode: number;
   message: string;
-  error: string;
 }
 
 // 소셜 회원가입/로그인
@@ -44,7 +42,7 @@ export interface SocialAuthPayload {
   socialType: 'naver' | 'kakao' | 'google';
 }
 export interface SocialAuthResponse {
-  token: string; // 변경 예정
+  accessToken: string;
 }
 
 // 비밀번호 재설정(비밀번호 찾기)
@@ -52,7 +50,7 @@ export interface ResetPasswordPayload {
   email: string;
   newPassword: string;
 }
-export type ResetPasswordRespose =
+export type ResetPasswordResponse =
   | ResetPasswordResponseSuccess
   | ResetPasswordResponseFailed;
 interface ResetPasswordResponseSuccess {
@@ -62,7 +60,6 @@ interface ResetPasswordResponseSuccess {
 interface ResetPasswordResponseFailed {
   statusCode: number;
   message: string;
-  error: string;
 }
 
 /********** 유저 **********/
@@ -76,7 +73,6 @@ export interface CreateUserPayload {
   gender: 'M' | 'F';
   birthDate: string;
   address: string;
-  phoneNumber: string; // 삭제예정
 }
 
 export type CreateUserResponse =
@@ -89,7 +85,6 @@ interface CreateUserResponseSuccess {
 interface CreateUserResponseFailed {
   statusCode: number;
   message: string;
-  error: string;
 }
 
 // 유저 로그인
@@ -110,5 +105,23 @@ interface LoginUserResponseSuccess {
 interface LoginUserResponseFailed {
   statusCode: number;
   message: string;
-  error: string;
+}
+
+// 이메일 중복 확인
+export interface CheckEmailPayload {
+  email: string;
+}
+
+export type CheckEmailResponse =
+  | CheckEmailResponseSuccess
+  | CheckEmailResponseFailed;
+
+interface CheckEmailResponseSuccess {
+  isAvailable: boolean;
+  message: string;
+}
+
+interface CheckEmailResponseFailed {
+  statusCode: number;
+  message: string;
 }

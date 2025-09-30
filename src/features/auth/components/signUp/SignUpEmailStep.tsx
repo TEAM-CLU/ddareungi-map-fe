@@ -10,7 +10,7 @@ interface SignUpEmailStepProps {
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string>>;
   setSignUpStep: React.Dispatch<
-    React.SetStateAction<'email' | 'password' | 'profile' | 'finish'>
+    React.SetStateAction<'email' | 'password' | 'profile' | 'permission'>
   >;
 }
 const SignUpEmailStep = ({
