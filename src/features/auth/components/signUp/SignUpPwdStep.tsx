@@ -12,7 +12,7 @@ interface SignUpEmailStepProps {
   confirmPwd: string;
   setConfirmPwd: React.Dispatch<React.SetStateAction<string>>;
   setSignUpStep: React.Dispatch<
-    React.SetStateAction<'email' | 'password' | 'profile' | 'permission'>
+    React.SetStateAction<'step1' | 'step2' | 'step3' | 'step4'>
   >;
 }
 const SignUpPwdStep = ({
@@ -220,7 +220,7 @@ const SignUpPwdStep = ({
 
       <SquareButton
         title="다음"
-        onPress={() => setSignUpStep('profile')}
+        onPress={() => setSignUpStep('step3')}
         disabled={!isNextStepAvailable}
       />
     </View>

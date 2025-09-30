@@ -21,7 +21,7 @@ interface SignUpProfileStepProps {
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
   setSignUpStep: React.Dispatch<
-    React.SetStateAction<'email' | 'password' | 'profile' | 'permission'>
+    React.SetStateAction<'step1' | 'step2' | 'step3' | 'step4'>
   >;
 }
 const SignUpProfileStep = ({
@@ -70,7 +70,7 @@ const SignUpProfileStep = ({
     if (!isFormReady) return;
     setBirthDate(formattedBirthDate);
     setAddress(formattedAddress);
-    setSignUpStep('permission');
+    setSignUpStep('step4');
   };
 
   return (
