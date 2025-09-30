@@ -243,14 +243,15 @@ const SignUpPermissionStep = ({
       </View>
 
       <View
-        style={[tw('flex-col w-full flex'), { gap: 19, marginBottom: 100 }]}
+        style={[tw('flex-col w-full flex'), { gap: 25, marginBottom: 100 }]}
       >
         {permissions.map((permission, index) => (
-          <View
-            key={index}
-            style={[tw('flex flex-row w-full items-center'), { gap: 23 }]}
-          >
-            {permission.icon}
+          <View key={index} style={[tw('flex flex-row w-full'), { gap: 23 }]}>
+            {/* 아이콘을 최상단에 고정 */}
+            <View style={tw('items-center justify-start')}>
+              {permission.icon}
+            </View>
+
             <View style={[tw('flex flex-col items-start flex-1'), { gap: 8 }]}>
               <View
                 style={tw('flex flex-row items-center justify-between w-full')}
