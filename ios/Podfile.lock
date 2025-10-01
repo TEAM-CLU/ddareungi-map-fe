@@ -1,5 +1,7 @@
 PODS:
   - boost (1.84.0)
+  - BVLinearGradient (2.8.3):
+    - React-Core
   - DoubleConversion (1.1.6)
   - fast_float (8.0.0)
   - FBLazyVector (0.81.1)
@@ -1748,6 +1750,34 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
     - SocketRocket
+  - react-native-pager-view (6.9.1):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - react-native-safe-area-context (5.6.1):
     - React-Core
   - React-NativeModulesApple (0.81.1):
@@ -2502,6 +2532,7 @@ PODS:
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
+  - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
@@ -2542,6 +2573,7 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
@@ -2591,6 +2623,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
+  BVLinearGradient:
+    :path: "../node_modules/react-native-linear-gradient"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   fast_float:
@@ -2670,6 +2704,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-pager-view:
+    :path: "../node_modules/react-native-pager-view"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   React-NativeModulesApple:
@@ -2753,6 +2789,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
+  BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
   FBLazyVector: b8f1312d48447cca7b4abc21ed155db14742bd03
@@ -2792,6 +2829,7 @@ SPEC CHECKSUMS:
   React-logger: d27dd2000f520bf891d24f6e141cde34df41f0ee
   React-Mapbuffer: 0746ffab5ac0f49b7c9347338e3d0c1d9dd634c8
   React-microtasksnativemodule: b0fb3f97372df39bda3e657536039f1af227cc29
+  react-native-pager-view: b4e217732fa31c068149a30cada1a0afbeac1807
   react-native-safe-area-context: aac2745e96999c8633d2f6119e4e39b499c2ac8b
   React-NativeModulesApple: 9ec9240159974c94886ebbe4caec18e3395f6aef
   React-oscompat: b12c633e9c00f1f99467b1e0e0b8038895dae436
@@ -2811,7 +2849,6 @@ SPEC CHECKSUMS:
   React-RCTText: 7ee9d0bc16b3a8149f8df6d70c48e724d0db1d89
   React-RCTVibration: 619d613abaeb05f6fbc2b2e5e33f724f05df8eb8
   React-rendererconsistency: a05f6c37f9389c53213d1e28798e441fa6fbdbcd
-<<<<<<< HEAD
   React-renderercss: 3decb27a81648fcdee837c59994b51fff5be5a67
   React-rendererdebug: 3b9a92d36932af52e1b473f2a89ea4b05dbdecdf
   React-RuntimeApple: 4e35fb74be4b721c2e1fd6d54ec66456fa7043e9
@@ -2822,38 +2859,16 @@ SPEC CHECKSUMS:
   React-timing: 36da85e32e53008ce73f87528818191e7f2508ba
   React-utils: 71e53d55ce778c6e7c7c9db4b1b9d63ef8f55289
   ReactAppDependencyProvider: 448b422f8af1dedf81374eacc90a15439a0ed7f5
-  ReactCodegen: 704f5c0e73a42b20128f8e47cd208ed585252fa7
+  ReactCodegen: c5b0d12704a9369db6a22a5ff41380334614f50d
   ReactCommon: e897f9a1b4afab370cfefaaf5fb3c80371bc3937
   RNCAsyncStorage: 23e56519cc41d3bade3c8d4479f7760cb1c11996
   RNCPicker: a00c4466b3cf97d8f97f68627fe12301a3609707
   RNDateTimePicker: e1e3719be6e3f88077c44037f44070ff6c476bac
   RNGestureHandler: 4e01eefc427d3af22b877fdb4f7bc826132daab6
-  RNReanimated: 4bf899e8182055afe8fc9db49f17668d8478b1d8
+  RNReanimated: eabc21e7263711c6133cbd0991887692d59f16c8
   RNScreens: 9ae2656a55e9466dc04da3ba196d7932a6bd8146
   RNSVG: 4edfc63937f4673436fac1a3a110e62c8f8adda1
   RNVectorIcons: db7630db4a5f05d808f5c7990781cbe7bb160b4f
-=======
-  React-renderercss: 6e4febfa014b0f53bc171a62b0f713ddbdbb9860
-  React-rendererdebug: e94bf27b9d55ef2795caa8e43aa92abc4a373b8b
-  React-RuntimeApple: 723be5159519eba1cd92449acb29436d21571b82
-  React-RuntimeCore: f58eb0f01065c9d27d91de10b2e4ab4c76d83b0e
-  React-runtimeexecutor: f615ec8742d0b5820170f7c8b4d2c7cb75d93ac9
-  React-RuntimeHermes: fddb258e03d330d1132bb19e78fe51ac2f3f41ac
-  React-runtimescheduler: e92a31460e654ced8587debeec37553315e1b6a5
-  React-timing: 97ada2c47b4c5932e7f773c7d239c52b90d6ca68
-  React-utils: f0949d247a46b4c09f03e5a3cb1167602d0b729a
-  ReactAppDependencyProvider: 3eb9096cb139eb433965693bbe541d96eb3d3ec9
-  ReactCodegen: 5f3088bed51d030d1059d1241f24aa0fe98d1857
-  ReactCommon: ce5d4226dfaf9d5dacbef57b4528819e39d3a120
-  RNCAsyncStorage: b44e8a4e798c3e1f56bffccd0f591f674fb9198f
-  RNCPicker: c53e35f4f41ad354cb176e8355a525c4c22de5b6
-  RNDateTimePicker: 8c12d12e8660697c2e176d2f98775764431c141f
-  RNGestureHandler: 12a436b5074378be95468a57b62c165a1e24cfc9
-  RNReanimated: 0dfbf3af4bb35013510efab4a333c66c437eced9
-  RNScreens: 35525ebfe219c8709da0d26aebbc9a5e02e1077b
-  RNSVG: e0293d50d2cc0c7b8259fc66faa292378a04ba9a
-  RNVectorIcons: 9084b0cf37b3c5690b730c5627a21d750c9f517e
->>>>>>> feat/#23
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 11c9686a21e2cd82a094a723649d9f4507200fb0
 
