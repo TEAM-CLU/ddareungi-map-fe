@@ -8,7 +8,7 @@ import RoundButton from '@/shared/components/button/RoundButton';
 interface PwdResetVerifyEmailStepProps {
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string>>;
-  setPwdResetStep: React.Dispatch<React.SetStateAction<'step1' | 'step2'>>;
+  setPwdResetStep: React.Dispatch<React.SetStateAction<1 | 2>>;
 }
 
 const PwdResetVerifyEmailStep = ({
@@ -115,7 +115,7 @@ const PwdResetVerifyEmailStep = ({
 
       <SquareButton
         title="다음"
-        onPress={() => setPwdResetStep('step2')}
+        onPress={() => setPwdResetStep(2)}
         disabled={!isAvailable}
       />
     </View>

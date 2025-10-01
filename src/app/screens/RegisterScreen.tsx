@@ -10,9 +10,7 @@ import { TouchableWithoutFeedback } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 
 const RegisterScreen = () => {
-  const [signUpStep, setSignUpStep] = useState<
-    'step1' | 'step2' | 'step3' | 'step4'
-  >('step1');
+  const [signUpStep, setSignUpStep] = useState<1 | 2 | 3 | 4>(1);
 
   const [email, setEmail] = useState<string>('');
   const [pwd, setPwd] = useState<string>('');
@@ -30,14 +28,14 @@ const RegisterScreen = () => {
           { paddingHorizontal: 36 },
         ]}
       >
-        <StepIndicator step={signUpStep} />
-        {signUpStep === 'step1' ? (
+        <StepIndicator totalSteps={4} currentStep={signUpStep} />
+        {signUpStep === 1 ? (
           <SignUpEmailStep
             email={email}
             setEmail={setEmail}
             setSignUpStep={setSignUpStep}
           />
-        ) : signUpStep === 'step2' ? (
+        ) : signUpStep === 2 ? (
           <SignUpPwdStep
             pwd={pwd}
             setPwd={setPwd}
@@ -45,7 +43,7 @@ const RegisterScreen = () => {
             setConfirmPwd={setConfirmPwd}
             setSignUpStep={setSignUpStep}
           />
-        ) : signUpStep === 'step3' ? (
+        ) : signUpStep === 3 ? (
           <SignUpProfileStep
             name={name}
             setName={setName}
@@ -57,7 +55,7 @@ const RegisterScreen = () => {
             setAddress={setAddress}
             setSignUpStep={setSignUpStep}
           />
-        ) : signUpStep === 'step4' ? (
+        ) : signUpStep === 4 ? (
           <View></View> // 만들 예정
         ) : (
           <SignUpEmailStep

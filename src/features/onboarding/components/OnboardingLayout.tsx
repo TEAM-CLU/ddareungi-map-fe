@@ -5,7 +5,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import { tw } from '@/shared/libs/tw-helper';
 
 interface OnboardingLayoutProps {
-  step: 'step1' | 'step2' | 'step3';
+  step: number;
+  totalSteps: number;
   text1: string;
   text2: string;
   imageSource: any;
@@ -13,6 +14,7 @@ interface OnboardingLayoutProps {
 
 const OnboardingLayout = ({
   step,
+  totalSteps,
   text1,
   text2,
   imageSource,
@@ -31,7 +33,7 @@ const OnboardingLayout = ({
 
       <View style={tw('flex-1 px-6')}>
         <View style={tw('items-center pt-10')}>
-          <StepIndicator step={step} />
+          <StepIndicator totalSteps={totalSteps} currentStep={step} />
         </View>
 
         <View style={tw('h-[82px] items-center pt-12')}>

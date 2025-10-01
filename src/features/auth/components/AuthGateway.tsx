@@ -11,7 +11,7 @@ import { TouchableOpacity, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface AuthGatewayProps {
-  setLoginScreenStep: React.Dispatch<React.SetStateAction<'step1' | 'step2'>>;
+  setLoginScreenStep: React.Dispatch<React.SetStateAction<1 | 2>>; // 1: AuthChoice, 2: AuthGateway
 }
 
 const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
@@ -30,7 +30,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     }
   }, [id, pwd]);
 
-  const handleCloseButtonPress = () => setLoginScreenStep('step1');
+  const handleCloseButtonPress = () => setLoginScreenStep(1);
   const handleLoginButtonPress = () => {};
 
   if (accountFeatures === 'findId')

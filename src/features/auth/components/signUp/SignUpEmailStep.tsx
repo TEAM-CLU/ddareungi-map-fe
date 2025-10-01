@@ -22,7 +22,7 @@ interface SignUpEmailStepProps {
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string>>;
   setSignUpStep: React.Dispatch<
-    React.SetStateAction<'step1' | 'step2' | 'step3' | 'step4'>
+    React.SetStateAction<1 | 2 | 3 | 4>
   >;
 }
 const SignUpEmailStep = ({
@@ -301,7 +301,7 @@ const SignUpEmailStep = ({
       </View>
       <SquareButton
         title="다음"
-        onPress={() => setSignUpStep('step2')}
+        onPress={() => setSignUpStep(2)}
         disabled={!isNextStepAvailable}
       />
     </View>

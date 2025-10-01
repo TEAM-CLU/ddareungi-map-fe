@@ -26,7 +26,7 @@ interface PwdResetterContainerProps {
 const PwdResetterContainer = ({
   setAccountFeatures,
 }: PwdResetterContainerProps) => {
-  const [resetPwdStep, setResetPwdStep] = useState<'step1' | 'step2'>('step1');
+  const [resetPwdStep, setResetPwdStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
 
@@ -47,13 +47,13 @@ const PwdResetterContainer = ({
             { paddingHorizontal: 36, marginTop: 30 },
           ]}
         >
-          {resetPwdStep === 'step1' ? (
+          {resetPwdStep === 1 ? (
             <PwdResetVerifyEmailStep
               email={email}
               setEmail={setEmail}
               setPwdResetStep={setResetPwdStep}
             />
-          ) : resetPwdStep === 'step2' ? (
+          ) : resetPwdStep === 2 ? (
             <PwdResetSetPasswordStep setAccountFeatures={setAccountFeatures} />
           ) : (
             <PwdResetVerifyEmailStep
