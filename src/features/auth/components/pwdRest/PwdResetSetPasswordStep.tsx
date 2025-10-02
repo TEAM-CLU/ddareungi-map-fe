@@ -1,52 +1,187 @@
 import Input from '@/shared/components/Input/Input';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 import { Alert, Text, View } from 'react-native';
 import SquareButton from '@/shared/components/button/SquareButton';
 import RoundButton from '@/shared/components/button/RoundButton';
 import { checkPassword } from '@/features/auth/utils/checkPassword';
+import { useResetPasswordMutation } from '@/features/auth/services/auth.queries';
+import {
+  ResetPasswordPayload,
+  ResetPasswordResponse,
+} from '@/features/auth/model/auth.types';
 
 interface PwdResetSetPasswordStepProps {
+  email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  setResetPwdStep: React.Dispatch<React.SetStateAction<'step1' | 'step2'>>;
   setAccountFeatures: React.Dispatch<
     React.SetStateAction<'findId' | 'resetPwd' | null>
   >;
 }
 
 const PwdResetSetPasswordStep = ({
+  email,
+  setEmail,
+  setResetPwdStep,
   setAccountFeatures,
 }: PwdResetSetPasswordStepProps) => {
-  const [pwd, setPwd] = useState<string>('');
-  const [confirmPwd, setConfirmPwd] = useState<string>('');
-  const [isValidPwd, setIsValidPwd] = useState<boolean>(true);
-  const [isValidConfirmPwd, setIsValidConfirmPwd] = useState<boolean>(true);
-  const [showValidation, setShowValidation] = useState(false);
+  const { mutateAsync: resetPwd } = useResetPasswordMutation();
+  const [newPwd, setNewPwd] = useState<string>('');
+  const [confirmNewPwd, setConfirmNewPwd] = useState<string>('');
+  const [isValidNewPwd, setIsValidNewPwd] = useState<boolean>(true);
+  const [isValidConfirmNewPwd, setIsValidConfirmNewPwd] =
+    useState<boolean>(true);
 
-  const handleProvePwdButtonPress = () => {
-    const isOkPwd = checkPassword(pwd);
-    setIsValidPwd(isOkPwd);
+  const [showConfirmNewPwdInput, setShowConfirmNewPwdInput] =
+    useState<boolean>(false);
 
-    if (!isOkPwd) {
-      Alert.alert('양식 확인', '비밀번호 양식이 올바르지 않습니다.');
+  const [newPwdErrorDescription, setNewPwdErrorDescription] =
+    useState<string>('');
+  const [confirmNewPwdErrorDescription, setConfirmNewPwdErrorDescription] =
+    useState<string>('');
+  const [newPwdSuccessDescription, setNewPwdSuccessDescription] =
+    useState<string>('8자 이상 특수기호 1개 이상 포함');
+  const [confirmNewPwdSuccessDescription, setConfirmNewPwdSuccessDescription] =
+    useState<string>('');
+
+  const [canCompletePwdReset, setCanCompletePwdReset] =
+    useState<boolean>(false);
+
+  const [isReadyToPwdReset, setIsReadyToPwdReset] = useState(false); // 비밀번호 재설정 요청 가능 여부
+
+  const handleValidatePwdButtonPress = () => {
+    // 비밀번호 입력 검사
+    if (newPwd === '') {
+      setConfirmNewPwdSuccessDescription('위 비밀번호를 먼저 입력해주세요.');
+      setConfirmNewPwdErrorDescription('');
+      setIsValidConfirmNewPwd(true);
+      setNewPwdSuccessDescription('');
+      setIsValidNewPwd(false);
+      setNewPwdErrorDescription('비밀번호를 입력해주세요.');
+      setIsReadyToPwdReset(false);
       return;
     }
 
-    const isOkConfirmPwd = pwd === confirmPwd;
-    setIsValidConfirmPwd(isOkConfirmPwd);
+    const pwdRegex =
+      /^(?=.*[!@#$%^&*(),.?":{}|<>])(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+    // 비밀번호 양식 검사 - 불일치
+    if (!pwdRegex.test(newPwd)) {
+      setConfirmNewPwdSuccessDescription(
+        '위 비밀번호를 먼저 알맞게 입력해주세요.',
+      );
+      setConfirmNewPwdErrorDescription('');
+      setIsValidConfirmNewPwd(true);
+      setNewPwdSuccessDescription('');
+      setIsValidNewPwd(false);
+      setNewPwdErrorDescription('8자 이상 특수기호 1개 이상 포함해주세요.');
+      setIsReadyToPwdReset(false);
+      return;
+    }
+    // 비밀번호 양식 검사 - 일치
+    if (pwdRegex.test(newPwd)) {
+      setNewPwdErrorDescription('');
+      setIsValidNewPwd(true);
+      setNewPwdSuccessDescription('사용 가능한 비밀번호입니다.');
+      setIsReadyToPwdReset(false);
+      // 비밀번호 재확인 입력 검사
+      if (confirmNewPwd === '') {
+        setConfirmNewPwdSuccessDescription('');
+        setIsValidConfirmNewPwd(false);
+        setConfirmNewPwdErrorDescription('비밀번호를 다시 한번 입력해주세요.');
+        setIsReadyToPwdReset(false);
+        return;
+      }
 
-    setShowValidation(true);
+      // 비밀번호 재확인 - 불일치
+      if (confirmNewPwd !== '' && newPwd !== confirmNewPwd) {
+        setConfirmNewPwdSuccessDescription('');
+        setIsValidConfirmNewPwd(false);
+        setConfirmNewPwdErrorDescription('비밀번호가 일치하지 않습니다.');
+        setCanCompletePwdReset(false);
+        return;
+      }
+
+      // 비밀번호 재확인 - 일치
+      if (confirmNewPwd !== '' && newPwd === confirmNewPwd) {
+        setConfirmNewPwdErrorDescription('');
+        setIsValidConfirmNewPwd(true);
+        setConfirmNewPwdSuccessDescription('비밀번호가 일치합니다.');
+        setCanCompletePwdReset(true);
+      }
+    }
   };
 
-  const handleCompleteButtonPress = () => {
-    // TODO: API로 새 비밀번호 저장
-    Alert.alert('완료', '비밀번호가 성공적으로 변경되었습니다.', [
-      {
-        text: '확인',
-        onPress: () => {
-          setAccountFeatures(null);
-        },
-      },
-    ]);
+  const handleCompletePwdResetButtonPress = async () => {
+    // 이메일 양식 재확인 -> 외부에서 프롭스로 들어오는 값인기 때문에
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        Alert.alert('이메일 형식이 올바르지 않습니다. 다시 시도해주세요.');
+        setResetPwdStep('step1');
+        return;
+      }
+
+      const payload: ResetPasswordPayload = {
+        email: email,
+        newPassword: newPwd,
+      };
+
+      try {
+        const response: ResetPasswordResponse = await resetPwd(payload);
+
+        if ('statusCode' in response) {
+          Alert.alert(`${response.message}`);
+          setEmail('');
+          setNewPwd('');
+          setConfirmNewPwd('');
+          setCanCompletePwdReset(false);
+          setIsReadyToPwdReset(false);
+          setShowConfirmNewPwdInput(false);
+          setResetPwdStep('step1');
+        }
+
+        Alert.alert(`${response.message}`);
+        setAccountFeatures(null);
+        return;
+      } catch (_) {
+        Alert.alert('비밀번호 재설정에 실패했습니다. 다시 시도해주세요.');
+        setEmail('');
+        setNewPwd('');
+        setConfirmNewPwd('');
+        setCanCompletePwdReset(false);
+        setIsReadyToPwdReset(false);
+        setShowConfirmNewPwdInput(false);
+        setResetPwdStep('step1');
+      }
+    }
   };
+
+  useEffect(() => {
+    if (newPwd !== '') setShowConfirmNewPwdInput(true);
+  }, [newPwd]);
+
+  useEffect(() => {
+    if (
+      isValidNewPwd &&
+      isValidConfirmNewPwd &&
+      showConfirmNewPwdInput &&
+      !!email &&
+      !!newPwd &&
+      !!confirmNewPwd &&
+      newPwd === confirmNewPwd &&
+      canCompletePwdReset
+    ) {
+      setIsReadyToPwdReset(true);
+    }
+  }, [
+    isValidNewPwd,
+    isValidConfirmNewPwd,
+    showConfirmNewPwdInput,
+    newPwd,
+    confirmNewPwd,
+    canCompletePwdReset,
+  ]);
 
   return (
     <View
@@ -62,7 +197,7 @@ const PwdResetSetPasswordStep = ({
             { fontSize: 24 },
           ]}
         >
-          새로운 비밀번호를
+          새 비밀번호를
         </Text>
         <Text
           style={[
@@ -73,65 +208,76 @@ const PwdResetSetPasswordStep = ({
           입력해주세요.
         </Text>
       </View>
-      <View
-        style={[tw('flex flex-col w-full'), { gap: 12, marginBottom: 100 }]}
-      >
-        <Input
-          type="password"
-          placeholder="새 비밀번호를 입력하세요."
-          value={pwd}
-          onChangeText={setPwd}
-          isValid={isValidPwd}
-        />
-        <Text
-          style={[tw('font-primary-500 text-brand-primary'), { fontSize: 13 }]}
-        >
-          8자 이상, 특수기호 1개 이상 포함
-        </Text>
-        <Input
-          type="password"
-          placeholder="새 비밀번호를 다시 한번 입력하세요."
-          value={confirmPwd}
-          onChangeText={setConfirmPwd}
-          isValid={isValidConfirmPwd}
-        />
+      <View style={[tw('flex-col w-full flex'), { gap: 14 }]}>
         <View
           style={[
-            tw('flex flex-row w-full items-center justify-between flex-nowrap'),
-            { gap: 1 },
+            tw('flex flex-col w-full'),
+            { gap: 12 },
+            !showConfirmNewPwdInput && { marginBottom: 100 },
           ]}
         >
-          <View>
-            {showValidation &&
-              (isValidConfirmPwd ? (
-                <Text
-                  style={[
-                    tw('font-primary-500 text-brand-primary'),
-                    { fontSize: 13 },
-                  ]}
-                >
-                  비밀번호가 일치합니다.
-                </Text>
-              ) : (
-                <Text
-                  style={[tw('font-primary-500 text-error'), { fontSize: 13 }]}
-                >
-                  비밀번호가 일치하지 않습니다.
-                </Text>
-              ))}
-          </View>
-
-          <RoundButton
-            title="인증하기"
-            onPress={handleProvePwdButtonPress}
-            preset="sm"
+          <Input
+            type="password"
+            placeholder="비밀번호를 입력하세요."
+            value={newPwd}
+            onChangeText={setNewPwd}
+            isValid={isValidNewPwd}
           />
+          <View style={tw('w-full flex flex-row items-center justify-start')}>
+            <Text
+              style={[
+                tw('font-primary-500'),
+                { fontSize: 13 },
+                isValidNewPwd ? tw('text-brand-primary') : tw('text-error'),
+              ]}
+            >
+              {isValidNewPwd
+                ? newPwdSuccessDescription
+                : newPwdErrorDescription}
+            </Text>
+          </View>
         </View>
+        {showConfirmNewPwdInput && (
+          <View
+            style={[tw('flex flex-col w-full'), { gap: 12, marginBottom: 100 }]}
+          >
+            <Input
+              type="password"
+              placeholder="비밀번호를 다시 한번 입력하세요."
+              value={confirmNewPwd}
+              onChangeText={setConfirmNewPwd}
+              isValid={isValidConfirmNewPwd}
+            />
+            <View
+              style={tw('w-full flex flex-row items-center justify-between')}
+            >
+              <Text
+                style={[
+                  tw('font-primary-500'),
+                  { fontSize: 13 },
+                  isValidConfirmNewPwd
+                    ? tw('text-brand-primary')
+                    : tw('text-error'),
+                ]}
+              >
+                {isValidConfirmNewPwd
+                  ? confirmNewPwdSuccessDescription
+                  : confirmNewPwdErrorDescription}
+              </Text>
+              <RoundButton
+                title="확인하기"
+                onPress={handleValidatePwdButtonPress}
+                preset="sm"
+              />
+            </View>
+          </View>
+        )}
       </View>
-      <SquareButton
-        title="비밀번호 변경"
-        onPress={handleCompleteButtonPress}
-        disabled={!(isValidPwd && isValidConfirmPwd && showValidation)}
+      <RoundButton
+        title="재설정 완료"
+        onPress={handleCompletePwdResetButtonPress}
+        preset="lg"
+        disabled={!isReadyToPwdReset}
       />
     </View>
   );

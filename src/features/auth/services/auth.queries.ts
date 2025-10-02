@@ -1,11 +1,14 @@
 import {
+  PkceCallbackParams,
   ResetPasswordPayload,
   SendVerificationEmailPayload,
-  SocialAuthPayload,
+  SocialAuthPkceCallbackPayload,
+  SocialAuthType,
   VerifyEmailPayload,
 } from '@/features/auth/model/auth.types';
 import {
-  getSocialAuth,
+  getSocialAuthPkce,
+  getSocialAuthPkceCallback,
   postResetPassword,
   postSendVerificationEmail,
   postVerifyEmail,
@@ -31,10 +34,20 @@ export const useVerifyEmailMutation = () => {
   return mutation;
 };
 
-// 소셜 회원가입/로그인 -> get이지만 토큰 취득이란 행위에 포커싱, mutation으로 지정
-export const useSocialAuthMutation = () => {
+// 소셜 회원가입/로그인 PKCE-> get이지만 토큰 취득이란 행위에 포커싱, mutation으로 지정 / useQuery는 바로 자동요청 되므로...
+export const useSocialAuthPkceMutation = () => {
   const mutation = useMutation({
-    mutationFn: (socialType: SocialAuthPayload) => getSocialAuth(socialType),
+    mutationFn: (socialType: SocialAuthType) => getSocialAuthPkce(socialType),
+  });
+
+  return mutation;
+};
+
+// 소셜 회원가입/로그인 PKCE callback
+export const useSocialAuthPkceCallbackMutation = () => {
+  const mutation = useMutation({
+    mutationFn: (payload: SocialAuthPkceCallbackPayload) =>
+      getSocialAuthPkceCallback(payload.socialAuthType, payload.params),
   });
 
   return mutation;

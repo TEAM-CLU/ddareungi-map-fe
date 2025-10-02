@@ -199,7 +199,7 @@ const SignUpPermissionStep = ({
       };
     } else {
       return {
-        title: '회원가입 완료',
+        title: '다음',
         onPress: handleCompleteSignUp,
         disabled: !canProceed(),
       };

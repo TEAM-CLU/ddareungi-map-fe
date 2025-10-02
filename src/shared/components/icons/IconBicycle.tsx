@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from 'react-native-paper';
 import Svg, { Path } from 'react-native-svg';
 
 interface IconBicycleProps {
@@ -7,7 +8,7 @@ interface IconBicycleProps {
   height?: number;
 }
 
-const IconPaymentSmall = ({
+const IconBicycle = ({
   color = 'white',
   width = 11,
   height = 7,
@@ -22,4 +23,4 @@ const IconPaymentSmall = ({
   );
 };
 
-export default React.memo(IconPaymentSmall);
+export default React.memo(IconBicycle);

@@ -1,10 +1,12 @@
 import {
+  PkceCallbackParams,
   ResetPasswordPayload,
   ResetPasswordResponse,
   SendVerificationEmailPayload,
   SendVerificationEmailResponse,
-  SocialAuthPayload,
-  SocialAuthResponse,
+  SocialAuthPkceCallbackResponse,
+  SocialAuthPkceResponse,
+  SocialAuthType,
   VerifyEmailPayload,
   VerifyEmailResponse,
 } from '@/features/auth/model/auth.types';
@@ -36,11 +38,22 @@ export const postVerifyEmail = async (
   return response.data;
 };
 
-// 소셜 회원가입/로그인
-export const getSocialAuth = async (
-  socialType: SocialAuthPayload,
-): Promise<SocialAuthResponse> => {
-  const response = await authApi.get(`/${socialType}`);
+// 소셜 회원가입/로그인 PKCE
+export const getSocialAuthPkce = async (
+  socialAuthType: SocialAuthType,
+): Promise<SocialAuthPkceResponse> => {
+  const response = await authApi.get(`/${socialAuthType}/pkce`);
+  return response.data;
+};
+
+// 소셜 회원가입/로그인 PKCE callback
+export const getSocialAuthPkceCallback = async (
+  socialAuthType: SocialAuthType,
+  params: PkceCallbackParams,
+): Promise<SocialAuthPkceCallbackResponse> => {
+  const response = await authApi.get(`/${socialAuthType}/pkce/callback`, {
+    params,
+  });
   return response.data;
 };
 

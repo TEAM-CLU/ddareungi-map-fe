@@ -40,10 +40,26 @@ interface VerifyEmailResponseFailed {
 }
 
 // 소셜 회원가입/로그인
-export interface SocialAuthPayload {
-  socialType: 'naver' | 'kakao' | 'google';
+export type SocialAuthType = 'naver' | 'kakao' | 'google';
+
+export interface PkceCallbackParams {
+  code: string;
+  state: string;
+  code_verifier: string;
 }
-export interface SocialAuthResponse {
+export interface SocialAuthPkceResponse {
+  message: string;
+  authUrl: string;
+  codeVerifier: string;
+  state: string;
+}
+
+export interface SocialAuthPkceCallbackPayload {
+  socialAuthType: SocialAuthType;
+  params: PkceCallbackParams;
+}
+
+export interface SocialAuthPkceCallbackResponse {
   accessToken: string;
 }
 

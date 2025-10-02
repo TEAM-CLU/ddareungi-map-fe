@@ -1,10 +1,32 @@
-import { TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import IconGoogle from '@/shared/components/icons/IconGoogle';
 import IconKakao from '@/shared/components/icons/IconKakao';
 import IconNaver from '@/shared/components/icons/IconNaver';
+import {
+  useSocialAuthPkceCallbackMutation,
+  useSocialAuthPkceMutation,
+} from '@/features/auth/services/auth.queries';
+import {
+  SocialAuthPkceResponse,
+  SocialAuthType,
+} from '@/features/auth/model/auth.types';
 
 const SocialLoginLinks = () => {
+  const { mutateAsync: socialLogin } = useSocialAuthPkceMutation();
+  const { mutateAsync: socialLoginCallback } =
+    useSocialAuthPkceCallbackMutation();
+
+  const handleSocialLogin = async (socialType: SocialAuthType) => {
+    // 1. PKCE 요청
+    // try {
+    //   const response: SocialAuthPkceResponse = await socialLogin(socialType);
+    //   // 2. 소셜 로그인 창 오픈(앱)
+    //   await Linking.openURL(response.authUrl);
+    // } catch (error) {
+    //   Alert.alert('Error', 'Failed to initiate social login');
+    // }
+  };
   return (
     <View
       style={[
@@ -13,6 +35,7 @@ const SocialLoginLinks = () => {
       ]}
     >
       <TouchableOpacity
+        onPress={() => handleSocialLogin('kakao')}
         style={[
           tw(
             'flex justify-center items-center rounded-full bg-surface-primary border',
@@ -28,6 +51,7 @@ const SocialLoginLinks = () => {
         <IconKakao size={32} />
       </TouchableOpacity>
       <TouchableOpacity
+        onPress={() => handleSocialLogin('google')}
         style={[
           tw(
             'flex justify-center items-center rounded-full bg-surface-primary border-line-default border',
@@ -38,6 +62,7 @@ const SocialLoginLinks = () => {
         <IconGoogle />
       </TouchableOpacity>
       <TouchableOpacity
+        onPress={() => handleSocialLogin('naver')}
         style={[
           tw(
             'flex justify-center items-center rounded-full bg-surface-primary  border',
