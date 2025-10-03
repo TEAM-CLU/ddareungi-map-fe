@@ -14,4 +14,9 @@ export const ONBOARDING_DATA = [
     text2: '알아볼 수 있어요.',
     imageSource: require('@/assets/imgs/onboarding3.png'),
   },
+  {
+    text1: '추천 경로 기능으로\n출발지와 소요시간을 입력하면',
+    text2: '따릉이 타기 좋은 길을 안내해드려요.',
+    imageSource: require('@/assets/imgs/onboarding3.png'),
+  }
 ];
