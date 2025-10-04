@@ -5,16 +5,27 @@ import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
+import SimpleLoading from '@/shared/components/LoginLoading';
 import { tw } from '@/shared/libs/tw-helper';
 import { useEffect, useState } from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface AuthGatewayProps {
+  state: string;
+  setState: React.Dispatch<React.SetStateAction<string>>;
+  codeVerifier: string;
+  setCodeVerifier: React.Dispatch<React.SetStateAction<string>>;
   setLoginScreenStep: React.Dispatch<React.SetStateAction<'step1' | 'step2'>>;
 }
 
-const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
+const AuthGateway = ({
+  state,
+  setState,
+  codeVerifier,
+  setCodeVerifier,
+  setLoginScreenStep,
+}: AuthGatewayProps) => {
   const [id, setId] = useState<string>('');
   const [pwd, setPwd] = useState<string>('');
   const [isIdValid, setIsIdValid] = useState<boolean>(true);
@@ -31,7 +42,6 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   }, [id, pwd]);
 
   const handleCloseButtonPress = () => setLoginScreenStep('step1');
-  const handleLoginButtonPress = () => {};
 
   if (accountFeatures === 'findId')
     return <IdFinder setAccountFeatures={setAccountFeatures} />;
@@ -39,7 +49,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     return <PwdResetterContainer setAccountFeatures={setAccountFeatures} />;
 
   return (
-    <SafeAreaView style={tw('w-full flex-1')}>
+    <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20  ')}>
       <TouchableOpacity
         onPress={handleCloseButtonPress}
         style={tw('fixed top-5 left-4')}
@@ -119,7 +129,12 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
               ]}
             />
           </View>
-          <SocialLoginLinks />
+          <SocialLoginLinks
+            state={state}
+            setState={setState}
+            codeVerifier={codeVerifier}
+            setCodeVerifier={setCodeVerifier}
+          />
         </View>
         <View />
       </View>

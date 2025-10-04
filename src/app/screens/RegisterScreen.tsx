@@ -18,10 +18,11 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '@/app/types';
 import RoundButton from '@/shared/components/button/RoundButton';
 import IconBicycle from '@/shared/components/icons/IconBicycle';
+import SimpleLoading from '@/shared/components/LoginLoading';
 
 const RegisterScreen = () => {
   const { mutateAsync: signUp } = useCreateUserMutation();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [signUpStep, setSignUpStep] = useState<
     'step1' | 'step2' | 'step3' | 'step4'
   >('step1');
@@ -83,6 +84,10 @@ const RegisterScreen = () => {
         }
 
         Alert.alert(`${response.message}`);
+        setIsLoading(true);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 2000);
         navigation.navigate('Map');
       } catch (e) {
         Alert.alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -100,6 +105,8 @@ const RegisterScreen = () => {
       }
     }
   };
+
+  if (isLoading) return <SimpleLoading title="메인화면 진입중..." />;
 
   if (isReadyToSignUp)
     return (

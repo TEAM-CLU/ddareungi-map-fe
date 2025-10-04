@@ -41,7 +41,7 @@ const PwdResetSetPasswordStep = ({
   const [confirmNewPwdErrorDescription, setConfirmNewPwdErrorDescription] =
     useState<string>('');
   const [newPwdSuccessDescription, setNewPwdSuccessDescription] =
-    useState<string>('8자 이상 특수기호 1개 이상 포함');
+    useState<string>('영어 숫자 포함 8자 이상, 특수기호 1개 이상 포함');
   const [confirmNewPwdSuccessDescription, setConfirmNewPwdSuccessDescription] =
     useState<string>('');
 
@@ -53,13 +53,12 @@ const PwdResetSetPasswordStep = ({
   const handleValidatePwdButtonPress = () => {
     // 비밀번호 입력 검사
     if (newPwd === '') {
-      setConfirmNewPwdSuccessDescription('위 비밀번호를 먼저 입력해주세요.');
       setConfirmNewPwdErrorDescription('');
+      setConfirmNewPwdSuccessDescription('위 비밀번호를 먼저 입력해주세요.');
       setIsValidConfirmNewPwd(true);
       setNewPwdSuccessDescription('');
       setIsValidNewPwd(false);
-      setNewPwdErrorDescription('비밀번호를 입력해주세요.');
-      setIsReadyToPwdReset(false);
+      setNewPwdErrorDescription('변경 할 비밀번호를 입력해주세요.');
       return;
     }
 
@@ -67,15 +66,16 @@ const PwdResetSetPasswordStep = ({
       /^(?=.*[!@#$%^&*(),.?":{}|<>])(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     // 비밀번호 양식 검사 - 불일치
     if (!pwdRegex.test(newPwd)) {
+      setConfirmNewPwdErrorDescription('');
+      setIsValidConfirmNewPwd(true);
       setConfirmNewPwdSuccessDescription(
         '위 비밀번호를 먼저 알맞게 입력해주세요.',
       );
-      setConfirmNewPwdErrorDescription('');
-      setIsValidConfirmNewPwd(true);
       setNewPwdSuccessDescription('');
       setIsValidNewPwd(false);
-      setNewPwdErrorDescription('8자 이상 특수기호 1개 이상 포함해주세요.');
-      setIsReadyToPwdReset(false);
+      setNewPwdErrorDescription(
+        '영어 숫자 포함 8자 이상, 특수기호 1개 이상 포함해주세요.',
+      );
       return;
     }
     // 비밀번호 양식 검사 - 일치
@@ -89,7 +89,6 @@ const PwdResetSetPasswordStep = ({
         setConfirmNewPwdSuccessDescription('');
         setIsValidConfirmNewPwd(false);
         setConfirmNewPwdErrorDescription('비밀번호를 다시 한번 입력해주세요.');
-        setIsReadyToPwdReset(false);
         return;
       }
 
@@ -108,6 +107,7 @@ const PwdResetSetPasswordStep = ({
         setIsValidConfirmNewPwd(true);
         setConfirmNewPwdSuccessDescription('비밀번호가 일치합니다.');
         setCanCompletePwdReset(true);
+        return;
       }
     }
   };
@@ -131,16 +131,21 @@ const PwdResetSetPasswordStep = ({
         const response: ResetPasswordResponse = await resetPwd(payload);
 
         if ('statusCode' in response) {
+          // 비밀번호가 이전에 사용했던 비밀번호일때
           Alert.alert(`${response.message}`);
-          setEmail('');
-          setNewPwd('');
-          setConfirmNewPwd('');
           setCanCompletePwdReset(false);
           setIsReadyToPwdReset(false);
           setShowConfirmNewPwdInput(false);
+          setNewPwdSuccessDescription('');
+          setIsValidNewPwd(false);
+          setNewPwdErrorDescription('이전에 사용했던 비밀번호입니다.');
+          setConfirmNewPwd('');
+          setConfirmNewPwdSuccessDescription('');
           setResetPwdStep('step1');
+          return; // 에러 케이스이므로 여기서 종료
         }
 
+        // 성공 케이스
         Alert.alert(`${response.message}`);
         setAccountFeatures(null);
         return;

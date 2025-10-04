@@ -34,7 +34,7 @@ const SignUpPwdStep = ({
   const [confirmPwdErrorDescription, setConfirmPwdErrorDescription] =
     useState<string>(''); // 확인 비밀번호 에러 메시지
   const [pwdSuccessDescription, setPwdSuccessDescription] = useState<string>(
-    '8자 이상 특수기호 1개 이상 포함',
+    '영어 숫자 포함 8자 이상, 특수기호 1개 이상 포함',
   ); // 비밀번호 성공 메시지
   const [confirmPwdSuccessDescription, setConfirmPwdSuccessDescription] =
     useState<string>(''); // 확인 비밀번호 성공 메시지
@@ -44,8 +44,8 @@ const SignUpPwdStep = ({
   const handleValidatePwdButtonPress = () => {
     // 비밀번호 입력 검사
     if (pwd === '') {
-      setConfirmPwdSuccessDescription('위 비밀번호를 먼저 입력해주세요.');
       setConfirmPwdErrorDescription('');
+      setConfirmPwdSuccessDescription('위 비밀번호를 먼저 입력해주세요.');
       setIsValidConfirmPwd(true);
       setPwdSuccessDescription('');
       setIsValidPwd(false);
@@ -58,15 +58,16 @@ const SignUpPwdStep = ({
       /^(?=.*[!@#$%^&*(),.?":{}|<>])(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     // 비밀번호 양식 검사 - 불일치
     if (!pwdRegex.test(pwd)) {
+      setConfirmPwdErrorDescription('');
+      setIsValidConfirmPwd(true);
       setConfirmPwdSuccessDescription(
         '위 비밀번호를 먼저 알맞게 입력해주세요.',
       );
-      setConfirmPwdErrorDescription('');
-      setIsValidConfirmPwd(true);
       setPwdSuccessDescription('');
       setIsValidPwd(false);
-      setPwdErrorDescription('8자 이상 특수기호 1개 이상 포함해주세요.');
-      setIsNextStepAvailable(false);
+      setPwdErrorDescription(
+        '영어 문자 포함 8자 이상, 특수기호 1개 이상 포함해주세요.',
+      );
       return;
     }
     // 비밀번호 양식 검사 - 일치
@@ -74,13 +75,11 @@ const SignUpPwdStep = ({
       setPwdErrorDescription('');
       setIsValidPwd(true);
       setPwdSuccessDescription('사용 가능한 비밀번호입니다.');
-      setIsNextStepAvailable(false);
       // 비밀번호 재확인 입력 검사
       if (confirmPwd === '') {
         setConfirmPwdSuccessDescription('');
         setIsValidConfirmPwd(false);
         setConfirmPwdErrorDescription('비밀번호를 다시 한번 입력해주세요.');
-        setIsNextStepAvailable(false);
         return;
       }
 
@@ -99,6 +98,7 @@ const SignUpPwdStep = ({
         setIsValidConfirmPwd(true);
         setConfirmPwdSuccessDescription('비밀번호가 일치합니다.');
         setCanGoNextStep(true);
+        return;
       }
     }
   };

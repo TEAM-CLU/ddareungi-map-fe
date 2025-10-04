@@ -58,7 +58,7 @@ const SignUpProfileStep = ({
   }, [gu, dong]);
 
   // 단순히 값만 입력하면 될 경우 상태보단 이런식이 더 최적화된 방향
-  const isValidName = name.trim().length > 0 && name.trim() !== ''; // isValie* 상태로 선언안해도 값이 변하는 이유: 상태값으로 할당하기 때문에 상태가변하면 리렌더링됨
+  let isValidName = name.trim().length > 0 && name.trim() !== ''; // isValie* 상태로 선언안해도 값이 변하는 이유: 상태값으로 할당하기 때문에 상태가변하면 리렌더링됨
   const isValidGender = gender === 'M' || gender === 'F';
   const isValidBirthDate = !!formattedBirthDate;
   const isValidAddress = !!formattedAddress;
@@ -67,6 +67,7 @@ const SignUpProfileStep = ({
     isValidName && isValidGender && isValidBirthDate && isValidAddress;
 
   const handleNextStepButtonPress = () => {
+    if (!(name.trim().length > 0 && name.trim() !== '')) isValidName = false;
     if (!isFormReady) return;
     setBirthDate(formattedBirthDate);
     setAddress(formattedAddress);

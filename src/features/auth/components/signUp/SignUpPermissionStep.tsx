@@ -144,6 +144,26 @@ const SignUpPermissionStep = ({
     }
 
     setHasRequestedPermissions(true);
+
+    // 권한 요청 후 상태 재확인
+    await checkAllPermissions();
+
+    // 필수 권한이 거부되거나 차단된 경우 안내
+    const updatedRequiredPermissions = permissions.filter(p => p.required);
+    const blockedOrDenied = updatedRequiredPermissions.find(
+      p => p.status === RESULTS.BLOCKED || p.status === RESULTS.DENIED,
+    );
+
+    if (blockedOrDenied) {
+      Alert.alert(
+        '필수 권한 필요',
+        '위치 권한은 따릉이맵의 필수 기능입니다. 설정에서 권한을 허용해주세요.',
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '설정으로 이동', onPress: () => openSettings() },
+        ],
+      );
+    }
   };
 
   const canProceed = () => {
@@ -281,13 +301,15 @@ const SignUpPermissionStep = ({
               >
                 {permission.description}
               </Text>
-              {permission.status !== RESULTS.GRANTED && (
-                <RoundButton
-                  title="허용하기"
-                  onPress={() => requestPermission(permission)}
-                  preset="sm"
-                />
-              )}
+              {/* 선택권한만 개별 허용하기 버튼 표시 */}
+              {!permission.required &&
+                permission.status !== RESULTS.GRANTED && (
+                  <RoundButton
+                    title="허용하기"
+                    onPress={() => requestPermission(permission)}
+                    preset="sm"
+                  />
+                )}
             </View>
           </View>
         ))}

@@ -55,6 +55,7 @@ const PwdResetterContainer = ({
           ) : resetPwdStep === 'step2' ? (
             <PwdResetSetPasswordStep
               email={email}
+              setEmail={setEmail}
               setResetPwdStep={setResetPwdStep}
               setAccountFeatures={setAccountFeatures}
             />

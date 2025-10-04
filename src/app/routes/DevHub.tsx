@@ -60,7 +60,12 @@ const DevHub = () => {
       screens: {
         Landing: 'landing',
         Onboarding: 'onboarding',
-        Login: 'login',
+        Login: {
+          path: 'login',
+          parse: {
+            state: (state: string) => state,
+          },
+        },
         Register: 'register',
         Map: 'map',
         RouteSelect: 'routeselect',

@@ -4,29 +4,65 @@ import IconGoogle from '@/shared/components/icons/IconGoogle';
 import IconKakao from '@/shared/components/icons/IconKakao';
 import IconNaver from '@/shared/components/icons/IconNaver';
 import {
-  useSocialAuthPkceCallbackMutation,
+  useSocialAuthExchangeTokenMutation,
   useSocialAuthPkceMutation,
 } from '@/features/auth/services/auth.queries';
 import {
   SocialAuthPkceResponse,
   SocialAuthType,
 } from '@/features/auth/model/auth.types';
+import { useState } from 'react';
 
-const SocialLoginLinks = () => {
-  const { mutateAsync: socialLogin } = useSocialAuthPkceMutation();
-  const { mutateAsync: socialLoginCallback } =
-    useSocialAuthPkceCallbackMutation();
+interface SocialLoginLinksProps {
+  state: string;
+  setState: React.Dispatch<React.SetStateAction<string>>;
+  codeVerifier: string;
+  setCodeVerifier: React.Dispatch<React.SetStateAction<string>>;
+}
 
-  const handleSocialLogin = async (socialType: SocialAuthType) => {
-    // 1. PKCE 요청
-    // try {
-    //   const response: SocialAuthPkceResponse = await socialLogin(socialType);
-    //   // 2. 소셜 로그인 창 오픈(앱)
-    //   await Linking.openURL(response.authUrl);
-    // } catch (error) {
-    //   Alert.alert('Error', 'Failed to initiate social login');
-    // }
+const SocialLoginLinks = ({
+  state,
+  setState,
+  codeVerifier,
+  setCodeVerifier,
+}: SocialLoginLinksProps) => {
+  const { mutateAsync: socialLoginPkce } = useSocialAuthPkceMutation();
+
+  const handleSocialLoginButtonPress = async (
+    socialAuthType: SocialAuthType,
+  ) => {
+    try {
+      // 1.pkce authUrl 요청
+      const response: SocialAuthPkceResponse = await socialLoginPkce(
+        socialAuthType,
+      );
+      Alert.alert(`${response}`);
+      // 2. state, codeVerifier 상태에 저장
+      setState(response.state);
+      setCodeVerifier(response.codeVerifier);
+
+      // 처음 눌렀을때 왜 에러가 발생합니까?
+      if (!state || !codeVerifier) {
+        throw new Error('Invalid state or codeVerifier');
+      }
+
+      // 3.소셜 로그인 웹뷰 오픈
+      await Linking.openURL(response.authUrl);
+      return;
+    } catch (error: any) {
+      console.error('❌ [소셜 로그인 에러]', error);
+
+      // 에러 메시지 추출
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        '소셜 로그인 요청에 실패했습니다.';
+
+      Alert.alert('로그인 오류', errorMessage);
+      return;
+    }
   };
+
   return (
     <View
       style={[
@@ -35,7 +71,7 @@ const SocialLoginLinks = () => {
       ]}
     >
       <TouchableOpacity
-        onPress={() => handleSocialLogin('kakao')}
+        onPress={() => handleSocialLoginButtonPress('kakao')}
         style={[
           tw(
             'flex justify-center items-center rounded-full bg-surface-primary border',
@@ -51,7 +87,7 @@ const SocialLoginLinks = () => {
         <IconKakao size={32} />
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => handleSocialLogin('google')}
+        onPress={() => handleSocialLoginButtonPress('google')}
         style={[
           tw(
             'flex justify-center items-center rounded-full bg-surface-primary border-line-default border',
@@ -62,7 +98,7 @@ const SocialLoginLinks = () => {
         <IconGoogle />
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => handleSocialLogin('naver')}
+        onPress={() => handleSocialLoginButtonPress('naver')}
         style={[
           tw(
             'flex justify-center items-center rounded-full bg-surface-primary  border',

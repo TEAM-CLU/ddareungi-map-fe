@@ -1,10 +1,10 @@
 import {
-  PkceCallbackParams,
   ResetPasswordPayload,
   ResetPasswordResponse,
   SendVerificationEmailPayload,
   SendVerificationEmailResponse,
-  SocialAuthPkceCallbackResponse,
+  SocialAuthExchangeTokenPayload,
+  SocialAuthExchangeTokenResponse,
   SocialAuthPkceResponse,
   SocialAuthType,
   VerifyEmailPayload,
@@ -13,7 +13,7 @@ import {
 import { SERVER_URL } from '@/shared/model/index.constants';
 import axios from 'axios';
 
-// default instance
+// default instance ip주소로변경
 const authApi = axios.create({
   baseURL: `${SERVER_URL}/auth`,
   timeout: 4000,
@@ -46,14 +46,11 @@ export const getSocialAuthPkce = async (
   return response.data;
 };
 
-// 소셜 회원가입/로그인 PKCE callback
-export const getSocialAuthPkceCallback = async (
-  socialAuthType: SocialAuthType,
-  params: PkceCallbackParams,
-): Promise<SocialAuthPkceCallbackResponse> => {
-  const response = await authApi.get(`/${socialAuthType}/pkce/callback`, {
-    params,
-  });
+// 소셜 회원가입/로그인 exchange token
+export const postSocialAuthExchangeToken = async (
+  payload: SocialAuthExchangeTokenPayload,
+): Promise<SocialAuthExchangeTokenResponse> => {
+  const response = await authApi.post(`/exchange-token`, payload);
   return response.data;
 };
 

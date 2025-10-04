@@ -1,18 +1,11 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
+import LoginLoading from '@/shared/components/LoginLoading';
+import SimpleLoading from '@/shared/components/LoginLoading';
 
 const TestScreenForCho = () => {
-  return (
-    <View
-      style={[
-        tw('flex-1 items-center justify-center flex flex-col'),
-        { gap: 10 },
-      ]}
-    >
-      <Text>Cho</Text>
-    </View>
-  );
+  return <SimpleLoading title="로그인중" />;
 };
 
 export default TestScreenForCho;

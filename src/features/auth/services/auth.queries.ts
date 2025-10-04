@@ -1,16 +1,15 @@
 import {
-  PkceCallbackParams,
   ResetPasswordPayload,
   SendVerificationEmailPayload,
-  SocialAuthPkceCallbackPayload,
+  SocialAuthExchangeTokenPayload,
   SocialAuthType,
   VerifyEmailPayload,
 } from '@/features/auth/model/auth.types';
 import {
   getSocialAuthPkce,
-  getSocialAuthPkceCallback,
   postResetPassword,
   postSendVerificationEmail,
+  postSocialAuthExchangeToken,
   postVerifyEmail,
 } from '@/features/auth/services/auth.api';
 import { useMutation } from '@tanstack/react-query';
@@ -43,11 +42,11 @@ export const useSocialAuthPkceMutation = () => {
   return mutation;
 };
 
-// 소셜 회원가입/로그인 PKCE callback
-export const useSocialAuthPkceCallbackMutation = () => {
+// 소셜 회원가입/로그인 exhange token
+export const useSocialAuthExchangeTokenMutation = () => {
   const mutation = useMutation({
-    mutationFn: (payload: SocialAuthPkceCallbackPayload) =>
-      getSocialAuthPkceCallback(payload.socialAuthType, payload.params),
+    mutationFn: (payload: SocialAuthExchangeTokenPayload) =>
+      postSocialAuthExchangeToken(payload),
   });
 
   return mutation;

@@ -31,7 +31,7 @@ const PwdResetVerifyEmailStep = ({
 
   const [code, setCode] = useState<string>('');
   const [isValidEmail, setIsValidEmail] = useState<boolean>(true);
-  const [isValidCode, setIsValidCode] = useState<boolean>(false);
+  const [isValidCode, setIsValidCode] = useState<boolean>(true);
   const [isNextStepAvailable, setIsNextStepAvailable] =
     useState<boolean>(false);
 
@@ -66,45 +66,60 @@ const PwdResetVerifyEmailStep = ({
       return;
     }
 
+    // payload 생성
+    const payload = { email: email };
+
     // 이메일 형식이 올바르면 코드 전송
     try {
-      const payload = { email: email };
       const response: SendVerificationEmailResponse =
         await sendVerificationCode(payload);
 
       if ('statusCode' in response) {
-        // 1️⃣ Alert 먼저 띄우기
-        Alert.alert('오류', `${response.message}`);
-        // 2️⃣ 상태 변경
-        setEmailSuccessDescription('');
-        setIsValidEmail(false);
-        setEmailErrorDescription(`${response.message}`);
+        setCodeSuccessDescription('');
+        setCodeErrorDescription(`${response.message}`);
         return;
       }
 
       // 성공 시
-      // 1️⃣ Alert 먼저 띄우기
-      Alert.alert('성공', '인증 코드가 전송되었습니다.');
-      // 2️⃣ 상태 변경
-      setEmailErrorDescription('');
+      Alert.alert('인증 코드가 전송되었습니다.');
       setIsValidEmail(true);
-      setEmailSuccessDescription('인증 코드가 전송되었습니다.');
+      setIsValidCode(true);
       setShowCodeInput(true);
-      setCodeErrorDescription('');
-      setCodeSuccessDescription('위에 전송된 인증 코드를 입력해주세요.');
-    } catch (error) {
-      // 1️⃣ Alert 먼저 띄우기
-      Alert.alert('오류', '인증 코드 전송에 실패했습니다. 다시 시도해주세요.');
-      // 2️⃣ 상태 변경
-      setEmailSuccessDescription('');
-      setIsValidEmail(false);
-      setEmailErrorDescription(
-        '인증 코드 전송에 실패했습니다. 다시 시도해주세요.',
-      );
+      setEmailErrorDescription('');
+      setCodeSuccessDescription(`${response.message}`);
+    } catch (_) {
+      // 네트워크 또는 서버 오류 처리
+      setCodeSuccessDescription('');
+      setCodeErrorDescription('인증 코드 전송 실패. 다시 시도해주세요.');
     }
   };
 
   const handleVerifyCodeButtonPress = async () => {
+    // 이메일 입력 재확인
+    if (email.trim() === '') {
+      setEmailSuccessDescription('');
+      setIsValidEmail(false);
+      setEmailErrorDescription('이메일을 입력해주세요.');
+      return;
+    } else {
+      setEmailErrorDescription('');
+      setIsValidEmail(true);
+      setEmailSuccessDescription('');
+    }
+
+    // 이메일 형식 재확인
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailSuccessDescription('');
+      setIsValidEmail(false);
+      setEmailErrorDescription('올바른 이메일 형식이 아닙니다.');
+      return;
+    } else {
+      setEmailErrorDescription('');
+      setIsValidEmail(true);
+      setEmailSuccessDescription('');
+    }
+
     // 인증코드 입력 확인
     if (code.trim() === '') {
       setCodeSuccessDescription('');
@@ -130,42 +145,31 @@ const PwdResetVerifyEmailStep = ({
       return;
     }
 
+    // payload 생성
+    const payload: VerifyEmailPayload = {
+      email: email,
+      verificationCode: code,
+    };
+
     // 인증코드 확인
     try {
-      const payload: VerifyEmailPayload = {
-        email: email,
-        verificationCode: code,
-      };
-
       const response: VerifyEmailResponse = await verifyCode(payload);
 
       if ('statusCode' in response) {
-        // 1️⃣ Alert 먼저 띄우기
-        Alert.alert('오류', `${response.message}`);
-        // 2️⃣ 상태 변경
         setCodeSuccessDescription('');
         setIsValidCode(false);
         setCodeErrorDescription(`${response.message}`);
         return;
       }
 
-      // 성공 시
-      // 1️⃣ Alert 먼저 띄우기
-      Alert.alert('성공', '이메일 인증이 완료되었습니다.');
-      // 2️⃣ 상태 변경
       setCodeErrorDescription('');
       setIsValidCode(true);
       setCodeSuccessDescription(`${response.message}`);
       setCanGoNextStep(true);
     } catch (error) {
-      // 1️⃣ Alert 먼저 띄우기
-      Alert.alert('오류', '인증 코드 확인에 실패했습니다. 다시 시도해주세요.');
-      // 2️⃣ 상태 변경
       setCodeSuccessDescription('');
       setIsValidCode(false);
-      setCodeErrorDescription(
-        '인증 코드 확인에 실패했습니다. 다시 시도해주세요.',
-      );
+      setCodeErrorDescription('인증 코드 확인 실패. 다시 시도해주세요.');
     }
   };
 
@@ -197,7 +201,7 @@ const PwdResetVerifyEmailStep = ({
             { fontSize: 24 },
           ]}
         >
-          이메일을
+          가입한 이메일을
         </Text>
         <Text
           style={[
