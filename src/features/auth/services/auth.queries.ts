@@ -1,15 +1,13 @@
 import {
   ResetPasswordPayload,
   SendVerificationEmailPayload,
-  SocialAuthExchangeTokenPayload,
   SocialAuthType,
   VerifyEmailPayload,
 } from '@/features/auth/model/auth.types';
 import {
-  getSocialAuthPkce,
+  getSocialAuth,
   postResetPassword,
   postSendVerificationEmail,
-  postSocialAuthExchangeToken,
   postVerifyEmail,
 } from '@/features/auth/services/auth.api';
 import { useMutation } from '@tanstack/react-query';
@@ -33,20 +31,30 @@ export const useVerifyEmailMutation = () => {
   return mutation;
 };
 
-// 소셜 회원가입/로그인 PKCE-> get이지만 토큰 취득이란 행위에 포커싱, mutation으로 지정 / useQuery는 바로 자동요청 되므로...
-export const useSocialAuthPkceMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (socialType: SocialAuthType) => getSocialAuthPkce(socialType),
-  });
+// // 소셜 회원가입/로그인 PKCE-> get이지만 토큰 취득이란 행위에 포커싱, mutation으로 지정 / useQuery는 바로 자동요청 되므로...
+// export const useSocialAuthPkceMutation = () => {
+//   const mutation = useMutation({
+//     mutationFn: (socialType: SocialAuthType) => getSocialAuthPkce(socialType),
+//   });
 
-  return mutation;
-};
+//   return mutation;
+// };
 
-// 소셜 회원가입/로그인 exhange token
-export const useSocialAuthExchangeTokenMutation = () => {
+// // 소셜 회원가입/로그인 exhange token
+// export const useSocialAuthExchangeTokenMutation = () => {
+//   const mutation = useMutation({
+//     mutationFn: (payload: SocialAuthExchangeTokenPayload) =>
+//       postSocialAuthExchangeToken(payload),
+//   });
+
+//   return mutation;
+// };
+
+// 소셜 회원가입/로그인
+export const useSocialAuthMutation = () => {
   const mutation = useMutation({
-    mutationFn: (payload: SocialAuthExchangeTokenPayload) =>
-      postSocialAuthExchangeToken(payload),
+    mutationFn: (socialAuthType: SocialAuthType) =>
+      getSocialAuth(socialAuthType),
   });
 
   return mutation;

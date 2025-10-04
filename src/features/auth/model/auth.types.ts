@@ -42,31 +42,43 @@ interface VerifyEmailResponseFailed {
 // 소셜 회원가입/로그인
 export type SocialAuthType = 'naver' | 'kakao' | 'google';
 
-export interface SocialAuthPkceResponse {
-  message: string;
-  authUrl: string;
-  codeVerifier: string;
-  state: string;
-}
-
-export interface SocialAuthExchangeTokenPayload {
-  codeVerifier: string;
-  state: string;
-}
-
-export type SocialAuthExchangeTokenResponse =
-  | SocialAuthExchangeTokenResponseSuccess
-  | SocialAuthExchangeTokenResponseFailed;
-
-interface SocialAuthExchangeTokenResponseSuccess {
+export type SocialAuthResponse =
+  | SocialAuthResponseSuccess
+  | SocialAuthResponseFailed;
+export interface SocialAuthResponseSuccess {
   accessToken: string;
-  message: string;
 }
 
-interface SocialAuthExchangeTokenResponseFailed {
+export interface SocialAuthResponseFailed {
   statusCode: number;
   message: string;
 }
+
+// export interface SocialAuthPkceResponse {
+//   message: string;
+//   authUrl: string;
+//   codeVerifier: string;
+//   state: string;
+// }
+
+// export interface SocialAuthExchangeTokenPayload {
+//   codeVerifier: string;
+//   state: string;
+// }
+
+// export type SocialAuthExchangeTokenResponse =
+//   | SocialAuthExchangeTokenResponseSuccess
+//   | SocialAuthExchangeTokenResponseFailed;
+
+// interface SocialAuthExchangeTokenResponseSuccess {
+//   accessToken: string;
+//   message: string;
+// }
+
+// interface SocialAuthExchangeTokenResponseFailed {
+//   statusCode: number;
+//   message: string;
+// }
 
 // 비밀번호 재설정(비밀번호 찾기)
 export interface ResetPasswordPayload {

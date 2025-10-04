@@ -19,6 +19,7 @@ import { RootStackParamList } from '@/app/types';
 import RoundButton from '@/shared/components/button/RoundButton';
 import IconBicycle from '@/shared/components/icons/IconBicycle';
 import SimpleLoading from '@/shared/components/LoginLoading';
+import { useAuth } from '@/app/providers';
 
 const RegisterScreen = () => {
   const { mutateAsync: signUp } = useCreateUserMutation();
@@ -88,8 +89,8 @@ const RegisterScreen = () => {
         setTimeout(() => {
           setIsLoading(false);
         }, 2000);
-        navigation.navigate('Map');
-      } catch (e) {
+        navigation.navigate('Login');
+      } catch (_) {
         Alert.alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
         setSignUpStep('step1');
         setEmail('');
@@ -106,7 +107,7 @@ const RegisterScreen = () => {
     }
   };
 
-  if (isLoading) return <SimpleLoading title="메인화면 진입중..." />;
+  if (isLoading) return <SimpleLoading title="로그인 후 이용해주세요." />;
 
   if (isReadyToSignUp)
     return (

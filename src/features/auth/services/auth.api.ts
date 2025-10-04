@@ -3,9 +3,7 @@ import {
   ResetPasswordResponse,
   SendVerificationEmailPayload,
   SendVerificationEmailResponse,
-  SocialAuthExchangeTokenPayload,
-  SocialAuthExchangeTokenResponse,
-  SocialAuthPkceResponse,
+  SocialAuthResponse,
   SocialAuthType,
   VerifyEmailPayload,
   VerifyEmailResponse,
@@ -38,19 +36,27 @@ export const postVerifyEmail = async (
   return response.data;
 };
 
-// 소셜 회원가입/로그인 PKCE
-export const getSocialAuthPkce = async (
-  socialAuthType: SocialAuthType,
-): Promise<SocialAuthPkceResponse> => {
-  const response = await authApi.get(`/${socialAuthType}/pkce`);
-  return response.data;
-};
+// // 소셜 회원가입/로그인 PKCE
+// export const getSocialAuthPkce = async (
+//   socialAuthType: SocialAuthType,
+// ): Promise<SocialAuthPkceResponse> => {
+//   const response = await authApi.get(`/${socialAuthType}/pkce`);
+//   return response.data;
+// };
 
-// 소셜 회원가입/로그인 exchange token
-export const postSocialAuthExchangeToken = async (
-  payload: SocialAuthExchangeTokenPayload,
-): Promise<SocialAuthExchangeTokenResponse> => {
-  const response = await authApi.post(`/exchange-token`, payload);
+// // 소셜 회원가입/로그인 exchange token
+// export const postSocialAuthExchangeToken = async (
+//   payload: SocialAuthExchangeTokenPayload,
+// ): Promise<SocialAuthExchangeTokenResponse> => {
+//   const response = await authApi.post(`/exchange-token`, payload);
+//   return response.data;
+// };
+
+//  소셜 회원가입/로그인
+export const getSocialAuth = async (
+  socialAuthType: SocialAuthType,
+): Promise<SocialAuthResponse> => {
+  const response = await authApi.get(`/${socialAuthType}`);
   return response.data;
 };
 

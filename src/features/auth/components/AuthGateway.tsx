@@ -12,18 +12,12 @@ import { TouchableOpacity, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface AuthGatewayProps {
-  state: string;
-  setState: React.Dispatch<React.SetStateAction<string>>;
-  codeVerifier: string;
-  setCodeVerifier: React.Dispatch<React.SetStateAction<string>>;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   setLoginScreenStep: React.Dispatch<React.SetStateAction<'step1' | 'step2'>>;
 }
 
 const AuthGateway = ({
-  state,
-  setState,
-  codeVerifier,
-  setCodeVerifier,
+  setIsLoading,
   setLoginScreenStep,
 }: AuthGatewayProps) => {
   const [id, setId] = useState<string>('');
@@ -129,12 +123,7 @@ const AuthGateway = ({
               ]}
             />
           </View>
-          <SocialLoginLinks
-            state={state}
-            setState={setState}
-            codeVerifier={codeVerifier}
-            setCodeVerifier={setCodeVerifier}
-          />
+          <SocialLoginLinks setIsLoading={setIsLoading} />
         </View>
         <View />
       </View>
