@@ -3,7 +3,7 @@ import { Keyboard, TouchableWithoutFeedback, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import AuthChoice from '@/features/auth/components/AuthChoice';
 import AuthGateway from '@/features/auth/components/AuthGateway';
-import SimpleLoading from '@/shared/components/LoginLoading';
+import SimpleLoading from '@/shared/components/SimpleLoading';
 
 const LoginScreen = () => {
   const [loginScreenStep, setLoginScreenStep] = useState<1 | 2>(

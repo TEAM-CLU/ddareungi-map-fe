@@ -18,7 +18,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '@/app/types';
 import RoundButton from '@/shared/components/button/RoundButton';
 import IconBicycle from '@/shared/components/icons/IconBicycle';
-import SimpleLoading from '@/shared/components/LoginLoading';
+import SimpleLoading from '@/shared/components/SimpleLoading';
 import { useAuth } from '@/app/providers';
 
 const RegisterScreen = () => {

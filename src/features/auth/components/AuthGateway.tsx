@@ -9,7 +9,7 @@ import { useLoginUserMutation } from '@/features/auth/services/user.queries';
 import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
-import SimpleLoading from '@/shared/components/LoginLoading';
+import SimpleLoading from '@/shared/components/SimpleLoading';
 import { tw } from '@/shared/libs/tw-helper';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';

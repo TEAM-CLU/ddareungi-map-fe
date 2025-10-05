@@ -167,7 +167,7 @@ const PwdResetSetPasswordStep = ({
   }, [newPwd]);
 
   useEffect(() => {
-    if (
+    const canProceed =
       isValidNewPwd &&
       isValidConfirmNewPwd &&
       showConfirmNewPwdInput &&
@@ -175,10 +175,8 @@ const PwdResetSetPasswordStep = ({
       !!newPwd &&
       !!confirmNewPwd &&
       newPwd === confirmNewPwd &&
-      canCompletePwdReset
-    ) {
-      setIsReadyToPwdReset(true);
-    }
+      canCompletePwdReset;
+    setIsReadyToPwdReset(canProceed);
   }, [
     isValidNewPwd,
     isValidConfirmNewPwd,
