@@ -49,11 +49,16 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
 
-      // 성공: { accessToken }
+      // 실패: { statusCode, message }
+      if (data.statusCode) {
+        setWebViewVisible(false);
+        Alert.alert('로그인 실패', data.message);
+      }
+
+      // 성공
       if (data.accessToken) {
         // 토큰 저장 (AuthProvider 사용)
         await setToken(data.accessToken);
-
         // WebView 닫기
         setWebViewVisible(false);
         setIsLoading(true);
@@ -61,11 +66,6 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
           setIsLoading(false);
         }, 3000);
         navigation.navigate('Map');
-      }
-      // 실패: { statusCode, message }
-      if (data.statusCode && data.message) {
-        setWebViewVisible(false);
-        Alert.alert('로그인 실패', data.message);
       }
     } catch (_) {
       setWebViewVisible(false);

@@ -123,7 +123,6 @@ interface CreateUserResponseFailed {
 }
 
 // 유저 로그인
-
 export interface LoginUserPayload {
   email: string;
   password: string;
@@ -135,6 +134,7 @@ export type LoginUserResponse =
 
 interface LoginUserResponseSuccess {
   message: string;
+  accessToken: string;
 }
 
 interface LoginUserResponseFailed {
