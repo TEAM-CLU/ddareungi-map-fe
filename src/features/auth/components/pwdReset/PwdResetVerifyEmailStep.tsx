@@ -176,6 +176,7 @@ const PwdResetVerifyEmailStep = ({
   // 다음 단계 버튼 활성화 로직
   useEffect(() => {
     const canProceed =
+    const canProceed =
       isValidCode &&
       isValidEmail &&
       showCodeInput &&

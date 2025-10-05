@@ -4,7 +4,7 @@ import { TextStyle, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Spinner from 'react-native-loading-spinner-overlay';
 
-const LoginLoading = () => {
+const SimpleLoading = () => {
   return (
     <SafeAreaView style={tw('w-full flex-1 justify-center items-center')}>
       <Spinner
@@ -18,4 +18,4 @@ const LoginLoading = () => {
   );
 };
 
-export default LoginLoading;
+export default SimpleLoading;
