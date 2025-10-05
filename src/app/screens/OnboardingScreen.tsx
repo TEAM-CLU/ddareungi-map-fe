@@ -4,7 +4,7 @@ import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout'
 import { ONBOARDING_DATA } from '@/features/onboarding/model/onboarding.constants';
 
 const OnboardingScreen = () => {
-  const [onBoardingStep, setOnBoardingStep] = useState<1 | 2 | 3>(1);
+  const [onBoardingStep, setOnBoardingStep] = useState<1 | 2 | 3 | 4>(1);
 
   return (
     <PagerView
@@ -12,7 +12,7 @@ const OnboardingScreen = () => {
       initialPage={0}
       onPageSelected={(e) => {
         const { position } = e.nativeEvent;
-        setOnBoardingStep((position + 1) as 1 | 2 | 3);
+        setOnBoardingStep((position + 1) as 1 | 2 | 3 | 4);
       }}
     >
       {ONBOARDING_DATA.map((item, index) => (
