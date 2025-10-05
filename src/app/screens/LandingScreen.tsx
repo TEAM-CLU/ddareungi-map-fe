@@ -4,8 +4,9 @@ import { useEffect } from 'react';
 import { View, Text, Image, ImageStyle } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-type LandingNavProp = StackNavigationProp<RootStackParamList, "Landing">;
+type LandingNavProp = StackNavigationProp<RootStackParamList, 'Landing'>;
 
 const LandingScreen = () => {
   const navigation = useNavigation<LandingNavProp>();
@@ -18,7 +19,7 @@ const LandingScreen = () => {
   }, [navigation]);
 
   return (
-    <View
+    <SafeAreaView
       style={[
         tw(
           'flex-1 w-full flex flex-col justify-start relative bg-brand-primary',
@@ -57,7 +58,7 @@ const LandingScreen = () => {
         ]}
         resizeMode="contain"
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

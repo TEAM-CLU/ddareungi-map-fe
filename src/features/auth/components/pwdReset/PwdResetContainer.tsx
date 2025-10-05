@@ -1,6 +1,6 @@
 import AccountLinks from '@/features/auth/components/AccountLinks';
-import PwdResetSetPasswordStep from '@/features/auth/components/pwdRest/PwdResetSetPasswordStep';
-import PwdResetVerifyEmailStep from '@/features/auth/components/pwdRest/PwdResetVerifyEmailStep';
+import PwdResetSetPasswordStep from '@/features/auth/components/pwdReset/PwdResetSetPasswordStep';
+import PwdResetVerifyEmailStep from '@/features/auth/components/pwdReset/PwdResetVerifyEmailStep';
 import SignUpPwdStep from '@/features/auth/components/signUp/SignUpPwdStep';
 import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import SquareButton from '@/shared/components/button/SquareButton';
@@ -52,7 +52,7 @@ const PwdResetterContainer = ({
               setEmail={setEmail}
               setPwdResetStep={setResetPwdStep}
             />
-          ) : resetPwdStep === 'step2' ? (
+          ) : resetPwdStep === 2 ? (
             <PwdResetSetPasswordStep
               email={email}
               setEmail={setEmail}

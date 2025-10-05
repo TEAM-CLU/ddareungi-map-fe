@@ -183,7 +183,7 @@ const PwdResetVerifyEmailStep = ({
       !!code &&
       canGoNextStep;
 
-    // 기존에는 버튼을 눌러야만 isValid가 바뀌었다면, 지금은 상태값이 바뀌면 자동으로 버튼 disaabled 상태가 바뀌도록
+    // 기존에는 버튼을 눌러야만 isValid가 바뀌었다면, 지금은 상태값이 바뀌면 자동으로 버튼 disabled 상태가 바뀌도록
     setIsNextStepAvailable(canProceed);
   }, [isValidCode, isValidEmail, showCodeInput, email, code, canGoNextStep]);
 

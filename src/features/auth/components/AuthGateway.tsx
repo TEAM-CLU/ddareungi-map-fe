@@ -2,7 +2,7 @@ import { useAuth } from '@/app/providers';
 import { RootStackParamList } from '@/app/types';
 import AccountLinks from '@/features/auth/components/AccountLinks';
 import IdFinder from '@/features/auth/components/IdFinder';
-import PwdResetterContainer from '@/features/auth/components/pwdRest/PwdResetContainer';
+import PwdResetterContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
 import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import { LoginUserResponse } from '@/features/auth/model/auth.types';
 import { useLoginUserMutation } from '@/features/auth/services/user.queries';

@@ -7,7 +7,6 @@ import SignUpEmailStep from '@/features/auth/components/signUp/SignUpEmailStep';
 import SignUpPwdStep from '@/features/auth/components/signUp/SignUpPwdStep';
 import SignUpProfileStep from '@/features/auth/components/signUp/SignUpProfileStep';
 import { TouchableWithoutFeedback } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native';
 import SignUpPermissionStep from '@/features/auth/components/signUp/SignUpPermissionStep';
 import { useCreateUserMutation } from '@/features/auth/services/user.queries';
 import {
@@ -24,9 +23,7 @@ import { useAuth } from '@/app/providers';
 const RegisterScreen = () => {
   const { mutateAsync: signUp } = useCreateUserMutation();
   const [isLoading, setIsLoading] = useState(false);
-  const [signUpStep, setSignUpStep] = useState<
-    1 | 2 | 3 | 4
-  >(1);
+  const [signUpStep, setSignUpStep] = useState<1 | 2 | 3 | 4>(1);
 
   const [email, setEmail] = useState<string>('');
   const [pwd, setPwd] = useState<string>('');

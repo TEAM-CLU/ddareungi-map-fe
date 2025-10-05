@@ -14,7 +14,7 @@ import {
 interface PwdResetSetPasswordStepProps {
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string>>;
-  setResetPwdStep: React.Dispatch<React.SetStateAction<'step1' | 'step2'>>;
+  setResetPwdStep: React.Dispatch<React.SetStateAction<1 | 2>>;
   setAccountFeatures: React.Dispatch<
     React.SetStateAction<'findId' | 'resetPwd' | null>
   >;
@@ -118,7 +118,7 @@ const PwdResetSetPasswordStep = ({
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         Alert.alert('이메일 형식이 올바르지 않습니다. 다시 시도해주세요.');
-        setResetPwdStep('step1');
+        setResetPwdStep(1);
         return;
       }
 
@@ -141,7 +141,7 @@ const PwdResetSetPasswordStep = ({
           setNewPwdErrorDescription('이전에 사용했던 비밀번호입니다.');
           setConfirmNewPwd('');
           setConfirmNewPwdSuccessDescription('');
-          setResetPwdStep('step1');
+          setResetPwdStep(1);
           return; // 에러 케이스이므로 여기서 종료
         }
 
@@ -157,7 +157,7 @@ const PwdResetSetPasswordStep = ({
         setCanCompletePwdReset(false);
         setIsReadyToPwdReset(false);
         setShowConfirmNewPwdInput(false);
-        setResetPwdStep('step1');
+        setResetPwdStep(1);
       }
     }
   };
