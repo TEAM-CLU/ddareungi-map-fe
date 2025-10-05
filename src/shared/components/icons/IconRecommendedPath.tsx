@@ -10,8 +10,8 @@ interface IconRecommendedPathProps {
 
 const IconRecommendedPath = ({
   color = 'white',
-  width = 29,
-  height = 29,
+  width = 32,
+  height = 32,
   strokeWidth = 2.2,
 }: IconRecommendedPathProps) => {
   return (

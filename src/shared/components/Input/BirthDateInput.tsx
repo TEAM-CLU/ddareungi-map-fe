@@ -61,7 +61,7 @@ const BirthDateInput = ({
         placeholderStyle={tw('text-base text-placeholder font-primary-500 ')}
         closeAfterSelecting={true}
         containerStyle={tw('flex-2 max-w-36 min-w-0')}
-        style={tw('border border-line-default h-12')}
+        style={tw('border border-line-default h-12 bg-transparent')}
         ArrowDownIconComponent={() => <IconChevronDown />}
         labelStyle={tw('text-base font-primary-500 text-on-surface-primary')}
         selectedItemLabelStyle={tw(
@@ -103,8 +103,8 @@ const BirthDateInput = ({
         placeholder="월"
         placeholderStyle={tw('text-base text-placeholder font-primary-500 ')}
         closeAfterSelecting
-        containerStyle={tw('flex-1 min-w-0 ')}
-        style={tw('border border-line-default h-12')}
+        containerStyle={tw('flex-1 min-w-0')}
+        style={tw('border border-line-default h-12 bg-transparent')}
         ArrowDownIconComponent={() => <IconChevronDown />}
         labelStyle={tw('text-base font-primary-500 text-on-surface-primary')}
         selectedItemLabelStyle={tw(
@@ -146,8 +146,8 @@ const BirthDateInput = ({
         placeholder="일"
         placeholderStyle={tw('text-base  font-primary-500 text-placeholder')}
         closeAfterSelecting
-        containerStyle={tw('flex-1 min-w-0 ')}
-        style={tw('border border-line-default h-12')}
+        containerStyle={tw('flex-1 min-w-0')}
+        style={tw('border border-line-default h-12 bg-transparent')}
         ArrowDownIconComponent={() => <IconChevronDown />}
         labelStyle={tw('text-base font-primary-500 text-on-surface-primary')}
         selectedItemLabelStyle={tw(

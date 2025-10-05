@@ -18,7 +18,8 @@ const SquareButton = ({
       onPress={onPress}
       disabled={disabled}
       style={[
-        tw('justify-center items-center bg-brand-primary'),
+        tw('justify-center items-center'),
+        disabled ? tw('bg-surface-disabled') : tw('bg-brand-primary'),
         {
           width: 319,
           height: 48,
@@ -27,7 +28,12 @@ const SquareButton = ({
       ]}
     >
       <Text
-        style={tw('text-on-surface-secondary font-primary-500 text-center text-base')}
+        style={[
+          tw('font-primary-500 text-center text-base'),
+          disabled
+            ? tw('text-on-surface-disabled')
+            : tw('text-on-surface-secondary'),
+        ]}
       >
         {title}
       </Text>

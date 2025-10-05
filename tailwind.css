@@ -39,6 +39,9 @@
   .text-placeholder {
     color: theme('colors.on-surface.placeholder');
   }
+  .text-on-surface-disabled {
+    color: theme('colors.on-surface.disabled');
+  }
 
   /* === Background (surface.* / brand.* / etc.) === */
   .bg-surface-primary {
@@ -46,6 +49,9 @@
   }
   .bg-surface-secondary {
     background-color: theme('colors.surface.secondary');
+  }
+  .bg-surface-disabled {
+    background-color: theme('colors.surface.disabled');
   }
 
   /* === Border (line.*) === */

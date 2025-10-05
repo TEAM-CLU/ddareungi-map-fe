@@ -39,8 +39,11 @@ export const BUTTON_PRESETS = {
     fontFamily: 'Pretendard-SemiBold',
     paddingHorizontal: 16,
   },
-};    
+};
 
 // 현재 연도
 export const CURRENT_YEAR = new Date().getFullYear();
 
+// 서버 주소
+export const SERVER_URL =
+  'https://port-0-ddareungi-map-be-mff1z09ze559d642.sel3.cloudtype.app';

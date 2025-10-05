@@ -1,28 +1,41 @@
-import React from 'react';
-import { Text, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Image,
+  ImageStyle,
+  Keyboard,
+  Platform,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
+import LinearGradient from 'react-native-linear-gradient';
+import RoundButton from '@/shared/components/button/RoundButton';
+import AuthChoice from '@/features/auth/components/AuthChoice';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import IconClose from '@/shared/components/icons/IconClose';
+import SquareButton from '@/shared/components/button/SquareButton';
+import Input from '@/shared/components/Input/Input';
+import AuthGateway from '@/features/auth/components/AuthGateway';
+import { KeyboardAvoidingView } from 'react-native';
 
 const LoginScreen = () => {
+  const [loginScreenStep, setLoginScreenStep] = useState<1 | 2>(
+    1,
+  );
   return (
-    <View
-      style={tw(
-        'flex-1  items-center justify-center p-10 bg-surface-secondary',
-      )}
-    >
-      <Text
-        style={[tw('p-10 font-primary-600'), { fontSize: 64, lineHeight: 108 }]}
-      >
-        서울과학기술대학교
-      </Text>
-      <Text
-        style={[
-          tw('font-secondary text-on-surface-primary'),
-          { fontSize: 64, lineHeight: 108 },
-        ]}
-      >
-        서울과학기술대학교
-      </Text>
-    </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={tw('flex flex-1 relative bg-surface-primary')}>
+        {loginScreenStep === 1 ? (
+          <AuthChoice setLoginScreenStep={setLoginScreenStep} />
+        ) : loginScreenStep === 2 ? (
+          <AuthGateway setLoginScreenStep={setLoginScreenStep} />
+        ) : (
+          <AuthChoice setLoginScreenStep={setLoginScreenStep} />
+        )}
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 

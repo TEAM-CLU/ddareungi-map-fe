@@ -28,6 +28,7 @@ const Input = ({
 
   return (
     <TextInput
+      returnKeyType={type === 'number' ? 'next' : 'done'}
       value={value}
       placeholder={placeholder}
       placeholderTextColor={'#A7A7A7'}

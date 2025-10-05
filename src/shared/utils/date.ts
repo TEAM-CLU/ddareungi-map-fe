@@ -30,29 +30,15 @@ export const createDayListInMonth = (
   });
 };
 
-const pad = (n: number, len: number) => {
-  return String(n).padStart(len, '0');
-};
+const pad = (n: number, width = 2) => String(n).padStart(width, '0');
 
-export const formatBirthDateForDb = (date = new Date(), withColon = false) => {
-  const y = date.getFullYear();
-  const M = pad(date.getMonth() + 1, 2);
-  const d = pad(date.getDate(), 2);
-  const h = pad(date.getHours(), 2);
-  const m = pad(date.getMinutes(), 2);
-  const s = pad(date.getSeconds(), 2);
-  const micros = pad(date.getMilliseconds() * 1000, 6);
-
-  const offsetMin = -date.getTimezoneOffset();
-  const sign = offsetMin >= 0 ? '+' : '-';
-  const absMin = Math.abs(offsetMin);
-  const oh = pad(Math.floor(absMin / 60), 2);
-  const om = pad(absMin % 60, 2);
-  const tz = withColon
-    ? `${sign}${oh}:${om}`
-    : `${sign}${oh}${om === '00' ? '' : `:${om}`}`;
-
-  return `${y}-${M}-${d} ${h}:${m}:${s}.${micros}${
-    withColon ? tz : `${sign}${oh}${om === '00' ? '' : `:${om}`}`
-  }`;
+export const formatBirthDate = (
+  year: number,
+  month: number,
+  day: number,
+): string => {
+  const y = year;
+  const M = pad(month, 2);
+  const d = pad(day, 2);
+  return `${y}-${M}-${d}`;
 };
