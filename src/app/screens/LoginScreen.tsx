@@ -6,8 +6,8 @@ import AuthGateway from '@/features/auth/components/AuthGateway';
 import SimpleLoading from '@/shared/components/LoginLoading';
 
 const LoginScreen = () => {
-  const [loginScreenStep, setLoginScreenStep] = useState<'step1' | 'step2'>(
-    'step1',
+  const [loginScreenStep, setLoginScreenStep] = useState<1 | 2>(
+    1,
   );
   const [isLoading, setIsLoading] = useState(false);
 
@@ -17,9 +17,9 @@ const LoginScreen = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={tw('flex flex-1 relative bg-surface-primary')}>
-        {loginScreenStep === 'step1' ? (
+        {loginScreenStep === 1 ? (
           <AuthChoice setLoginScreenStep={setLoginScreenStep} />
-        ) : loginScreenStep === 'step2' ? (
+        ) : loginScreenStep === 2 ? (
           <AuthGateway
             setIsLoading={setIsLoading}
             setLoginScreenStep={setLoginScreenStep}

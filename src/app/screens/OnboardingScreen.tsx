@@ -1,12 +1,31 @@
-import React from 'react';
-import { Text, View } from 'react-native';
-import { tw } from '@/shared/libs/tw-helper';
+import React, { useState } from 'react';
+import PagerView from 'react-native-pager-view';
+import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
+import { ONBOARDING_DATA } from '@/features/onboarding/model/onboarding.constants';
 
 const OnboardingScreen = () => {
+  const [onBoardingStep, setOnBoardingStep] = useState<1 | 2 | 3 | 4>(1);
+
   return (
-    <View style={tw('flex-1 items-center justify-center bg-zinc-900')}>
-      <Text style={tw('text-yellow-400 text-2xl font-bold')}>Navigation</Text>
-    </View>
+    <PagerView
+      style={{ flex: 1 }}
+      initialPage={0}
+      onPageSelected={(e) => {
+        const { position } = e.nativeEvent;
+        setOnBoardingStep((position + 1) as 1 | 2 | 3 | 4);
+      }}
+    >
+      {ONBOARDING_DATA.map((item, index) => (
+        <OnboardingLayout
+          key={index}
+          step={onBoardingStep}
+          totalSteps={ONBOARDING_DATA.length}
+          text1={item.text1}
+          text2={item.text2}
+          imageSource={item.imageSource}
+        />
+      ))}
+    </PagerView>
   );
 };
 

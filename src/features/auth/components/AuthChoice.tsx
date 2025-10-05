@@ -6,13 +6,13 @@ import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 interface AuthChoiceProps {
-  setLoginScreenStep: React.Dispatch<React.SetStateAction<'step1' | 'step2'>>;
+  setLoginScreenStep: React.Dispatch<React.SetStateAction<1 | 2>>;
 }
 
 const AuthChoice = ({ setLoginScreenStep }: AuthChoiceProps) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const handleLoginButtonPress = () => setLoginScreenStep('step2');
+  const handleLoginButtonPress = () => setLoginScreenStep(2);
   const handleNonMemberButtonPress = () => navigation.navigate('Map');
 
   return (

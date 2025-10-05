@@ -25,8 +25,8 @@ const RegisterScreen = () => {
   const { mutateAsync: signUp } = useCreateUserMutation();
   const [isLoading, setIsLoading] = useState(false);
   const [signUpStep, setSignUpStep] = useState<
-    'step1' | 'step2' | 'step3' | 'step4'
-  >('step1');
+    1 | 2 | 3 | 4
+  >(1);
 
   const [email, setEmail] = useState<string>('');
   const [pwd, setPwd] = useState<string>('');
@@ -43,7 +43,7 @@ const RegisterScreen = () => {
   const handleSignUpButtonPress = async () => {
     if (!email || !pwd || !name || !birthDate || !gender || !address) {
       Alert.alert('오류', '모든 필수 정보를 입력해주세요.');
-      setSignUpStep('step1');
+      setSignUpStep(1);
       setName('');
       setBirthDate('');
       setGender(undefined);
@@ -66,12 +66,12 @@ const RegisterScreen = () => {
       address: address,
     };
 
-    if (signUpStep === 'step4' && isReadyToSignUp) {
+    if (signUpStep === 4 && isReadyToSignUp) {
       try {
         const response: CreateUserResponse = await signUp(payload);
         if ('statusCode' in response) {
           Alert.alert(`${response.message}`);
-          setSignUpStep('step1');
+          setSignUpStep(1);
           setEmail('');
           setPwd('');
           setConfirmPwd('');
@@ -92,7 +92,7 @@ const RegisterScreen = () => {
         navigation.navigate('Login');
       } catch (_) {
         Alert.alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
-        setSignUpStep('step1');
+        setSignUpStep(1);
         setEmail('');
         setPwd('');
         setConfirmPwd('');
@@ -152,14 +152,14 @@ const RegisterScreen = () => {
           { paddingHorizontal: 36 },
         ]}
       >
-        <StepIndicator step={signUpStep} />
-        {signUpStep === 'step1' ? (
+        <StepIndicator totalSteps={4} currentStep={signUpStep} />
+        {signUpStep === 1 ? (
           <SignUpEmailStep
             email={email}
             setEmail={setEmail}
             setSignUpStep={setSignUpStep}
           />
-        ) : signUpStep === 'step2' ? (
+        ) : signUpStep === 2 ? (
           <SignUpPwdStep
             pwd={pwd}
             setPwd={setPwd}
@@ -167,7 +167,7 @@ const RegisterScreen = () => {
             setConfirmPwd={setConfirmPwd}
             setSignUpStep={setSignUpStep}
           />
-        ) : signUpStep === 'step3' ? (
+        ) : signUpStep === 3 ? (
           <SignUpProfileStep
             name={name}
             setName={setName}
@@ -179,7 +179,7 @@ const RegisterScreen = () => {
             setAddress={setAddress}
             setSignUpStep={setSignUpStep}
           />
-        ) : signUpStep === 'step4' ? (
+        ) : signUpStep === 4 ? (
           <SignUpPermissionStep setIsReadyToSignUp={setIsReadyToSignUp} />
         ) : (
           <SignUpEmailStep

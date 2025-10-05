@@ -16,6 +16,7 @@
 		8EC8C587F2EB4861AC064331 /* Pretendard-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 62D2A6B0543247FCAE383B6B /* Pretendard-ExtraBold.ttf */; };
 		A36A057D24C84236A3BBF1B4 /* Pretendard-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 12DD7F973E1F4BDE8FE6DB03 /* Pretendard-Regular.ttf */; };
 		A5887A8A6A1C4EBBB83E0471 /* Pretendard-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 499B97AB1F1847CA92265839 /* Pretendard-Bold.ttf */; };
+		A61A6E04A194DC9CB90B3404 /* libPods-DdareungiMap.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 638A6EA676096C6126D2AFF6 /* libPods-DdareungiMap.a */; };
 		BA855B8B58DE4276B4261D33 /* Pretendard-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2B8F0C7BF88546B4B29E16C9 /* Pretendard-SemiBold.ttf */; };
 		CFAB93229BC9422099F4D977 /* Pretendard-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C15AFE34D3314CAC846561C7 /* Pretendard-ExtraLight.ttf */; };
 		D932E34CE8604114866931FC /* Pretendard-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C7F72E8A50E34CE5B724EB34 /* Pretendard-Black.ttf */; };
@@ -311,7 +312,7 @@
 				DEVELOPMENT_TEAM = NQV2G8UQZB;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = DdareungiMap/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -340,7 +341,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = NQV2G8UQZB;
 				INFOPLIST_FILE = DdareungiMap/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

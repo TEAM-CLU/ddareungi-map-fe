@@ -18,7 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface AuthGatewayProps {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  setLoginScreenStep: React.Dispatch<React.SetStateAction<'step1' | 'step2'>>;
+  setLoginScreenStep: React.Dispatch<React.SetStateAction<1 | 2>>;
 }
 
 const AuthGateway = ({
@@ -45,7 +45,7 @@ const AuthGateway = ({
     }
   }, [id, pwd]);
 
-  const handleCloseButtonPress = () => setLoginScreenStep('step1');
+  const handleCloseButtonPress = () => setLoginScreenStep(1);
 
   const handleLoginButtonPress = async () => {
     // 아이디 입력 검사

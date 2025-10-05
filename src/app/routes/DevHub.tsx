@@ -10,6 +10,7 @@ import MyPageScreen from '@/app/screens/MyPageScreen';
 import LandingScreen from '@/app/screens/LandingScreen';
 import MapScreen from '@/app/screens/MapScreen';
 import RouteSelectScreen from '@/app/screens/RouteSelectScreen';
+import RouteRecommendScreen from '../screens/RouteRecommend';
 import TestScreenForCho from '@/app/screens/TestScreenForCho';
 import TestScreenForPark from '@/app/screens/TestScreenForPark';
 import { RootStackParamList } from '@/app/types';
@@ -24,6 +25,7 @@ const DevHubScreen = ({ navigation }: any) => {
     'Register',
     'Map',
     'RouteSelect',
+    'RouteRecommend',
     'MyPage',
     'TestCho',
     'TestPark',
@@ -93,6 +95,7 @@ const DevHub = () => {
         <Stack.Screen name="Map" component={MapScreen} />
         <Stack.Screen name="MyPage" component={MyPageScreen} />
         <Stack.Screen name="RouteSelect" component={RouteSelectScreen} />
+        <Stack.Screen name='RouteRecommend' component={RouteRecommendScreen} />
         <Stack.Screen name="TestCho" component={TestScreenForCho} />
         <Stack.Screen name="TestPark" component={TestScreenForPark} />
       </Stack.Navigator>

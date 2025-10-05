@@ -3,33 +3,23 @@ import { tw } from '@/shared/libs/tw-helper';
 import { View } from 'react-native';
 
 interface StepIndicatorProps {
-  step: 'step1' | 'step2' | 'step3' | 'step4';
+  totalSteps: number;
+  currentStep: number;
 }
-const StepIndicator = ({ step }: StepIndicatorProps) => {
+const StepIndicator = ({ totalSteps, currentStep }: StepIndicatorProps) => {
   return (
-    <View
-      style={[tw('flex flex-row items-center justify-center'), { gap: 11 }]}
-    >
-      <IconEclipse
-        color={step === 'step1' ? '#01DA86' : '#D9D9D9'}
-        width={10}
-        height={10}
-      />
-      <IconEclipse
-        color={step === 'step2' ? '#01DA86' : '#D9D9D9'}
-        width={10}
-        height={10}
-      />
-      <IconEclipse
-        color={step === 'step3' ? '#01DA86' : '#D9D9D9'}
-        width={10}
-        height={10}
-      />
-      <IconEclipse
-        color={step === 'step4' ? '#01DA86' : '#D9D9D9'}
-        width={10}
-        height={10}
-      />
+        <View style={[tw('flex flex-row items-center justify-center'), { gap: 11 }]}>
+      {Array.from({ length: totalSteps }, (_, index) => {
+        const stepNumber = index + 1;
+        return (
+          <IconEclipse
+            key={stepNumber}
+            color={currentStep === stepNumber ? '#01DA86' : '#D9D9D9'}
+            width={10}
+            height={10}
+          />
+        );
+      })}
     </View>
   );
 };
