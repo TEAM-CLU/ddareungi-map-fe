@@ -56,8 +56,29 @@ const DevHubScreen = ({ navigation }: any) => {
 };
 
 const DevHub = () => {
+  const linking = {
+    prefixes: ['ddareungimap://'],
+    config: {
+      screens: {
+        Landing: 'landing',
+        Onboarding: 'onboarding',
+        Login: {
+          path: 'login',
+          parse: {
+            state: (state: string) => state,
+          },
+        },
+        Register: 'register',
+        Map: 'map',
+        RouteSelect: 'routeselect',
+        MyPage: 'mypage',
+        TestCho: 'testcho',
+        TestPark: 'testpark',
+      },
+    },
+  };
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,

@@ -23,9 +23,10 @@ const RoundButton = ({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      style={[tw('justify-center items-center'),
+      style={[
+        tw('justify-center items-center'),
         {
-          backgroundColor: presetStyle.backgroundColor,
+          backgroundColor: disabled ? '#E5E7EB' : presetStyle.backgroundColor,
           minWidth: presetStyle.minWidth,
           height: presetStyle.height,
           borderRadius: presetStyle.borderRadius,
@@ -34,7 +35,12 @@ const RoundButton = ({
       ]}
     >
       <Text
-        style={[tw('text-center text-on-surface-secondary'),
+        style={[
+          tw('text-center '),
+          disabled
+            ? tw('text-on-surface-disabled')
+            : tw('text-on-surface-secondary'),
+
           {
             fontSize: presetStyle.fontSize,
             fontFamily: presetStyle.fontFamily,
@@ -48,4 +54,3 @@ const RoundButton = ({
 };
 
 export default RoundButton;
-

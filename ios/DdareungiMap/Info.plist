@@ -20,6 +20,17 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.ddareungimap</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ddareungimap</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -32,7 +43,9 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>현위치 기반 대여소 검색 및 길찾기 기능을 제공하기 위해 위치 정보가 필요합니다.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>주요 공지 알림 수신 및 마케팅 이벤트 홍보를 위해 알림 권한이 필요합니다.</string>
 	<key>RCTNewArchEnabled</key>
 	<false/>
 	<key>UIAppFonts</key>

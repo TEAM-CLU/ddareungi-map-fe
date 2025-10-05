@@ -1,10 +1,9 @@
 import Input from '@/shared/components/Input/Input';
-import { SetStateAction, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 
 import { Text, View } from 'react-native';
 import SquareButton from '@/shared/components/button/SquareButton';
-import RoundButton from '@/shared/components/button/RoundButton';
 import BirthDateInput from '@/shared/components/Input/BirthDateInput';
 import GenderButton from '@/shared/components/button/GenderButton';
 import AddressInput from '@/shared/components/Input/AddressInput';

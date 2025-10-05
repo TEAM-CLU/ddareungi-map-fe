@@ -1,5 +1,7 @@
 /********** 인증 **********/
 
+import { Permission, PermissionStatus } from 'react-native-permissions';
+
 // 이메일 인증 코드 발송
 export interface SendVerificationEmailPayload {
   email: string;
@@ -38,12 +40,45 @@ interface VerifyEmailResponseFailed {
 }
 
 // 소셜 회원가입/로그인
-export interface SocialAuthPayload {
-  socialType: 'naver' | 'kakao' | 'google';
-}
-export interface SocialAuthResponse {
+export type SocialAuthType = 'naver' | 'kakao' | 'google';
+
+export type SocialAuthResponse =
+  | SocialAuthResponseSuccess
+  | SocialAuthResponseFailed;
+export interface SocialAuthResponseSuccess {
   accessToken: string;
 }
+
+export interface SocialAuthResponseFailed {
+  statusCode: number;
+  message: string;
+}
+
+// export interface SocialAuthPkceResponse {
+//   message: string;
+//   authUrl: string;
+//   codeVerifier: string;
+//   state: string;
+// }
+
+// export interface SocialAuthExchangeTokenPayload {
+//   codeVerifier: string;
+//   state: string;
+// }
+
+// export type SocialAuthExchangeTokenResponse =
+//   | SocialAuthExchangeTokenResponseSuccess
+//   | SocialAuthExchangeTokenResponseFailed;
+
+// interface SocialAuthExchangeTokenResponseSuccess {
+//   accessToken: string;
+//   message: string;
+// }
+
+// interface SocialAuthExchangeTokenResponseFailed {
+//   statusCode: number;
+//   message: string;
+// }
 
 // 비밀번호 재설정(비밀번호 찾기)
 export interface ResetPasswordPayload {
@@ -88,7 +123,6 @@ interface CreateUserResponseFailed {
 }
 
 // 유저 로그인
-
 export interface LoginUserPayload {
   email: string;
   password: string;
@@ -100,6 +134,7 @@ export type LoginUserResponse =
 
 interface LoginUserResponseSuccess {
   message: string;
+  accessToken: string;
 }
 
 interface LoginUserResponseFailed {
@@ -123,4 +158,14 @@ interface CheckEmailResponseSuccess {
 interface CheckEmailResponseFailed {
   statusCode: number;
   message: string;
+}
+
+// 권한 타입
+export interface PermissionItem {
+  name: string;
+  permission: Permission | 'NOTIFICATIONS';
+  required: boolean;
+  status: PermissionStatus;
+  icon: React.ReactNode;
+  description: string;
 }

@@ -1,7 +1,7 @@
 import {
   ResetPasswordPayload,
   SendVerificationEmailPayload,
-  SocialAuthPayload,
+  SocialAuthType,
   VerifyEmailPayload,
 } from '@/features/auth/model/auth.types';
 import {
@@ -31,10 +31,30 @@ export const useVerifyEmailMutation = () => {
   return mutation;
 };
 
-// 소셜 회원가입/로그인 -> get이지만 토큰 취득이란 행위에 포커싱, mutation으로 지정
+// // 소셜 회원가입/로그인 PKCE-> get이지만 토큰 취득이란 행위에 포커싱, mutation으로 지정 / useQuery는 바로 자동요청 되므로...
+// export const useSocialAuthPkceMutation = () => {
+//   const mutation = useMutation({
+//     mutationFn: (socialType: SocialAuthType) => getSocialAuthPkce(socialType),
+//   });
+
+//   return mutation;
+// };
+
+// // 소셜 회원가입/로그인 exhange token
+// export const useSocialAuthExchangeTokenMutation = () => {
+//   const mutation = useMutation({
+//     mutationFn: (payload: SocialAuthExchangeTokenPayload) =>
+//       postSocialAuthExchangeToken(payload),
+//   });
+
+//   return mutation;
+// };
+
+// 소셜 회원가입/로그인
 export const useSocialAuthMutation = () => {
   const mutation = useMutation({
-    mutationFn: (socialType: SocialAuthPayload) => getSocialAuth(socialType),
+    mutationFn: (socialAuthType: SocialAuthType) =>
+      getSocialAuth(socialAuthType),
   });
 
   return mutation;

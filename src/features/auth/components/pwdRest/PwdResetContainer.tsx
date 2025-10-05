@@ -28,7 +28,6 @@ const PwdResetterContainer = ({
 }: PwdResetterContainerProps) => {
   const [resetPwdStep, setResetPwdStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState<string>('');
-  const [newPassword, setNewPassword] = useState<string>('');
 
   const handleCloseButtonPress = () => setAccountFeatures(null);
 
@@ -53,8 +52,13 @@ const PwdResetterContainer = ({
               setEmail={setEmail}
               setPwdResetStep={setResetPwdStep}
             />
-          ) : resetPwdStep === 2 ? (
-            <PwdResetSetPasswordStep setAccountFeatures={setAccountFeatures} />
+          ) : resetPwdStep === 'step2' ? (
+            <PwdResetSetPasswordStep
+              email={email}
+              setEmail={setEmail}
+              setResetPwdStep={setResetPwdStep}
+              setAccountFeatures={setAccountFeatures}
+            />
           ) : (
             <PwdResetVerifyEmailStep
               email={email}

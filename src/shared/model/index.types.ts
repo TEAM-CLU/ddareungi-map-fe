@@ -14,3 +14,11 @@ export type InputType =
   | 'search'
   | 'username'
   | 'name';
+
+export interface AuthContextType {
+  accessToken: string | null;
+  setToken: (token: string) => Promise<void>;
+  getToken: () => Promise<string | null>;
+  removeToken: () => Promise<void>;
+  hasToken: () => boolean;
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from 'react-native-paper';
 import Svg, { Path } from 'react-native-svg';
 
 interface IconBicycleProps {

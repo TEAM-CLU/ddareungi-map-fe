@@ -47,3 +47,6 @@ export const CURRENT_YEAR = new Date().getFullYear();
 // 서버 주소
 export const SERVER_URL =
   'https://port-0-ddareungi-map-be-mff1z09ze559d642.sel3.cloudtype.app';
+
+// AsyncStorage에 저장할 토큰 키
+export const ACCESS_TOKEN_KEY = '@auth_access_token';

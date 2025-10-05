@@ -3,15 +3,15 @@ import {
   ResetPasswordResponse,
   SendVerificationEmailPayload,
   SendVerificationEmailResponse,
-  SocialAuthPayload,
   SocialAuthResponse,
+  SocialAuthType,
   VerifyEmailPayload,
   VerifyEmailResponse,
 } from '@/features/auth/model/auth.types';
 import { SERVER_URL } from '@/shared/model/index.constants';
 import axios from 'axios';
 
-// default instance
+// default instance ip주소로변경
 const authApi = axios.create({
   baseURL: `${SERVER_URL}/auth`,
   timeout: 4000,
@@ -36,11 +36,27 @@ export const postVerifyEmail = async (
   return response.data;
 };
 
-// 소셜 회원가입/로그인
+// // 소셜 회원가입/로그인 PKCE
+// export const getSocialAuthPkce = async (
+//   socialAuthType: SocialAuthType,
+// ): Promise<SocialAuthPkceResponse> => {
+//   const response = await authApi.get(`/${socialAuthType}/pkce`);
+//   return response.data;
+// };
+
+// // 소셜 회원가입/로그인 exchange token
+// export const postSocialAuthExchangeToken = async (
+//   payload: SocialAuthExchangeTokenPayload,
+// ): Promise<SocialAuthExchangeTokenResponse> => {
+//   const response = await authApi.post(`/exchange-token`, payload);
+//   return response.data;
+// };
+
+//  소셜 회원가입/로그인
 export const getSocialAuth = async (
-  socialType: SocialAuthPayload,
+  socialAuthType: SocialAuthType,
 ): Promise<SocialAuthResponse> => {
-  const response = await authApi.get(`/${socialType}`);
+  const response = await authApi.get(`/${socialAuthType}`);
   return response.data;
 };
 

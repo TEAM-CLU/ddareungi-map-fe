@@ -64,21 +64,16 @@ const SignUpEmailStep = ({
     }
 
     // 이메일 형식 확인
-    if (email.indexOf('@') === -1 || email.indexOf('.') === -1) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       setEmailSuccessDescription('');
       setIsValidEmail(false);
       setEmailErrorDescription('올바른 이메일 형식이 아닙니다.');
       return;
     }
 
-    // payload 유효성 검사
+    // payload 생성
     const payload: CheckEmailPayload = { email: email };
-    if (!payload.email) {
-      setEmailSuccessDescription('');
-      setIsValidEmail(false);
-      setEmailErrorDescription('이메일을 입력해주세요.');
-      return;
-    }
 
     // 중복확인
     try {
@@ -97,8 +92,6 @@ const SignUpEmailStep = ({
       setEmailErrorDescription('');
       setIsValidEmail(true);
       setEmailSuccessDescription(`${response.message}`);
-      setShowCodeInput(true);
-
       // 인증 코드 전송
       try {
         const response: SendVerificationEmailResponse =
@@ -109,26 +102,49 @@ const SignUpEmailStep = ({
           return;
         }
         Alert.alert('인증 코드가 전송되었습니다.'); // 한번더 강조
+        setIsValidEmail(true);
+        setIsValidCode(true);
+        setShowCodeInput(true);
         setCodeErrorDescription('');
         setCodeSuccessDescription(`${response.message}`);
       } catch (_) {
         // 네트워크 또는 서버 오류 처리
         setCodeSuccessDescription('');
-        setCodeErrorDescription(
-          `인증 코드 전송에 실패했습니다. 다시 시도해주세요.`,
-        );
+        setCodeErrorDescription(`인증 코드 전송 실패. 다시 시도해주세요.`);
       }
     } catch (_) {
       // 네트워크 또는 서버 오류 처리
       setEmailSuccessDescription('');
       setIsValidEmail(false);
-      setEmailErrorDescription(
-        `이메일 중복 확인에 실패했습니다. 다시 시도해주세요.`,
-      );
+      setEmailErrorDescription(`이메일 중복 확인 실패. 다시 시도해주세요.`);
     }
   };
 
   const handleVerifyCodeButtonPress = async () => {
+    // 이메일 입력 재확인
+    if (email.trim() === '') {
+      setEmailSuccessDescription('');
+      setIsValidEmail(false);
+      setEmailErrorDescription('이메일을 입력해주세요.');
+      return;
+    } else {
+      setEmailErrorDescription('');
+      setIsValidEmail(true);
+      setEmailSuccessDescription('');
+    }
+    // 이메일 형식 재확인
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailSuccessDescription('');
+      setIsValidEmail(false);
+      setEmailErrorDescription('올바른 이메일 형식이 아닙니다.');
+      return;
+    } else {
+      setEmailErrorDescription('');
+      setIsValidEmail(true);
+      setEmailSuccessDescription('');
+    }
+
     // 인증코드 입력 확인
     if (code.trim() === '') {
       setCodeSuccessDescription('');
@@ -154,43 +170,34 @@ const SignUpEmailStep = ({
       return;
     }
 
-    // payload 유효성 검사
+    // payload 생성
     const payload: VerifyEmailPayload = {
       email: email,
       verificationCode: code,
     };
 
-    if (!payload.email || !payload.verificationCode) {
-      setCodeSuccessDescription('');
-      setIsValidCode(false);
-      setCodeErrorDescription('인증 코드를 입력해주세요.');
-      return;
-    }
-
     // 인증코드 확인
     try {
-      const Response: VerifyEmailResponse = await verifyCode(payload);
+      const response: VerifyEmailResponse = await verifyCode(payload);
 
       // 유효하지 않은 인증코드인 경우
-      if ('statusCode' in Response) {
+      if ('statusCode' in response) {
         setCodeSuccessDescription('');
         setIsValidCode(false);
-        setCodeErrorDescription(`${Response.message}`);
+        setCodeErrorDescription(`${response.message}`);
         return;
       }
 
       // 유효한 인증코드인 경우
       setCodeErrorDescription('');
       setIsValidCode(true);
-      setCodeSuccessDescription(`${Response.message}`);
+      setCodeSuccessDescription(`${response.message}`);
       setCanGoNextStep(true);
     } catch (e) {
       // 네트워크 또는 서버 오류 처리
       setCodeSuccessDescription('');
       setIsValidCode(false);
-      setCodeErrorDescription(
-        `인증 코드 확인에 실패했습니다. 다시 시도해주세요.`,
-      );
+      setCodeErrorDescription(`인증 코드 확인 실패. 다시 시도해주세요.`);
       return;
     }
   };
