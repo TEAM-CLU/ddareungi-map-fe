@@ -1,3 +1,7 @@
+
+import { IconBicycle, IconDirections, IconMyPage, IconRecommendedPath } from "../components/icons";
+import { FooterRoutes } from "./index.types";
+
 export const BUTTON_PRESETS = {
   // 가장 큰 버튼
   lg: {
@@ -50,3 +54,28 @@ export const SERVER_URL =
 
 // AsyncStorage에 저장할 토큰 키
 export const ACCESS_TOKEN_KEY = '@auth_access_token';
+
+// footer 메뉴
+export const FOOTER_MENU: { name: FooterRoutes; label: string; icon: JSX.Element }[] =
+  [
+    {
+      name: 'Map',
+      label: '대여소',
+      icon: <IconBicycle width={30} height={30} />,
+    },
+    {
+      name: 'RouteSelect',
+      label: '길찾기',
+      icon: <IconDirections width={26} height={26} />,
+    },
+    {
+      name: 'RouteRecommend',
+      label: '추천 경로',
+      icon: <IconRecommendedPath width={30} height={30} />,
+    },
+    {
+      name: 'MyPage',
+      label: '마이 페이지',
+      icon: <IconMyPage width={30} height={30} />,
+    },
+  ];
