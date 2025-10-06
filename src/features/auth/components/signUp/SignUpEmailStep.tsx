@@ -21,9 +21,7 @@ import { useCheckEmailMutation } from '@/features/auth/services/user.queries';
 interface SignUpEmailStepProps {
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string>>;
-  setSignUpStep: React.Dispatch<
-    React.SetStateAction<1 | 2 | 3 | 4>
-  >;
+  setSignUpStep: React.Dispatch<React.SetStateAction<1 | 2 | 3 | 4>>;
 }
 const SignUpEmailStep = ({
   email,
@@ -204,16 +202,14 @@ const SignUpEmailStep = ({
 
   // 다음 단계 버튼 활성화 로직
   useEffect(() => {
-    if (
+    const canProceed =
       isValidCode &&
       isValidEmail &&
       showCodeInput &&
       !!email &&
       !!code &&
-      canGoNextStep
-    ) {
-      setIsNextStepAvailable(true);
-    }
+      canGoNextStep;
+    setIsNextStepAvailable(canProceed);
   }, [isValidCode, isValidEmail, showCodeInput, email, code, canGoNextStep]);
 
   return (

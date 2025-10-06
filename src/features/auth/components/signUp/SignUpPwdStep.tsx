@@ -11,9 +11,7 @@ interface SignUpEmailStepProps {
   setPwd: React.Dispatch<React.SetStateAction<string>>;
   confirmPwd: string;
   setConfirmPwd: React.Dispatch<React.SetStateAction<string>>;
-  setSignUpStep: React.Dispatch<
-    React.SetStateAction<1 | 2 | 3 | 4>
-  >;
+  setSignUpStep: React.Dispatch<React.SetStateAction<1 | 2 | 3 | 4>>;
 }
 const SignUpPwdStep = ({
   pwd,
@@ -109,17 +107,16 @@ const SignUpPwdStep = ({
   }, [pwd]);
 
   useEffect(() => {
-    if (
+    const canProceed =
       isValidPwd &&
       isValidConfirmPwd &&
       showConfirmPwdInput &&
       !!pwd &&
       !!confirmPwd &&
       pwd === confirmPwd &&
-      canGoNextStep
-    ) {
-      setIsNextStepAvailable(true);
-    }
+      canGoNextStep;
+
+    setIsNextStepAvailable(canProceed);
   }, [
     isValidPwd,
     isValidConfirmPwd,
