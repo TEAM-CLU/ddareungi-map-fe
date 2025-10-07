@@ -32,7 +32,7 @@ const DevHubScreen = ({ navigation }: any) => {
   ];
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
+    <View style={{ flex: 1 }}>
       <Text style={{ fontSize: 20, fontWeight: '700', marginBottom: 12 }}>
         🔧 DevHub
       </Text>
@@ -95,7 +95,7 @@ const DevHub = () => {
         <Stack.Screen name="Map" component={MapScreen} />
         <Stack.Screen name="MyPage" component={MyPageScreen} />
         <Stack.Screen name="RouteSelect" component={RouteSelectScreen} />
-        <Stack.Screen name='RouteRecommend' component={RouteRecommendScreen} />
+        <Stack.Screen name="RouteRecommend" component={RouteRecommendScreen} />
         <Stack.Screen name="TestCho" component={TestScreenForCho} />
         <Stack.Screen name="TestPark" component={TestScreenForPark} />
       </Stack.Navigator>
