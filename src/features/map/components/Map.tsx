@@ -1,24 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  check,
-  Permission,
-  PERMISSIONS,
-  request,
-  RESULTS,
-} from 'react-native-permissions';
-import { Platform, Alert, Linking, BackHandler, AppState } from 'react-native';
+import { Alert, AppState } from 'react-native';
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import Geolocation from 'react-native-geolocation-service';
-import {
-  hasLocationPermission,
-  requestLocationPermission,
-} from '@/features/map/utils/location';
+import { requestLocationPermission } from '@/features/map/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
+import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
 
 const Map = () => {
   const webRef = useRef<WebView>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const lastPos = useRef<Coordinates | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const heading = useUserHeading({
+    triggerDeg: 1,
+    updateDeg: 1,
+    throttleMs: 16, // 60fps 기준
+    smoothAlpha: 0.6, // 더 빠른 반응
+  });
 
   const smoothPosition = (lat: number, lon: number) => {
     if (!lastPos.current) {
@@ -51,7 +49,7 @@ const Map = () => {
       console.warn('⚠️ 지도가 아직 준비 안됨');
       return;
     }
-    const { latitude, longitude, heading, accuracy } = currentPosition.coords;
+    const { latitude, longitude, accuracy } = currentPosition.coords;
 
     if (accuracy > 30) return;
     const { lat, lon } = smoothPosition(latitude, longitude);
@@ -59,7 +57,6 @@ const Map = () => {
       type: 'myLocation',
       lat: lat,
       lon: lon,
-      heading: heading ?? 0,
       accuracy: accuracy ?? 0,
     };
     webRef.current?.postMessage(JSON.stringify(myLocation));
@@ -69,6 +66,10 @@ const Map = () => {
   const startLocationTracking = async () => {
     if (!(await requestLocationPermission())) {
       return;
+    }
+    if (watchIdRef.current != null) {
+      Geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
     }
 
     const watchId = Geolocation.watchPosition(
@@ -82,32 +83,39 @@ const Map = () => {
         enableHighAccuracy: true,
         distanceFilter: 7,
         interval: 3000,
+        forceRequestLocation: true,
         fastestInterval: 2000,
       },
     );
-    return () => {
-      // 언마운트 시 추적 중단
-      Geolocation.clearWatch(watchId);
-    };
+    watchIdRef.current = watchId;
+  };
+
+  const stopLocationTracking = () => {
+    if (watchIdRef.current != null) {
+      Geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
   };
 
   useEffect(() => {
     // 지도가 준비되면 위치 추적 시작
     if (!isMapReady) return;
-    let cleanup: (() => void) | undefined;
-
-    const init = async () => {
-      cleanup = await startLocationTracking();
-    };
-
-    init();
-
-    // 컴포넌트 언마운트 시 위치 추적 중단
-    return () => {
-      cleanup?.();
-    };
+    startLocationTracking();
+    return stopLocationTracking;
   }, [isMapReady]);
 
+  // 방향로직과 위치로직 분리해서 방향은 위치 변화없이도 실시간으로 움직이도록
+  useEffect(() => {
+    if (!isMapReady) return;
+    webRef.current?.postMessage(
+      JSON.stringify({
+        type: 'myHeading',
+        heading: heading ?? 0,
+      }),
+    );
+  }, [heading, isMapReady]);
+
+  // 앱이 포그라운드로 돌아올 때 위치 추적 재시작(구독)
   useEffect(() => {
     const appStateSubscription = AppState.addEventListener('change', state => {
       if (state === 'active' && isMapReady) startLocationTracking();
@@ -120,7 +128,7 @@ const Map = () => {
       ref={webRef}
       onMessage={handleMapReadyMessage}
       source={{
-        uri: 'https://73e8e9b60f3c.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://9f0c43c7df0d.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
     />
   );

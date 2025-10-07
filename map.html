@@ -22,6 +22,10 @@
       // 초기 세팅
       let map;
       let myLocationMarker;
+      let myHeadingOverlay;
+      let outerCircle;
+      let innerCircle;
+
       const DEFAULT_LAT = 37.5665;
       const DEFAULT_LON = 126.978;
 
@@ -37,32 +41,93 @@
 
         // 2. 내 위치 마커 생성
         const myLocationSvg = `
-            <div style="
-              position: absolute;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              width: 23px;
-              height: 23px;
-            ">
-              <svg xmlns='http://www.w3.org/2000/svg' width='23' height='23' viewBox='0 0 23 23' fill='none'>
-                <circle cx='11.7393' cy='11.739' r='9.5' fill='#01DA86' stroke='white' stroke-width='3'/>
-              </svg>
-            </div>
-          `;
-
+                  <div style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 23px;
+                    height: 23px;
+                  ">
+                    <svg xmlns='http://www.w3.org/2000/svg' width='23' height='23' viewBox='0 0 23 23' fill='none'>
+                      <circle cx='11.7393' cy='11.739' r='9.5' fill='#01DA86' stroke='white' stroke-width='3'/>
+                    </svg>
+                  </div>
+                `;
+        const myHeadingSvg = `
+  <div id="myHeadingOverlay"
+       style="
+         position:absolute;
+         width:40px; height:40px;
+         transform-origin: 0px 1px;   /* 그대로 유지 */
+         transform: rotate(0deg);
+         pointer-events:none; z-index:2;">
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="40" height="40" viewBox="0 0 40 40" fill="none"
+         style="display:block; overflow:visible">  <!-- 핵심: overflow:visible -->
+      <!-- ✅ apex(0,1) 기준 상하 대칭: 위로 12px, 아래로 12px -->
+      <!-- 윗끝: (39, -11), 아랫끝: (39, 13) → 둘 다 apex y=1에서 ±12 -->
+      <path d="M0 1 L39 -11 A40 40 0 0 1 39 13 Z"
+            fill="url(#grad)" />
+      <defs>
+        <radialGradient id="grad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                        gradientTransform="translate(0 1) scale(45)">
+          <stop offset="0" stop-color="#01EC91"/>
+          <stop offset="1" stop-color="#01EC91" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+    </svg>
+  </div>
+`;
+        // 내 위치 마커
         myLocationMarker = new kakao.maps.CustomOverlay({
           position: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
           content: myLocationSvg,
           xAnchor: 0.5,
           yAnchor: 0.5,
+          zIndex: 2,
         });
         myLocationMarker.setMap(map);
 
-        // 맵 준비 완료시 RN에 알림
+        // 내 방향 오버레이
+        myHeadingOverlay = new kakao.maps.CustomOverlay({
+          position: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
+          content: myHeadingSvg,
+          xAnchor: 0.0,
+          yAnchor: 0.5,
+          zIndex: 1,
+        });
+        myHeadingOverlay.setMap(map);
+
+        // 정확도 원
+        outerCircle = new kakao.maps.Circle({
+          center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
+          radius: 20, // 반경 30m 안에 있을 확률
+          strokeWeight: 0,
+          strokeColor: '#01DA86',
+          strokeOpacity: 0,
+          strokeStyle: 'solid',
+          fillColor: '#01DA86',
+          fillOpacity: 0.1,
+        });
+        outerCircle.setMap(map);
+
+        innerCircle = new kakao.maps.Circle({
+          center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
+          radius: 10, // 반경 10m 안에 있을 확률
+          strokeWeight: 0,
+          strokeColor: '#01DA86',
+          strokeOpacity: 0,
+          strokeStyle: 'solid',
+          fillColor: '#01DA86',
+          fillOpacity: 0.2,
+        });
+        innerCircle.setMap(map);
+
+        // final. 초기 세팅 완료 후 맵 준비 완료시 RN에 알림
         if (window.ReactNativeWebView) {
           window.ReactNativeWebView.postMessage(
             JSON.stringify({ type: 'mapReady', isReady: true }),
@@ -72,20 +137,40 @@
 
       // RN 메시지 타입별 처리
       const handleMessage = event => {
+        console.log('handleMessage', event.data);
+
         const data = JSON.parse(event.data);
         // 1. 내 위치 업데이트
         if (data.type === 'myLocation') {
-          updateMyLocation(data.lat, data.lon);
+          updateMyLocation(data.lat, data.lon, data.accuracy ?? 30);
+        }
+
+        // 2. 내 방향 업데이트
+        if (data.type === 'myHeading') {
+          rotateMyHeading(data.heading);
         }
       };
 
-      // 1. 내 위치 업데이트
-      const updateMyLocation = (lat, lon) => {
+      // 1. 내 위치 업데이트(마커 + 정확도 원 포함)
+      const updateMyLocation = (lat, lon, accuracy) => {
         const updatedPosition = new kakao.maps.LatLng(lat, lon);
         myLocationMarker.setPosition(updatedPosition);
+        myHeadingOverlay.setPosition(updatedPosition);
+        // 정확도 원 반경 업데이트
+        outerCircle.setRadius(Math.max(accuracy, 20));
+        innerCircle.setRadius(Math.max(accuracy / 2, 10));
+        // 정확도 원 위치 업데이트
+        outerCircle.setPosition(updatedPosition);
+        innerCircle.setPosition(updatedPosition);
         map.setCenter(updatedPosition);
       };
 
+      // 2. 내 방향 업데이트
+      const rotateMyHeading = heading => {
+        const cone = document.getElementById('myHeadingOverlay');
+        if (!cone) return;
+        cone.style.transform = `rotate(${heading - 45}deg)`;
+      };
       document.addEventListener('message', handleMessage);
       window.addEventListener('message', handleMessage);
     </script>
