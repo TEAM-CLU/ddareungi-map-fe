@@ -1,62 +1,57 @@
-import React, { useRef } from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import SlideModal from '@/shared/components/modal/SlideModal';
+import SearchBar from '@/features/search/components/SearchBar';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../types';
 
 const TestScreenForPark = () => {
-  const slideModalRef = useRef<BottomSheetModal>(null);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [searchText, setSearchText] = useState('');
 
-  const handleOpenModalPress = () => {
-    try {
-      slideModalRef.current?.present();
-    } catch (error) {
-      Alert.alert('Error', 'Failed to open SlideModal.');
+  const handleSearch = () => {
+    if (searchText.trim()) {
+      Alert.alert('검색', `"${searchText}" 검색 실행`);
     }
   };
 
-  const handleCloseModalPress = () => slideModalRef.current?.dismiss();
-
   return (
-    <View style={tw('flex-1 items-center justify-center bg-surface-secondary')}>
-      <TouchableOpacity
-        onPress={handleOpenModalPress}
-        style={tw('bg-brand-primary px-6 py-3 rounded-xl mb-4')}
-      >
-        <Text style={tw('text-white font-primary-700')}>
-          모달 열기
+    <View style={tw('flex-1 bg-surface-primary p-4')}>
+      <View style={tw('mt-12')}>
+        <Text style={tw('text-lg font-primary-700 mb-4')}>
+          🔍 SearchBar 예시들
         </Text>
-      </TouchableOpacity>
 
-      <SlideModal
-        ref={slideModalRef}
-        snapPoints={['35%', '60%']}
-        onClose={handleCloseModalPress}
-      >
-        <View>
-          <Text style={tw('text-xl font-primary-700 text-center mb-3')}>
-            🗺️ 경로 상세 정보
+        {/* Map 화면용 - readOnly, 클릭 시 검색 화면으로 이동 */}
+        <View style={tw('mb-6')}>
+          <Text style={tw('text-sm font-primary-600 mb-2 text-gray-600')}>
+            Map 화면 (ReadOnly)
           </Text>
-          <Text
-            style={tw('text-base font-primary-600 text-center text-gray-600')}
-          >
-            SlideModal을 사용하여 경로 추천, 정거장 목록, 사용자 설정 등의
-            정보를 표시할 수 있습니다.
-          </Text>
+          <SearchBar
+            value=""
+            onChangeText={() => {}}
+            readOnly
+            onPressSearch={() => navigation.navigate('Search')}
+          />
         </View>
 
-        <View style={tw('bg-gray-100 p-4 rounded-lg mb-4')}>
-          <Text style={tw('text-sm font-primary-600 text-gray-700')}>
-            • 출발지: 강남역 1번 출구
+        {/* 검색 화면용 - 뒤로가기 + 입력 가능 */}
+        <View style={tw('mb-6')}>
+          <Text style={tw('text-sm font-primary-600 mb-2 text-gray-600')}>
+            Search 화면 (입력 가능)
           </Text>
-          <Text style={tw('text-sm font-primary-600 text-gray-700')}>
-            • 도착지: 서울시청 앞 정거장
-          </Text>
-          <Text style={tw('text-sm font-primary-600 text-gray-700')}>
-            • 예상 시간: 15분
-          </Text>
+          <SearchBar
+            value={searchText}
+            onChangeText={setSearchText}
+            showBackButton
+            showCloseButton
+            onPressBack={() => navigation.goBack()}
+            onPressClose={() => setSearchText('')}
+            onSubmit={handleSearch}
+            onPressSearch={handleSearch}
+          />
         </View>
-      </SlideModal>
+      </View>
     </View>
   );
 };

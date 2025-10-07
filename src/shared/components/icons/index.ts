@@ -26,6 +26,7 @@ export { default as IconRecommendedPath } from './IconRecommendedPath';
 export { default as IconRefresh } from './IconRefresh';
 export { default as IconRouteMarker } from './IconRouteMarker';
 export { default as IconRun } from './IconRun';
+export { default as IconSearch } from './IconSearch';
 export { default as IconSpotMarker } from './IconSpotMarker';
 export { default as IconSwitch } from './IconSwitch';
 export { default as IconTree } from './IconTree';
