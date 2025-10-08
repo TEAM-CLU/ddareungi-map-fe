@@ -20,16 +20,9 @@
     <main id="map" style="height: 100vh; width: 100%"></main>
   </body>
   <script>
-    console.log('map.html loaded', window.kakao);
-    // 초기 세팅
+    // 전역 변수 초기 세팅(window.var로 각 피쳐 js에서 접근가능)
     let map;
-    let myLocationMarker;
-    let myHeadingOverlay;
-    let outerCircle;
-    let innerCircle;
-    let hasMoveToMyLocationRun = false; // 처음 맵로딩시에만 내위치로 이동
-    let isCompassMode = false;
-
+    window.isCompassMode = false;
     const DEFAULT_LAT = 37.5665;
     const DEFAULT_LON = 126.978;
 
@@ -42,93 +35,17 @@
       };
       map = new kakao.maps.Map(mapContainer, mapOption);
 
-      // 2. 내 위치 마커 생성
-      const myLocationSvg = `
-                        <div style="
-                          position: absolute;
-                          top: 50%;
-                          left: 50%;
-                          transform: translate(-50%, -50%);
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          width: 23px;
-                          height: 23px;
-                        ">
-                          <svg xmlns='http://www.w3.org/2000/svg' width='23' height='23' viewBox='0 0 23 23' fill='none'>
-                            <circle cx='11.7393' cy='11.739' r='9.5' fill='#01DA86' stroke='white' stroke-width='3'/>
-                          </svg>
-                        </div>
-                      `;
-      const myHeadingSvg = `
-        <div id="myHeadingOverlay"
-             style="
-               position:absolute;
-               width:40px; height:40px;
-               transform-origin: 0px 1px;
-               transform: rotate(0deg);
-               pointer-events:none; z-index:2;">
-          <svg xmlns="http://www.w3.org/2000/svg"
-               width="40" height="40" viewBox="0 0 40 40" fill="none"
-               style="display:block; overflow:visible">
-            <path d="M0 1 L39 -11 A40 40 0 0 1 39 13 Z"
-                  fill="url(#grad)" />
-            <defs>
-              <radialGradient id="grad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
-                              gradientTransform="translate(0 1) scale(45)">
-                <stop offset="0" stop-color="#01EC91"/>
-                <stop offset="1" stop-color="#01EC91" stop-opacity="0"/>
-              </radialGradient>
-            </defs>
-          </svg>
-        </div>
-        `;
-      // 내 위치 마커
-      myLocationMarker = new kakao.maps.CustomOverlay({
-        position: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
-        content: myLocationSvg,
-        xAnchor: 0.5,
-        yAnchor: 0.5,
-        zIndex: 2,
-      });
-      myLocationMarker.setMap(map);
-
-      // 내 방향 오버레이 ( myLocation 버튼 2번 눌렀을 때만 보임)
-      myHeadingOverlay = new kakao.maps.CustomOverlay({
-        position: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
-        content: myHeadingSvg,
-        xAnchor: 0.0,
-        yAnchor: 0.5,
-        zIndex: 1,
-      });
-      myHeadingOverlay.setMap(null); // 처음엔 숨김
-
-      // 정확도 원
-      outerCircle = new kakao.maps.Circle({
-        center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
-        radius: 20, // 반경 30m 안에 있을 확률
-        strokeWeight: 0,
-        strokeColor: '#01DA86',
-        strokeOpacity: 0,
-        strokeStyle: 'solid',
-        fillColor: '#01DA86',
-        fillOpacity: 0.1,
-      });
-      outerCircle.setMap(map);
-
-      innerCircle = new kakao.maps.Circle({
-        center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
-        radius: 10, // 반경 10m 안에 있을 확률
-        strokeWeight: 0,
-        strokeColor: '#01DA86',
-        strokeOpacity: 0,
-        strokeStyle: 'solid',
-        fillColor: '#01DA86',
-        fillOpacity: 0.2,
-      });
-      innerCircle.setMap(map);
-
-      // final. 초기 세팅 완료 후 맵 준비 완료시 RN에 알림
+      const waitForMyLocation = setInterval(() => {
+        if (window.MyLocation) {
+          clearInterval(waitForMyLocation);
+          MyLocation.initMyLocationSetting(
+            kakao,
+            map,
+            DEFAULT_LAT,
+            DEFAULT_LON,
+          );
+        }
+      }, 100);
       if (window.ReactNativeWebView) {
         window.ReactNativeWebView.postMessage(
           JSON.stringify({ type: 'mapReady', isReady: true }),
@@ -136,73 +53,51 @@
       }
     });
 
-    // RN 메시지 타입별 처리
+    // RN 메시지 타입별 처리(중요)
     const handleMessage = event => {
-      console.log('handleMessage', event.data);
+      try {
+        const data = JSON.parse(event.data);
+        // 1. 내 위치 업데이트
+        if (data.type === 'myLocation') {
+          MyLocation.updateMyLocation(data.lat, data.lon, data.accuracy ?? 30);
+        }
 
-      const data = JSON.parse(event.data);
-      // 1. 내 위치 업데이트
-      if (data.type === 'myLocation') {
-        updateMyLocation(data.lat, data.lon, data.accuracy ?? 30);
-      }
+        // 2. 내 방향 업데이트
+        if (data.type === 'myHeading') {
+          MyLocation.rotateMyHeading(data.heading);
+        }
 
-      // 2. 내 방향 업데이트
-      if (data.type === 'myHeading') {
-        rotateMyHeading(data.heading);
-      }
+        // 3. 내 위치로 이동
+        if (data.type === 'myLocationFollowing') {
+          map.setCenter(MyLocation.myLocationMarker.getPosition());
+        }
 
-      // 3. 내 위치로 이동
-      if (data.type === 'myLocationFollowing') {
-        map.setCenter(myLocationMarker.getPosition());
-      }
+        // 4. 내 위치 + 나침반 모드 on
+        if (data.type === 'myLocationCompassOn') {
+          window.isCompassMode = data.isCompassMode;
+          MyLocation.setMyHeadingOverlayVisible(true);
+          const marker = MyLocation.myLocationMarker;
+          if (marker) {
+            map.setCenter(marker.getPosition());
+          }
+        }
 
-      // 4. 내 위치 + 나침반 모드 on
-      if (data.type === 'myLocationCompassOn') {
-        isCompassMode = data.isCompassMode;
-        setMyHeadingOverlayVisible(isCompassMode);
-        map.setCenter(myLocationMarker.getPosition());
-      }
-
-      // 5. 내 위치 + 나침반 모드 off
-      if (data.type === 'myLocationCompassOff') {
-        isCompassMode = data.isCompassMode;
-        setMyHeadingOverlayVisible(isCompassMode);
-        map.setCenter(myLocationMarker.getPosition());
+        // 5. 내 위치 + 나침반 모드 off
+        if (data.type === 'myLocationCompassOff') {
+          window.isCompassMode = data.isCompassMode;
+          MyLocation.setMyHeadingOverlayVisible(false);
+          const marker = MyLocation.myLocationMarker;
+          if (marker) {
+            map.setCenter(marker.getPosition());
+          }
+        }
+      } catch (error) {
+        console.error('메시지 처리 실패:', error);
       }
     };
 
-    // 1. 내 위치 업데이트(마커 + 정확도 원 포함)
-    const updateMyLocation = (lat, lon, accuracy) => {
-      const updatedPosition = new kakao.maps.LatLng(lat, lon);
-      myLocationMarker.setPosition(updatedPosition);
-      myHeadingOverlay.setPosition(updatedPosition);
-      // 정확도 원 반경 업데이트
-      outerCircle.setRadius(Math.max(accuracy, 20));
-      innerCircle.setRadius(Math.max(accuracy / 2, 10));
-      // 정확도 원 위치 업데이트
-      outerCircle.setPosition(updatedPosition);
-      innerCircle.setPosition(updatedPosition);
-      // 맵 로딩시 딱 한번 내위치로 이동
-      if (!hasMoveToMyLocationRun) {
-        map.setCenter(updatedPosition);
-        hasMoveToMyLocationRun = true;
-      }
-
-      if (isCompassMode) map.panTo(updatedPosition);
-    };
-
-    // 2. 내 방향 업데이트
-    const rotateMyHeading = heading => {
-      const myHeadingElement = document.getElementById('myHeadingOverlay');
-      if (!myHeadingElement) return;
-      myHeadingElement.style.transform = `rotate(${heading - 90}deg)`;
-    };
-
-    // myHeadingOverlay 보이기/숨기기
-    const setMyHeadingOverlayVisible = visible => {
-      myHeadingOverlay.setMap(visible ? map : null);
-    };
     document.addEventListener('message', handleMessage);
     window.addEventListener('message', handleMessage);
   </script>
+  <script src="./src/features/map/utils/myLocation.js"></script>
 </html>
