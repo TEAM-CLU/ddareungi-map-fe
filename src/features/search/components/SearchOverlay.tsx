@@ -10,10 +10,12 @@ import {
 import { tw } from '@/shared/libs/tw-helper';
 import SearchBar from './SearchBar';
 import { useAutocomplete, AutocompleteResult } from '../hooks/useAutocomplete';
+import { useRecentSearches } from '../hooks/useRecentSearches';
 import { SEARCH_CONSTANTS } from '../model/search.constants';
 import {
   IconPlace,
   IconSearch,
+  IconClose,
 } from '@/shared/components/icons';
 
 interface SearchOverlayProps {
@@ -42,16 +44,7 @@ const SearchOverlay = ({
     hasResults,
   } = useAutocomplete();
 
-  // 임시 최근 검색 데이터
-  const recentSearches = [
-    { id: '1', name: '서울과학기술대학교', address: '서울 노원구 공릉로 232' },
-    { id: '2', name: '서울과학기술대학교', address: '서울 노원구 공릉로 232' },
-    {
-      id: '3',
-      name: '서울과학기술대학교 어학원',
-      address: '서울 노원구 공릉로 232',
-    },
-  ];
+  const { recentSearches, addRecentSearch, removeRecentSearch, clearRecentSearches } = useRecentSearches();
 
   // 오버레이 표시/숨김 애니메이션
   useEffect(() => {
@@ -82,12 +75,13 @@ const SearchOverlay = ({
 
   const handlePlaceSelect = useCallback(
     (place: AutocompleteResult) => {
+      addRecentSearch(place);
       onPlaceSelect(place);
       setSearchText('');
       clearSearch();
       onClose();
     },
-    [onPlaceSelect, onClose, clearSearch],
+    [onPlaceSelect, onClose, clearSearch, addRecentSearch],
   );
 
   const handleBack = useCallback(() => {
@@ -102,15 +96,15 @@ const SearchOverlay = ({
   }, [clearSearch]);
 
   const handleRecentSelect = useCallback(
-    (recent: any) => {
+    (recent: AutocompleteResult) => {
       const autocompleteResult: AutocompleteResult = {
         id: recent.id,
         name: recent.name,
         address: recent.address,
-        latitude: undefined,
-        longitude: undefined,
-        distance: '',
-        category: '',
+        latitude: recent.latitude,
+        longitude: recent.longitude,
+        distance: recent.distance || '',
+        category: recent.category || '',
       };
       handlePlaceSelect(autocompleteResult);
     },
@@ -169,7 +163,7 @@ const SearchOverlay = ({
 
   // 최근 검색 결과
   const renderRecentResult = useCallback(
-    ({ item }: { item: any }) => (
+    ({ item }: { item: AutocompleteResult }) => (
       <TouchableOpacity
         style={[
           tw('flex-row items-center px-4 py-3 border-b'),
@@ -196,9 +190,16 @@ const SearchOverlay = ({
             {item.address}
           </Text>
         </View>
+        <TouchableOpacity
+          style={tw('p-2')}
+          onPress={() => removeRecentSearch(item.id)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <IconClose width={12} height={12} color="#999" />
+        </TouchableOpacity>
       </TouchableOpacity>
     ),
-    [handleRecentSelect],
+    [handleRecentSelect, removeRecentSearch],
   );
 
   if (!isVisible) {
@@ -241,13 +242,20 @@ const SearchOverlay = ({
           // 최근 검색 표시
           <View style={tw('flex-1')}>
             <View
-              style={[tw('px-5 py-4 border-t'), { borderTopColor: '#D8D8D8' }]}
+              style={[tw('px-5 py-4 border-t flex-row justify-between items-center'), { borderTopColor: '#D8D8D8' }]}
             >
               <Text
                 style={tw('text-base font-primary-700 text-on-surface-primary')}
               >
                 최근 검색
               </Text>
+              {recentSearches.length > 0 && (
+                <TouchableOpacity onPress={clearRecentSearches}>
+                  <Text style={tw('font-primary-600text-sm text-on-surface-tertiary')}>
+                    전체삭제
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
             {/* 최근 검색어 목록 */}
             <FlatList
@@ -257,6 +265,13 @@ const SearchOverlay = ({
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
               onScrollBeginDrag={() => Keyboard.dismiss()}
+              ListEmptyComponent={
+                <View style={tw('flex-1 justify-center items-center py-8')}>
+                  <Text style={tw('text-on-surface-tertiary text-center')}>
+                    최근 검색 기록이 없습니다
+                  </Text>
+                </View>
+              }
             />
           </View>
         ) : (
