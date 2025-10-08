@@ -9,7 +9,7 @@
     "**/*.test.tsx",
     "**/__tests__/**/*.ts",
     "**/__tests__/**/*.tsx"
-  ],
+, "map.js"  ],
   "exclude": ["**/node_modules", "**/Pods"],
   "compilerOptions": {
     "baseUrl": "./src",

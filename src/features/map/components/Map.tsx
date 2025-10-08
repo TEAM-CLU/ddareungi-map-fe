@@ -5,17 +5,20 @@ import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
+import { tw } from '@/shared/libs/tw-helper';
 
-const Map = () => {
-  const webRef = useRef<WebView>(null);
+interface MapProps {
+  webRef: React.RefObject<WebView | null>;
+}
+const Map = ({ webRef }: MapProps) => {
   const [isMapReady, setIsMapReady] = useState(false);
   const lastPos = useRef<Coordinates | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const heading = useUserHeading({
     triggerDeg: 1,
     updateDeg: 1,
-    throttleMs: 16, // 60fps 기준
-    smoothAlpha: 0.6, // 더 빠른 반응
+    throttleMs: 16,
+    smoothAlpha: 0.6,
   });
 
   const smoothPosition = (lat: number, lon: number) => {
@@ -127,8 +130,9 @@ const Map = () => {
     <WebView
       ref={webRef}
       onMessage={handleMapReadyMessage}
+      onError={e => console.log('WebView error', e.nativeEvent)}
       source={{
-        uri: 'https://9f0c43c7df0d.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://a54952c54436.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
     />
   );
