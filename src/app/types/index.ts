@@ -1,3 +1,5 @@
+import { AutocompleteResult } from '@/features/search';
+
 export type RootStackParamList = {
   DevHub: undefined;
   Landing: undefined;
@@ -8,8 +10,11 @@ export type RootStackParamList = {
       }
     | undefined;
   Register: undefined;
-  Map: undefined;
-  Search: undefined;
+  Map:
+    | {
+        selectedPlace?: AutocompleteResult;
+      }
+    | undefined;
   RouteSelect: undefined;
   RouteRecommend: undefined;
   MyPage: undefined;

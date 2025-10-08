@@ -14,7 +14,6 @@ import RouteRecommendScreen from '../screens/RouteRecommend';
 import TestScreenForCho from '@/app/screens/TestScreenForCho';
 import TestScreenForPark from '@/app/screens/TestScreenForPark';
 import { RootStackParamList } from '@/app/types';
-import SearchScreen from '../screens/SearchScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -25,7 +24,6 @@ const DevHubScreen = ({ navigation }: any) => {
     'Login',
     'Register',
     'Map',
-    'Search',
     'RouteSelect',
     'RouteRecommend',
     'MyPage',
@@ -72,7 +70,6 @@ const DevHub = () => {
         },
         Register: 'register',
         Map: 'map',
-        Search: 'search',
         RouteSelect: 'routeselect',
         RouteRecommend: 'routerecommend',
         MyPage: 'mypage',
@@ -97,10 +94,9 @@ const DevHub = () => {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Map" component={MapScreen} />
-        <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen name="MyPage" component={MyPageScreen} />
         <Stack.Screen name="RouteSelect" component={RouteSelectScreen} />
-        <Stack.Screen name='RouteRecommend' component={RouteRecommendScreen} />
+        <Stack.Screen name="RouteRecommend" component={RouteRecommendScreen} />
         <Stack.Screen name="TestCho" component={TestScreenForCho} />
         <Stack.Screen name="TestPark" component={TestScreenForPark} />
       </Stack.Navigator>

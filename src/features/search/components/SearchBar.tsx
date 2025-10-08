@@ -1,4 +1,4 @@
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import {
   IconBackArrow,
@@ -16,9 +16,11 @@ interface SearchBarProps {
   onPressSearch?: () => void;
   onPressBack?: () => void;
   onPressClose?: () => void;
+  onPress?: () => void; // 전체 영역 클릭 핸들러
   readOnly?: boolean;
   showBackButton?: boolean;
   showCloseButton?: boolean;
+  autoFocus?: boolean;
 }
 
 const SearchBar = ({
@@ -29,9 +31,11 @@ const SearchBar = ({
   onPressSearch,
   onPressBack,
   onPressClose,
+  onPress,
   readOnly = false,
   showBackButton = false,
   showCloseButton = false,
+  autoFocus = false,
 }: SearchBarProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -39,37 +43,70 @@ const SearchBar = ({
   const showXButton = showCloseButton && value.length > 0;
   const showSearchButton = !showXButton;
 
+  // readOnly이고 onPress가 있으면 전체를 TouchableOpacity로 감싸기
+  const Wrapper = readOnly && onPress ? TouchableOpacity : View;
+  const wrapperProps =
+    readOnly && onPress
+      ? {
+          onPress,
+          activeOpacity: 0.8,
+        }
+      : {};
+
   return (
-    <View style={[tw('flex-row items-center bg-surface-secondary rounded-lg border px-2 py-2 h-12'), isFocused ? tw('border-brand-primary') : tw('border-line-default')]}>
+    <Wrapper
+      {...wrapperProps}
+      style={[
+        tw(
+          'flex-row items-center bg-surface-secondary rounded-lg border px-2 py-2 h-12',
+        ),
+        isFocused ? tw('border-brand-primary') : tw('border-line-default'),
+      ]}
+    >
       {/* 뒤로가기 버튼 */}
       {showBackButton && (
         <TouchableOpacity onPress={onPressBack} style={tw('p-1')}>
-          <IconBackArrow color="gray" /> 
+          <IconBackArrow color="gray" />
         </TouchableOpacity>
       )}
 
       {/* 검색 입력 필드 */}
       <View style={tw('flex-1 flex-row items-center justify-center h-12')}>
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor="#414548"
-          style={[
-            tw(
-              'flex-1 font-primary-600 text-base text-on-surface-primary h-full m-0 p-0 leading-5 ml-4',
-            ), 
-            {
-              textAlignVertical: 'center',
-              includeFontPadding: false,
-            },
-          ]}
-          editable={!readOnly}
-          onSubmitEditing={onSubmit}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          returnKeyType="search"
-        />
+        {readOnly ? (
+          <View style={tw('flex-1 justify-center items-start ml-4')}>
+            <Text
+              style={[
+                tw('font-primary-600 text-base text-on-surface-primary'),
+                {
+                  includeFontPadding: false,
+                },
+              ]}
+            >
+              {value || placeholder}
+            </Text>
+          </View>
+        ) : (
+          <TextInput
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            placeholderTextColor="#414548"
+            style={[
+              tw(
+                'flex-1 font-primary-600 text-base text-on-surface-primary h-full m-0 p-0 leading-5 ml-4',
+              ),
+              {
+                textAlignVertical: 'center',
+                includeFontPadding: false,
+              },
+            ]}
+            onSubmitEditing={onSubmit}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            autoFocus={autoFocus}
+            returnKeyType="search"
+          />
+        )}
 
         {/* 오른쪽 버튼 (X 버튼과 검색 버튼 토글) */}
         <View style={tw('w-8 h-8 items-center justify-center')}>
@@ -84,7 +121,7 @@ const SearchBar = ({
           ) : null}
         </View>
       </View>
-    </View>
+    </Wrapper>
   );
 };
 

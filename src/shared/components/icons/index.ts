@@ -20,6 +20,7 @@ export { default as IconMute } from './IconMute';
 export { default as IconMyPage } from './IconMyPage';
 export { default as IconNaver } from './IconNaver';
 export { default as IconPause } from './IconPause';
+export { default as IconPlace } from './IconPlace';
 export { default as IconPlay } from './IconPlay';
 export { default as IconPlus } from './IconPlus';
 export { default as IconRecommendedPath } from './IconRecommendedPath';
