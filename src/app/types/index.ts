@@ -1,4 +1,4 @@
-import { AutocompleteResult } from '@/features/search';
+import { AutocompleteResult } from "@/features/search/hooks/useAutocomplete";
 
 export type RootStackParamList = {
   DevHub: undefined;
