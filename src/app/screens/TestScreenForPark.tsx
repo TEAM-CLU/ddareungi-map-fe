@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Text, View, TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import SearchBar from '@/features/search/components/SearchBar';
 import {
@@ -27,8 +27,8 @@ const TestScreenForPark = () => {
   // 검색 오버레이 상태
   const [showSearchOverlay, setShowSearchOverlay] = useState(false);
 
-  // 경로 입력바 표시 상태 - 기본적으로 표시
-  const [showRouteInputBar, setShowRouteInputBar] = useState(true);
+  // 경로 입력바 표시 상태 - 기본적으로 숨김
+  const [showRouteInputBar, setShowRouteInputBar] = useState(false);
 
   // 경로 타입 상태 - 기본적으로 CONSTANT 모드
   const [routeType, setRouteType] = useState<RouteType>(RouteType.CONSTANT);
@@ -73,6 +73,13 @@ const TestScreenForPark = () => {
         [currentSelectedPoint.id]: place,
       }));
       setCurrentSelectedPoint(null);
+    } else {
+      // 경로 포인트 선택이 없으면 기본적으로 출발지에 설정하고 RouteInputBar 표시
+      setRouteData(prev => ({
+        ...prev,
+        start: place,
+      }));
+      setShowRouteInputBar(true);
     }
 
     setShowSearchOverlay(false);
@@ -96,7 +103,7 @@ const TestScreenForPark = () => {
     const newType =
       routeType === RouteType.CONSTANT ? RouteType.LOOP : RouteType.CONSTANT;
     setRouteType(newType);
-    Alert.alert('경로 타입 변경:', newType);
+    console.log('경로 타입 변경:', newType);
   };
 
   return (
@@ -109,65 +116,39 @@ const TestScreenForPark = () => {
           <Text style={tw('text-gray-300 text-sm mt-2')}>
             지도 라이브러리 연동 예정
           </Text>
-
-          {/* 현재 모드 표시 */}
-          <View
-            style={tw('mt-4 p-3 bg-white rounded-lg border border-gray-200')}
-          >
-            <Text style={tw('text-gray-600 text-sm mb-1')}>
-              현재 경로 모드:
-            </Text>
-            <Text style={tw('text-lg font-semibold')}>
-              {routeType === RouteType.CONSTANT
-                ? '일반 모드 (CONSTANT)'
-                : '루프 모드 (LOOP)'}
-            </Text>
-            <Text style={tw('text-gray-500 text-xs mt-1')}>
-              {routeType === RouteType.CONSTANT
-                ? '출발지 → 도착지 (경유지 선택적)'
-                : '출발지 → 경유지 → 도착지 (경유지 필수)'}
-            </Text>
-          </View>
         </View>
 
-        {/* 검색바 (지도 위에 오버레이) */}
+        {/* 검색바 또는 경로 입력바 (같은 위치에서 조건부 표시) */}
         <View style={tw('absolute top-12 left-4 right-4 z-10')}>
-          <SearchBar
-            value=""
-            onChangeText={() => {}}
-            placeholder="오늘은 어디로 갈까요?"
-            readOnly={true}
-            onPress={handleSearchPress}
-          />
-        </View>
-
-        {/* 경로 입력바 토글 버튼 */}
-        <View style={tw('absolute top-24 right-4 z-10 flex-row space-x-2')}>
-          <Text
-            style={tw('bg-blue-500 text-white px-3 py-2 rounded-lg text-sm')}
-            onPress={toggleRouteInputBar}
-          >
-            {showRouteInputBar ? '경로 숨기기' : '경로 입력'}
-          </Text>
-          {showRouteInputBar && (
-            <Text
-              style={tw('bg-green-500 text-white px-3 py-2 rounded-lg text-sm')}
-              onPress={toggleRouteType}
-            >
-              {routeType === RouteType.CONSTANT ? '루프 모드' : '일반 모드'}
-            </Text>
-          )}
-        </View>
-
-        {/* 경로 입력바 */}
-        {showRouteInputBar && (
-          <View style={tw('absolute top-32 left-4 right-4 z-10')}>
+          {showRouteInputBar ? (
             <RouteInputBar
               routeType={routeType}
               onRoutePointPress={handleRoutePointPress}
               onClose={() => setShowRouteInputBar(false)}
               routeData={routeData}
             />
+          ) : (
+            <SearchBar
+              value=""
+              onChangeText={() => {}}
+              placeholder="오늘은 어디로 갈까요?"
+              readOnly={true}
+              onPress={handleSearchPress}
+            />
+          )}
+        </View>
+
+        {/* 컨트롤 버튼들 */}
+        {showRouteInputBar && (
+          <View style={tw('absolute top-20 right-4 z-10')}>
+            <TouchableOpacity
+              style={tw('bg-green-500 px-3 py-2 rounded-lg')}
+              onPress={toggleRouteType}
+            >
+              <Text style={tw('text-white text-sm font-semibold')}>
+                {routeType === RouteType.CONSTANT ? '루프' : '일반'}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
