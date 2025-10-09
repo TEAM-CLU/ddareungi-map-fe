@@ -6,6 +6,7 @@ import {
   FlatList,
   Animated,
   Keyboard,
+  Alert,
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import SearchBar from './SearchBar';
@@ -16,6 +17,7 @@ import {
   IconPlace,
   IconSearch,
   IconClose,
+  IconLocatorMark,
 } from '@/shared/components/icons';
 
 interface SearchOverlayProps {
@@ -44,7 +46,12 @@ const SearchOverlay = ({
     hasResults,
   } = useAutocomplete();
 
-  const { recentSearches, addRecentSearch, removeRecentSearch, clearRecentSearches } = useRecentSearches();
+  const {
+    recentSearches,
+    addRecentSearch,
+    removeRecentSearch,
+    clearRecentSearches,
+  } = useRecentSearches();
 
   // 오버레이 표시/숨김 애니메이션
   useEffect(() => {
@@ -121,7 +128,6 @@ const SearchOverlay = ({
         ]}
         onPress={() => handlePlaceSelect(item)}
       >
-
         <View style={tw('mr-3 items-center')}>
           <IconPlace width={15} height={18} />
           {item.distance && (
@@ -221,7 +227,6 @@ const SearchOverlay = ({
         },
       ]}
     >
-
       {/* 검색바 헤더 */}
       <View style={tw('px-4 pt-12 pb-2')}>
         <SearchBar
@@ -234,6 +239,51 @@ const SearchOverlay = ({
           onPressClose={handleClearSearch}
           autoFocus={true}
         />
+
+        {/* 빠른 액세스 태그 버튼 */}
+        <View style={[tw('flex-row mt-3'), { gap : 2}]}>
+          <TouchableOpacity
+            style={tw(
+              'bg-brand-primary rounded-full px-3 py-2 flex-row items-center',
+            )}
+            onPress={() => {
+              // 내 위치 기능 구현 예정
+              Alert.alert('내 위치 선택');
+            }}
+          >
+            <View
+              style={tw(
+                'w-4 h-4 mr-1 items-center justify-center',
+              )}
+            >
+            <IconLocatorMark width={25} height={25}/>
+            </View>
+            <Text style={tw('text-on-surface-secondary font-primary-700 text-xs')}>
+              현위치
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={tw(
+              'bg-icon-container-primary rounded-full px-4 py-2 flex-row items-center',
+            )}
+            onPress={() => {
+              // 즐겨찾기 기능 구현 예정
+              console.log('즐겨찾기 선택');
+            }}
+          >
+            <View
+              style={tw(
+                'w-4 h-4 mr-1 items-center justify-center',
+              )}
+            >
+              <Text style={tw('text-white text-xs')}>⭐</Text>
+            </View>
+            <Text style={tw('text-on-surface-secondary font-primary-700 text-xs')}>
+              즐겨찾기
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* 검색 결과 영역 */}
@@ -242,7 +292,10 @@ const SearchOverlay = ({
           // 최근 검색 표시
           <View style={tw('flex-1')}>
             <View
-              style={[tw('px-5 py-4 border-t flex-row justify-between items-center'), { borderTopColor: '#D8D8D8' }]}
+              style={[
+                tw('px-5 py-4 border-t flex-row justify-between items-center'),
+                { borderTopColor: '#D8D8D8' },
+              ]}
             >
               <Text
                 style={tw('text-base font-primary-700 text-on-surface-primary')}
@@ -251,7 +304,11 @@ const SearchOverlay = ({
               </Text>
               {recentSearches.length > 0 && (
                 <TouchableOpacity onPress={clearRecentSearches}>
-                  <Text style={tw('font-primary-600text-sm text-on-surface-tertiary')}>
+                  <Text
+                    style={tw(
+                      'font-primary-600text-sm text-on-surface-tertiary',
+                    )}
+                  >
                     전체삭제
                   </Text>
                 </TouchableOpacity>
