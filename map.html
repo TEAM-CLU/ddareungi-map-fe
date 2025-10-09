@@ -82,14 +82,10 @@
           }
         }
 
-        // 5. 내 위치 + 나침반 모드 off
+        // 5. 나침반 모드 off
         if (data.type === 'myLocationCompassOff') {
           window.isCompassMode = data.isCompassMode;
           MyLocation.setMyHeadingOverlayVisible(false);
-          const marker = MyLocation.myLocationMarker;
-          if (marker) {
-            map.setCenter(marker.getPosition());
-          }
         }
       } catch (error) {
         console.error('메시지 처리 실패:', error);
