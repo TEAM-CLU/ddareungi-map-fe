@@ -132,7 +132,7 @@ const Map = ({ webRef }: MapProps) => {
       onMessage={handleMapReadyMessage}
       onError={e => console.log('WebView error', e.nativeEvent)}
       source={{
-        uri: 'https://a54952c54436.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://92ad6e451828.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
     />
   );

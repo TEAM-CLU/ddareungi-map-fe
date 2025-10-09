@@ -33,7 +33,7 @@
       content: myLocationSvg,
       xAnchor: 0.5,
       yAnchor: 0.5,
-      zIndex: 2,
+      zIndex: 20,
     });
     myLocationMarker.setMap(mapRef);
 
@@ -92,6 +92,10 @@
 
   // 내 위치 업데이트
   const updateMyLocation = (lat, lon, accuracy) => {
+    if (!kakaoRef || !mapRef) {
+      console.error('카카오맵 초기화 실패');
+      return;
+    }
     const updatedPosition = new kakaoRef.maps.LatLng(lat, lon);
 
     // 최초 위치로 이동
@@ -113,6 +117,10 @@
 
   // 내 위치 방향 업데이트
   const rotateMyHeading = heading => {
+    if (!kakaoRef || !mapRef) {
+      console.error('카카오맵 초기화 실패');
+      return;
+    }
     const myHeadingElement = document.getElementById('myHeadingOverlay');
     if (myHeadingElement) {
       myHeadingElement.style.transform = `rotate(${heading - 90}deg)`;
@@ -121,6 +129,10 @@
 
   // 나침반 오버레이 보이기/숨기기
   const setMyHeadingOverlayVisible = isCompassMode => {
+    if (!kakaoRef || !mapRef) {
+      console.error('카카오맵 초기화 실패');
+      return;
+    }
     myHeadingOverlay.setMap(isCompassMode ? mapRef : null);
   };
 

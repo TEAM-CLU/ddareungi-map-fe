@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta name="referrer" content="origin" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=1f5d02b131e3cdce9aa8456cce15475c&autoload=false&libraries=services,clusterer,drawing"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d83ffe38adc94c04aa0c98329cbc19be&autoload=false&libraries=services,clusterer,drawing"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css"
+    />
     <style>
       * {
         margin: 0;
@@ -27,7 +33,7 @@
     const DEFAULT_LON = 126.978;
 
     kakao.maps.load(() => {
-      // 1. 맵 생성
+      // 맵 생성
       const mapContainer = document.getElementById('map');
       const mapOption = {
         center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
@@ -35,17 +41,52 @@
       };
       map = new kakao.maps.Map(mapContainer, mapOption);
 
-      const waitForMyLocation = setInterval(() => {
-        if (window.MyLocation) {
-          clearInterval(waitForMyLocation);
+      const waitForOtherScripts = setInterval(() => {
+        if (
+          window.MyLocation &&
+          window.Route &&
+          window.kakao &&
+          window.kakao.maps
+        ) {
+          clearInterval(waitForOtherScripts);
           MyLocation.initMyLocationSetting(
             kakao,
             map,
             DEFAULT_LAT,
             DEFAULT_LON,
           );
+          Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LON);
+
+          const mockRoute = {
+            mode: 'full',
+            start: { lat: 37.63149, lon: 127.07733 }, // 서울과학기술대학교
+            waypoints: [
+              { lat: 37.6364, lon: 127.0675 }, // 하계역
+              { lat: 37.6232, lon: 127.0605 }, // 월계역
+            ],
+            end: { lat: 37.6177, lon: 127.0758 }, // 태릉입구역
+            path: [
+              // start → waypoint1
+              { lat: 37.63149, lon: 127.07733 },
+              { lat: 37.6343, lon: 127.0729 },
+              { lat: 37.6364, lon: 127.0675 }, // 하계역
+
+              // waypoint1 → waypoint2
+              { lat: 37.6328, lon: 127.0652 },
+              { lat: 37.6285, lon: 127.0621 },
+              { lat: 37.6232, lon: 127.0605 }, // 월계역
+
+              // waypoint2 → end
+              { lat: 37.621, lon: 127.0668 },
+              { lat: 37.619, lon: 127.0714 },
+              { lat: 37.6177, lon: 127.0758 }, // 태릉입구역
+            ],
+          };
+          Route.drawStaticRoute(mockRoute);
         }
       }, 100);
+
+      // RN에 맵 로딩 완료 알림(중요)
       if (window.ReactNativeWebView) {
         window.ReactNativeWebView.postMessage(
           JSON.stringify({ type: 'mapReady', isReady: true }),
@@ -95,5 +136,6 @@
     document.addEventListener('message', handleMessage);
     window.addEventListener('message', handleMessage);
   </script>
-  <script src="./src/features/map/utils/myLocation.js"></script>
+  <script src="./src/features/map/utils/myLocation.js" defer></script>
+  <script src="./src/features/routing/utils/routing.js" defer></script>
 </html>
