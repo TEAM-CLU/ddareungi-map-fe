@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
@@ -9,56 +9,45 @@ import {
   IconPlus,
   IconMinus,
 } from '@/shared/components/icons';
-import {
-  RoutePoint,
-  RouteType,
-} from '../model/routing.types';
+import { RoutePoint, RouteType } from '../model/routing.types';
 import { ROUTE_CONSTANTS } from '../model/routing.constants';
 import {
-  createDefaultWaypoint,
   createStartPoint,
   createEndPoint,
-  createInitialWaypoints,
 } from '../model/routing.data';
-import { generateNextWaypointId } from '../utils/generateWaypointId';
 import { canRemoveWaypoint, canAddWaypoint } from '../utils/validateWaypoint';
+import { useRouteInput } from '../hooks/useRouteInput';
 
 interface RouteInputBarProps {
   routeType: RouteType;
+  routeData?: { [key: string]: AutocompleteResult };
   onClose: () => void;
   onRoutePointPress: (point: RoutePoint) => void;
-  onSwapStartEnd?: () => void;
-  routeData?: { [key: string]: AutocompleteResult };
+  onSwapStartEnd?: () => void; // 출발지/도착지 교환 버튼 클릭 시
+  onRouteDataComplete?: (isComplete: boolean) => void; // 라우트 데이터 다 채워졌는지
 }
 
 const RouteInputBar = ({
   routeType,
+  routeData = {},
   onClose,
   onRoutePointPress,
   onSwapStartEnd,
-  routeData = {},
+  onRouteDataComplete,
 }: RouteInputBarProps) => {
-  const [internalRouteData, setInternalRouteData] = useState(routeData);
-
-  // routeData가 변경될 때마다 internalRouteData 동기화
-  useEffect(() => {
-    setInternalRouteData(routeData);
-  }, [routeData]);
-
-  // routeType이 변경될 때마다 waypoints 상태 동기화
-  useEffect(() => {
-    if (routeType === RouteType.LOOP && waypoints.length === 0) {
-      // loop 모드로 변경 시 경유지가 없으면 기본 경유지 1개 추가
-      setWaypoints([createDefaultWaypoint('waypoint-1')]);
-    } else if (routeType === RouteType.CONSTANT && waypoints.length > 0) {
-      // constant 모드로 변경 시 모든 경유지 제거
-      setWaypoints([]);
-    }
-  }, [routeType, routeData]);
-
-  const [waypoints, setWaypoints] = useState<RoutePoint[]>(
-    createInitialWaypoints(routeType, routeData),
-  );
+  const {
+    internalRouteData,
+    setInternalRouteData,
+    waypoints,
+    setWaypoints,
+    handleAddWaypointPress,
+    handleRemoveWaypointPress,
+    resetWaypoints,
+  } = useRouteInput({
+    routeType,
+    routeData,
+    onRouteDataComplete,
+  });
 
   // 출발지와 도착지 교환 함수
   const handleSwapPress = useCallback(() => {
@@ -67,12 +56,14 @@ const RouteInputBar = ({
       start: prev.end,
       end: prev.start,
     }));
-
-    // 외부 콜백도 호출
-    if (onSwapStartEnd) {
-      onSwapStartEnd();
-    }
+    onSwapStartEnd?.();
   }, [onSwapStartEnd]);
+
+  // RouteInputBar 닫기 및 데이터 초기화
+  const handleClosePress = useCallback(() => {
+    resetWaypoints();
+    onClose();
+  }, [resetWaypoints, onClose]);
 
   const startPoint: RoutePoint = createStartPoint(
     internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.START]?.name ||
@@ -81,33 +72,6 @@ const RouteInputBar = ({
 
   const endPoint: RoutePoint = createEndPoint(
     internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.END]?.name || '',
-  );
-
-  const handleAddWaypointPress = useCallback(() => {
-    if (canAddWaypoint(waypoints.length)) {
-      const newWaypointId = generateNextWaypointId(waypoints);
-      const newWaypoint = createDefaultWaypoint(newWaypointId);
-      setWaypoints(prev => [...prev, newWaypoint]);
-    }
-  }, [waypoints]);
-
-  // RouteInputBar 닫기 및 데이터 초기화
-  const handleClosePress = useCallback(() => {
-    // waypoints 초기화
-    setWaypoints(createInitialWaypoints(routeType));
-
-    // 부모 컴포넌트의 onClose 호출
-    onClose();
-  }, [routeType, onClose]);
-
-  const handleRemoveWaypointPress = useCallback(
-    (waypointId: string) => {
-      if (!canRemoveWaypoint(routeType, waypoints.length)) {
-        return;
-      }
-      setWaypoints(prev => prev.filter(w => w.id !== waypointId));
-    },
-    [routeType, waypoints.length],
   );
 
   return (

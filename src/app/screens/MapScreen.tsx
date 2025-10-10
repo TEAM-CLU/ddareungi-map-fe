@@ -6,6 +6,8 @@ import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
 import MyLocationButton from '@/features/map/components/MyLocationButton';
 import SearchOverlay from '@/features/search/components/SearchOverlay';
+import SlideModal from '@/shared/components/modal/SlideModal';
+import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
 import { RouteType } from '@/features/routing/model/routing.types';
@@ -40,6 +42,13 @@ const MapScreen = () => {
     'start' | 'end' | 'waypoint'
   >('start');
 
+  // 선택된 장소 상태 (모달에서 표시할 장소)
+  const [selectedPlaceForModal, setSelectedPlaceForModal] =
+    useState<AutocompleteResult | null>(null);
+
+  // 경로 타입 상태 (PlaceDetailModal에서 필요)
+  const [routeType, setRouteType] = useState<RouteType>(RouteType.CONSTANT);
+
   // route params 처리
   React.useEffect(() => {
     if (route.params?.openSearchOverlay) {
@@ -49,13 +58,6 @@ const MapScreen = () => {
       }
     }
   }, [route.params]);
-
-  // 선택된 장소 상태 (모달에서 표시할 장소)
-  const [selectedPlaceForModal, setSelectedPlaceForModal] =
-    useState<AutocompleteResult | null>(null);
-
-  // 경로 타입 상태 (PlaceDetailModal에서 필요)
-  const [routeType, setRouteType] = useState<RouteType>(RouteType.CONSTANT);
 
   // 검색바 클릭 처리 - SearchOverlay 표시
   const handleSearchbarPress = () => {
@@ -93,6 +95,42 @@ const MapScreen = () => {
     placeDetailModalRef.current?.present();
   };
 
+  // PlaceDetailModal 출발/원점 버튼 클릭
+  const handleStartPress = () => {
+    if (selectedPlaceForModal) {
+      placeDetailModalRef.current?.dismiss();
+      navigation.navigate('RouteSelect', {
+        selectedPlace: selectedPlaceForModal,
+        placeType: 'start',
+        routeType: routeType,
+      });
+    }
+  };
+
+  // PlaceDetailModal 도착 버튼 클릭
+  const handleEndPress = () => {
+    if (selectedPlaceForModal) {
+      placeDetailModalRef.current?.dismiss();
+      navigation.navigate('RouteSelect', {
+        selectedPlace: selectedPlaceForModal,
+        placeType: 'end',
+        routeType: routeType,
+      });
+    }
+  };
+
+  // PlaceDetailModal 경유지 버튼 클릭
+  const handleWaypointPress = () => {
+    if (selectedPlaceForModal) {
+      placeDetailModalRef.current?.dismiss();
+      navigation.navigate('RouteSelect', {
+        selectedPlace: selectedPlaceForModal,
+        placeType: 'waypoint',
+        routeType: routeType,
+      });
+    }
+  };
+
   return (
     <View style={tw('flex-1 relative w-full')}>
       <Map webRef={webRef} />
@@ -123,6 +161,30 @@ const MapScreen = () => {
       </View>
 
       <Footer />
+
+      {/* 장소 상세 모달 */}
+      <SlideModal
+        ref={placeDetailModalRef}
+        snapPoints={['25%']}
+        onClose={() => placeDetailModalRef.current?.dismiss()}
+      >
+        {selectedPlaceForModal && (
+          <PlaceDetailModal
+            place={selectedPlaceForModal}
+            routeType={routeType}
+            onSetAsStart={handleStartPress}
+            onSetAsEnd={handleEndPress}
+            onSetAsWaypoint={handleWaypointPress}
+            onToggleRouteType={() => {
+              setRouteType(prev =>
+                prev === RouteType.CONSTANT
+                  ? RouteType.LOOP
+                  : RouteType.CONSTANT,
+              );
+            }}
+          />
+        )}
+      </SlideModal>
 
     </View>
   );

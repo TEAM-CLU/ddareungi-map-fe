@@ -27,6 +27,13 @@ const RouteSelectScreen = () => {
     [key: string]: AutocompleteResult;
   }>({});
 
+  // route params에서 routeType 먼저 설정
+  React.useEffect(() => {
+    if (route.params?.routeType) {
+      setRouteType(route.params.routeType);
+    }
+  }, [route.params?.routeType]);
+
   // route params에서 전달받은 장소 정보 처리
   React.useEffect(() => {
     if (route.params?.selectedPlace && route.params?.placeType) {
@@ -70,7 +77,7 @@ const RouteSelectScreen = () => {
         });
       }
     }
-  }, [route.params, routeType]);
+  }, [route.params?.selectedPlace, route.params?.placeType, routeType]);
 
   // RouteInputBar에서 빈 칸 선택 시 검색 화면으로 이동
   const handleRoutePointPress = (point: RoutePoint) => {

@@ -1,4 +1,5 @@
 import { AutocompleteResult } from "@/features/search/hooks/useAutocomplete";
+import { RouteType } from "@/features/routing/model/routing.types";
 
 export type RootStackParamList = {
   DevHub: undefined;
@@ -21,6 +22,7 @@ export type RootStackParamList = {
     | {
         selectedPlace?: AutocompleteResult;
         placeType?: 'start' | 'end' | 'waypoint';
+        routeType?: RouteType;
       }
     | undefined;
   RouteRecommend: undefined;
