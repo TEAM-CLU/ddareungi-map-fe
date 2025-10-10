@@ -94,7 +94,7 @@ module.exports = {
         },
 
         error: '#ef4444',
-        disabled: '##E5E7EB',
+        disabled: '#E5E7EB',
       },
 
       fontFamily: {

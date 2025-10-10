@@ -127,11 +127,6 @@
   };
 
   const createWaypointsMarkers = waypoints => {
-    if (!kakaoRef || !mapRef) {
-      console.error('카카오맵 초기화 실패');
-      return;
-    }
-
     // 기존 경유지 마커 제거
     clearWaypointsMarkers();
 
@@ -232,11 +227,6 @@
   };
 
   const drawStaticRoute = drawRouteOpts => {
-    if (!kakaoRef || !mapRef) {
-      console.error('카카오맵 초기화 실패');
-      return;
-    }
-
     // 옵션 세팅
     const {
       mode = 'full',
