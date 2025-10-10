@@ -12,13 +12,11 @@ import { RootStackParamList } from '../types';
 import Footer from '@/shared/components/Footer';
 import SearchOverlay from '@/features/search/components/SearchOverlay';
 import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
-import RouteInputBar, {
-  RouteType,
-  RoutePoint,
-} from '@/features/routing/components/RouteInputBar';
+import RouteInputBar from '@/features/routing/components/RouteInputBar';
 import SlideModal from '@/shared/components/modal/SlideModal';
 import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { RoutePoint, RouteType } from '@/features/routing/model/routing.types';
 
 type MapScreenRouteProp = RouteProp<RootStackParamList, 'Map'>;
 type MapScreenNavigationProp = NavigationProp<RootStackParamList>;

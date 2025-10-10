@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { AutocompleteResult } from '../hooks/useAutocomplete';
 import { IconBicycle } from '@/shared/components/icons';
-import { RouteType } from '@/features/routing/components/RouteInputBar';
+import { RouteType } from '@/features/routing/model/routing.types';
 
 export interface PlaceDetailModalProps {
   place: AutocompleteResult;

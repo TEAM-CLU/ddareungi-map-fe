@@ -9,18 +9,19 @@ import {
   IconPlus,
   IconMinus,
 } from '@/shared/components/icons';
-
-export enum RouteType {
-  CONSTANT = 'constant',
-  LOOP = 'loop',
-}
-
-export interface RoutePoint {
-  id: string;
-  placeholder: string;
-  value: string;
-  type: 'start' | 'waypoint' | 'end';
-}
+import {
+  RoutePoint,
+  RouteType,
+} from '../model/routing.types';
+import { ROUTE_CONSTANTS } from '../model/routing.constants';
+import {
+  createDefaultWaypoint,
+  createStartPoint,
+  createEndPoint,
+  createInitialWaypoints,
+} from '../model/routing.data';
+import { generateNextWaypointId } from '../utils/generateWaypointId';
+import { canRemoveWaypoint, canAddWaypoint } from '../utils/validateWaypoint';
 
 interface RouteInputBarProps {
   routeType: RouteType;
@@ -48,14 +49,7 @@ const RouteInputBar = ({
   useEffect(() => {
     if (routeType === RouteType.LOOP && waypoints.length === 0) {
       // loop 모드로 변경 시 경유지가 없으면 기본 경유지 1개 추가
-      setWaypoints([
-        {
-          id: 'waypoint-1',
-          placeholder: '경유지',
-          value: routeData['waypoint-1']?.name || '',
-          type: 'waypoint',
-        },
-      ]);
+      setWaypoints([createDefaultWaypoint('waypoint-1')]);
     } else if (routeType === RouteType.CONSTANT && waypoints.length > 0) {
       // constant 모드로 변경 시 모든 경유지 제거
       setWaypoints([]);
@@ -63,16 +57,7 @@ const RouteInputBar = ({
   }, [routeType, routeData]);
 
   const [waypoints, setWaypoints] = useState<RoutePoint[]>(
-    routeType === RouteType.LOOP
-      ? [
-          {
-            id: 'waypoint-1',
-            placeholder: '경유지',
-            value: routeData['waypoint-1']?.name || '',
-            type: 'waypoint',
-          },
-        ]
-      : [],
+    createInitialWaypoints(routeType, routeData),
   );
 
   // 출발지와 도착지 교환 함수
@@ -89,32 +74,19 @@ const RouteInputBar = ({
     }
   }, [onSwapStartEnd]);
 
-  const startPoint: RoutePoint = {
-    id: 'start',
-    placeholder: '출발지',
-    value: internalRouteData['start']?.name || '',
-    type: 'start',
-  };
+  const startPoint: RoutePoint = createStartPoint(
+    internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.START]?.name ||
+      '',
+  );
 
-  const endPoint: RoutePoint = {
-    id: 'end',
-    placeholder: '도착지',
-    value: internalRouteData['end']?.name || '',
-    type: 'end',
-  };
+  const endPoint: RoutePoint = createEndPoint(
+    internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.END]?.name || '',
+  );
 
   const handleAddWaypointPress = useCallback(() => {
-    if (waypoints.length < 3) {
-      // 기존 경유지 ID들을 확인하여 중복되지 않는 ID 생성
-      const existingIds = waypoints.map(w => parseInt(w.id.split('-')[1]));
-      const maxId = existingIds.length > 0 ? Math.max(...existingIds) : 0;
-
-      const newWaypoint: RoutePoint = {
-        id: `waypoint-${maxId + 1}`,
-        placeholder: '경유지',
-        value: '',
-        type: 'waypoint',
-      };
+    if (canAddWaypoint(waypoints.length)) {
+      const newWaypointId = generateNextWaypointId(waypoints);
+      const newWaypoint = createDefaultWaypoint(newWaypointId);
       setWaypoints(prev => [...prev, newWaypoint]);
     }
   }, [waypoints]);
@@ -122,18 +94,7 @@ const RouteInputBar = ({
   // RouteInputBar 닫기 및 데이터 초기화
   const handleClosePress = useCallback(() => {
     // waypoints 초기화
-    setWaypoints(
-      routeType === RouteType.LOOP
-        ? [
-            {
-              id: 'waypoint-1',
-              placeholder: '경유지',
-              value: '',
-              type: 'waypoint',
-            },
-          ]
-        : [],
-    );
+    setWaypoints(createInitialWaypoints(routeType));
 
     // 부모 컴포넌트의 onClose 호출
     onClose();
@@ -141,8 +102,7 @@ const RouteInputBar = ({
 
   const handleRemoveWaypointPress = useCallback(
     (waypointId: string) => {
-      // loop 모드일 때는 경유지가 1개 이하로 내려가지 않도록 제한
-      if (routeType === RouteType.LOOP && waypoints.length <= 1) {
+      if (!canRemoveWaypoint(routeType, waypoints.length)) {
         return;
       }
       setWaypoints(prev => prev.filter(w => w.id !== waypointId));
@@ -237,12 +197,16 @@ const RouteInputBar = ({
             >
               <Text
                 style={tw(
-                  internalRouteData['start']?.name || startPoint.value
+                  internalRouteData[
+                    ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.START
+                  ]?.name || startPoint.value
                     ? 'text-on-surface-primary font-primary-500 text-base'
                     : 'text-on-surface-placeholder font-primary-500 text-base',
                 )}
               >
-                {internalRouteData['start']?.name ||
+                {internalRouteData[
+                  ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.START
+                ]?.name ||
                   startPoint.value ||
                   startPoint.placeholder}
               </Text>
@@ -281,7 +245,7 @@ const RouteInputBar = ({
               </TouchableOpacity>
 
               {/* 우측 삭제 버튼 - loop 모드에서 경유지가 1개일 때는 숨김 */}
-              {!(routeType === RouteType.LOOP && waypoints.length <= 1) && (
+              {canRemoveWaypoint(routeType, waypoints.length) && (
                 <TouchableOpacity
                   style={[
                     tw('ml-3 w-6 h-6 items-center justify-center rounded-full'),
@@ -297,7 +261,7 @@ const RouteInputBar = ({
               {routeType === RouteType.LOOP &&
                 waypoints.length === 1 &&
                 index === 0 &&
-                waypoints.length < 3 && (
+                canAddWaypoint(waypoints.length) && (
                   <TouchableOpacity
                     style={tw(
                       'ml-3 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
@@ -324,12 +288,14 @@ const RouteInputBar = ({
             >
               <Text
                 style={tw(
-                  internalRouteData['end']?.name || endPoint.value
+                  internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.END]
+                    ?.name || endPoint.value
                     ? 'text-on-surface-primary font-primary-500 text-base'
                     : 'text-on-surface-placeholder font-primary-500 text-base',
                 )}
               >
-                {internalRouteData['end']?.name ||
+                {internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.END]
+                  ?.name ||
                   endPoint.value ||
                   endPoint.placeholder}
               </Text>
@@ -338,7 +304,7 @@ const RouteInputBar = ({
             {/* + 버튼 - 경유지가 2개 이상이거나 constant 모드일 때 도착지 우측에 표시 */}
             {((routeType === RouteType.LOOP && waypoints.length >= 2) ||
               (routeType === RouteType.CONSTANT && waypoints.length > 0)) &&
-              waypoints.length < 3 && (
+              canAddWaypoint(waypoints.length) && (
                 <TouchableOpacity
                   style={tw(
                     'w-6 h-6 items-center justify-center bg-brand-primary rounded-full',

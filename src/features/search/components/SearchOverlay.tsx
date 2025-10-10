@@ -91,13 +91,13 @@ const SearchOverlay = ({
     [onPlaceSelect, onClose, clearSearch, addRecentSearch],
   );
 
-  const handleBack = useCallback(() => {
+  const handleBackPress = useCallback(() => {
     setSearchText('');
     clearSearch();
     onClose();
   }, [clearSearch, onClose]);
 
-  const handleClearSearch = useCallback(() => {
+  const handleClearSearchPress = useCallback(() => {
     setSearchText('');
     clearSearch();
   }, [clearSearch]);
@@ -235,8 +235,8 @@ const SearchOverlay = ({
           placeholder={placeholder}
           showBackButton={true}
           showCloseButton={searchText.length > 0}
-          onPressBack={handleBack}
-          onPressClose={handleClearSearch}
+          onPressBack={handleBackPress}
+          onPressClose={handleClearSearchPress}
           autoFocus={true}
         />
 
