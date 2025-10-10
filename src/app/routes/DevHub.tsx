@@ -32,7 +32,7 @@ const DevHubScreen = ({ navigation }: any) => {
   ];
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
+    <View style={{ flex: 1 }}>
       <Text style={{ fontSize: 20, fontWeight: '700', marginBottom: 12 }}>
         🔧 DevHub
       </Text>
