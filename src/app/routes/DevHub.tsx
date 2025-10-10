@@ -71,6 +71,7 @@ const DevHub = () => {
         Register: 'register',
         Map: 'map',
         RouteSelect: 'routeselect',
+        RouteRecommend: 'routerecommend',
         MyPage: 'mypage',
         TestCho: 'testcho',
         TestPark: 'testpark',

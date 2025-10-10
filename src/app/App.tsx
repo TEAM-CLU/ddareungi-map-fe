@@ -4,11 +4,7 @@ import DevHub from '@/app/routes/DevHub';
 import { tw } from '@/shared/libs/tw-helper';
 
 const App = () => {
-  return (
-    <GestureHandlerRootView style={tw('flex-1')}>
-      <DevHub />
-    </GestureHandlerRootView>
-  );
+  return <DevHub />;
 };
 
 export default App;

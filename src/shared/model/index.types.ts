@@ -1,3 +1,4 @@
+import { RootStackParamList } from '@/app/types';
 import { ImageStyle, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 type RNStyle = StyleProp<ViewStyle | TextStyle | ImageStyle>;
@@ -22,3 +23,5 @@ export interface AuthContextType {
   removeToken: () => Promise<void>;
   hasToken: () => boolean;
 }
+
+export type FooterRoutes = keyof RootStackParamList;

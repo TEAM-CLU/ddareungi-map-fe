@@ -7,7 +7,7 @@
     "and:emu:only": "sh -c 'emulator -avd Pixel_6_API_35 -no-snapshot -gpu swiftshader_indirect -dns-server 8.8.8.8,1.1.1.1 & adb wait-for-device && until adb shell getprop sys.boot_completed | grep -m 1 1 >/dev/null; do sleep 1; done; react-native run-android --no-packager'",
     "and:device:only": "sh -c 'adb wait-for-device && until adb shell getprop sys.boot_completed | grep -m 1 1 >/dev/null; do sleep 1; done; react-native run-android --deviceId emulator-5554 --no-packager'",
     "ios:sim:only": "react-native run-ios --simulator 'iPhone 16 Pro' --verbose --no-packager",
-    "ios:device:only": "react-native run-ios --device '조유찬의 iPhone' --verbose --no-packager",
+    "ios:device:only": "react-native run-ios --device '😮‍💨👻🐣🥑' --verbose --no-packager",
     "dev:and:emu": "concurrently --raw --names \"watch,metro,android\" \"pnpm tw:watch\" \"pnpm metro\" \"pnpm and:emu:only\"",
     "dev:and:device": "concurrently --raw --names \"watch,metro,android\" \"pnpm tw:watch\" \"pnpm metro\" \"pnpm and:device:only\"",
     "dev:ios:sim": "concurrently --raw --names \"watch,metro,ios\" \"pnpm tw:watch\" \"pnpm metro\" \"pnpm ios:sim:only\"",
@@ -22,6 +22,7 @@
     "link:ast": "npx react-native-asset"
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^5.2.6",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/datetimepicker": "^8.4.5",
     "@react-native-picker/picker": "^2.11.2",
@@ -83,6 +84,7 @@
     "metro-config": "^0.81.1",
     "metro-core": "0.81.1",
     "prettier": "2.8.8",
+    "react-native-dotenv": "^3.4.11",
     "react-native-svg-transformer": "^1.5.1",
     "react-test-renderer": "19.1.0",
     "tailwindcss": "3.4.13",
