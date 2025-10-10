@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
+import IconKcal from '@/shared/components/icons/IconKcal';
 
 interface CalorieBadgeProps {
   value: number;
@@ -9,21 +10,19 @@ interface CalorieBadgeProps {
 const CalorieBadge = ({ value }: CalorieBadgeProps) => (
   <View
     style={[
-      tw('min-h-5 flex-row justify-center items-center bg-brand-primary'),
-      { minWidth: 70, borderRadius: 20, paddingHorizontal: 13, paddingVertical: 4 },
+      tw('h-5 w-full flex-row justify-center items-center bg-brand-primary'),
+      {
+        maxWidth: 70,
+        borderRadius: 20,
+        paddingHorizontal: 13,
+        paddingVertical: 4,
+      },
     ]}
   >
+    <IconKcal />
     <Text
       style={[
-        tw('text-on-surface-secondary font-primary-500 leading-6 mr-1'),
-        { fontSize: 10 },
-      ]}
-    >
-      🔥
-    </Text>
-    <Text
-      style={[
-        tw('text-on-surface-secondary font-primary-500 leading-6'),
+        tw('text-on-surface-secondary font-primary-500'),
         { fontSize: 10 },
       ]}
     >

@@ -92,10 +92,6 @@
 
   // 내 위치 업데이트
   const updateMyLocation = (lat, lon, accuracy) => {
-    if (!kakaoRef || !mapRef) {
-      console.error('카카오맵 초기화 실패');
-      return;
-    }
     const updatedPosition = new kakaoRef.maps.LatLng(lat, lon);
 
     // 최초 위치로 이동
@@ -129,10 +125,6 @@
 
   // 나침반 오버레이 보이기/숨기기
   const setMyHeadingOverlayVisible = isCompassMode => {
-    if (!kakaoRef || !mapRef) {
-      console.error('카카오맵 초기화 실패');
-      return;
-    }
     myHeadingOverlay.setMap(isCompassMode ? mapRef : null);
   };
 
