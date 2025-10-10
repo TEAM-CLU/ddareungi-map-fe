@@ -113,7 +113,7 @@ const RouteInputBar = ({
   return (
     <View
       style={tw(
-        'bg-white rounded-xl overflow-hidden mx-4 border border-line-default',
+        'bg-surface-primary rounded-xl overflow-hidden border border-line-default',
       )}
     >
       {/* 메인 입력 영역 */}
@@ -173,8 +173,8 @@ const RouteInputBar = ({
           </>
         )}
 
-        {/* 인풋 필드들 - 닫기 버튼 영역을 피하기 위한 패딩 */}
-        <View style={tw('pl-12 pr-10 py-3')}>
+        {/* 인풋 필드들 */}
+        <View style={tw('pl-12 pr-12 py-2')}>
           {/* 출발지 */}
           <View
             style={tw(
@@ -218,7 +218,7 @@ const RouteInputBar = ({
             <View
               key={waypoint.id}
               style={tw(
-                'flex-row items-center py-1.5 border-b border-line-default',
+                'flex-row items-center py-1 border-b border-line-default',
               )}
             >
               {/* 좌측 아이콘 */}
@@ -248,7 +248,7 @@ const RouteInputBar = ({
               {canRemoveWaypoint(routeType, waypoints.length) && (
                 <TouchableOpacity
                   style={[
-                    tw('ml-3 w-6 h-6 items-center justify-center rounded-full'),
+                    tw('ml-2 w-6 h-6 items-center justify-center rounded-full'),
                     { backgroundColor: '#D1D1D1' },
                   ]}
                   onPress={() => handleRemoveWaypointPress(waypoint.id)}
@@ -264,7 +264,7 @@ const RouteInputBar = ({
                 canAddWaypoint(waypoints.length) && (
                   <TouchableOpacity
                     style={tw(
-                      'ml-3 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
+                      'ml-2 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
                     )}
                     onPress={handleAddWaypointPress}
                   >
@@ -307,7 +307,7 @@ const RouteInputBar = ({
               canAddWaypoint(waypoints.length) && (
                 <TouchableOpacity
                   style={tw(
-                    'w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
+                    'ml-2 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
                   )}
                   onPress={handleAddWaypointPress}
                 >

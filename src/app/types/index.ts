@@ -13,9 +13,16 @@ export type RootStackParamList = {
   Map:
     | {
         selectedPlace?: AutocompleteResult;
+        openSearchOverlay?: boolean;
+        placeType?: 'start' | 'end' | 'waypoint';
       }
     | undefined;
-  RouteSelect: undefined;
+  RouteSelect: 
+    | {
+        selectedPlace?: AutocompleteResult;
+        placeType?: 'start' | 'end' | 'waypoint';
+      }
+    | undefined;
   RouteRecommend: undefined;
   MyPage: undefined;
   TestCho: undefined;

@@ -6,6 +6,7 @@
     waypointsMarkers = [];
   let routeRemaining;
   let routePassed;
+  let currentRouteType = 'CONSTANT'; // 'CONSTANT' | 'LOOP'
 
   const ROUTE_STYLE = {
     remaining: {
@@ -309,8 +310,14 @@
 
   // 네비게이션용 경로(기존 지나온 경로 지우기, 이탈시 재탐색 등) 추후 구현 예정
 
+  // 경로 타입 변경 (constant / loop)
+  const setRouteType = routeType => {
+    currentRouteType = routeType;
+  };
+
   window.Route = {
     initRouteSetting,
     drawStaticRoute,
+    setRouteType,
   };
 })();
