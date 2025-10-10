@@ -71,6 +71,7 @@ const DevHub = () => {
         Register: 'register',
         Map: 'map',
         RouteSelect: 'routeselect',
+        RouteRecommend: 'routerecommend',
         MyPage: 'mypage',
         TestCho: 'testcho',
         TestPark: 'testpark',
@@ -95,7 +96,7 @@ const DevHub = () => {
         <Stack.Screen name="Map" component={MapScreen} />
         <Stack.Screen name="MyPage" component={MyPageScreen} />
         <Stack.Screen name="RouteSelect" component={RouteSelectScreen} />
-        <Stack.Screen name='RouteRecommend' component={RouteRecommendScreen} />
+        <Stack.Screen name="RouteRecommend" component={RouteRecommendScreen} />
         <Stack.Screen name="TestCho" component={TestScreenForCho} />
         <Stack.Screen name="TestPark" component={TestScreenForPark} />
       </Stack.Navigator>
