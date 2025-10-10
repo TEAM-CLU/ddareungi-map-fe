@@ -76,7 +76,7 @@ const RouteInputBar = ({
   );
 
   // 출발지와 도착지 교환 함수
-  const handleSwapStartEnd = useCallback(() => {
+  const handleSwapPress = useCallback(() => {
     setInternalRouteData(prev => ({
       ...prev,
       start: prev.end,
@@ -103,7 +103,7 @@ const RouteInputBar = ({
     type: 'end',
   };
 
-  const addWaypoint = useCallback(() => {
+  const handleAddWaypointPress = useCallback(() => {
     if (waypoints.length < 3) {
       // 기존 경유지 ID들을 확인하여 중복되지 않는 ID 생성
       const existingIds = waypoints.map(w => parseInt(w.id.split('-')[1]));
@@ -119,7 +119,27 @@ const RouteInputBar = ({
     }
   }, [waypoints]);
 
-  const removeWaypoint = useCallback(
+  // RouteInputBar 닫기 및 데이터 초기화
+  const handleClosePress = useCallback(() => {
+    // waypoints 초기화
+    setWaypoints(
+      routeType === RouteType.LOOP
+        ? [
+            {
+              id: 'waypoint-1',
+              placeholder: '경유지',
+              value: '',
+              type: 'waypoint',
+            },
+          ]
+        : [],
+    );
+
+    // 부모 컴포넌트의 onClose 호출
+    onClose();
+  }, [routeType, onClose]);
+
+  const handleRemoveWaypointPress = useCallback(
     (waypointId: string) => {
       // loop 모드일 때는 경유지가 1개 이하로 내려가지 않도록 제한
       if (routeType === RouteType.LOOP && waypoints.length <= 1) {
@@ -141,7 +161,7 @@ const RouteInputBar = ({
         {/* 좌측 스위치 버튼 */}
         <View style={tw('absolute left-2 top-0 bottom-0 justify-center z-10')}>
           <TouchableOpacity
-            onPress={handleSwapStartEnd}
+            onPress={handleSwapPress}
             style={tw('w-8 h-8 items-center justify-center')}
           >
             <IconSwitch />
@@ -154,7 +174,7 @@ const RouteInputBar = ({
             style={tw('absolute right-2 top-0 bottom-0 justify-center z-20')}
           >
             <TouchableOpacity
-              onPress={onClose}
+              onPress={handleClosePress}
               style={tw('w-8 h-8 items-center justify-center')}
             >
               <IconClose color="#A7A7A7" />
@@ -173,7 +193,7 @@ const RouteInputBar = ({
                 style={tw(
                   'w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
                 )}
-                onPress={addWaypoint}
+                onPress={handleAddWaypointPress}
               >
                 <IconPlus />
               </TouchableOpacity>
@@ -184,7 +204,7 @@ const RouteInputBar = ({
               style={tw('absolute right-2 top-0 bottom-0 justify-center z-10')}
             >
               <TouchableOpacity
-                onPress={onClose}
+                onPress={handleClosePress}
                 style={tw('w-8 h-8 items-center justify-center')}
               >
                 <IconClose color="#A7A7A7" />
@@ -267,7 +287,7 @@ const RouteInputBar = ({
                     tw('ml-3 w-6 h-6 items-center justify-center rounded-full'),
                     { backgroundColor: '#D1D1D1' },
                   ]}
-                  onPress={() => removeWaypoint(waypoint.id)}
+                  onPress={() => handleRemoveWaypointPress(waypoint.id)}
                 >
                   <IconMinus width={20} color="white" />
                 </TouchableOpacity>
@@ -282,7 +302,7 @@ const RouteInputBar = ({
                     style={tw(
                       'ml-3 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
                     )}
-                    onPress={addWaypoint}
+                    onPress={handleAddWaypointPress}
                   >
                     <IconPlus />
                   </TouchableOpacity>
@@ -323,7 +343,7 @@ const RouteInputBar = ({
                   style={tw(
                     'w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
                   )}
-                  onPress={addWaypoint}
+                  onPress={handleAddWaypointPress}
                 >
                   <IconPlus />
                 </TouchableOpacity>
