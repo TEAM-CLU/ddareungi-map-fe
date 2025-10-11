@@ -133,10 +133,15 @@
         }
 
         // === 새로운 검색 관련 메시지 처리 ===
-        
+
         // 6. 장소 마커 표시
         if (data.type === 'showPlaceMarker') {
-          Search.showPlaceMarker(data.lat, data.lng, data.placeName, data.placeInfo);
+          Search.showPlaceMarker(
+            data.lat,
+            data.lng,
+            data.placeName,
+            data.placeInfo,
+          );
         }
 
         // 7. 특정 위치로 이동
@@ -185,7 +190,6 @@
         if (data.type === 'moveToRoutePoint') {
           Route.moveToRoutePoint(data.pointId);
         }
-
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }
@@ -194,7 +198,7 @@
     document.addEventListener('message', handleMessage);
     window.addEventListener('message', handleMessage);
   </script>
-  <script src="./src/features/map/utils/myLocation.js" defer></script>
+  <script src="./src/features/location/utils/myLocation.js" defer></script>
   <script src="./src/features/routing/utils/routing.js" defer></script>
   <script src="./src/features/search/utils/search.js" defer></script>
 </html>
