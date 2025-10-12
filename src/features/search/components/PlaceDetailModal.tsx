@@ -18,31 +18,6 @@ export interface PlaceDetailModalProps {
   routeType: RouteType;
 }
 
-// Mock 데이터 생성 함수
-const generateMockStationData = (placeName: string) => {
-  // 장소 이름에 따라 일정한 값을 생성하여 일관성 유지
-  const hash = placeName
-    .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const stationDistance = 150 + (hash % 500); // 150m ~ 650m
-  const walkTime = Math.ceil(stationDistance / 80); // 평균 보행속도 80m/분
-
-  const stationNames = [
-    '강남역 1번출구',
-    '역삼역 2번출구',
-    '선릉역 3번출구',
-    '삼성역 1번출구',
-    '종각역 5번출구',
-    '명동역 2번출구',
-  ];
-
-  return {
-    nearestStation: stationNames[hash % stationNames.length],
-    distance: stationDistance,
-    walkTime: walkTime,
-  };
-};
-
 const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   place,
   currentLocation,
@@ -52,8 +27,6 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   onToggleRouteType,
   routeType,
 }) => {
-  const mockStationData = generateMockStationData(place.name);
-
   // 토글 애니메이션을 위한 Animated Value
   const toggleAnimation = React.useRef(
     new Animated.Value(routeType === RouteType.LOOP ? 1 : 0),

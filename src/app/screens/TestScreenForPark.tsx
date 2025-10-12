@@ -229,8 +229,6 @@ const TestScreenForPark = () => {
               value=""
               onChangeText={() => {}}
               placeholder="오늘은 어디로 갈까요?"
-              readOnly={true}
-              onPress={handleSearchbarPress}
             />
           )}
         </View>

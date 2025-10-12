@@ -16,7 +16,6 @@ interface SearchBarProps {
   onPressSearch?: () => void;
   onPressBack?: () => void;
   onPressClose?: () => void;
-  onPress?: () => void; // 전체 영역 클릭 핸들러
   readOnly?: boolean;
   showBackButton?: boolean;
   showCloseButton?: boolean;
@@ -31,7 +30,6 @@ const SearchBar = ({
   onPressSearch,
   onPressBack,
   onPressClose,
-  onPress,
   readOnly = false,
   showBackButton = false,
   showCloseButton = false,
@@ -43,19 +41,8 @@ const SearchBar = ({
   const showXButton = showCloseButton && value.length > 0;
   const showSearchButton = !showXButton;
 
-  // readOnly이고 onPress가 있으면 전체를 TouchableOpacity로 감싸기
-  const Wrapper = readOnly && onPress ? TouchableOpacity : View;
-  const wrapperProps =
-    readOnly && onPress
-      ? {
-          onPress,
-          activeOpacity: 0.8,
-        }
-      : {};
-
   return (
-    <Wrapper
-      {...wrapperProps}
+    <View
       style={[
         tw(
           'flex-row items-center bg-surface-secondary rounded-lg border px-2 py-2 h-12',
@@ -121,7 +108,7 @@ const SearchBar = ({
           ) : null}
         </View>
       </View>
-    </Wrapper>
+    </View>
   );
 };
 

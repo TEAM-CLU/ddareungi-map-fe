@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import WebView from 'react-native-webview';
 import Footer from '@/shared/components/Footer';
@@ -138,13 +138,13 @@ const MapScreen = () => {
       {/* 검색바 */}
       {!showSearchOverlay && (
         <View style={tw('absolute top-12 left-4 right-4 z-10')}>
-          <SearchBar
-            value=""
-            onChangeText={() => {}}
-            placeholder="오늘은 어디로 갈까요?"
-            readOnly={true}
-            onPress={handleSearchbarPress}
-          />
+          <TouchableOpacity onPress={handleSearchbarPress} activeOpacity={0.9}>
+            <SearchBar
+              value=""
+              onChangeText={() => {}}
+              placeholder="오늘은 어디로 갈까요?"
+            />
+          </TouchableOpacity>
         </View>
       )}
 
@@ -185,7 +185,6 @@ const MapScreen = () => {
           />
         )}
       </SlideModal>
-
     </View>
   );
 };
