@@ -25,7 +25,7 @@
       fill="white" stroke="#01DA86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     <text
       x="20.5"
-      y="19"
+      y="14"
       text-anchor="middle"
       alignment-baseline="central"
       dy=".35em"
