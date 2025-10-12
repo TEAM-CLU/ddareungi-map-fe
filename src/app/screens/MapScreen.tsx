@@ -4,7 +4,6 @@ import { tw } from '@/shared/libs/tw-helper';
 import WebView from 'react-native-webview';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
-import MyLocationButton from '@/features/map/components/MyLocationButton';
 import SearchOverlay from '@/features/search/components/SearchOverlay';
 import SlideModal from '@/shared/components/modal/SlideModal';
 import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
@@ -20,6 +19,9 @@ import {
 } from '@react-navigation/native';
 import { RootStackParamList } from '../types/index';
 import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import MyLocationButton from '@/features/location/components/MyLocationButton';
+import StationRefreshButton from '@/features/station/components/StationRefreshButton';
+import { useStationsDataQuery } from '@/features/station/services/station.queries';
 
 type MapScreenNavigationProp = NavigationProp<RootStackParamList>;
 type MapScreenRouteProp = RouteProp<RootStackParamList, 'Map'>;
@@ -160,6 +162,10 @@ const MapScreen = () => {
         <MyLocationButton webRef={webRef} />
       </View>
 
+      <View style={tw('absolute bottom-30 right-3')}>
+        <StationRefreshButton />
+      </View>
+
       <Footer />
 
       {/* 장소 상세 모달 */}
@@ -185,7 +191,6 @@ const MapScreen = () => {
           />
         )}
       </SlideModal>
-
     </View>
   );
 };

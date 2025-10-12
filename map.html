@@ -46,6 +46,7 @@
           window.MyLocation &&
           window.Route &&
           window.Search &&
+          window.Station &&
           window.kakao &&
           window.kakao.maps
         ) {
@@ -58,6 +59,30 @@
           );
           Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LON);
           Search.initSearchSetting(kakao, map);
+          Station.initStationSeting(kakao, map);
+          // 실시간 맵 센터 좌표 RN에 전송(대여소 조회용)
+          (function sendInitialCenter() {
+            const c = map.getCenter();
+            window.ReactNativeWebView?.postMessage(
+              JSON.stringify({
+                type: 'mapCenterChanged',
+                lat: c.getLat(),
+                lon: c.getLng(),
+              }),
+            );
+          })();
+
+          // 2) 이후엔 idle 때마다 전송
+          kakao.maps.event.addListener(map, 'idle', () => {
+            const c = map.getCenter();
+            window.ReactNativeWebView?.postMessage(
+              JSON.stringify({
+                type: 'mapCenterChanged',
+                lat: c.getLat(),
+                lon: c.getLng(),
+              }),
+            );
+          });
 
           // const mockRoute = {
           //   mode: 'full',
@@ -101,6 +126,8 @@
     const handleMessage = event => {
       try {
         const data = JSON.parse(event.data);
+        console.log('[WEB] msg:', data.type, data); // ✅ 꼭 넣기
+
         // 1. 내 위치 업데이트
         if (data.type === 'myLocation') {
           MyLocation.updateMyLocation(data.lat, data.lon, data.accuracy ?? 30);
@@ -190,6 +217,11 @@
         if (data.type === 'moveToRoutePoint') {
           Route.moveToRoutePoint(data.pointId);
         }
+
+        // === 대여소 기능 ===
+        if (data.type === 'stationsDataUpdate') {
+          Station.createStationMarkers(data.stations);
+        }
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }
@@ -201,4 +233,5 @@
   <script src="./src/features/location/utils/myLocation.js" defer></script>
   <script src="./src/features/routing/utils/routing.js" defer></script>
   <script src="./src/features/search/utils/search.js" defer></script>
+  <script src="./src/features/station/utils/station.js" defer></script>
 </html>

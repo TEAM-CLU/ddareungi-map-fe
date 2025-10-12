@@ -76,7 +76,7 @@ const SearchBar = ({
           <View style={tw('flex-1 justify-center items-start ml-4')}>
             <Text
               style={[
-                tw('font-primary-600 text-base text-on-surface-primary'),
+                tw('font-primary-600 text-base text-on-surface-placeholder'),
                 {
                   includeFontPadding: false,
                 },

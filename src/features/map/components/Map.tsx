@@ -6,12 +6,19 @@ import { requestLocationPermission } from '@/features/map/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
 import { tw } from '@/shared/libs/tw-helper';
+import { useStationsDataQuery } from '@/features/station/services/station.queries';
+import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 
 interface MapProps {
   webRef: React.RefObject<WebView | null>;
 }
 const Map = ({ webRef }: MapProps) => {
   const [isMapReady, setIsMapReady] = useState(false);
+  const [mapCenterCoord, setMapCenterCoord] = useState<Coordinates | null>(
+    null,
+  );
+  const prevMapCenterCoord = useRef<Coordinates | null>(null);
+  const [isIdleEventOccuerred, setIsIdleEventOccuerred] = useState(false);
   const lastPos = useRef<Coordinates | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const heading = useUserHeading({
@@ -100,6 +107,52 @@ const Map = ({ webRef }: MapProps) => {
     }
   };
 
+  // 스테이션 모음
+
+  const handleMapCenterChanged = (event: WebViewMessageEvent) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type !== 'mapCenterChanged') return;
+
+      const next: Coordinates = { lat: data.lat, lon: data.lon };
+      const prev = prevMapCenterCoord.current;
+      const isMovedEnough = prev
+        ? getDistanceBetweenCoords(prev, next) >= 1000
+        : true; // 최초 한번은 무조건 리패치
+
+      if (isMovedEnough) {
+        setIsIdleEventOccuerred(true);
+        setMapCenterCoord(next);
+        prevMapCenterCoord.current = next;
+        refetchStationsData({ cancelRefetch: true });
+      }
+    } catch (err) {
+      console.warn('Invalid WebView message:', event.nativeEvent.data);
+    }
+  };
+
+  const stationDataQueryPayload = {
+    lat: mapCenterCoord?.lat ?? null,
+    lon: mapCenterCoord?.lon ?? null,
+    radius: 1000,
+    enable: isIdleEventOccuerred,
+    pollMs: 1000 * 60,
+  };
+  const { data: stationsData, refetch: refetchStationsData } =
+    useStationsDataQuery(stationDataQueryPayload);
+  // 스테이션 데이터가 갱신되면 웹뷰에 전달
+  useEffect(() => {
+    if (!isMapReady || !stationsData) return;
+    console.log(`[Map] stationsData count: ${stationsData}`);
+    webRef.current?.postMessage(
+      JSON.stringify({
+        type: 'stationsDataUpdate',
+        stations: stationsData,
+      }),
+    );
+  }, [stationsData, isMapReady]);
+
+  //////////////////////////////////////
   useEffect(() => {
     // 지도가 준비되면 위치 추적 시작
     if (!isMapReady) return;
@@ -126,13 +179,20 @@ const Map = ({ webRef }: MapProps) => {
     return () => appStateSubscription.remove();
   }, [isMapReady]);
 
+  const handleWebViewMessage = (event: WebViewMessageEvent) => {
+    handleMapReadyMessage(event);
+    handleMapCenterChanged(event);
+  };
   return (
     <WebView
       ref={webRef}
-      onMessage={handleMapReadyMessage}
+      javaScriptEnabled={true}
+      domStorageEnabled={true}
+      originWhitelist={['*']}
+      onMessage={handleWebViewMessage}
       onError={e => console.log('WebView error', e.nativeEvent)}
       source={{
-        uri: 'https://92ad6e451828.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://fae428a16cc5.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
     />
   );
