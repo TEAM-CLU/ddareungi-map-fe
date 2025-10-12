@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Platform, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Platform, Alert, AppState, AppStateStatus } from 'react-native';
 import RoundButton from '@/shared/components/button/RoundButton';
 import IconInfo from '@/shared/components/icons/IconInfo';
 import IconLocation from '@/shared/components/icons/IconLocation';
@@ -17,6 +17,7 @@ import {
   requestNotifications,
 } from 'react-native-permissions';
 import { PermissionItem } from '@/features/auth/model/auth.types';
+import SquareButton from '@/shared/components/button/SquareButton';
 
 interface SignUpPermissionStepProps {
   setIsReadyToSignUp: React.Dispatch<React.SetStateAction<boolean>>;
@@ -46,6 +47,8 @@ const SignUpPermissionStep = ({
       description: '주요 공지 알림 수신 및 마케팅 이벤트 홍보',
     },
   ]);
+
+  const appState = useRef(AppState.currentState);
 
   const [hasRequestedPermissions, setHasRequestedPermissions] = useState(false);
 
@@ -186,10 +189,8 @@ const SignUpPermissionStep = ({
   const getStatusColor = (permission: PermissionItem) => {
     if (permission.status === RESULTS.GRANTED) {
       return tw('text-brand-primary');
-    } else if (permission.required) {
-      return tw('text-error');
     } else {
-      return tw('text-on-surface-tertiary');
+      return tw('text-error');
     }
   };
 
@@ -227,6 +228,22 @@ const SignUpPermissionStep = ({
   };
 
   const bottomButtonProps = getBottomButtonProps();
+
+  // 설정에서 돌아오면 권한 상태 리프레시
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        checkAllPermissions(); // ← 여기서 권한 상태 리프레시!
+      }
+      appState.current = nextAppState;
+    };
+
+    const sub = AppState.addEventListener('change', handleAppStateChange);
+    return () => sub.remove();
+  }, []);
 
   return (
     <View
@@ -315,10 +332,9 @@ const SignUpPermissionStep = ({
         ))}
       </View>
 
-      <RoundButton
+      <SquareButton
         title={bottomButtonProps.title}
         onPress={bottomButtonProps.onPress}
-        preset="lg"
         disabled={bottomButtonProps.disabled}
       />
     </View>

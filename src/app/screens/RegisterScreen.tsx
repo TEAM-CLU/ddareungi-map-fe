@@ -19,9 +19,12 @@ import RoundButton from '@/shared/components/button/RoundButton';
 import IconBicycle from '@/shared/components/icons/IconBicycle';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { useAuth } from '@/app/providers';
+import axios from 'axios';
 
 const RegisterScreen = () => {
   const { mutateAsync: signUp } = useCreateUserMutation();
+  const { setToken } = useAuth();
+
   const [isLoading, setIsLoading] = useState(false);
   const [signUpStep, setSignUpStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -66,29 +69,25 @@ const RegisterScreen = () => {
     if (signUpStep === 4 && isReadyToSignUp) {
       try {
         const response: CreateUserResponse = await signUp(payload);
-        if ('statusCode' in response) {
+
+        // 성공시
+        if (!!response.accessToken) {
+          await setToken(response.accessToken);
           Alert.alert(`${response.message}`);
-          setSignUpStep(1);
-          setEmail('');
-          setPwd('');
-          setConfirmPwd('');
-          setName('');
-          setBirthDate('');
-          setGender(undefined);
-          setAddress('');
-          setIsReadyToSignUp(false);
+          setIsLoading(true);
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 2000);
           navigation.navigate('Login');
-          return;
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          Alert.alert(
+            '오류',
+            error.response?.data?.message ?? '회원가입 중 오류가 발생했습니다.',
+          );
         }
 
-        Alert.alert(`${response.message}`);
-        setIsLoading(true);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 2000);
-        navigation.navigate('Login');
-      } catch (_) {
-        Alert.alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
         setSignUpStep(1);
         setEmail('');
         setPwd('');
@@ -104,7 +103,7 @@ const RegisterScreen = () => {
     }
   };
 
-  if (isLoading) return <SimpleLoading title="로그인 후 이용해주세요." />;
+  if (isLoading) return <SimpleLoading title="" />;
 
   if (isReadyToSignUp)
     return (

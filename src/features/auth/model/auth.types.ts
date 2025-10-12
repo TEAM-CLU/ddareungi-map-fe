@@ -7,16 +7,7 @@ export interface SendVerificationEmailPayload {
   email: string;
 }
 
-export type SendVerificationEmailResponse =
-  | SendVerificationEmailResponseSuccess
-  | SendVerificationEmailResponseFailed;
-
-interface SendVerificationEmailResponseSuccess {
-  message: string;
-}
-
-interface SendVerificationEmailResponseFailed {
-  statusCode: number;
+export interface SendVerificationEmailResponse {
   message: string;
 }
 
@@ -26,74 +17,20 @@ export interface VerifyEmailPayload {
   verificationCode: string;
 }
 
-export type VerifyEmailResponse =
-  | VerifyEmailResponseSuccess
-  | VerifyEmailResponseFailed;
-interface VerifyEmailResponseSuccess {
+export interface VerifyEmailResponse {
   message: string;
   isVerified: boolean;
 }
 
-interface VerifyEmailResponseFailed {
-  statusCode: number;
-  message: string;
-}
-
 // 소셜 회원가입/로그인
-export type SocialAuthType = 'naver' | 'kakao' | 'google';
-
-export type SocialAuthResponse =
-  | SocialAuthResponseSuccess
-  | SocialAuthResponseFailed;
-export interface SocialAuthResponseSuccess {
-  accessToken: string;
-}
-
-export interface SocialAuthResponseFailed {
-  statusCode: number;
-  message: string;
-}
-
-// export interface SocialAuthPkceResponse {
-//   message: string;
-//   authUrl: string;
-//   codeVerifier: string;
-//   state: string;
-// }
-
-// export interface SocialAuthExchangeTokenPayload {
-//   codeVerifier: string;
-//   state: string;
-// }
-
-// export type SocialAuthExchangeTokenResponse =
-//   | SocialAuthExchangeTokenResponseSuccess
-//   | SocialAuthExchangeTokenResponseFailed;
-
-// interface SocialAuthExchangeTokenResponseSuccess {
-//   accessToken: string;
-//   message: string;
-// }
-
-// interface SocialAuthExchangeTokenResponseFailed {
-//   statusCode: number;
-//   message: string;
-// }
+export type SocialType = 'naver' | 'kakao' | 'google';
 
 // 비밀번호 재설정(비밀번호 찾기)
 export interface ResetPasswordPayload {
   email: string;
   newPassword: string;
 }
-export type ResetPasswordResponse =
-  | ResetPasswordResponseSuccess
-  | ResetPasswordResponseFailed;
-interface ResetPasswordResponseSuccess {
-  message: string;
-}
-
-interface ResetPasswordResponseFailed {
-  statusCode: number;
+export interface ResetPasswordResponse {
   message: string;
 }
 
@@ -110,15 +47,8 @@ export interface CreateUserPayload {
   address: string;
 }
 
-export type CreateUserResponse =
-  | CreateUserResponseSuccess
-  | CreateUserResponseFailed;
-interface CreateUserResponseSuccess {
-  message: string;
-}
-
-interface CreateUserResponseFailed {
-  statusCode: number;
+export interface CreateUserResponse {
+  accessToken: string;
   message: string;
 }
 
@@ -128,18 +58,9 @@ export interface LoginUserPayload {
   password: string;
 }
 
-export type LoginUserResponse =
-  | LoginUserResponseSuccess
-  | LoginUserResponseFailed;
-
-interface LoginUserResponseSuccess {
+export interface LoginUserResponse {
   message: string;
   accessToken: string;
-}
-
-interface LoginUserResponseFailed {
-  statusCode: number;
-  message: string;
 }
 
 // 이메일 중복 확인
@@ -147,16 +68,7 @@ export interface CheckEmailPayload {
   email: string;
 }
 
-export type CheckEmailResponse =
-  | CheckEmailResponseSuccess
-  | CheckEmailResponseFailed;
-
-interface CheckEmailResponseSuccess {
-  message: string;
-}
-
-interface CheckEmailResponseFailed {
-  statusCode: number;
+export interface CheckEmailResponse {
   message: string;
 }
 

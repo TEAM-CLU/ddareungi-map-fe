@@ -3,8 +3,6 @@ import {
   ResetPasswordResponse,
   SendVerificationEmailPayload,
   SendVerificationEmailResponse,
-  SocialAuthResponse,
-  SocialAuthType,
   VerifyEmailPayload,
   VerifyEmailResponse,
 } from '@/features/auth/model/auth.types';
@@ -33,30 +31,6 @@ export const postVerifyEmail = async (
   payload: VerifyEmailPayload,
 ): Promise<VerifyEmailResponse> => {
   const response = await authApi.post('/verify-email', payload);
-  return response.data;
-};
-
-// // 소셜 회원가입/로그인 PKCE
-// export const getSocialAuthPkce = async (
-//   socialAuthType: SocialAuthType,
-// ): Promise<SocialAuthPkceResponse> => {
-//   const response = await authApi.get(`/${socialAuthType}/pkce`);
-//   return response.data;
-// };
-
-// // 소셜 회원가입/로그인 exchange token
-// export const postSocialAuthExchangeToken = async (
-//   payload: SocialAuthExchangeTokenPayload,
-// ): Promise<SocialAuthExchangeTokenResponse> => {
-//   const response = await authApi.post(`/exchange-token`, payload);
-//   return response.data;
-// };
-
-//  소셜 회원가입/로그인
-export const getSocialAuth = async (
-  socialAuthType: SocialAuthType,
-): Promise<SocialAuthResponse> => {
-  const response = await authApi.get(`/${socialAuthType}`);
   return response.data;
 };
 
