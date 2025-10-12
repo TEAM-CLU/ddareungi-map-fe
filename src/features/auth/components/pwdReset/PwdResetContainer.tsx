@@ -2,7 +2,6 @@ import AccountLinks from '@/features/auth/components/AccountLinks';
 import PwdResetSetPasswordStep from '@/features/auth/components/pwdReset/PwdResetSetPasswordStep';
 import PwdResetVerifyEmailStep from '@/features/auth/components/pwdReset/PwdResetVerifyEmailStep';
 import SignUpPwdStep from '@/features/auth/components/signUp/SignUpPwdStep';
-import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';

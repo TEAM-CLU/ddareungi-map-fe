@@ -10,6 +10,7 @@ import {
   ResetPasswordPayload,
   ResetPasswordResponse,
 } from '@/features/auth/model/auth.types';
+import axios from 'axios';
 
 interface PwdResetSetPasswordStepProps {
   email: string;
@@ -130,34 +131,22 @@ const PwdResetSetPasswordStep = ({
       try {
         const response: ResetPasswordResponse = await resetPwd(payload);
 
-        if ('statusCode' in response) {
-          // 비밀번호가 이전에 사용했던 비밀번호일때
-          Alert.alert(`${response.message}`);
-          setCanCompletePwdReset(false);
-          setIsReadyToPwdReset(false);
-          setShowConfirmNewPwdInput(false);
-          setNewPwdSuccessDescription('');
-          setIsValidNewPwd(false);
-          setNewPwdErrorDescription('이전에 사용했던 비밀번호입니다.');
-          setConfirmNewPwd('');
-          setConfirmNewPwdSuccessDescription('');
-          setResetPwdStep(1);
-          return; // 에러 케이스이므로 여기서 종료
-        }
-
         // 성공 케이스
         Alert.alert(`${response.message}`);
         setAccountFeatures(null);
         return;
-      } catch (_) {
-        Alert.alert('비밀번호 재설정에 실패했습니다. 다시 시도해주세요.');
-        setEmail('');
-        setNewPwd('');
-        setConfirmNewPwd('');
-        setCanCompletePwdReset(false);
-        setIsReadyToPwdReset(false);
-        setShowConfirmNewPwdInput(false);
-        setResetPwdStep(1);
+      } catch (error) {
+        setIsValidNewPwd(false);
+        setNewPwdSuccessDescription('');
+        setConfirmNewPwdSuccessDescription('');
+        if (axios.isAxiosError(error)) {
+          setNewPwdErrorDescription(
+            `${
+              error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'
+            }`,
+          );
+        }
+        return;
       }
     }
   };
