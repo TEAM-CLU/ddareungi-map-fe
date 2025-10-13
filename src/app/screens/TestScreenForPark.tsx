@@ -17,6 +17,7 @@ import SlideModal from '@/shared/components/modal/SlideModal';
 import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { RoutePoint, RouteType } from '@/features/routing/model/routing.types';
+import RouteTimeRefreshBar from '@/features/routing/components/RouteTimeRefreshBar';
 
 type MapScreenRouteProp = RouteProp<RootStackParamList, 'Map'>;
 type MapScreenNavigationProp = NavigationProp<RootStackParamList>;
@@ -188,82 +189,10 @@ const TestScreenForPark = () => {
   };
 
   return (
-    <View style={tw('flex-1')}>
-      {/* 지도 영역 (임시) */}
-      <View style={tw('flex-1 bg-gray-100')}>
-        {/* 여기에 실제 지도 컴포넌트가 들어갈 예정 */}
-        <View style={tw('flex-1 items-center justify-center')}>
-          <Text style={tw('text-gray-400 text-lg')}>지도 영역</Text>
-          <Text style={tw('text-gray-300 text-sm mt-2')}>
-            지도 라이브러리 연동 예정
-          </Text>
-
-          {/* 선택된 장소 임시 마커 표시 */}
-          {selectedPlaceForModal && (
-            <View style={tw('mt-4 bg-white p-3 rounded-lg shadow')}>
-              <Text style={tw('text-green-600 font-semibold')}>📍</Text>
-              <Text style={tw('text-gray-800')}>
-                {selectedPlaceForModal.name}
-              </Text>
-              <Text style={tw('text-gray-500 text-xs')}>
-                {selectedPlaceForModal.address}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* 검색바 또는 경로 입력바 (같은 위치에서 조건부 표시) */}
-        <View style={tw('absolute top-12 left-4 right-4 z-10')}>
-          {showRouteInputBar ? (
-            <RouteInputBar
-              routeType={routeType}
-              onRoutePointPress={handleRoutePointPress}
-              onClose={() => {
-                setShowRouteInputBar(false);
-                handleRouteDataReset(); // RouteInputBar 닫을 때 데이터 초기화
-              }}
-              routeData={routeData}
-            />
-          ) : (
-            <SearchBar
-              value=""
-              onChangeText={() => {}}
-              placeholder="오늘은 어디로 갈까요?"
-              readOnly={true}
-              onPress={handleSearchbarPress}
-            />
-          )}
-        </View>
+    <View style={tw('flex-1 bg-white')}>
+      <View style={tw('px-4 pt-12')}>
+        <RouteTimeRefreshBar />
       </View>
-
-      {/* 검색 오버레이 - 항상 마운트, 표시만 제어 */}
-      <SearchOverlay
-        isVisible={showSearchOverlay}
-        onClose={handleSearchbarClose}
-        onPlaceSelect={handlePlaceSelect}
-        placeholder="오늘은 어디로 갈까요?"
-      />
-
-      {/* 장소 상세 정보 슬라이드 모달 */}
-      <SlideModal
-        ref={placeDetailModalRef}
-        snapPoints={['25%', '30%']}
-        initialIndex={1}
-        onClose={handleModalClose}
-      >
-        {selectedPlaceForModal && (
-          <PlaceDetailModal
-            place={selectedPlaceForModal}
-            onSetAsStart={handleStartPress}
-            onSetAsEnd={handleEndPress}
-            onSetAsWaypoint={handleWaypointPress}
-            onToggleRouteType={toggleRouteType}
-            routeType={routeType}
-          />
-        )}
-      </SlideModal>
-
-      <Footer />
     </View>
   );
 };

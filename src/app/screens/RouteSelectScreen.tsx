@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import RouteInputBar from '@/features/routing/components/RouteInputBar';
 import { RoutePoint, RouteType } from '@/features/routing/model/routing.types';
@@ -11,6 +11,8 @@ import {
   NavigationProp,
 } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
+import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
+import RouteTimeRefreshBar from '@/features/routing/components/RouteTimeRefreshBar';
 
 type RouteSelectScreenRouteProp = RouteProp<RootStackParamList, 'RouteSelect'>;
 type RouteSelectScreenNavigationProp = NavigationProp<RootStackParamList>;
@@ -109,10 +111,8 @@ const RouteSelectScreen = () => {
         </View>
       </View>
 
-      {/* 나머지 컨텐츠 영역 */}
-      <View style={tw('flex-1 p-4')}>
-        <Text style={tw('text-gray-600 text-base')}>경로 옵션</Text>
-      </View>
+      <RouteTimeRefreshBar />
+      <RouteSelectContainer />
     </View>
   );
 };

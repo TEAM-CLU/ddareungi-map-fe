@@ -11,9 +11,9 @@ const RouteSelectContainer = () => {
     <TouchableOpacity
       style={[
         tw(
-          'bg-surface-primary w-full px-4 py-5 flex flex-col items-start justify-between',
+          'bg-surface-primary w-full px-4 py-5 flex flex-col items-start justify-between border-b',
         ),
-        { height: 300 },
+        { height: 300, borderColor: '#D8D8D8' },
       ]}
     >
       {/* 상단부 */}
