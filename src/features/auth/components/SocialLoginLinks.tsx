@@ -1,19 +1,24 @@
-import { Alert, Modal, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, Modal, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import IconGoogle from '@/shared/components/icons/IconGoogle';
 import IconKakao from '@/shared/components/icons/IconKakao';
 import IconNaver from '@/shared/components/icons/IconNaver';
-import { SocialAuthType } from '@/features/auth/model/auth.types';
-import { useRef, useState } from 'react';
-import WebView, {
-  WebViewNavigation,
-  WebViewMessageEvent,
-} from 'react-native-webview';
-import { SERVER_URL } from '@/shared/model/index.constants';
 import { useAuth } from '@/app/providers';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '@/app/types';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useRef, useState } from 'react';
+import {
+  SocialAuthExchangeTokenResponse,
+  SocialAuthGetUrlResponse,
+  SocialType,
+} from '@/features/auth/model/auth.types';
+import {
+  useSocialAuthCheckStatusQuery,
+  useSocialAuthExchangeTokenMutation,
+  useSocialAuthGetUrlMutation,
+} from '@/features/auth/services/auth.queries';
+import { useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 
 interface SocialLoginLinksProps {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -21,57 +26,95 @@ interface SocialLoginLinksProps {
 
 const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
   const { setToken } = useAuth();
-  const [webViewVisible, setWebViewVisible] = useState(false);
-  const [authUrl, setAuthUrl] = useState('');
-  const webViewRef = useRef<WebView>(null);
+  const { mutateAsync: getAuthUrl } = useSocialAuthGetUrlMutation();
+  const { mutateAsync: exchangeToken } = useSocialAuthExchangeTokenMutation();
+  const [canStartPolling, setCanStartPolling] = useState<boolean>(false);
+  const clientState = useRef<string>('');
+  const codeVerifier = useRef<string>('');
+
+  const queryClient = useQueryClient();
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const handleSocialLoginButtonPress = async (
-    socialAuthType: SocialAuthType,
-  ) => {
-    // WebView 열기
-    setAuthUrl(`${SERVER_URL}/auth/${socialAuthType}`);
-    setWebViewVisible(true);
-  };
+  const handleSocialLoginButtonPress = async (socialType: SocialType) => {
+    setIsLoading(true);
 
-  const handleWebViewNavigationStateChange = (navState: WebViewNavigation) => {
-    // URL이 callback 페이지(JSON 응답)가 되었을 때
-    if (navState.url.includes('/callback')) {
-      // WebView에서 JavaScript로 응답 읽기
-      webViewRef.current?.injectJavaScript(`
-        window.ReactNativeWebView.postMessage(document.body.innerText);
-      `);
-    }
-  };
-
-  const handleWebViewMessage = async (event: WebViewMessageEvent) => {
+    // 디버깅용 모든 값 콘솔확인
+    console.log('handleSocialLoginButtonPress', { socialType });
     try {
-      const data = JSON.parse(event.nativeEvent.data);
-
-      // 실패: { statusCode, message }
-      if (data.statusCode) {
-        setWebViewVisible(false);
-        Alert.alert('로그인 실패', data.message);
-      }
-
-      // 성공
-      if (data.accessToken) {
-        // 토큰 저장 (AuthProvider 사용)
-        await setToken(data.accessToken);
-        // WebView 닫기
-        setWebViewVisible(false);
-        setIsLoading(true);
+      const response: SocialAuthGetUrlResponse = await getAuthUrl(socialType);
+      console.log('getAuthUrl response', response);
+      if (!!response.authUrl && !!response.state && !!response.codeVerifier) {
+        Linking.openURL(response.authUrl);
         setTimeout(() => {
-          setIsLoading(false);
+          setCanStartPolling(true);
         }, 3000);
-        navigation.navigate('Map');
+        clientState.current = response.state;
+        codeVerifier.current = response.codeVerifier;
       }
-    } catch (_) {
-      setWebViewVisible(false);
-      Alert.alert('오류', '로그인 처리 중 오류가 발생했습니다.');
+    } catch (error) {
+      resetFlow();
+      if (axios.isAxiosError(error)) {
+        // 에러코드확인
+        Alert.alert(
+          `${error.response?.data?.message || '요청 실패. 다시 시도해주세요.'}`,
+        );
+      }
     }
   };
+  const { data: loginStatusInfo } = useSocialAuthCheckStatusQuery({
+    pollMs: 3000,
+    canRun: canStartPolling,
+    payloadForApi: { clientState: clientState.current },
+  });
+
+  const resetFlow = () => {
+    setIsLoading(false);
+    setCanStartPolling(false);
+    clientState.current = '';
+    codeVerifier.current = '';
+  };
+
+  useEffect(() => {
+    const handleSocialLogin = async () => {
+      if (loginStatusInfo?.isComplete && loginStatusInfo?.state) {
+        if (clientState.current !== loginStatusInfo.state) {
+          resetFlow();
+          Alert.alert(
+            '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+          );
+          return;
+        }
+        try {
+          const payload = { codeVerifier: codeVerifier.current };
+          const response: SocialAuthExchangeTokenResponse = await exchangeToken(
+            payload,
+          );
+          if (response.accessToken) {
+            setCanStartPolling(false);
+            const key = ['auth', 'check-status', clientState.current] as const;
+            await queryClient.cancelQueries({ queryKey: key });
+            queryClient.removeQueries({ queryKey: key, exact: true });
+            setToken(response.accessToken);
+            navigation.navigate('Map');
+            setTimeout(() => {
+              setIsLoading(false);
+            }, 2000);
+          }
+        } catch (error) {
+          resetFlow();
+          if (axios.isAxiosError(error)) {
+            Alert.alert(
+              `${
+                error.response?.data?.message || '요청 실패. 다시 시도해주세요.'
+              }`,
+            );
+          }
+        }
+      }
+    };
+    handleSocialLogin();
+  }, [loginStatusInfo]);
 
   return (
     <View
@@ -123,17 +166,6 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
       >
         <IconNaver size={45} />
       </TouchableOpacity>
-      <Modal visible={webViewVisible} animationType="slide">
-        <SafeAreaView>
-          <WebView
-            ref={webViewRef}
-            source={{ uri: authUrl }}
-            userAgent="Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
-            onNavigationStateChange={handleWebViewNavigationStateChange}
-            onMessage={handleWebViewMessage}
-          />
-        </SafeAreaView>
-      </Modal>
     </View>
   );
 };

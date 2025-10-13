@@ -25,6 +25,37 @@ export interface VerifyEmailResponse {
 // 소셜 회원가입/로그인
 export type SocialType = 'naver' | 'kakao' | 'google';
 
+export interface SocialAuthGetUrlResponse {
+  message: string;
+  authUrl: string;
+  state: string;
+  codeVerifier: string;
+}
+
+export interface SocialAuthCheckStatusPayload {
+  clientState: string;
+}
+export interface SocialAuthCheckStatusResponse {
+  state: string | null;
+  isComplete: boolean;
+  message: string;
+  recommendedPollingInterval: number;
+}
+
+export interface SocialAuthExchangeTokenPayload {
+  codeVerifier: string;
+}
+
+export interface SocialAuthExchangeTokenResponse {
+  accessToken: string;
+  message: string;
+}
+
+export interface SocialAuthCheckStatusQueryPayload {
+  pollMs: number;
+  canRun: boolean;
+  payloadForApi: SocialAuthCheckStatusPayload;
+}
 // 비밀번호 재설정(비밀번호 찾기)
 export interface ResetPasswordPayload {
   email: string;
