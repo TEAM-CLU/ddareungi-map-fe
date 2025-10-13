@@ -16,6 +16,7 @@ import {
   postVerifyEmail,
 } from '@/features/auth/services/auth.api';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Alert } from 'react-native';
 
 // 이메일 인증 코드 발송
 export const useSendVerificationEmailMutation = () => {
@@ -80,12 +81,14 @@ export const useSocialAuthCheckStatusQuery = (
     refetchInterval: query => {
       const data = query.state.data as
         | SocialAuthCheckStatusResponse
+        | null
         | undefined;
-      if (!data) return false;
+      if (!data) return payload.pollMs ?? 3000;
       return data.isComplete ? false : data.recommendedPollingInterval ?? 3000;
     },
     retry: 1,
     refetchOnWindowFocus: false,
+    refetchOnReconnect: 'always',
   });
 };
 

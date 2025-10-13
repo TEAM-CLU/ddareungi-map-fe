@@ -1,4 +1,11 @@
-import { Alert, Linking, Modal, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  AppState,
+  Linking,
+  Modal,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import IconGoogle from '@/shared/components/icons/IconGoogle';
 import IconKakao from '@/shared/components/icons/IconKakao';
@@ -31,6 +38,7 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
   const [canStartPolling, setCanStartPolling] = useState<boolean>(false);
   const clientState = useRef<string>('');
   const codeVerifier = useRef<string>('');
+  const waitingForAuth = useRef(false);
 
   const queryClient = useQueryClient();
 
@@ -39,23 +47,19 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
   const handleSocialLoginButtonPress = async (socialType: SocialType) => {
     setIsLoading(true);
 
-    // 디버깅용 모든 값 콘솔확인
-    console.log('handleSocialLoginButtonPress', { socialType });
     try {
       const response: SocialAuthGetUrlResponse = await getAuthUrl(socialType);
-      console.log('getAuthUrl response', response);
-      if (!!response.authUrl && !!response.state && !!response.codeVerifier) {
-        Linking.openURL(response.authUrl);
-        setTimeout(() => {
-          setCanStartPolling(true);
-        }, 3000);
-        clientState.current = response.state;
-        codeVerifier.current = response.codeVerifier;
+      if (!response.authUrl || !response.state || !response.codeVerifier) {
+        resetFlow();
+        return;
       }
+      Linking.openURL(response.authUrl);
+      clientState.current = response.state;
+      codeVerifier.current = response.codeVerifier;
+      waitingForAuth.current = true;
     } catch (error) {
-      resetFlow();
       if (axios.isAxiosError(error)) {
-        // 에러코드확인
+        resetFlow();
         Alert.alert(
           `${error.response?.data?.message || '요청 실패. 다시 시도해주세요.'}`,
         );
@@ -73,43 +77,67 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
     setCanStartPolling(false);
     clientState.current = '';
     codeVerifier.current = '';
+    waitingForAuth.current = false;
   };
 
+  // 앱이 포그라운드로 돌아왔을 때 폴링 시작
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', status => {
+      if (
+        status === 'active' &&
+        waitingForAuth.current &&
+        clientState.current
+      ) {
+        setCanStartPolling(true);
+        waitingForAuth.current = false;
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  // 토큰 교환
   useEffect(() => {
     const handleSocialLogin = async () => {
-      if (loginStatusInfo?.isComplete && loginStatusInfo?.state) {
-        if (clientState.current !== loginStatusInfo.state) {
+      if (!loginStatusInfo?.isComplete || !loginStatusInfo?.state) {
+        return;
+      }
+
+      if (clientState.current !== loginStatusInfo.state) {
+        resetFlow();
+        Alert.alert(
+          '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        );
+        return;
+      }
+      try {
+        const payload = { codeVerifier: codeVerifier.current };
+        const response: SocialAuthExchangeTokenResponse = await exchangeToken(
+          payload,
+        );
+        if (!response.accessToken) {
           resetFlow();
           Alert.alert(
             '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
           );
           return;
         }
-        try {
-          const payload = { codeVerifier: codeVerifier.current };
-          const response: SocialAuthExchangeTokenResponse = await exchangeToken(
-            payload,
+        setCanStartPolling(false);
+        const key = ['auth', 'check-status', clientState.current] as const;
+        await queryClient.cancelQueries({ queryKey: key });
+        queryClient.removeQueries({ queryKey: key, exact: true });
+        setToken(response.accessToken);
+        navigation.navigate('Map');
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000);
+      } catch (error) {
+        resetFlow();
+        if (axios.isAxiosError(error)) {
+          Alert.alert(
+            `${
+              error.response?.data?.message || '요청 실패. 다시 시도해주세요.'
+            }`,
           );
-          if (response.accessToken) {
-            setCanStartPolling(false);
-            const key = ['auth', 'check-status', clientState.current] as const;
-            await queryClient.cancelQueries({ queryKey: key });
-            queryClient.removeQueries({ queryKey: key, exact: true });
-            setToken(response.accessToken);
-            navigation.navigate('Map');
-            setTimeout(() => {
-              setIsLoading(false);
-            }, 2000);
-          }
-        } catch (error) {
-          resetFlow();
-          if (axios.isAxiosError(error)) {
-            Alert.alert(
-              `${
-                error.response?.data?.message || '요청 실패. 다시 시도해주세요.'
-              }`,
-            );
-          }
         }
       }
     };
