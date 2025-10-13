@@ -13,35 +13,10 @@ export interface PlaceDetailModalProps {
   };
   onSetAsStart: () => void;
   onSetAsEnd: () => void;
-  onSetAsWaypoint?: () => void; // 경유지로 설정하는 함수 추가
+  onSetAsWaypoint?: () => void;
   onToggleRouteType: () => void;
   routeType: RouteType;
 }
-
-// Mock 데이터 생성 함수
-const generateMockStationData = (placeName: string) => {
-  // 장소 이름에 따라 일정한 값을 생성하여 일관성 유지
-  const hash = placeName
-    .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const stationDistance = 150 + (hash % 500); // 150m ~ 650m
-  const walkTime = Math.ceil(stationDistance / 80); // 평균 보행속도 80m/분
-
-  const stationNames = [
-    '강남역 1번출구',
-    '역삼역 2번출구',
-    '선릉역 3번출구',
-    '삼성역 1번출구',
-    '종각역 5번출구',
-    '명동역 2번출구',
-  ];
-
-  return {
-    nearestStation: stationNames[hash % stationNames.length],
-    distance: stationDistance,
-    walkTime: walkTime,
-  };
-};
 
 const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   place,
@@ -52,9 +27,7 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   onToggleRouteType,
   routeType,
 }) => {
-  const mockStationData = generateMockStationData(place.name);
-
-  // 토글 애니메이션을 위한 Animated Value
+  // 토글 애니메이션
   const toggleAnimation = React.useRef(
     new Animated.Value(routeType === RouteType.LOOP ? 1 : 0),
   ).current;
@@ -69,32 +42,15 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   }, [routeType, toggleAnimation]);
 
   // 토글 버튼 핸들러
-  const handleTogglePress = () => {
-    onToggleRouteType();
-  };
+  const handleTogglePress = () => onToggleRouteType();
 
   // 첫 번째 버튼 (원점/출발) 핸들러
-  const handleFirstButtonPress = () => {
-    if (routeType === RouteType.LOOP) {
-      // Loop 모드: 원점 - 출발지=도착지로 동일하게 설정
-      onSetAsStart();
-    } else {
-      // Constant 모드: 출발지 설정
-      onSetAsStart();
-    }
-  };
+  const handleFirstButtonPress = () => onSetAsStart();
 
   // 두 번째 버튼 (반환점/도착) 핸들러
   const handleSecondButtonPress = () => {
-    if (routeType === RouteType.LOOP) {
-      // Loop 모드: 반환점 - 경유지로 설정
-      if (onSetAsWaypoint) {
-        onSetAsWaypoint();
-      }
-    } else {
-      // Constant 모드: 도착지 설정
-      onSetAsEnd();
-    }
+    if (routeType === RouteType.LOOP && onSetAsWaypoint) onSetAsWaypoint();
+    else onSetAsEnd();
   };
 
   return (

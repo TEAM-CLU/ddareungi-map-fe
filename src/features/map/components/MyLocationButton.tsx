@@ -1,8 +1,7 @@
-import IconLocation from '@/shared/components/icons/IconLocation';
-import IconLocatorMark from '@/shared/components/icons/IconLocatorMark';
+import { IconLocatorMark } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
-import { useRef, useState } from 'react';
-import { Touchable, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { TouchableOpacity } from 'react-native';
 import WebView from 'react-native-webview';
 
 interface MyLocationButtonProps {

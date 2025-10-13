@@ -1,4 +1,5 @@
-// Map WebView 통신을 위한 메시지 타입 정의
+// WebView와 React Native 간 통신을 타입 안정성 있게 관리
+// RN 쪽에서만 import 해서 사용 (useMapWebview, useMapSearch, useMapRouting, Map.tsx)
 
 export interface MapWebviewMessage {
   type: string;
@@ -119,8 +120,8 @@ export interface MapMovedToLocationMessage {
   placeName: string;
 }
 
-export interface RouteUpdatedMessage {
-  type: 'routeUpdated';
+export interface RouteTypeUpdatedMessage {
+  type: 'routeTypeUpdated';
   routeType: 'CONSTANT' | 'LOOP';
   pointsCount: number;
 }
@@ -149,5 +150,5 @@ export type WebViewMessageToRN =
   | ShowPlaceDetailModalMessage
   | PlaceMarkerShownMessage
   | MapMovedToLocationMessage
-  | RouteUpdatedMessage
+  | RouteTypeUpdatedMessage
   | RouteClearedMessage;

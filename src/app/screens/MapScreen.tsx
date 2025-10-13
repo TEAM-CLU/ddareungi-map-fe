@@ -1,135 +1,31 @@
-import React, { useRef, useState } from 'react';
-import { View } from 'react-native';
+import React from 'react';
+import { TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import WebView from 'react-native-webview';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
 import MyLocationButton from '@/features/map/components/MyLocationButton';
 import SearchOverlay from '@/features/search/components/SearchOverlay';
 import SlideModal from '@/shared/components/modal/SlideModal';
 import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
-import { RouteType } from '@/features/routing/model/routing.types';
 import SearchBar from '@/features/search/components/SearchBar';
-import {
-  useNavigation,
-  NavigationProp,
-  RouteProp,
-  useRoute,
-} from '@react-navigation/native';
+import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types/index';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
-
-type MapScreenNavigationProp = NavigationProp<RootStackParamList>;
-type MapScreenRouteProp = RouteProp<RootStackParamList, 'Map'>;
+import { useMapController } from '../providers/map/useMapController';
 
 const MapScreen = () => {
-  const webRef = useRef<WebView | null>(null);
-  const navigation = useNavigation<MapScreenNavigationProp>();
-  const route = useRoute<MapScreenRouteProp>();
-  const placeDetailModalRef = useRef<BottomSheetModal>(null);
-
-  // 맵 준비 상태
-  const [isMapReady, setIsMapReady] = useState(false);
-  const { showPlaceMarker } = useMapWebview(webRef, isMapReady);
-
-  // 검색 관련 상태
-  const [showSearchOverlay, setShowSearchOverlay] = useState(false);
-
-  // RouteSelect에서 온 경우의 placeType 저장
-  const [currentPlaceType, setCurrentPlaceType] = useState<
-    'start' | 'end' | 'waypoint'
-  >('start');
-
-  // 선택된 장소 상태 (모달에서 표시할 장소)
-  const [selectedPlaceForModal, setSelectedPlaceForModal] =
-    useState<AutocompleteResult | null>(null);
-
-  // 경로 타입 상태 (PlaceDetailModal에서 필요)
-  const [routeType, setRouteType] = useState<RouteType>(RouteType.CONSTANT);
-
-  // route params 처리
-  React.useEffect(() => {
-    if (route.params?.openSearchOverlay) {
-      setShowSearchOverlay(true);
-      if (route.params.placeType) {
-        setCurrentPlaceType(route.params.placeType);
-      }
-    }
-  }, [route.params]);
-
-  // 검색바 클릭 처리 - SearchOverlay 표시
-  const handleSearchbarPress = () => {
-    setShowSearchOverlay(true);
-  };
-
-  // 검색 오버레이 닫기
-  const handleSearchClose = () => {
-    setShowSearchOverlay(false);
-    // RouteSelect에서 온 경우 다시 RouteSelect로 돌아가기
-    if (route.params?.openSearchOverlay) {
-      navigation.goBack();
-    }
-  };
-
-  // 장소 선택 처리 (검색 결과에서)
-  const handlePlaceSelect = (place: AutocompleteResult) => {
-    // RouteSelect에서 온 경우: RouteSelect로 돌아가면서 선택된 장소 전달
-    if (route.params?.openSearchOverlay) {
-      setShowSearchOverlay(false);
-      navigation.navigate('RouteSelect', {
-        selectedPlace: place,
-        placeType: currentPlaceType,
-      });
-      return;
-    }
-
-    // 일반 검색의 경우: 기존 로직대로 맵에 마커 표시 + 모달
-    if (place.latitude && place.longitude) {
-      showPlaceMarker(place.latitude, place.longitude, place.name, place);
-    }
-
-    setShowSearchOverlay(false);
-    setSelectedPlaceForModal(place);
-    placeDetailModalRef.current?.present();
-  };
-
-  // PlaceDetailModal 출발/원점 버튼 클릭
-  const handleStartPress = () => {
-    if (selectedPlaceForModal) {
-      placeDetailModalRef.current?.dismiss();
-      navigation.navigate('RouteSelect', {
-        selectedPlace: selectedPlaceForModal,
-        placeType: 'start',
-        routeType: routeType,
-      });
-    }
-  };
-
-  // PlaceDetailModal 도착 버튼 클릭
-  const handleEndPress = () => {
-    if (selectedPlaceForModal) {
-      placeDetailModalRef.current?.dismiss();
-      navigation.navigate('RouteSelect', {
-        selectedPlace: selectedPlaceForModal,
-        placeType: 'end',
-        routeType: routeType,
-      });
-    }
-  };
-
-  // PlaceDetailModal 경유지 버튼 클릭
-  const handleWaypointPress = () => {
-    if (selectedPlaceForModal) {
-      placeDetailModalRef.current?.dismiss();
-      navigation.navigate('RouteSelect', {
-        selectedPlace: selectedPlaceForModal,
-        placeType: 'waypoint',
-        routeType: routeType,
-      });
-    }
-  };
+  const {
+    webRef,
+    showSearchOverlay,
+    isPlaceModalVisible,
+    routeType,
+    selectedPlaceForModal,
+    handleSearchbarPress,
+    handleSearchClose,
+    handlePlaceSelect,
+    handlePlaceTypeConfirm,
+    toggleRouteType,
+    setPlaceModalVisible,
+  } = useMapController();
 
   return (
     <View style={tw('flex-1 relative w-full')}>
@@ -138,13 +34,13 @@ const MapScreen = () => {
       {/* 검색바 */}
       {!showSearchOverlay && (
         <View style={tw('absolute top-12 left-4 right-4 z-10')}>
-          <SearchBar
-            value=""
-            onChangeText={() => {}}
-            placeholder="오늘은 어디로 갈까요?"
-            readOnly={true}
-            onPress={handleSearchbarPress}
-          />
+          <TouchableOpacity onPress={handleSearchbarPress} activeOpacity={0.9}>
+            <SearchBar
+              value=""
+              onChangeText={() => {}}
+              placeholder="오늘은 어디로 갈까요?"
+            />
+          </TouchableOpacity>
         </View>
       )}
 
@@ -164,28 +60,21 @@ const MapScreen = () => {
 
       {/* 장소 상세 모달 */}
       <SlideModal
-        ref={placeDetailModalRef}
+        isVisible={isPlaceModalVisible}
+        onClose={() => setPlaceModalVisible(false)}
         snapPoints={['25%']}
-        onClose={() => placeDetailModalRef.current?.dismiss()}
       >
         {selectedPlaceForModal && (
           <PlaceDetailModal
             place={selectedPlaceForModal}
             routeType={routeType}
-            onSetAsStart={handleStartPress}
-            onSetAsEnd={handleEndPress}
-            onSetAsWaypoint={handleWaypointPress}
-            onToggleRouteType={() => {
-              setRouteType(prev =>
-                prev === RouteType.CONSTANT
-                  ? RouteType.LOOP
-                  : RouteType.CONSTANT,
-              );
-            }}
+            onSetAsStart={() => handlePlaceTypeConfirm('start')}
+            onSetAsEnd={() => handlePlaceTypeConfirm('end')}
+            onSetAsWaypoint={() => handlePlaceTypeConfirm('waypoint')}
+            onToggleRouteType={toggleRouteType}
           />
         )}
       </SlideModal>
-
     </View>
   );
 };
