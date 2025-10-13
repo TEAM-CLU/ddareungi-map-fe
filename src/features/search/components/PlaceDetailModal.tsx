@@ -13,7 +13,7 @@ export interface PlaceDetailModalProps {
   };
   onSetAsStart: () => void;
   onSetAsEnd: () => void;
-  onSetAsWaypoint?: () => void; // 경유지로 설정하는 함수 추가
+  onSetAsWaypoint?: () => void;
   onToggleRouteType: () => void;
   routeType: RouteType;
 }
@@ -27,7 +27,7 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   onToggleRouteType,
   routeType,
 }) => {
-  // 토글 애니메이션을 위한 Animated Value
+  // 토글 애니메이션
   const toggleAnimation = React.useRef(
     new Animated.Value(routeType === RouteType.LOOP ? 1 : 0),
   ).current;
@@ -42,32 +42,15 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   }, [routeType, toggleAnimation]);
 
   // 토글 버튼 핸들러
-  const handleTogglePress = () => {
-    onToggleRouteType();
-  };
+  const handleTogglePress = () => onToggleRouteType();
 
   // 첫 번째 버튼 (원점/출발) 핸들러
-  const handleFirstButtonPress = () => {
-    if (routeType === RouteType.LOOP) {
-      // Loop 모드: 원점 - 출발지=도착지로 동일하게 설정
-      onSetAsStart();
-    } else {
-      // Constant 모드: 출발지 설정
-      onSetAsStart();
-    }
-  };
+  const handleFirstButtonPress = () => onSetAsStart();
 
   // 두 번째 버튼 (반환점/도착) 핸들러
   const handleSecondButtonPress = () => {
-    if (routeType === RouteType.LOOP) {
-      // Loop 모드: 반환점 - 경유지로 설정
-      if (onSetAsWaypoint) {
-        onSetAsWaypoint();
-      }
-    } else {
-      // Constant 모드: 도착지 설정
-      onSetAsEnd();
-    }
+    if (routeType === RouteType.LOOP && onSetAsWaypoint) onSetAsWaypoint();
+    else onSetAsEnd();
   };
 
   return (

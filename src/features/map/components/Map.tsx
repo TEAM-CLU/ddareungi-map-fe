@@ -5,7 +5,10 @@ import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
-import { tw } from '@/shared/libs/tw-helper';
+import {
+  MyHeadingMessage,
+  WebViewMessageToRN,
+} from '../model/map.webview.types';
 
 interface MapProps {
   webRef: React.RefObject<WebView | null>;
@@ -21,6 +24,7 @@ const Map = ({ webRef }: MapProps) => {
     smoothAlpha: 0.6,
   });
 
+  // 현위치와 이전 위치 중간값 사용하여 위치 변화 보정 로직
   const smoothPosition = (lat: number, lon: number) => {
     if (!lastPos.current) {
       lastPos.current = { lat, lon };
@@ -35,18 +39,34 @@ const Map = ({ webRef }: MapProps) => {
     return smoothedCoords;
   };
 
+  // WebView → RN - 지도 준비 완료, 마커 표시 등 WebView 이벤트 수신
   const handleMapReadyMessage = (event: WebViewMessageEvent) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === 'mapReady' && data.isReady) {
-        console.log('✅ 지도 준비 완료');
-        setIsMapReady(true);
+      const data: WebViewMessageToRN = JSON.parse(event.nativeEvent.data);
+
+      switch (data.type) {
+        case 'mapReady':
+          console.log('✅ 지도 준비 완료');
+          setIsMapReady(true);
+          break;
+
+        case 'placeMarkerShown':
+          console.log('📍 장소 마커 표시됨:', data.placeName);
+          break;
+
+        case 'mapMovedToLocation':
+          console.log('🗺️ 지도 이동 완료:', data);
+          break;
+
+        default:
+          console.warn('🔔 처리되지 않은 메시지:', data);
       }
     } catch (error) {
       console.error('Invalid JSON from WebView:', event.nativeEvent.data);
     }
   };
 
+  // RN → WebView - 내 위치를 지도에 전송
   const sendLocation = (currentPosition: Geolocation.GeoPosition) => {
     if (!isMapReady) {
       console.warn('⚠️ 지도가 아직 준비 안됨');
@@ -67,9 +87,8 @@ const Map = ({ webRef }: MapProps) => {
 
   // 실시간 내 위치 추적 시작
   const startLocationTracking = async () => {
-    if (!(await requestLocationPermission())) {
-      return;
-    }
+    if (!(await requestLocationPermission())) return;
+  
     if (watchIdRef.current != null) {
       Geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
@@ -93,6 +112,7 @@ const Map = ({ webRef }: MapProps) => {
     watchIdRef.current = watchId;
   };
 
+  // 위치 추적 중단
   const stopLocationTracking = () => {
     if (watchIdRef.current != null) {
       Geolocation.clearWatch(watchIdRef.current);
@@ -110,12 +130,13 @@ const Map = ({ webRef }: MapProps) => {
   // 방향로직과 위치로직 분리해서 방향은 위치 변화없이도 실시간으로 움직이도록
   useEffect(() => {
     if (!isMapReady) return;
-    webRef.current?.postMessage(
-      JSON.stringify({
-        type: 'myHeading',
-        heading: heading ?? 0,
-      }),
-    );
+
+    const headingMessage: MyHeadingMessage = {
+      type: 'myHeading',
+      heading: heading ?? 0,
+    };
+
+    webRef.current?.postMessage(JSON.stringify(headingMessage));
   }, [heading, isMapReady]);
 
   // 앱이 포그라운드로 돌아올 때 위치 추적 재시작(구독)
