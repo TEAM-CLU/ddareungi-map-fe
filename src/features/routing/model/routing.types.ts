@@ -15,23 +15,9 @@ export interface RoutePoint {
 export type RouteData = { [key: string]: AutocompleteResult };
 
 /********** API 타입 **********/
-/********** 통합 경로 탐색 **********/
 export interface Coordinate {
   lat: number;
   lng: number;
-}
-
-// 통합 경로 탐색 요청 페이로드
-export interface FullJourneyPayload {
-  start: Coordinate;
-  end: Coordinate;
-  waypoints?: Coordinate[];
-}
-
-// 통합 경로 탐색 응답 타입
-export interface FullJourneyResponse{
-  message: string;
-  data?: IntegratedRoute[];
 }
 
 // 구간의 최소/최대 좌표 영역
@@ -67,7 +53,7 @@ export interface RouteSegment {
   profile?: 'safe_bike' | 'fast_bike' | string;
 }
 
-// 따릉이 대여소 정보 
+// 따릉이 대여소 정보
 export interface Station {
   number: string;
   name: string;
@@ -85,6 +71,20 @@ export interface RouteSummary {
   bike_road_ratio?: number;
 }
 
+/********** 통합 경로 탐색 **********/
+// 통합 경로 탐색 요청 페이로드
+export interface FullJourneyPayload {
+  start: Coordinate;
+  end: Coordinate;
+  waypoints?: Coordinate[];
+}
+
+// 통합 경로 탐색 응답 타입
+export interface FullJourneyResponse {
+  message: string;
+  data?: IntegratedRoute[];
+}
+
 // 단일 통합 경로
 export interface IntegratedRoute {
   routeCategory: string;
@@ -92,5 +92,35 @@ export interface IntegratedRoute {
   bbox: BoundingBox;
   startStation: Station;
   endStation: Station;
+  segments: RouteSegment[];
+}
+
+/********** 왕복 경로 탐색 **********/
+export type WaypointType = 'waypoint' | 'return_point';
+
+// Waypoint 데이터 구조 - 반환점은 1개만 허용
+export interface WaypointDto {
+  type: WaypointType;
+  location: Coordinate;
+}
+
+// 왕복 경로 탐색 요청 페이로드
+export interface RoundTripSearchPayload {
+  start: Coordinate;
+  waypoints?: WaypointDto[];
+}
+
+// 왕복 경로 탐색 응답 타입
+export interface RoundTripSearchResponse {
+  message: string;
+  data?: RoundTripRoute[];
+}
+
+// 개별 경로 결과 (카테고리별)
+// "자전거 도로 우선", "최소 시간", "최단 거리"
+export interface RoundTripRoute {
+  routeCategory: string;
+  summary: RouteSummary;
+  bbox: BoundingBox;
   segments: RouteSegment[];
 }
