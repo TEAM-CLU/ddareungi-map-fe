@@ -1,11 +1,12 @@
 import {
+  GetLatestStationsInventoriesPayload,
   MapAreaQueryPayload,
-  NearByStationsPayload,
-  NearByStationsResponse,
+  NearbyStationsPayload,
 } from '@/features/station/model/station.types';
 import {
   getMapAreaStations,
-  getNearByStations,
+  getNearbyStations,
+  postGetLatestStationsInventories,
 } from '@/features/station/services/station.api';
 import { stationKeys } from '@/features/station/services/station.key';
 import { useNetInfo } from '@react-native-community/netinfo';
@@ -15,9 +16,9 @@ import { cache, useEffect, useState } from 'react';
 import { Alert, AppState } from 'react-native';
 
 // 가장 가까운 대여소 3개 조회 - 버튼을 눌렀을 때만 조회
-export const useNearByStationsMutation = () => {
+export const useNearbyStationsMutation = () => {
   const mutation = useMutation({
-    mutationFn: (payload: NearByStationsPayload) => getNearByStations(payload),
+    mutationFn: (payload: NearbyStationsPayload) => getNearbyStations(payload),
   });
   return mutation;
 };
@@ -54,14 +55,6 @@ export const useStationsDataQuery = (payload: MapAreaQueryPayload) => {
   const isOnline = !!(netInfo.isConnected && netInfo.isInternetReachable);
   const canRun = !!(payload.enable && isAppActive && isOnline && isFocusedMap);
 
-  // 디버깅용 전체 콘솔로그
-  console.log('[StationsDataQuery] ', {
-    canRun,
-    isAppActive,
-    isOnline,
-    isFocusedMap,
-    payload,
-  });
   return useQuery({
     queryKey: stationKeys.mapArea(),
     queryFn: async ({ signal }) => {
@@ -82,8 +75,17 @@ export const useStationsDataQuery = (payload: MapAreaQueryPayload) => {
     enabled: canRun, // enable은 최초실행 주기적 리패치 모두 막아줌!!! 단 강제로 리패치함수 쓰면 무효
     staleTime: 1000 * 60 * 60 * 24 * 7,
     gcTime: Infinity,
+    // 리패치인터벌은 불필요: 왜냐하면 바이크수 동기화 api가 따로있기때문
     refetchOnWindowFocus: false,
-    refetchInterval: payload.pollMs ?? 1000 * 60, // 1분
     refetchIntervalInBackground: false,
   });
+};
+
+// 대여소 재고 정보 조회
+export const useGetLatestStationsInventoriesMutation = () => {
+  const mutation = useMutation({
+    mutationFn: (payload: GetLatestStationsInventoriesPayload) =>
+      postGetLatestStationsInventories(payload),
+  });
+  return mutation;
 };

@@ -2,16 +2,16 @@
   let kakaoRef, mapRef;
   let stationMarker;
   let stationMarkers = [];
+  let stationIntervalId = null;
 
   const initStationSeting = (kakao, map) => {
-    console.log('initStationSeting called');
     kakaoRef = kakao;
     mapRef = map;
   };
 
   const clearStationMarkers = () => {
     if (stationMarkers.length > 0) {
-      stationMarkers.forEach(stationMarker => stationMarker.setMap(null));
+      stationMarkers.forEach(stationData => stationData.marker.setMap(null));
       stationMarkers = [];
     }
   };
@@ -57,12 +57,12 @@
 `;
 
   const createStationMarkers = stationsDataList => {
-    console.log('stationsDataList', stationsDataList);
-    // 기존 대여소 마커 제거
+    // 기존 대여소 마커 및 메타데이터 제거
     clearStationMarkers();
 
     // 새 stationsDataList 기반으로 마커 생성
     stationsDataList.forEach(station => {
+      // 마커 생성
       const stationPos = new kakaoRef.maps.LatLng(
         station.latitude,
         station.longitude,
@@ -74,12 +74,51 @@
         zIndex: 11,
       });
       stationMarker.setMap(mapRef);
-      stationMarkers.push(stationMarker);
+      stationMarkers.push({ number: station.number, marker: stationMarker });
+    });
+    // 최신 재고 정보 업데이트 요청
+    const targetedStationsNumberList =
+      stationsDataList.map(station => station.number) ?? [];
+    if (targetedStationsNumberList.length === 0) return;
+
+    // 최초 1회 바로 실행
+    window.ReactNativeWebView?.postMessage(
+      JSON.stringify({
+        type: 'needUpdateStationInventories',
+        stationNumbers: targetedStationsNumberList,
+      }),
+    );
+
+    if (stationIntervalId) clearInterval(stationIntervalId);
+    stationIntervalId = setInterval(() => {
+      window.ReactNativeWebView?.postMessage(
+        JSON.stringify({
+          type: 'needUpdateStationInventories',
+          stationNumbers: targetedStationsNumberList,
+        }),
+      );
+    }, 10000);
+  };
+
+  const updateStationsInventories = inventories => {
+    if (!inventories || inventories.length === 0 || stationMarkers.length === 0)
+      return;
+    stationMarkers.forEach(({ number, marker }) => {
+      const inventory = inventories.find(inv => inv.station_number === number);
+      if (inventory) {
+        marker.setContent(getStationMarkerSvg(inventory.current_bikes));
+      }
     });
   };
 
   window.Station = {
     initStationSeting,
     createStationMarkers,
+    updateStationsInventories,
   };
+
+  // 인터벌 초기화
+  window.addEventListener('unload', () => {
+    if (stationIntervalId) clearInterval(stationIntervalId);
+  });
 })();

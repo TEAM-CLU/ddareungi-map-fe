@@ -219,8 +219,15 @@
         }
 
         // === 대여소 기능 ===
+
+        // 16. 대여소 마커 표시
         if (data.type === 'stationsDataUpdate') {
           Station.createStationMarkers(data.stations);
+        }
+
+        // 17. 대여소 재고정보 업데이트
+        if (data.type === 'updateStationsInventories') {
+          Station.updateStationsInventories(data.inventories);
         }
       } catch (error) {
         console.error('메시지 처리 실패:', error);

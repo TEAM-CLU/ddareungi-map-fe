@@ -6,13 +6,25 @@ import { requestLocationPermission } from '@/features/map/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
 import { tw } from '@/shared/libs/tw-helper';
-import { useStationsDataQuery } from '@/features/station/services/station.queries';
+import {
+  useGetLatestStationsInventoriesMutation,
+  useStationsDataQuery,
+} from '@/features/station/services/station.queries';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
+import {
+  GetLatestStationsInventoriesResponse,
+  LatestStationsInventoriesData,
+  MapAreaQueryPayload,
+  MapAreaStationsData,
+} from '@/features/station/model/station.types';
 
 interface MapProps {
   webRef: React.RefObject<WebView | null>;
 }
 const Map = ({ webRef }: MapProps) => {
+  const { mutateAsync: getCurrentBikesList } =
+    useGetLatestStationsInventoriesMutation();
+
   const [isMapReady, setIsMapReady] = useState(false);
   const [mapCenterCoord, setMapCenterCoord] = useState<Coordinates | null>(
     null,
@@ -124,26 +136,33 @@ const Map = ({ webRef }: MapProps) => {
         setIsIdleEventOccuerred(true);
         setMapCenterCoord(next);
         prevMapCenterCoord.current = next;
-        refetchStationsData({ cancelRefetch: true });
       }
-    } catch (err) {
+    } catch (_) {
       console.warn('Invalid WebView message:', event.nativeEvent.data);
     }
   };
 
-  const stationDataQueryPayload = {
+  // set함수의 비동기 반영 문제 해결을 위한 조치(센터좌표가 한발자국씩 늦게 따라오는 점 해소)
+  useEffect(() => {
+    if (!mapCenterCoord) return;
+    // 최초 1회 또는 isIdleEventOccuerred가 true일 때만
+    if (isIdleEventOccuerred) {
+      refetchStationsData({ cancelRefetch: true });
+    }
+  });
+
+  const stationDataQueryPayload: MapAreaQueryPayload = {
     lat: mapCenterCoord?.lat ?? null,
     lon: mapCenterCoord?.lon ?? null,
-    radius: 1000,
+    radius: 2000,
     enable: isIdleEventOccuerred,
-    pollMs: 1000 * 60,
   };
+
   const { data: stationsData, refetch: refetchStationsData } =
     useStationsDataQuery(stationDataQueryPayload);
-  // 스테이션 데이터가 갱신되면 웹뷰에 전달
+  // 스테이션 데이터가 갱신되면 웹뷰에 =전달
   useEffect(() => {
     if (!isMapReady || !stationsData) return;
-    console.log(`[Map] stationsData count: ${stationsData}`);
     webRef.current?.postMessage(
       JSON.stringify({
         type: 'stationsDataUpdate',
@@ -151,6 +170,30 @@ const Map = ({ webRef }: MapProps) => {
       }),
     );
   }, [stationsData, isMapReady]);
+
+  // 스테이션 재고정보 요청이 오면 최신정보 조회후 웹뷰에 전달
+  const handleStationsInventoriesUpdate = async (
+    event: WebViewMessageEvent,
+  ) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type !== 'needUpdateStationInventories') return;
+      const targetedStationsNumberList = data.stationNumbers ?? [];
+      if (targetedStationsNumberList.length === 0) return;
+      const response: LatestStationsInventoriesData[] =
+        await getCurrentBikesList({
+          stationNumbers: targetedStationsNumberList,
+        });
+      webRef.current?.postMessage(
+        JSON.stringify({
+          type: 'updateTargetedStationsInventories',
+          inventories: response,
+        }),
+      );
+    } catch (error) {
+      console.error('Invalid JSON from WebView:', event.nativeEvent.data);
+    }
+  };
 
   //////////////////////////////////////
   useEffect(() => {
@@ -182,6 +225,7 @@ const Map = ({ webRef }: MapProps) => {
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     handleMapReadyMessage(event);
     handleMapCenterChanged(event);
+    handleStationsInventoriesUpdate(event);
   };
   return (
     <WebView
@@ -192,7 +236,7 @@ const Map = ({ webRef }: MapProps) => {
       onMessage={handleWebViewMessage}
       onError={e => console.log('WebView error', e.nativeEvent)}
       source={{
-        uri: 'https://fae428a16cc5.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://04faae83a2d8.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
     />
   );
