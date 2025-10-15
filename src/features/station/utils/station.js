@@ -97,7 +97,7 @@
           stationNumbers: targetedStationsNumberList,
         }),
       );
-    }, 10000);
+    }, 5000);
   };
 
   const updateStationsInventories = inventories => {

@@ -5,9 +5,7 @@ import { Touchable, TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 
 interface StationRefreshButtonProps {
-  onRefresh?: () => Promise<
-    QueryObserverResult<MapAreaStationsResponse, Error>
-  >;
+  onRefresh?: () => void;
 }
 
 const StationRefreshButton = ({ onRefresh }: StationRefreshButtonProps) => {

@@ -23,7 +23,7 @@ const Footer = () => {
           style={[tw('flex-1 flex-col items-center justify-center mb-1')]}
           onPress={() => {
             if (item.name === 'station') {
-              // TODO: 대여소 모달 띄우는 조건문 필요
+              // TODO: 대여소 모달 띄우는 기능
             }
 
             // TODO: 경로추천도 모달 띄우는 조건문 필요

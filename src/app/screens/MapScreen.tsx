@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View } from 'react-native';
+import React, { use, useEffect, useRef, useState } from 'react';
+import { Alert, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import WebView from 'react-native-webview';
 import Footer from '@/shared/components/Footer';
@@ -21,7 +21,7 @@ import { RootStackParamList } from '../types/index';
 import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import MyLocationButton from '@/features/location/components/MyLocationButton';
 import StationRefreshButton from '@/features/station/components/StationRefreshButton';
-import { useStationsDataQuery } from '@/features/station/services/station.queries';
+import { useQueryClient } from '@tanstack/react-query';
 
 type MapScreenNavigationProp = NavigationProp<RootStackParamList>;
 type MapScreenRouteProp = RouteProp<RootStackParamList, 'Map'>;
@@ -158,11 +158,11 @@ const MapScreen = () => {
         placeholder="오늘은 어디로 갈까요?"
       />
 
-      <View style={tw('absolute bottom-40 right-3')}>
+      <View style={[tw('absolute right-3'), { bottom: 150 }]}>
         <MyLocationButton webRef={webRef} />
       </View>
 
-      <View style={tw('absolute bottom-30 right-3')}>
+      <View style={[tw('absolute right-3'), { bottom: 100 }]}>
         <StationRefreshButton />
       </View>
 

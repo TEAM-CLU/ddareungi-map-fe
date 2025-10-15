@@ -67,7 +67,6 @@ export const useStationsDataQuery = (payload: MapAreaQueryPayload) => {
           },
           signal,
         );
-        console.log(response);
         return response;
       }
       return [];
