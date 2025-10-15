@@ -7,6 +7,33 @@
   const initStationSeting = (kakao, map) => {
     kakaoRef = kakao;
     mapRef = map;
+    ensureNoTapHighlightCSS();
+  };
+
+  // 모바일 브라우저에서 탭 하이라이트, 텍스트 선택, 포커스 아웃라인 제거
+  const ensureNoTapHighlightCSS = () => {
+    if (document.getElementById('no-tap-style')) return;
+    const s = document.createElement('style');
+    s.id = 'no-tap-style';
+    s.textContent = `
+    /* 탭 하이라이트, 터치 호출, 텍스트 선택, 포커스 아웃라인 제거 */
+    .station-marker, .station-marker * {
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-user-select: none;
+      outline: none;
+    }
+    /* 혹시 액티브 상태에서 기본 배경이 들어오는 브라우저 대비 */
+    .station-marker:active { background: transparent !important; }
+    /* SVG 텍스트 선택/하이라이트 방지 강화 */
+    .station-marker svg text {
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  `;
+    document.head.appendChild(s);
   };
 
   const clearStationMarkers = () => {
@@ -16,13 +43,13 @@
     }
   };
 
-  // 경유지 마커 SVG 생성 함수
-  const getStationMarkerSvg = (label = '') => `
+  // 대여소 마커 SVG 생성 함수
+  const getStationMarkerSvg = (label = '', color = '#01DA86') => `
 <svg xmlns="http://www.w3.org/2000/svg" width="41" height="48" viewBox="0 0 41 48" fill="none">
   <g filter="url(#filter0_d)">
     <path fill-rule="evenodd" clip-rule="evenodd"
       d="M36 16.5C36 28.5556 20.5 38.8889 20.5 38.8889C20.5 38.8889 5 28.5556 5 16.5C5 7.93959 11.9396 1 20.5 1C29.0604 1 36 7.93959 36 16.5Z"
-      fill="white" stroke="#01DA86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      fill="white" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     <text
       x="20.5"
       y="14"
@@ -56,26 +83,89 @@
 </svg>
 `;
 
+  // 문자열 SVG를 감싼 실제 DOM 엘리먼트를 만들어 반환
+  const buildStationContentElement = (label, color, stationNumber) => {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = getStationMarkerSvg(label, color);
+    wrap.className = 'station-marker';
+    wrap.style.cursor = 'pointer';
+    wrap.style.transform = 'translateZ(0)';
+    wrap.dataset.stationNumber = String(stationNumber);
+    return wrap;
+  };
+
+  // 특정 스테이션 번호의 오버레이 컨텐츠에 클릭 바인딩
+  const bindOverlayClick = stationNumber => {
+    const targetedStationMarker = stationMarkers.find(
+      s => s.number === stationNumber,
+    );
+    if (!targetedStationMarker) return;
+
+    const content = targetedStationMarker.marker.getContent?.();
+    // getContent가 Node거나 문자열일 수 있으니, Node로 보장되도록 했음(buildStationContentEl 사용)
+    const targetedStationElement = typeof content === 'string' ? null : content;
+    if (!targetedStationElement) return;
+
+    // 중복 바인딩 방지
+    targetedStationElement.onclick = null;
+
+    targetedStationElement.onclick = () => {
+      // 지도 중심 이동
+      mapRef.setCenter(targetedStationMarker.marker.getPosition());
+
+      // 줌 레벨 조정
+      const currentLevel = mapRef.getLevel();
+      if (currentLevel > 3) {
+        mapRef.setLevel(3, { animate: true });
+      }
+
+      // React Native로 정보 전달
+      const targetedStationMetaData = targetedStationMarker.metaData || null;
+      window.ReactNativeWebView?.postMessage(
+        JSON.stringify({
+          type: 'stationMarkerClicked',
+          stationData: targetedStationMetaData,
+        }),
+      );
+    };
+  };
+
   const createStationMarkers = stationsDataList => {
     // 기존 대여소 마커 및 메타데이터 제거
     clearStationMarkers();
 
     // 새 stationsDataList 기반으로 마커 생성
     stationsDataList.forEach(station => {
-      // 마커 생성
       const stationPos = new kakaoRef.maps.LatLng(
         station.latitude,
         station.longitude,
       );
+
+      const contentElement = buildStationContentElement(
+        station.current_bikes,
+        '#01DA86',
+        station.number,
+      );
+
       stationMarker = new kakaoRef.maps.CustomOverlay({
         position: stationPos,
-        content: getStationMarkerSvg(station.current_bikes), // label 자동 생성
+        content: contentElement, // 문자열이 아닌 DOM으로 전달
         yAnchor: 1,
         zIndex: 11,
+        clickable: true,
       });
       stationMarker.setMap(mapRef);
-      stationMarkers.push({ number: station.number, marker: stationMarker });
+
+      stationMarkers.push({
+        number: station.number,
+        marker: stationMarker,
+        metaData: station,
+      });
+
+      // 클릭이벤트 바인딩
+      bindOverlayClick(station.number);
     });
+
     // 최신 재고 정보 업데이트 요청
     const targetedStationsNumberList =
       stationsDataList.map(station => station.number) ?? [];
@@ -89,6 +179,7 @@
       }),
     );
 
+    // 주기 갱신 (5초)
     if (stationIntervalId) clearInterval(stationIntervalId);
     stationIntervalId = setInterval(() => {
       window.ReactNativeWebView?.postMessage(
@@ -103,11 +194,25 @@
   const updateStationsInventories = inventories => {
     if (!inventories || inventories.length === 0 || stationMarkers.length === 0)
       return;
-    stationMarkers.forEach(({ number, marker }) => {
-      const inventory = inventories.find(inv => inv.station_number === number);
-      if (inventory) {
-        marker.setContent(getStationMarkerSvg(inventory.current_bikes));
-      }
+
+    stationMarkers.forEach(({ number, marker, metaData }) => {
+      const targetedStationInventory = inventories.find(
+        i => i.station_number === number,
+      );
+      if (!targetedStationInventory) return;
+      // 메타데이터 최신화
+      metaData.current_bikes = targetedStationInventory.current_bikes;
+
+      // 컨텐츠 교체 (DOM으로 다시 생성)
+      const newElement = buildStationContentElement(
+        targetedStationInventory.current_bikes,
+        '#01DA86',
+        number,
+      );
+      marker.setContent(newElement);
+
+      // 클릭 이벤트 재바인딩 (setContent 후 필수)
+      bindOverlayClick(number);
     });
   };
 
@@ -123,15 +228,24 @@
     });
   };
 
+  // 인터벌/리스너 해제
+  const destroyStation = () => {
+    if (stationIntervalId) {
+      clearInterval(stationIntervalId);
+      stationIntervalId = null;
+    }
+    clearStationMarkers();
+  };
+
   window.Station = {
     initStationSeting,
     createStationMarkers,
     updateStationsInventories,
     toggleStationMarkers,
+    destroyStation,
   };
 
-  // 인터벌 초기화
-  window.addEventListener('unload', () => {
-    if (stationIntervalId) clearInterval(stationIntervalId);
+  window.addEventListener('pagehide', () => {
+    destroyStation();
   });
 })();

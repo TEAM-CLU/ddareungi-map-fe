@@ -23,6 +23,9 @@ import MyLocationButton from '@/features/location/components/MyLocationButton';
 import StationRefreshButton from '@/features/station/components/StationMarkersToggleButton';
 import { useQueryClient } from '@tanstack/react-query';
 import StationMarkersToggleButton from '@/features/station/components/StationMarkersToggleButton';
+import { MapAreaStationsData } from '@/features/station/model/station.types';
+import StationDetailModal from '@/features/station/components/StationDetailModal';
+import { Coordinates } from '@/features/map/model/map.types';
 
 type MapScreenNavigationProp = NavigationProp<RootStackParamList>;
 type MapScreenRouteProp = RouteProp<RootStackParamList, 'Map'>;
@@ -32,6 +35,14 @@ const MapScreen = () => {
   const navigation = useNavigation<MapScreenNavigationProp>();
   const route = useRoute<MapScreenRouteProp>();
   const placeDetailModalRef = useRef<BottomSheetModal>(null);
+  //
+  const stationDetailModalRef = useRef<BottomSheetModal | null>(null);
+  const [stationMetaData, setStationMetaData] =
+    useState<MapAreaStationsData | null>(null);
+  const [myPosition, setMyPosition] = useState<Coordinates | undefined>(
+    undefined,
+  );
+  //
 
   // 맵 준비 상태
   const [isMapReady, setIsMapReady] = useState(false);
@@ -136,7 +147,12 @@ const MapScreen = () => {
 
   return (
     <View style={tw('flex-1 relative w-full')}>
-      <Map webRef={webRef} />
+      <Map
+        webRef={webRef}
+        setStationMetaData={setStationMetaData}
+        stationDetailModalRef={stationDetailModalRef}
+        setMyPosition={setMyPosition}
+      />
 
       {/* 검색바 */}
       {!showSearchOverlay && (
@@ -169,6 +185,18 @@ const MapScreen = () => {
 
       <Footer />
 
+      {/* 대여소 상세 모달 */}
+      <SlideModal
+        ref={stationDetailModalRef}
+        snapPoints={['35%', '40%']}
+        initialIndex={1}
+        onClose={() => stationDetailModalRef.current?.dismiss()}
+      >
+        <StationDetailModal
+          myPosition={myPosition}
+          stationMetaData={stationMetaData}
+        />
+      </SlideModal>
       {/* 장소 상세 모달 */}
       <SlideModal
         ref={placeDetailModalRef}

@@ -9,15 +9,26 @@ import {
 import {
   LatestStationsInventoriesData,
   MapAreaQueryPayload,
+  MapAreaStationsData,
 } from '@/features/station/model/station.types';
 import { Alert } from 'react-native';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 interface UseStationsProps {
   webRef: RefObject<WebView | null>;
   isMapReady: boolean; // Map 컴포넌트의 isMapReady 그대로 전달
+  setStationMetaData?: React.Dispatch<
+    React.SetStateAction<MapAreaStationsData | null>
+  >;
+  stationDetailModalRef?: RefObject<BottomSheetModal | null>;
 }
 
-export const useStations = ({ webRef, isMapReady }: UseStationsProps) => {
+export const useStation = ({
+  webRef,
+  isMapReady,
+  setStationMetaData,
+  stationDetailModalRef,
+}: UseStationsProps) => {
   const [mapCenterCoord, setMapCenterCoord] = useState<Coordinates | null>(
     null,
   );
@@ -68,6 +79,7 @@ export const useStations = ({ webRef, isMapReady }: UseStationsProps) => {
       const data = JSON.parse(event.nativeEvent.data);
       if (data.type !== 'needUpdateStationInventories') return;
       const targetedStationsNumberList = data.stationNumbers;
+
       if (targetedStationsNumberList.length === 0) return;
       const response: LatestStationsInventoriesData[] =
         await getCurrentBikesList({
@@ -93,6 +105,24 @@ export const useStations = ({ webRef, isMapReady }: UseStationsProps) => {
     }
   }, [mapCenterCoord, isIdleEventOccuerred, refetchStationsData]);
 
+  // 클릭이벤트로 스테이션 상세정보 요청이 오면 모달 오픈
+  const handleStationMarkerClick = (event: WebViewMessageEvent) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type !== 'stationMarkerClicked') return;
+      // 스테이션 상세정보 모달 오픈
+      if (!stationDetailModalRef?.current) return;
+      stationDetailModalRef.current?.present();
+
+      // 모달에 필요한 상세정보 상태에 저장
+      if (!setStationMetaData) return;
+      setStationMetaData(data.stationData);
+      return;
+    } catch (error) {
+      console.error('Invalid JSON from WebView:', error);
+    }
+  };
+
   // 스테이션 데이터가 갱신되면 웹뷰에 =전달
   useEffect(() => {
     if (!isMapReady || !stationsData) return;
@@ -107,5 +137,6 @@ export const useStations = ({ webRef, isMapReady }: UseStationsProps) => {
   return {
     handleMapCenterChanged,
     handleStationsInventoriesUpdate,
+    handleStationMarkerClick,
   };
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { AutocompleteResult } from '../hooks/useAutocomplete';
@@ -60,7 +60,7 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   ).current;
 
   // routeType이 변경될 때 애니메이션 실행
-  React.useEffect(() => {
+  useEffect(() => {
     Animated.timing(toggleAnimation, {
       toValue: routeType === RouteType.LOOP ? 1 : 0,
       duration: 200,

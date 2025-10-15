@@ -5,11 +5,16 @@ import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
 import { Use } from 'react-native-svg';
+import { Coordinates } from '@/features/map/model/map.types';
 
 interface UseMyLocationProps {
   webRef: React.RefObject<WebView | null>;
+  setMyPosition: React.Dispatch<React.SetStateAction<Coordinates | undefined>>;
 }
-export const useMyLocation = ({ webRef }: UseMyLocationProps) => {
+export const useMyLocation = ({
+  webRef,
+  setMyPosition,
+}: UseMyLocationProps) => {
   const [isMapReady, setIsMapReady] = useState(false);
   const watchIdRef = useRef<number | null>(null);
   const lastPos = useRef<{ lat: number; lon: number } | null>(null);
@@ -69,7 +74,13 @@ export const useMyLocation = ({ webRef }: UseMyLocationProps) => {
 
     // 지도 준비 직후 1회 전송 (정확도 필터 우회)
     Geolocation.getCurrentPosition(
-      pos => sendLocation(pos, { bypassAccuracyOnce: true }),
+      pos => {
+        setMyPosition({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+        });
+        sendLocation(pos, { bypassAccuracyOnce: true });
+      },
       err => console.warn('getCurrentPosition error:', err?.message),
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
     );
