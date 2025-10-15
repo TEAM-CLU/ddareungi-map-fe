@@ -227,6 +227,11 @@
         if (data.type === 'updateStationsInventories') {
           Station.updateStationsInventories(data.inventories);
         }
+
+        // 18. 대여소 마커 표시 on/off
+        if (data.type === 'toggleStationMarkers') {
+          Station.toggleStationMarkers(data.isVisible);
+        }
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }

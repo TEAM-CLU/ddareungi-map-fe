@@ -111,10 +111,23 @@
     });
   };
 
+  // 마커 보이기/숨기기 토글
+  const toggleStationMarkers = isVisible => {
+    if (stationMarkers.length === 0) return;
+    stationMarkers.forEach(({ marker }) => {
+      if (isVisible) {
+        marker.setMap(mapRef);
+      } else {
+        marker.setMap(null);
+      }
+    });
+  };
+
   window.Station = {
     initStationSeting,
     createStationMarkers,
     updateStationsInventories,
+    toggleStationMarkers,
   };
 
   // 인터벌 초기화

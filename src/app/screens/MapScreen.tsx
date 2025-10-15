@@ -20,8 +20,9 @@ import {
 import { RootStackParamList } from '../types/index';
 import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import MyLocationButton from '@/features/location/components/MyLocationButton';
-import StationRefreshButton from '@/features/station/components/StationRefreshButton';
+import StationRefreshButton from '@/features/station/components/StationMarkersToggleButton';
 import { useQueryClient } from '@tanstack/react-query';
+import StationMarkersToggleButton from '@/features/station/components/StationMarkersToggleButton';
 
 type MapScreenNavigationProp = NavigationProp<RootStackParamList>;
 type MapScreenRouteProp = RouteProp<RootStackParamList, 'Map'>;
@@ -163,7 +164,7 @@ const MapScreen = () => {
       </View>
 
       <View style={[tw('absolute right-3'), { bottom: 100 }]}>
-        <StationRefreshButton />
+        <StationMarkersToggleButton webRef={webRef} />
       </View>
 
       <Footer />

@@ -10,6 +10,7 @@ import {
   LatestStationsInventoriesData,
   MapAreaQueryPayload,
 } from '@/features/station/model/station.types';
+import { Alert } from 'react-native';
 
 interface UseStationsProps {
   webRef: RefObject<WebView | null>;
@@ -104,7 +105,6 @@ export const useStations = ({ webRef, isMapReady }: UseStationsProps) => {
   }, [stationsData, isMapReady, webRef]);
 
   return {
-    // handlers (기존 이름과 역할 유지)
     handleMapCenterChanged,
     handleStationsInventoriesUpdate,
   };
