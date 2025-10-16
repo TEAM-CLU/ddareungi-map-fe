@@ -26,6 +26,7 @@ import StationMarkersToggleButton from '@/features/station/components/StationMar
 import { MapAreaStationsData } from '@/features/station/model/station.types';
 import StationDetailModal from '@/features/station/components/StationDetailModal';
 import { Coordinates } from '@/features/map/model/map.types';
+import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 
 type MapScreenNavigationProp = NavigationProp<RootStackParamList>;
 type MapScreenRouteProp = RouteProp<RootStackParamList, 'Map'>;
@@ -35,14 +36,25 @@ const MapScreen = () => {
   const navigation = useNavigation<MapScreenNavigationProp>();
   const route = useRoute<MapScreenRouteProp>();
   const placeDetailModalRef = useRef<BottomSheetModal>(null);
-  //
+  ///////////
   const stationDetailModalRef = useRef<BottomSheetModal | null>(null);
   const [stationMetaData, setStationMetaData] =
     useState<MapAreaStationsData | null>(null);
   const [myPosition, setMyPosition] = useState<Coordinates | undefined>(
     undefined,
   );
-  //
+  const nearbyStationModalRef = useRef<BottomSheetModal | null>(null);
+  const [isStationButtonPressed, setIsStationButtonPressed] = useState(false);
+
+  // NearbyStationModal 오픈 처리
+  useEffect(() => {
+    if (isStationButtonPressed) {
+      nearbyStationModalRef.current?.present();
+      setIsStationButtonPressed(false);
+    }
+  }, [isStationButtonPressed]);
+
+  //////////
 
   // 맵 준비 상태
   const [isMapReady, setIsMapReady] = useState(false);
@@ -183,12 +195,27 @@ const MapScreen = () => {
         <StationMarkersToggleButton webRef={webRef} />
       </View>
 
-      <Footer />
+      <Footer setIsStationButtonPressed={setIsStationButtonPressed} />
+
+      {/* Nearby 대여소 모달 */}
+      <SlideModal
+        ref={nearbyStationModalRef}
+        snapPoints={['43%', '47%']}
+        initialIndex={1}
+        onClose={() => nearbyStationModalRef.current?.dismiss()}
+      >
+        <NearbyStationModal
+          myPosition={myPosition}
+          stationDetailModalRef={stationDetailModalRef}
+          setStationMetaData={setStationMetaData}
+          nearByModalRef={nearbyStationModalRef}
+        />
+      </SlideModal>
 
       {/* 대여소 상세 모달 */}
       <SlideModal
         ref={stationDetailModalRef}
-        snapPoints={['35%', '40%']}
+        snapPoints={['43%', '47%']}
         initialIndex={1}
         onClose={() => stationDetailModalRef.current?.dismiss()}
       >

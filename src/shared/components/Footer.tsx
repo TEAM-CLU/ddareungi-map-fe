@@ -6,7 +6,10 @@ import { tw } from '../libs/tw-helper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FOOTER_MENU } from '../model/index.constants';
 
-const Footer = () => {
+interface FooterProps {
+  setIsStationButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
+}
+const Footer = ({ setIsStationButtonPressed }: FooterProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -23,7 +26,8 @@ const Footer = () => {
           style={[tw('flex-1 flex-col items-center justify-center mb-1')]}
           onPress={() => {
             if (item.name === 'station') {
-              // TODO: 대여소 모달 띄우는 기능
+              setIsStationButtonPressed(true);
+              return;
             }
 
             // TODO: 경로추천도 모달 띄우는 조건문 필요

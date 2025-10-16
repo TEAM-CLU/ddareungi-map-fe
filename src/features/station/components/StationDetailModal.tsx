@@ -84,15 +84,19 @@ const StationDetailModal = ({
       setDistance(undefined);
       return;
     }
-    const dist = getDistanceBetweenCoords(
+    const distance = getDistanceBetweenCoords(
       { lat: myPosition.lat, lon: myPosition.lon },
       { lat: stationMetaData.latitude, lon: stationMetaData.longitude },
     );
-    setDistance(Math.round(dist));
+    setDistance(Math.round(distance));
   }, [myPosition, stationMetaData]);
 
   if (!stationMetaData) {
-    return <ActivityIndicator size="large" color="#01DA86" />;
+    return (
+      <View style={tw('flex justify-center w-full items-center')}>
+        <ActivityIndicator size="large" color="#01DA86" />
+      </View>
+    );
   }
 
   // 따릉이 앱 열기
@@ -147,7 +151,7 @@ const StationDetailModal = ({
             { fontSize: 15 },
           ]}
         >
-          {`${distance ? distance + 'm' : '측정 중...'}`}
+          {`${distance ? distance + 'm' : '거리 측정 중...'}`}
         </Text>
       </View>
       <Text

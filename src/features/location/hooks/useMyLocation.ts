@@ -82,19 +82,25 @@ export const useMyLocation = ({
         sendLocation(pos, { bypassAccuracyOnce: true });
       },
       err => console.warn('getCurrentPosition error:', err?.message),
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
     );
 
     // 실시간 추적
     const watchId = Geolocation.watchPosition(
-      pos => sendLocation(pos),
+      pos => {
+        setMyPosition({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+        });
+        sendLocation(pos);
+      },
       _err =>
         Alert.alert('오류', '위치 정보를 가져오는 중 오류가 발생했습니다.'),
       {
         enableHighAccuracy: true,
         distanceFilter: 0,
-        interval: 1000,
-        fastestInterval: 500,
+        interval: 3000,
+        fastestInterval: 2000,
         forceRequestLocation: true,
       },
     );
