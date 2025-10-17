@@ -2347,7 +2347,7 @@ PODS:
     - SocketRocket
   - RNCAsyncStorage (2.2.0):
     - React-Core
-  - RNCPicker (2.11.3):
+  - RNCPicker (2.11.4):
     - React-Core
   - RNDateTimePicker (8.4.5):
     - React-Core
@@ -2530,7 +2530,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNScreens (4.16.0):
+  - RNScreens (4.17.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2953,12 +2953,12 @@ SPEC CHECKSUMS:
   ReactCodegen: 880b120469e57db46cb840f549202c3c09d27693
   ReactCommon: ce5d4226dfaf9d5dacbef57b4528819e39d3a120
   RNCAsyncStorage: b44e8a4e798c3e1f56bffccd0f591f674fb9198f
-  RNCPicker: 99dd72f89696025917ef979a214f5e2d0e00766a
+  RNCPicker: 7de564dce1f90b53e386a24001aafc3578233dfe
   RNDateTimePicker: 8c12d12e8660697c2e176d2f98775764431c141f
   RNGestureHandler: 12a436b5074378be95468a57b62c165a1e24cfc9
   RNPermissions: 49f0772119ccc8276aa4e87cae7daa351bd1b668
   RNReanimated: 673f9658eb3eff67c77dad1d79f62c266b0c775d
-  RNScreens: 35525ebfe219c8709da0d26aebbc9a5e02e1077b
+  RNScreens: ad259502cdad69dc7082a69f7e91c55c46b3fd1c
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
   RNSVG: ad69b385e35653fd9694935c48840117e96ccc1d
   RNVectorIcons: 9084b0cf37b3c5690b730c5627a21d750c9f517e

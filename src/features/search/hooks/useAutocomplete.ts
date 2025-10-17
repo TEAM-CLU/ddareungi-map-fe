@@ -28,13 +28,11 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
     autoSearchDelay = SEARCH_CONSTANTS.DEFAULT_DEBOUNCE_DELAY,
   } = options;
 
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(''); // 현재 입력된 검색어
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<AutocompleteResult[]>([]);
+  const [results, setResults] = useState<AutocompleteResult[]>([]); // 검색 결과 리스트
   const [error, setError] = useState<string | null>(null);
-
-  // 디바운스 타이머
-  const [debounceTimer, setDebounceTimer] = useState<number | null>(null);
+  const [debounceTimer, setDebounceTimer] = useState<number | null>(null); // 디바운스 타이머
 
   // 자동완성 검색 실행
   const performAutocompleteSearch = useCallback(
@@ -55,6 +53,7 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
         setIsLoading(true);
         setError(null);
 
+        // 현재 위치 있으면 거리순, 없으면 정확도순
         const searchOptions: SearchOptions = currentLocation
           ? {
               x: currentLocation.longitude,
@@ -96,7 +95,7 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
     [currentLocation],
   );
 
-  // 검색어 변경 처리 (디바운스 적용)
+  // 검색어 변경 처리 - 사용자 입력마다 API 호출 방지
   const handleQueryChange = useCallback(
     (newQuery: string) => {
       setQuery(newQuery);
@@ -119,7 +118,7 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
 
       // 새 타이머 설정
       const timer = setTimeout(() => {
-        performAutocompleteSearch(newQuery);
+        performAutocompleteSearch(newQuery); // 일정 시간 뒤 API 호출
       }, autoSearchDelay);
 
       setDebounceTimer(timer);
@@ -127,7 +126,7 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
     [debounceTimer, autoSearchDelay, performAutocompleteSearch],
   );
 
-  // 검색 초기화
+  // 검색 및 결과 초기화 - x 버튼 클릭, 검색창 닫기
   const clearSearch = useCallback(() => {
     setQuery('');
     setResults([]);

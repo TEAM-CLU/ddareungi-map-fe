@@ -1,16 +1,10 @@
-import { MapAreaStationsResponse } from '@/features/station/model/station.types';
-import {
-  IconBicycle,
-  IconBikeMarker,
-  IconRefresh,
-} from '@/shared/components/icons';
-import { QueryObserverResult } from '@tanstack/react-query';
-import { Touchable, TouchableOpacity } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { RefObject, useState } from 'react';
 import WebView from 'react-native-webview';
 import IconStationMarkerOn from '@/shared/components/icons/IconStationMarkerOn';
 import IconStationMarkerOff from '@/shared/components/icons/IconStationMarkerOff';
+import { ToggleStationMarkersMessage } from '@/shared/model/map.webview.types';
 
 interface StationMarkersToggleButtonProps {
   webRef: RefObject<WebView | null>;
@@ -24,22 +18,22 @@ const StationMarkersToggleButton = ({
   const handleToggleButtonPress = () => {
     if (mode === 'on') {
       setMode('off');
-      webRef.current?.postMessage(
-        JSON.stringify({
-          type: 'toggleStationMarkers',
-          isVisible: false,
-        }),
-      );
+      const toggleStationMarkersMessage: ToggleStationMarkersMessage = {
+        type: 'toggleStationMarkers',
+        isVisible: false,
+      };
+      webRef.current?.postMessage(JSON.stringify(toggleStationMarkersMessage));
+      return;
     }
 
     if (mode === 'off') {
       setMode('on');
-      webRef.current?.postMessage(
-        JSON.stringify({
-          type: 'toggleStationMarkers',
-          isVisible: true,
-        }),
-      );
+      const toggleStationMarkersMessage: ToggleStationMarkersMessage = {
+        type: 'toggleStationMarkers',
+        isVisible: true,
+      };
+      webRef.current?.postMessage(JSON.stringify(toggleStationMarkersMessage));
+      return;
     }
   };
   return (

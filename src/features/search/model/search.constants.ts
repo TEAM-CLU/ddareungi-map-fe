@@ -5,7 +5,7 @@ export const SEARCH_CONSTANTS = {
   // 검색 옵션 기본값
   DEFAULT_PAGE_SIZE: 15,
   DEFAULT_SEARCH_RADIUS: 10000, // 10km
-  DEFAULT_DEBOUNCE_DELAY: 200, // ms (자동완성을 위해 300ms에서 200ms로 단축)
+  DEFAULT_DEBOUNCE_DELAY: 200, // ms
   MIN_SEARCH_LENGTH: 1, // 최소 검색어 길이
   
   // 검색 정렬 옵션
@@ -15,7 +15,7 @@ export const SEARCH_CONSTANTS = {
   },
 
   // UI 애니메이션 설정
-  ANIMATION_DURATION: 100, // ms (빠른 반응을 위해 단축)
+  ANIMATION_DURATION: 100, // ms
 
   // 에러 메시지
   ERROR_MESSAGES: {

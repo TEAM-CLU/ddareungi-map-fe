@@ -6,6 +6,11 @@ import { requestLocationPermission } from '@/features/map/utils/location';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
 import { Use } from 'react-native-svg';
 import { Coordinates } from '@/features/map/model/map.types';
+import {
+  MyHeadingMessage,
+  MyLocationMessage,
+  WebViewMessageToRN,
+} from '@/shared/model/map.webview.types';
 
 interface UseMyLocationProps {
   webRef: React.RefObject<WebView | null>;
@@ -34,12 +39,12 @@ export const useMyLocation = ({
       return { lat, lon };
     }
     const prev = lastPos.current;
-    const smoothed = {
+    const smoothedcoord = {
       lat: prev.lat * 0.5 + lat * 0.5,
       lon: prev.lon * 0.5 + lon * 0.5,
     };
-    lastPos.current = smoothed;
-    return smoothed;
+    lastPos.current = smoothedcoord;
+    return smoothedcoord;
   };
 
   // 위치 전송
@@ -52,15 +57,14 @@ export const useMyLocation = ({
     if (!opts?.bypassAccuracyOnce && accuracy > 30) return;
 
     const { lat, lon } = smoothPosition(latitude, longitude);
+    const myLocation: MyLocationMessage = {
+      type: 'myLocation',
+      lat,
+      lon,
+      accuracy: accuracy ?? 0,
+    };
 
-    webRef.current?.postMessage(
-      JSON.stringify({
-        type: 'myLocation',
-        lat,
-        lon,
-        accuracy: accuracy ?? 0,
-      }),
-    );
+    webRef.current?.postMessage(JSON.stringify(myLocation));
   };
 
   // 위치 추적 시작
@@ -117,12 +121,27 @@ export const useMyLocation = ({
   // mapReady 메시지 전용 핸들러
   const handleMapReadyMessage = (event: WebViewMessageEvent) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === 'mapReady' && data.isReady) {
-        setIsMapReady(true);
+      const data: WebViewMessageToRN = JSON.parse(event.nativeEvent.data);
+
+      switch (data.type) {
+        case 'mapReady':
+          console.log('✅ 지도 준비 완료');
+          setIsMapReady(true);
+          break;
+
+        case 'placeMarkerShown':
+          console.log('📍 장소 마커 표시됨:', data.placeName);
+          break;
+
+        case 'mapMovedToLocation':
+          console.log('🗺️ 지도 이동 완료:', data);
+          break;
+
+        default:
+          console.warn('🔔 처리되지 않은 메시지:', data);
       }
-    } catch {
-      // 무시
+    } catch (error) {
+      console.error('Invalid JSON from WebView:', event.nativeEvent.data);
     }
   };
 
@@ -137,9 +156,11 @@ export const useMyLocation = ({
   // 방향은 위치와 무관하게 실시간으로 송신
   useEffect(() => {
     if (!isMapReady) return;
-    webRef.current?.postMessage(
-      JSON.stringify({ type: 'myHeading', heading: heading ?? 0 }),
-    );
+    const myHeading: MyHeadingMessage = {
+      type: 'myHeading',
+      heading: heading ?? 0,
+    };
+    webRef.current?.postMessage(JSON.stringify(myHeading));
   }, [heading, isMapReady, webRef]);
 
   // 앱이 foreground로 복귀 시 추적 재시작

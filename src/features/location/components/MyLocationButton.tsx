@@ -1,12 +1,12 @@
 import IconLocation from '@/shared/components/icons/IconLocation';
 import IconLocatorMark from '@/shared/components/icons/IconLocatorMark';
 import { tw } from '@/shared/libs/tw-helper';
-import { useRef, useState } from 'react';
+import { RefObject, useRef, useState } from 'react';
 import { Touchable, TouchableOpacity } from 'react-native';
 import WebView from 'react-native-webview';
 
 interface MyLocationButtonProps {
-  webRef: React.RefObject<WebView | null>;
+  webRef: RefObject<WebView | null>;
 }
 const MyLocationButton = ({ webRef }: MyLocationButtonProps) => {
   const [mode, setMode] = useState<'default' | 'following' | 'compass'>(

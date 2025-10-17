@@ -13,6 +13,10 @@ import {
 } from '@/features/station/model/station.types';
 import { Alert } from 'react-native';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import {
+  StationsDataUpdateMessage,
+  UpdateTargetedStationsInventoriesMessage,
+} from '@/shared/model/map.webview.types';
 
 interface UseStationsProps {
   webRef: RefObject<WebView | null>;
@@ -85,12 +89,11 @@ export const useStation = ({
         await getCurrentBikesList({
           stationNumbers: targetedStationsNumberList,
         });
-      webRef.current?.postMessage(
-        JSON.stringify({
-          type: 'updateTargetedStationsInventories',
-          inventories: response,
-        }),
-      );
+      const targetedStations: UpdateTargetedStationsInventoriesMessage = {
+        type: 'updateTargetedStationsInventories',
+        inventories: response,
+      };
+      webRef.current?.postMessage(JSON.stringify(targetedStations));
     } catch (error) {
       console.error('Invalid JSON from WebView:', error);
     }
@@ -123,15 +126,14 @@ export const useStation = ({
     }
   };
 
-  // 스테이션 데이터가 갱신되면 웹뷰에 =전달
+  // 스테이션 데이터가 갱신되면 웹뷰에 전달
   useEffect(() => {
     if (!isMapReady || !stationsData) return;
-    webRef.current?.postMessage(
-      JSON.stringify({
-        type: 'stationsDataUpdate',
-        stations: stationsData,
-      }),
-    );
+    const updatedStationData: StationsDataUpdateMessage = {
+      type: 'stationsDataUpdate',
+      stations: stationsData,
+    };
+    webRef.current?.postMessage(JSON.stringify(updatedStationData));
   }, [stationsData, isMapReady, webRef]);
 
   return {

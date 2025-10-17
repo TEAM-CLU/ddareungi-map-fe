@@ -22,22 +22,22 @@ importers:
         version: 11.4.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))
       '@react-native-picker/picker':
         specifier: ^2.11.2
-        version: 2.11.3(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+        version: 2.11.4(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       '@react-native/new-app-screen':
         specifier: 0.81.0
         version: 0.81.0(@types/react@19.2.2)(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       '@react-navigation/bottom-tabs':
         specifier: ^7.4.7
-        version: 7.4.9(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-screens@4.16.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+        version: 7.4.9(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-screens@4.17.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       '@react-navigation/native':
         specifier: ^7.1.17
         version: 7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       '@react-navigation/native-stack':
         specifier: ^7.3.26
-        version: 7.3.28(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-screens@4.16.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+        version: 7.3.28(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-screens@4.17.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       '@react-navigation/stack':
         specifier: ^7.4.8
-        version: 7.4.10(14c8b54d482b08db58d779bb0f966ed0)
+        version: 7.4.10(bf744d3fb502670d2bf76c7adffc53ff)
       '@tanstack/react-query':
         specifier: ^5.90.2
         version: 5.90.3(react@19.1.0)
@@ -88,7 +88,7 @@ importers:
         version: 5.4.2(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       react-native-picker-select:
         specifier: ^9.3.1
-        version: 9.3.1(@react-native-picker/picker@2.11.3(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))
+        version: 9.3.1(@react-native-picker/picker@2.11.4(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))
       react-native-reanimated:
         specifier: ^3.19.1
         version: 3.19.3(@babel/core@7.28.4)(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
@@ -97,7 +97,7 @@ importers:
         version: 5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       react-native-screens:
         specifier: ^4.15.4
-        version: 4.16.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+        version: 4.17.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       react-native-sensors:
         specifier: ^7.3.6
         version: 7.3.6(prop-types@15.8.1)(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))
@@ -936,8 +936,8 @@ packages:
     peerDependencies:
       react-native: '>=0.59'
 
-  '@react-native-picker/picker@2.11.3':
-    resolution: {integrity: sha512-aknxi+6dmNrSk0Bev+cnhsUAwi3Iz7KTj8lSHnGNcU+P9VkCGN6QQDcU0e2gnWLY3zhS3HzV+DBTmzR9ia6kTg==}
+  '@react-native-picker/picker@2.11.4':
+    resolution: {integrity: sha512-Kf8h1AMnBo54b1fdiVylP2P/iFcZqzpMYcglC28EEFB1DEnOjsNr6Ucqc+3R9e91vHxEDnhZFbYDmAe79P2gjA==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -1718,8 +1718,8 @@ packages:
   camelize@1.0.1:
     resolution: {integrity: sha512-dU+Tx2fsypxTgtLoE36npi3UqcjSSMNYfkqgmoEhtZrraP5VWq0K7FkWVTYa8eMPtnU/G2txVsfdCJTn9uzpuQ==}
 
-  caniuse-lite@1.0.30001750:
-    resolution: {integrity: sha512-cuom0g5sdX6rw00qOoLNSFCJ9/mYIsuSOA+yzpDw8eopiFqcVwQvZHqov0vmEighRxX++cfC0Vg1G+1Iy/mSpQ==}
+  caniuse-lite@1.0.30001751:
+    resolution: {integrity: sha512-A0QJhug0Ly64Ii3eIqHu5X51ebln3k4yTUkY1j8drqpWHVreg/VLijN48cZ1bYPiqOQuqpkIKnzr/Ul8V+p6Cw==}
 
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -1780,8 +1780,8 @@ packages:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
     engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
 
-  collect-v8-coverage@1.0.2:
-    resolution: {integrity: sha512-lHl4d5/ONEbLlJvaJNtsF/Lz+WvB07u2ycqTYbdrq7UypDXailES4valYb2eWiJFxZlVmpGekfqoxQhzyFdT4Q==}
+  collect-v8-coverage@1.0.3:
+    resolution: {integrity: sha512-1L5aqIkwPfiodaMgQunkF1zRhNqifHBmtbbbxcr6yVxxBnliw4TDOW6NxpO8DJLgJ16OT+Y4ztZqP6p/FtXnAw==}
 
   color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
@@ -2082,8 +2082,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.235:
-    resolution: {integrity: sha512-i/7ntLFwOdoHY7sgjlTIDo4Sl8EdoTjWIaKinYOVfC6bOp71bmwenyZthWHcasxgHDNWbWxvG9M3Ia116zIaYQ==}
+  electron-to-chromium@1.5.237:
+    resolution: {integrity: sha512-icUt1NvfhGLar5lSWH3tHNzablaA5js3HVHacQimfP8ViEBOQv+L7DKEuHdbTZ0SKCO1ogTJTIL1Gwk9S6Qvcg==}
 
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -3361,8 +3361,8 @@ packages:
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
-  node-releases@2.0.23:
-    resolution: {integrity: sha512-cCmFDMSm26S6tQSDpBCg/NR8NENrVPhAJSf+XbxBG4rPFaaonlEoE9wHQmun+cls499TQGSb7ZyPBRlzgKfpeg==}
+  node-releases@2.0.25:
+    resolution: {integrity: sha512-4auku8B/vw5psvTiiN9j1dAOsXvMoGqJuKJcR+dTdqiXEK20mMTk1UEo3HS16LeGQsVG6+qKTPM9u/qQ2LqATA==}
 
   node-stream-zip@1.15.0:
     resolution: {integrity: sha512-LN4fydt9TqhZhThkZIVQnF9cwjU3qmUH9h78Mx/K7d3VvfRqqwthLwJEUOEL0QPZ0XQmNN7be5Ggit5+4dq3Bw==}
@@ -3714,12 +3714,6 @@ packages:
       react: '*'
       react-native: '*'
 
-  react-native-is-edge-to-edge@1.2.1:
-    resolution: {integrity: sha512-FLbPWl/MyYQWz+KwqOZsSyj2JmLKglHatd3xLZWskXOpRaio4LfEDEz8E/A6uD8QoTHW6Aobw1jbEwK7KMgR7Q==}
-    peerDependencies:
-      react: '*'
-      react-native: '*'
-
   react-native-linear-gradient@2.8.3:
     resolution: {integrity: sha512-KflAXZcEg54PXkLyflaSZQ3PJp4uC4whM7nT/Uot9m0e/qxFV3p6uor1983D1YOBJbJN7rrWdqIjq0T42jOJyA==}
     peerDependencies:
@@ -3786,8 +3780,8 @@ packages:
       react: '*'
       react-native: '*'
 
-  react-native-screens@4.16.0:
-    resolution: {integrity: sha512-yIAyh7F/9uWkOzCi1/2FqvNvK6Wb9Y1+Kzn16SuGfN9YFJDTbwlzGRvePCNTOX0recpLQF3kc2FmvMUhyTCH1Q==}
+  react-native-screens@4.17.1:
+    resolution: {integrity: sha512-hGArs1kzsokvwxq98vluGlprUw3Q95zEjvZ3U2q28FmvLy25e6jxMclEkgxNtJ0GVJ2gWcFRTXON0EIVvUEd+A==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -5313,7 +5307,7 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.31
       '@types/node': 24.7.2
       chalk: 4.1.2
-      collect-v8-coverage: 1.0.2
+      collect-v8-coverage: 1.0.3
       exit: 0.1.2
       glob: 7.2.3
       graceful-fs: 4.2.11
@@ -5347,7 +5341,7 @@ snapshots:
       '@jest/console': 29.7.0
       '@jest/types': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
-      collect-v8-coverage: 1.0.2
+      collect-v8-coverage: 1.0.3
 
   '@jest/test-sequencer@29.7.0':
     dependencies:
@@ -5577,7 +5571,7 @@ snapshots:
     dependencies:
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
 
-  '@react-native-picker/picker@2.11.3(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)':
+  '@react-native-picker/picker@2.11.4(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)':
     dependencies:
       react: 19.1.0
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
@@ -5769,7 +5763,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.2
 
-  '@react-navigation/bottom-tabs@7.4.9(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-screens@4.16.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)':
+  '@react-navigation/bottom-tabs@7.4.9(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-screens@4.17.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@react-navigation/elements': 2.6.5(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       '@react-navigation/native': 7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
@@ -5777,7 +5771,7 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
       react-native-safe-area-context: 5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
-      react-native-screens: 4.16.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+      react-native-screens: 4.17.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
     transitivePeerDependencies:
       - '@react-native-masked-view/masked-view'
 
@@ -5802,14 +5796,14 @@ snapshots:
       use-latest-callback: 0.2.6(react@19.1.0)
       use-sync-external-store: 1.6.0(react@19.1.0)
 
-  '@react-navigation/native-stack@7.3.28(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-screens@4.16.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)':
+  '@react-navigation/native-stack@7.3.28(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-screens@4.17.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@react-navigation/elements': 2.6.5(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       '@react-navigation/native': 7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       react: 19.1.0
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
       react-native-safe-area-context: 5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
-      react-native-screens: 4.16.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+      react-native-screens: 4.17.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       warn-once: 0.1.1
     transitivePeerDependencies:
       - '@react-native-masked-view/masked-view'
@@ -5828,7 +5822,7 @@ snapshots:
     dependencies:
       nanoid: 3.3.11
 
-  '@react-navigation/stack@7.4.10(14c8b54d482b08db58d779bb0f966ed0)':
+  '@react-navigation/stack@7.4.10(bf744d3fb502670d2bf76c7adffc53ff)':
     dependencies:
       '@react-navigation/elements': 2.6.5(@react-navigation/native@7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       '@react-navigation/native': 7.1.18(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
@@ -5837,7 +5831,7 @@ snapshots:
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
       react-native-gesture-handler: 2.28.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       react-native-safe-area-context: 5.6.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
-      react-native-screens: 4.16.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+      react-native-screens: 4.17.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
     transitivePeerDependencies:
       - '@react-native-masked-view/masked-view'
 
@@ -6545,9 +6539,9 @@ snapshots:
   browserslist@4.26.3:
     dependencies:
       baseline-browser-mapping: 2.8.16
-      caniuse-lite: 1.0.30001750
-      electron-to-chromium: 1.5.235
-      node-releases: 2.0.23
+      caniuse-lite: 1.0.30001751
+      electron-to-chromium: 1.5.237
+      node-releases: 2.0.25
       update-browserslist-db: 1.1.3(browserslist@4.26.3)
 
   bser@2.1.1:
@@ -6606,7 +6600,7 @@ snapshots:
 
   camelize@1.0.1: {}
 
-  caniuse-lite@1.0.30001750: {}
+  caniuse-lite@1.0.30001751: {}
 
   chalk@4.1.2:
     dependencies:
@@ -6683,7 +6677,7 @@ snapshots:
 
   co@4.6.0: {}
 
-  collect-v8-coverage@1.0.2: {}
+  collect-v8-coverage@1.0.3: {}
 
   color-convert@1.9.3:
     dependencies:
@@ -6991,7 +6985,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.235: {}
+  electron-to-chromium@1.5.237: {}
 
   emittery@0.13.1: {}
 
@@ -8056,7 +8050,7 @@ snapshots:
       '@types/node': 24.7.2
       chalk: 4.1.2
       cjs-module-lexer: 1.4.3
-      collect-v8-coverage: 1.0.2
+      collect-v8-coverage: 1.0.3
       glob: 7.2.3
       graceful-fs: 4.2.11
       jest-haste-map: 29.7.0
@@ -8752,7 +8746,7 @@ snapshots:
 
   node-int64@0.4.0: {}
 
-  node-releases@2.0.23: {}
+  node-releases@2.0.25: {}
 
   node-stream-zip@1.15.0: {}
 
@@ -9098,11 +9092,6 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
 
-  react-native-is-edge-to-edge@1.2.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
-
   react-native-linear-gradient@2.8.3(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
@@ -9144,9 +9133,9 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
 
-  react-native-picker-select@9.3.1(@react-native-picker/picker@2.11.3(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)):
+  react-native-picker-select@9.3.1(@react-native-picker/picker@2.11.4(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)):
     dependencies:
-      '@react-native-picker/picker': 2.11.3(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+      '@react-native-picker/picker': 2.11.4(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       lodash.isequal: 4.5.0
       lodash.isobject: 3.0.2
 
@@ -9175,12 +9164,11 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
 
-  react-native-screens@4.16.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0):
+  react-native-screens@4.17.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
       react-freeze: 1.0.4(react@19.1.0)
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
-      react-native-is-edge-to-edge: 1.2.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       warn-once: 0.1.1
 
   react-native-sensors@7.3.6(prop-types@15.8.1)(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)):

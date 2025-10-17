@@ -10,13 +10,7 @@ import { useNearbyStationsMutation } from '@/features/station/services/station.q
 import { tw } from '@/shared/libs/tw-helper';
 import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { RefObject, use, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Text,
-  Touchable,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 interface NearbyStationModalProps {
   myPosition: Coordinates | undefined;

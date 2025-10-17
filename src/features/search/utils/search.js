@@ -8,7 +8,7 @@
     mapRef = map;
   };
 
-  // 장소 마커 표시
+  // 장소 마커 표시 - 검색 결과에서 장소 선택 시
   const showPlaceMarker = (lat, lng, placeName, placeInfo) => {
     // 기존 마커 제거
     clearCurrentPlaceMarker();
@@ -60,7 +60,7 @@
     }
   };
 
-  // 현재 장소 마커 제거
+  // 현재 장소 마커와 정보창 제거
   const clearCurrentPlaceMarker = () => {
     if (currentPlaceMarker) {
       currentPlaceMarker.setMap(null);
@@ -98,6 +98,7 @@
 
     const bounds = new kakaoRef.maps.LatLngBounds();
 
+    // places 배열 순회하며 각 장소 좌표에 마커 생성
     places.forEach((place, index) => {
       const position = new kakaoRef.maps.LatLng(place.lat, place.lng);
 
@@ -173,7 +174,7 @@
     }
   };
 
-  // 검색 마커들 제거
+  // 검색 결과 마커 모두 제거
   const clearSearchMarkers = () => {
     searchMarkers.forEach(marker => {
       marker.setMap(null);
@@ -181,7 +182,7 @@
     searchMarkers = [];
   };
 
-  // 모든 검색 관련 요소 제거
+  // 현재 선택된 장소 & 검색 마커 모두 제거
   const clearAllSearchElements = () => {
     clearCurrentPlaceMarker();
     clearSearchMarkers();
@@ -194,6 +195,6 @@
     showSearchResults,
     clearCurrentPlaceMarker,
     clearSearchMarkers,
-    clearAll: clearAllSearchElements,
+    clearAllSearchElements,
   };
 })();
