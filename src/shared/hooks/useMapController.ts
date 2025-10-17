@@ -1,21 +1,24 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import WebView from 'react-native-webview';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { NavigationProp, RouteProp } from '@react-navigation/native';
-
-import { useMapSearch } from '@/features/map/hooks/useMapSearch';
-import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
-import { RouteType } from '@/features/routing/model/routing.types';
 import { RootStackParamList } from '@/app/types';
 import { Coordinates } from '@/features/map/model/map.types';
+import { RouteType } from '@/features/routing/model/routing.types';
+import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
+import { useMapSearch } from '@/features/search/hooks/useMapSearch';
+import { MapAreaStationsData } from '@/features/station/model/station.types';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import {
+  NavigationProp,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { useRef, useState, useEffect, useCallback } from 'react';
+import WebView from 'react-native-webview';
 
 /**
  * MapScreen 상태 및 이벤트를 통합 관리하는 훅
  */
 export const useMapController = () => {
   const webRef = useRef<WebView | null>(null);
-  const placeDetailModalRef = useRef<BottomSheetModal>(null);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Map'>>();
@@ -29,10 +32,12 @@ export const useMapController = () => {
   const [selectedPlaceForModal, setSelectedPlaceForModal] =
     useState<AutocompleteResult | null>(null);
   const [routeType, setRouteType] = useState<RouteType>(RouteType.CONSTANT);
-  const [isPlaceModalVisible, setPlaceModalVisible] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<{
+    coordinates: Coordinates | null;
+  }>({ coordinates: null });
 
-  const [currentLocation, setCurrentLocation] = useState<{ coordinates: Coordinates | null }>({ coordinates: null });
-  
+  const placeDetailModalRef = useRef<BottomSheetModal | null>(null);
+
   useEffect(() => {
     if (route.params?.openSearchOverlay) setShowSearchOverlay(true);
     if (route.params?.placeType) setCurrentPlaceType(route.params.placeType);
@@ -66,10 +71,12 @@ export const useMapController = () => {
 
       setShowSearchOverlay(false);
       setSelectedPlaceForModal(place);
-      setPlaceModalVisible(true);
+      placeDetailModalRef.current?.present();
     },
     [route.params, navigation, currentPlaceType, showPlaceMarker],
   );
+
+  const [searchText, setSearchText] = useState('');
 
   // 출발지/도착지/경유지 설정
   const handlePlaceTypeConfirm = useCallback(
@@ -91,23 +98,43 @@ export const useMapController = () => {
     );
   }, []);
 
+  // station 및 관련 모달
+  const [stationMetaData, setStationMetaData] =
+    useState<MapAreaStationsData | null>(null);
+  const [myPosition, setMyPosition] = useState<Coordinates | undefined>(
+    undefined,
+  );
+
+  const nearbyStationModalRef = useRef<BottomSheetModal | null>(null);
+  const stationDetailModalRef = useRef<BottomSheetModal | null>(null);
+
   return {
     webRef,
     placeDetailModalRef,
 
     showSearchOverlay,
-    isPlaceModalVisible,
     routeType,
     selectedPlaceForModal,
 
     setShowSearchOverlay,
-    setPlaceModalVisible,
     setSelectedPlaceForModal,
+    searchText,
+    setSearchText,
 
     handleSearchbarPress,
     handleSearchClose,
     handlePlaceSelect,
     handlePlaceTypeConfirm,
     toggleRouteType,
+
+    // station 및 관련 모달
+    nearbyStationModalRef,
+    stationDetailModalRef,
+    stationMetaData,
+    setStationMetaData,
+    myPosition,
+    setMyPosition,
+    currentLocation,
+    setCurrentLocation,
   };
 };

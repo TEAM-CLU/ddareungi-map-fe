@@ -6,8 +6,10 @@ import { tw } from '../libs/tw-helper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FOOTER_MENU } from '../model/index.constants';
 
-
-const Footer = () => {
+interface FooterProps {
+  setIsStationButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
+}
+const Footer = ({ setIsStationButtonPressed }: FooterProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -22,16 +24,26 @@ const Footer = () => {
         <TouchableOpacity
           key={item.name}
           style={[tw('flex-1 flex-col items-center justify-center mb-1')]}
-          onPress={() => navigation.navigate(item.name)}
+          onPress={() => {
+            if (item.name === 'station') {
+              setIsStationButtonPressed(true);
+              return;
+            }
+
+            // TODO: 경로추천도 모달 띄우는 조건문 필요
+
+            navigation.navigate(item.screen);
+          }}
         >
           <View style={[tw('w-6 h-6 justify-center items-center')]}>
             {item.icon}
           </View>
 
           <Text
-            style={[tw(
-              'text-center text-on-surface-secondary font-primary-700 mt-1',
-            ), { fontSize: 13 }]}
+            style={[
+              tw('text-center text-on-surface-secondary font-primary-700 mt-1'),
+              { fontSize: 13 },
+            ]}
           >
             {item.label}
           </Text>

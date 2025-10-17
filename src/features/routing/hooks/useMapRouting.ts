@@ -1,19 +1,17 @@
-import { useCallback } from 'react';
-import { useMapWebview } from './useMapWebview';
+import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import {
   UpdateRouteMessage,
   ClearRouteMessage,
   SetRouteTypeMessage,
   MoveToRoutePointMessage,
-} from '../model/map.webview.types';
+} from '@/shared/model/map.webview.types';
+import { useCallback } from 'react';
 import WebView from 'react-native-webview';
 
 /**
  * 경로(Route) 관련 WebView 통신 훅
  */
-export const useMapRouting = (
-  webRef: React.RefObject<WebView | null>,
-) => {
+export const useMapRouting = (webRef: React.RefObject<WebView | null>) => {
   const { sendMessage } = useMapWebview(webRef);
 
   // 경로 업데이트 (출발지/도착지/경유지 정보 포함)

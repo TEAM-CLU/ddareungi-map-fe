@@ -28,11 +28,11 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
     autoSearchDelay = SEARCH_CONSTANTS.DEFAULT_DEBOUNCE_DELAY,
   } = options;
 
-  const [query, setQuery] = useState('');                                    // 현재 입력된 검색어
+  const [query, setQuery] = useState(''); // 현재 입력된 검색어
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<AutocompleteResult[]>([]);          // 검색 결과 리스트
+  const [results, setResults] = useState<AutocompleteResult[]>([]); // 검색 결과 리스트
   const [error, setError] = useState<string | null>(null);
-  const [debounceTimer, setDebounceTimer] = useState<number | null>(null);   // 디바운스 타이머
+  const [debounceTimer, setDebounceTimer] = useState<number | null>(null); // 디바운스 타이머
 
   // 자동완성 검색 실행
   const performAutocompleteSearch = useCallback(

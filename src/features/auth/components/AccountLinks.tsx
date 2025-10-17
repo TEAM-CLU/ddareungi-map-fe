@@ -18,7 +18,7 @@ const AccountLinks = ({ setAccountFeatures }: AccountLinksProps) => {
   return (
     <View
       style={[
-        tw('tems-center justify-center flex flex-row flex-nowrap h-4 w-full'),
+        tw('items-center justify-center flex flex-row flex-nowrap h-4 w-full'),
         { gap: 5 },
       ]}
     >

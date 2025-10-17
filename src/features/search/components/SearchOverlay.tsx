@@ -228,7 +228,7 @@ const SearchOverlay = ({
       ]}
     >
       {/* 검색바 헤더 */}
-      <View style={tw('px-4 pt-12 pb-2')}>
+      <View style={tw('px-4 pt-12 pb-2 text-on-surface-primary')}>
         <SearchBar
           value={searchText}
           onChangeText={handleSearchTextChange}
@@ -241,7 +241,7 @@ const SearchOverlay = ({
         />
 
         {/* 빠른 액세스 태그 버튼 */}
-        <View style={[tw('flex-row mt-3'), { gap : 2}]}>
+        <View style={[tw('flex-row mt-3'), { gap: 2 }]}>
           <TouchableOpacity
             style={tw(
               'bg-brand-primary rounded-full px-3 py-2 flex-row items-center',
@@ -251,14 +251,12 @@ const SearchOverlay = ({
               Alert.alert('내 위치 선택');
             }}
           >
-            <View
-              style={tw(
-                'w-4 h-4 mr-1 items-center justify-center',
-              )}
-            >
-            <IconLocatorMark width={25} height={25}/>
+            <View style={tw('w-4 h-4 mr-1 items-center justify-center')}>
+              <IconLocatorMark width={25} height={25} />
             </View>
-            <Text style={tw('text-on-surface-secondary font-primary-700 text-xs')}>
+            <Text
+              style={tw('text-on-surface-secondary font-primary-700 text-xs')}
+            >
               현위치
             </Text>
           </TouchableOpacity>
@@ -272,14 +270,12 @@ const SearchOverlay = ({
               console.log('즐겨찾기 선택');
             }}
           >
-            <View
-              style={tw(
-                'w-4 h-4 mr-1 items-center justify-center',
-              )}
-            >
+            <View style={tw('w-4 h-4 mr-1 items-center justify-center')}>
               <Text style={tw('text-white text-xs')}>⭐</Text>
             </View>
-            <Text style={tw('text-on-surface-secondary font-primary-700 text-xs')}>
+            <Text
+              style={tw('text-on-surface-secondary font-primary-700 text-xs')}
+            >
               즐겨찾기
             </Text>
           </TouchableOpacity>

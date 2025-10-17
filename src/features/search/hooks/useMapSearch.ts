@@ -1,19 +1,18 @@
-import { useCallback } from 'react';
-import { useMapWebview } from './useMapWebview';
+import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import {
   ShowPlaceMarkerMessage,
   MoveToLocationMessage,
   ShowSearchResultsMessage,
   ClearSearchMessage,
-} from '../model/map.webview.types';
+} from '@/shared/model/map.webview.types';
+import { useCallback } from 'react';
+
 import WebView from 'react-native-webview';
 
 /**
  * 검색 관련 WebView 통신 훅
  */
-export const useMapSearch = (
-  webRef: React.RefObject<WebView | null>,
-) => {
+export const useMapSearch = (webRef: React.RefObject<WebView | null>) => {
   const { sendMessage } = useMapWebview(webRef);
 
   const showPlaceMarker = useCallback(
@@ -44,7 +43,15 @@ export const useMapSearch = (
   );
 
   const showSearchResults = useCallback(
-    (places: Array<{ lat: number; lng: number; name: string; address?: string; category?: string }>) => {
+    (
+      places: Array<{
+        lat: number;
+        lng: number;
+        name: string;
+        address?: string;
+        category?: string;
+      }>,
+    ) => {
       const message: ShowSearchResultsMessage = {
         type: 'showSearchResults',
         places,

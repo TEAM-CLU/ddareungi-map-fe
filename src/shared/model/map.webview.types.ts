@@ -1,6 +1,11 @@
 // WebView와 React Native 간 통신을 타입 안정성 있게 관리
 // RN 쪽에서만 import 해서 사용 (useMapWebview, useMapSearch, useMapRouting, Map.tsx)
 
+import {
+  LatestStationsInventoriesData,
+  MapAreaStationsData,
+} from '@/features/station/model/station.types';
+
 export interface MapWebviewMessage {
   type: string;
   [key: string]: any;
@@ -128,6 +133,22 @@ export interface RouteTypeUpdatedMessage {
 
 export interface RouteClearedMessage {
   type: 'routeCleared';
+}
+
+// === 대여소 관련 메시지 ===
+export interface UpdateTargetedStationsInventoriesMessage {
+  type: 'updateTargetedStationsInventories';
+  inventories: LatestStationsInventoriesData[];
+}
+
+export interface StationsDataUpdateMessage {
+  type: 'stationsDataUpdate';
+  stations: MapAreaStationsData[]; // 필요에 따라 구체적인 타입으로 변경
+}
+
+export interface ToggleStationMarkersMessage {
+  type: 'toggleStationMarkers';
+  isVisible: boolean;
 }
 
 // 모든 메시지 타입 유니온
