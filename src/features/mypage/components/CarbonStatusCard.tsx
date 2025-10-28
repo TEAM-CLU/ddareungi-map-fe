@@ -4,13 +4,13 @@ import { Image, ImageStyle, Text, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 interface CarbonStatusCardProps {
-  carbonSaved?: string;
-  treesPlanted?: string;
+  carbonReduction?: number;
+  plantingTrees?: number;
 }
 
 const CarbonStatusCard = ({
-  carbonSaved = '1.5KG',
-  treesPlanted = '20그루',
+  carbonReduction = 1.5,
+  plantingTrees = 20,
 }: CarbonStatusCardProps) => {
   return (
     <View
@@ -53,7 +53,7 @@ const CarbonStatusCard = ({
             탄소저감량
           </Text>
           <Text style={tw('text-brand-primary font-primary-700 text-2xl mt-2')}>
-            {carbonSaved}
+            {carbonReduction}KG
           </Text>
         </View>
 
@@ -68,7 +68,7 @@ const CarbonStatusCard = ({
             심은 나무수
           </Text>
           <Text style={tw('text-brand-primary font-primary-700 text-2xl mt-2')}>
-            {treesPlanted}
+            {plantingTrees}그루
           </Text>
         </View>
       </View>
