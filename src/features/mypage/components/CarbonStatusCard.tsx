@@ -9,8 +9,8 @@ interface CarbonStatusCardProps {
 }
 
 const CarbonStatusCard = ({
-  carbonReduction = 1.5,
-  plantingTrees = 20,
+  carbonReduction,
+  plantingTrees,
 }: CarbonStatusCardProps) => {
   return (
     <View
