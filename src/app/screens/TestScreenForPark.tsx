@@ -8,7 +8,7 @@ const TestScreenForPark = () => {
     <View
       style={[tw('flex-1 bg-surface-primary justify-center items-center px-5'), { gap: 15 }]}
     >
-      <UsageCard totalTime={234} totalDistance={15.3} calories={156} />
+      <UsageCard totalTime={23434} totalDistance={15343} calories={15652} />
       <CarbonStatusCard carbonReduction={1.5} plantingTrees={20} />
     </View>
   );
