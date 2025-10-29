@@ -15,11 +15,12 @@ import GenderButton from '@/shared/components/button/GenderButton';
 import AddressInput from '@/shared/components/Input/AddressInput';
 import SquareButton from '@/shared/components/button/SquareButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQueryClient } from '@tanstack/react-query';
+import { DUMMY_USER_INFO } from '../model/mypage.constants';
 
-const EditProfile = () => {
-  const { data: user, isLoading } = useUserInfoQuery();
-  const { mutate: updateUser, isPending } = useUpdateUserInfoMutation();
+const EditProfile = ({ onBack }: { onBack: () => void }) => {
+  const { isLoading } = useUserInfoQuery();
+  const { mutate: updateUser } = useUpdateUserInfoMutation();
+  const user = DUMMY_USER_INFO;
 
   const [name, setName] = useState('');
   const [year, setYear] = useState<number | null>(null);
@@ -32,7 +33,7 @@ const EditProfile = () => {
   useEffect(() => {
     if (user) {
       setName(user.name);
-      setGender(user.gender);
+      setGender(user.gender as 'M' | 'F');
       if (user.birthDate) {
         const [y, m, d] = user.birthDate.split('-').map(Number);
         setYear(y);
@@ -81,18 +82,17 @@ const EditProfile = () => {
     };
 
     updateUser(updatedData, {
-        onSuccess: res => {
-          if ('message' in res) {
-            Alert.alert(res.message);
-          } else {
-            Alert.alert('저장되었습니다.');
-          }
-        },
-        onError: () => {
-          Alert.alert('수정 중 오류가 발생했습니다.');
-        },
+      onSuccess: res => {
+        if ('message' in res) {
+          Alert.alert(res.message);
+        } else {
+          Alert.alert('저장되었습니다.');
+        }
       },
-    );
+      onError: () => {
+        Alert.alert('수정 중 오류가 발생했습니다.');
+      },
+    });
   };
 
   if (isLoading) return <SimpleLoading title="" />;
@@ -100,7 +100,7 @@ const EditProfile = () => {
   return (
     <SafeAreaView style={tw('flex-1 bg-surface-secondary pt-6')}>
       <View style={tw('flex-row items-center px-5 pb-20')}>
-        <BackButton type="previous" iconColor="brand" />
+        <BackButton type="custom" iconColor="brand" onPress={onBack} />
         <Text
           style={tw('text-xl font-primary-700 text-on-surface-primary ml-4')}
         >

@@ -1,6 +1,6 @@
 import { tw } from '@/shared/libs/tw-helper';
 import { Text, View } from 'react-native';
-import { formatUsageData } from '../utils/formatUsage';
+import { formatUsageData } from '../../utils/formatUsage';
 
 interface UsageCardProps {
   totalTime: number;
