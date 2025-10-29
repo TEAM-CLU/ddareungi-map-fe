@@ -1,4 +1,5 @@
 import {
+  LogoutResponse,
   ResetPasswordPayload,
   ResetPasswordResponse,
   SendVerificationEmailPayload,
@@ -65,5 +66,11 @@ export const postResetPassword = async (
   payload: ResetPasswordPayload,
 ): Promise<ResetPasswordResponse> => {
   const response = await authApi.post('/reset-password', payload);
+  return response.data;
+};
+
+// 로그아웃
+export const postLogout = async (): Promise<LogoutResponse> => {
+  const response = await authApi.post('/logout', {}, { withCredentials: true });
   return response.data;
 };

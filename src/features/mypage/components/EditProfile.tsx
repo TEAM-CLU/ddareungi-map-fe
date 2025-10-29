@@ -16,10 +16,12 @@ import AddressInput from '@/shared/components/Input/AddressInput';
 import SquareButton from '@/shared/components/button/SquareButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DUMMY_USER_INFO } from '../model/mypage.constants';
+import { useLogoutMutation } from '@/features/auth/services/auth.queries';
 
 const EditProfile = ({ onBack }: { onBack: () => void }) => {
   const { isLoading } = useUserInfoQuery();
   const { mutate: updateUser } = useUpdateUserInfoMutation();
+  const { mutate: logout } = useLogoutMutation();
   const user = DUMMY_USER_INFO;
 
   const [name, setName] = useState('');
@@ -93,6 +95,31 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
         Alert.alert('수정 중 오류가 발생했습니다.');
       },
     });
+  };
+
+  const handleLogoutPress = () => {
+    Alert.alert(
+      '로그아웃',
+      '정말 로그아웃 하시겠어요?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '확인',
+          style: 'destructive',
+          onPress: () => {
+            logout(undefined, {
+              onSuccess: res => {
+                Alert.alert(res.message);
+              },
+              onError: () => {
+                Alert.alert('로그아웃 중 오류가 발생했습니다.');
+              },
+            });
+          },
+        },
+      ],
+      { cancelable: true },
+    );
   };
 
   if (isLoading) return <SimpleLoading title="" />;
@@ -216,7 +243,7 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
 
         {/* 로그아웃 / 회원탈퇴 */}
         <View style={tw('flex-row justify-center')}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleLogoutPress}>
             <Text style={tw('text-placeholder font-primary-500 text-xs')}>
               로그아웃
             </Text>

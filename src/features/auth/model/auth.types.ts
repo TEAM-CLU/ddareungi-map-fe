@@ -97,6 +97,11 @@ interface ResetPasswordResponseFailed {
   message: string;
 }
 
+// 로그아웃
+export interface LogoutResponse {
+  message: string;
+}
+
 /********** 유저 **********/
 
 // 유저 회원가입
