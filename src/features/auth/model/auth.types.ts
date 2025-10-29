@@ -142,6 +142,44 @@ interface LoginUserResponseFailed {
   message: string;
 }
 
+// 유저 정보 조회
+export interface GetUserInfoResponse {
+  name: string;
+  email: string;
+  birthDate: string;
+  gender: 'M' | 'F';
+  address: string;
+  totalTime: number;
+  totalDistance: number;
+  calories: number;
+  carbonReduction: number;
+  treesPlanted: number;
+}
+
+// 유저 정보 수정
+export interface UpdateUserPayload {
+  name: string;
+  birthDate: string;
+  gender: 'M' | 'F';
+  address: string;
+}
+
+export type UpdateUserResponse =
+  | UpdateUserResponseSuccess
+  | UpdateUserResponseFailed;
+
+interface UpdateUserResponseSuccess {
+  name: string;
+  birthDate: string;
+  gender: 'M' | 'F';
+  address: string;
+}
+
+interface UpdateUserResponseFailed {
+  statusCode: number;
+  message: string;
+}
+
 // 이메일 중복 확인
 export interface CheckEmailPayload {
   email: string;

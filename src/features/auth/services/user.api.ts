@@ -3,10 +3,14 @@ import {
   CheckEmailResponse,
   CreateUserPayload,
   CreateUserResponse,
+  GetUserInfoResponse,
   LoginUserPayload,
   LoginUserResponse,
+  UpdateUserPayload,
+  UpdateUserResponse,
 } from '@/features/auth/model/auth.types';
 import { SERVER_URL } from '@/shared/model/index.constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 // default instance
@@ -34,10 +38,31 @@ export const postLoginUser = async (
   return response.data;
 };
 
-// 내 정보 조회
-// 내 정보 수정
+// 유저 정보 조회
+export const getUserInfo = async (): Promise<GetUserInfoResponse> => {
+  const token = await AsyncStorage.getItem('ACCESS_TOKEN_KEY');
+  const response = await userApi.get('/info', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+// 유저 정보 수정
+export const updateUserInfo = async (
+  payload: UpdateUserPayload,
+): Promise<UpdateUserResponse> => {
+  const token = await AsyncStorage.getItem('ACCESS_TOKEN_KEY');
+  const response = await userApi.put('/info-update', payload, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
 // 비밀번호 변경
-// 마이페이지 정보 조회
 
 // 이메일 중복 확인
 export const postCheckEmail = async (

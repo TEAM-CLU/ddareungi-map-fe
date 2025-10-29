@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { tw } from '@/shared/libs/tw-helper';
@@ -6,11 +6,19 @@ import { ScrollView } from 'react-native-gesture-handler';
 import UsageCard from '@/features/mypage/components/UsageCard';
 import CarbonStatusCard from '@/features/mypage/components/CarbonStatusCard';
 import BackButton from '@/shared/components/button/BackButton';
+import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 
 const MyPageScreen = () => {
+  // const { data, isLoading, isError } = useUserInfoQuery();
+  // const { setUser } = useUser();
+
+  // useEffect(() => {
+  //   if (data) setUser(data);
+  // }, [data, setUser]);
+
   const user = {
-    name: '한평강',
-    email: 'seoultech@naver.com',
+    name: '홍길동',
+    email: 'honggildong@example.com',
   };
   const usageData = {
     totalDistance: 15300,
