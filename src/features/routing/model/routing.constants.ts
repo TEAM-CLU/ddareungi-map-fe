@@ -10,10 +10,10 @@ export const ROUTE_CONSTANTS = {
     START: 'start',
     END: 'end',
   },
-} as const;
+};
 
 export const ROUTE_POINT_TYPES = {
   START: 'start',
   WAYPOINT: 'waypoint',
   END: 'end',
-} as const;
+};

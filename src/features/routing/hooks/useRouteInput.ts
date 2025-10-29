@@ -30,7 +30,7 @@ export const useRouteInput = ({
     setInternalRouteData(routeData);
   }, [routeData]);
 
-  // routeType 변경 시 waypoints 초기화
+  // routeType 변경 시 waypoints 초기화 - LOOP <-> CONSTANT 전환했을 때 경유지 내용 초기화
   useEffect(() => {
     if (routeType === RouteType.LOOP && waypoints.length === 0) {
       setWaypoints([createDefaultWaypoint('waypoint-1')]);
@@ -39,7 +39,7 @@ export const useRouteInput = ({
     }
   }, [routeType]);
 
-  // 완성 여부 계산
+  // 모든 라우트 필드 채워져 있는지 확인 - 채우기 전이면 searchOverlay, 다 채우면 라우팅 결과 보여줌 
   useEffect(() => {
     const isStartSet =
       !!internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.START];

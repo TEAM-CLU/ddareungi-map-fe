@@ -31,36 +31,6 @@ const DevHubScreen = ({ navigation }: any) => {
     'TestPark',
   ];
 
-  async function fetchNearbyStations() {
-    const url =
-      'https://port-0-ddareungi-map-be-mff1z09ze559d642.sel3.cloudtype.app/stations/nearby?latitude=37.630032&longitude=127.076508';
-
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      console.log('✅ 데이터:', data);
-    } catch (err) {
-      console.error('❌ 실패:', err);
-    }
-  }
-
-  async function fetchMapAreaStations() {
-    const url =
-      'https://port-0-ddareungi-map-be-mff1z09ze559d642.sel3.cloudtype.app/stations/map-area?latitude=37.630032&longitude=127.076508&radius=2500';
-
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      console.log('✅ 데이터:', data);
-    } catch (err) {
-      console.error('❌ 실패:', err);
-    }
-  }
-
-  fetchMapAreaStations();
-  fetchNearbyStations();
   return (
     <View style={{ flex: 1 }}>
       <Text style={{ fontSize: 20, fontWeight: '700', marginBottom: 12 }}>

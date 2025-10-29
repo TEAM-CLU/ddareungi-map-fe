@@ -1,10 +1,13 @@
 import {
+  GetLatestStationsInventoriesPayload,
+  GetLatestStationsInventoriesResponse,
+  LatestStationsInventoriesData,
+  MapAreaStationsData,
   MapAreaStationsPayload,
   MapAreaStationsResponse,
-} from './../model/station.types';
-import {
-  NearByStationsPayload,
-  NearByStationsResponse,
+  NearbyStationsData,
+  NearbyStationsPayload,
+  NearbyStationsResponse,
 } from '@/features/station/model/station.types';
 import { SERVER_URL } from '@/shared/model/index.constants';
 import axios from 'axios';
@@ -18,9 +21,9 @@ const stationApi = axios.create({
 });
 
 // 가장 가까운 대여소 3개 조회
-export const getNearByStations = async (
-  payload: NearByStationsPayload,
-): Promise<NearByStationsResponse> => {
+export const getNearbyStations = async (
+  payload: NearbyStationsPayload,
+): Promise<NearbyStationsData[]> => {
   const response = await stationApi.get('/nearby', {
     params: payload,
   });
@@ -31,10 +34,19 @@ export const getNearByStations = async (
 export const getMapAreaStations = async (
   payload: MapAreaStationsPayload,
   signal?: AbortSignal,
-): Promise<MapAreaStationsResponse> => {
+): Promise<MapAreaStationsData[]> => {
   const response = await stationApi.get('/map-area', {
     params: payload,
     signal,
   });
+  return response.data.data ?? [];
+};
+
+// 대여소 재고 정보 조회
+export const postGetLatestStationsInventories = async (
+  payload: GetLatestStationsInventoriesPayload,
+  signal?: AbortSignal,
+): Promise<LatestStationsInventoriesData[]> => {
+  const response = await stationApi.post('/inventories', payload, { signal });
   return response.data.data ?? [];
 };
