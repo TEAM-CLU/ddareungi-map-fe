@@ -75,7 +75,10 @@ export interface CreateUserPayload {
   name: string;
   gender: 'M' | 'F';
   birthDate: string;
-  address: string;
+  address: string | null;
+  consented_at: string;
+  required_agreed: boolean;
+  optional_agreed: boolean;
 }
 
 export interface CreateUserResponse {

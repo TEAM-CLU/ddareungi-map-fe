@@ -14,6 +14,9 @@ importers:
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
         version: 2.2.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))
+      '@react-native-community/checkbox':
+        specifier: ^0.5.20
+        version: 0.5.20(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       '@react-native-community/datetimepicker':
         specifier: ^8.4.5
         version: 8.4.5(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
@@ -71,6 +74,9 @@ importers:
       react-native-loading-spinner-overlay:
         specifier: ^3.0.1
         version: 3.0.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
+      react-native-modal:
+        specifier: 14.0.0-rc.1
+        version: 14.0.0-rc.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       react-native-modal-datetime-picker:
         specifier: ^18.0.0
         version: 18.0.0(@react-native-community/datetimepicker@8.4.5(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))
@@ -873,6 +879,16 @@ packages:
     resolution: {integrity: sha512-gvRvjR5JAaUZF8tv2Kcq/Gbt3JHwbKFYfmb445rhOj6NUMx3qPLixmDx5pZAyb9at1bYvJ4/eTUipU5aki45xw==}
     peerDependencies:
       react-native: ^0.0.0-0 || >=0.65 <1.0
+
+  '@react-native-community/checkbox@0.5.20':
+    resolution: {integrity: sha512-NuTAOFmttPEX7cwDbVr5Rf0HR86zCzX2FllebMayxca//dFH6X5DLySftra/PC2K9kt42yashWK7T2Tucm5JTQ==}
+    peerDependencies:
+      react: '*'
+      react-native: '>= 0.62'
+      react-native-windows: '>=0.62'
+    peerDependenciesMeta:
+      react-native-windows:
+        optional: true
 
   '@react-native-community/cli-clean@20.0.0':
     resolution: {integrity: sha512-YmdNRcT+Dp8lC7CfxSDIfPMbVPEXVFzBH62VZNbYGxjyakqAvoQUFTYPgM2AyFusAr4wDFbDOsEv88gCDwR3ig==}
@@ -3682,6 +3698,9 @@ packages:
   react-is@19.2.0:
     resolution: {integrity: sha512-x3Ax3kNSMIIkyVYhWPyO09bu0uttcAIoecO/um/rKGQ4EltYWVYtyiGkS/3xMynrbVQdS69Jhlv8FXUEZehlzA==}
 
+  react-native-animatable@1.4.0:
+    resolution: {integrity: sha512-DZwaDVWm2NBvBxf7I0wXKXLKb/TxDnkV53sWhCvei1pRyTX3MVFpkvdYBknNBqPrxYuAIlPxEp7gJOidIauUkw==}
+
   react-native-compass-heading@2.0.2:
     resolution: {integrity: sha512-HeWeJp3Z+DjJBGjw89M11Oz3Zmw32ge458bNjtjKC1aN5IBbUoZQYCtmDcwwo1V6GG3fomWdCpHgHgaKO5crQw==}
     peerDependencies:
@@ -3737,6 +3756,12 @@ packages:
     peerDependencies:
       '@react-native-community/datetimepicker': '>=6.7.0'
       react-native: '>=0.65.0'
+
+  react-native-modal@14.0.0-rc.1:
+    resolution: {integrity: sha512-v5pvGyx1FlmBzdHyPqBsYQyS2mIJhVmuXyNo5EarIzxicKhuoul6XasXMviGcXboEUT0dTYWs88/VendojPiVw==}
+    peerDependencies:
+      react: '*'
+      react-native: '>=0.70.0'
 
   react-native-pager-view@6.9.1:
     resolution: {integrity: sha512-uUT0MMMbNtoSbxe9pRvdJJKEi9snjuJ3fXlZhG8F2vVMOBJVt/AFtqMPUHu9yMflmqOr08PewKzj9EPl/Yj+Gw==}
@@ -5431,6 +5456,11 @@ snapshots:
   '@react-native-async-storage/async-storage@2.2.0(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))':
     dependencies:
       merge-options: 3.0.4
+      react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
+
+  '@react-native-community/checkbox@0.5.20(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
 
   '@react-native-community/cli-clean@20.0.0':
@@ -9068,6 +9098,10 @@ snapshots:
 
   react-is@19.2.0: {}
 
+  react-native-animatable@1.4.0:
+    dependencies:
+      prop-types: 15.8.1
+
   react-native-compass-heading@2.0.2(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
@@ -9118,6 +9152,12 @@ snapshots:
       '@react-native-community/datetimepicker': 8.4.5(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0)
       prop-types: 15.8.1
       react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
+
+  react-native-modal@14.0.0-rc.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-native: 0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0)
+      react-native-animatable: 1.4.0
 
   react-native-pager-view@6.9.1(react-native@0.81.1(@babel/core@7.28.4)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.4))(@types/react@19.2.2)(react@19.1.0))(react@19.1.0):
     dependencies:
