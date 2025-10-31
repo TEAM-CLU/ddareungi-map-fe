@@ -4,14 +4,16 @@ import {
   CreateUserPayload,
   CreateUserResponse,
   GetUserInfoResponse,
+  GetUserInfoResponseSuccess,
   LoginUserPayload,
   LoginUserResponse,
   UpdateUserPayload,
   UpdateUserResponse,
 } from '@/features/auth/model/auth.types';
-import { SERVER_URL } from '@/shared/model/index.constants';
+import { ACCESS_TOKEN_KEY, SERVER_URL } from '@/shared/model/index.constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { Alert } from 'react-native';
 
 // default instance
 const userApi = axios.create({
@@ -39,14 +41,19 @@ export const postLoginUser = async (
 };
 
 // 유저 정보 조회
-export const getUserInfo = async (): Promise<GetUserInfoResponse> => {
-  const token = await AsyncStorage.getItem('ACCESS_TOKEN_KEY');
-  const response = await userApi.get('/info', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return response.data;
+export const getUserInfo = async (): Promise<GetUserInfoResponseSuccess> => {
+  try {
+    const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+    const response = await userApi.get('/mypage', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    Alert.alert('에러', error.message || error || '');
+    throw error;
+  }
 };
 
 // 유저 정보 수정

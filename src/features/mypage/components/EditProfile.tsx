@@ -19,10 +19,9 @@ import { DUMMY_USER_INFO } from '../model/mypage.constants';
 import { useLogoutMutation } from '@/features/auth/services/auth.queries';
 
 const EditProfile = ({ onBack }: { onBack: () => void }) => {
-  const { isLoading } = useUserInfoQuery();
+  const { data: user, isLoading } = useUserInfoQuery();
   const { mutate: updateUser } = useUpdateUserInfoMutation();
   const { mutate: logout } = useLogoutMutation();
-  const user = DUMMY_USER_INFO;
 
   const [name, setName] = useState('');
   const [year, setYear] = useState<number | null>(null);
@@ -34,7 +33,7 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
 
   useEffect(() => {
     if (user) {
-      setName(user.name);
+      setName(user.name ?? '');
       setGender(user.gender as 'M' | 'F');
       if (user.birthDate) {
         const [y, m, d] = user.birthDate.split('-').map(Number);

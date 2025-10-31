@@ -2,7 +2,7 @@ import { useAuth } from '@/app/providers';
 import {
   CheckEmailPayload,
   CreateUserPayload,
-  GetUserInfoResponse,
+  GetUserInfoResponseSuccess,
   LoginUserPayload,
   UpdateUserPayload,
   UpdateUserResponse,
@@ -34,7 +34,7 @@ export const useLoginUserMutation = () => {
 
 // 유저 정보 조회
 export const useUserInfoQuery = () => {
-  return useQuery<GetUserInfoResponse>({
+  return useQuery<GetUserInfoResponseSuccess>({
     queryKey: ['userInfo'],
     queryFn: getUserInfo,
     staleTime: Infinity,

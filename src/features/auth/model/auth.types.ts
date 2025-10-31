@@ -148,7 +148,7 @@ interface LoginUserResponseFailed {
 }
 
 // 유저 정보 조회
-export interface GetUserInfoResponse {
+export interface GetUserInfoResponseSuccess {
   name: string;
   email: string;
   birthDate: string;
@@ -160,6 +160,15 @@ export interface GetUserInfoResponse {
   carbonReduction: number;
   treesPlanted: number;
 }
+
+export interface GetUserInfoResponseFailed {
+  statusCode: number;
+  message: string;
+}
+
+export type GetUserInfoResponse =
+  | GetUserInfoResponseSuccess
+  | GetUserInfoResponseFailed;
 
 // 유저 정보 수정
 export interface UpdateUserPayload {
