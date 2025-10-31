@@ -5,7 +5,7 @@ import { Text, View } from 'react-native';
 
 const RouteProgressStepBar = () => {
   return (
-    <View style={tw('w-full flex flex-row ')}>
+    <View style={tw('w-full flex flex-row')}>
       <View
         style={[
           tw(
