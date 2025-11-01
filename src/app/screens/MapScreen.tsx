@@ -13,21 +13,19 @@ import StationDetailModal from '@/features/station/components/StationDetailModal
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import { useMapController } from '@/shared/hooks/useMapController';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import RouteRecommendModal from '@/features/routing/components/RouteRecommendModal';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
+import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '@/app/types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useRouteStore } from '@/features/routing/stores/routeStore';
 
 const MapScreen = () => {
   const {
     webRef,
     showSearchOverlay,
     selectedPlaceForModal,
-    setSelectedPlaceForModal,
     handleSearchbarPress,
     handleSearchClose,
-    searchText,
-    setSearchText,
     handlePlaceSelect,
     placeDetailModalRef,
     stationDetailModalRef,
@@ -54,15 +52,25 @@ const MapScreen = () => {
   const [isRouteRecommendBtnPressed, setIsRouteRecommendBtnPressed] =
     useState(false);
   const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
-  const [distance, setDistance] = useState<number>(5.0);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  const { distance, setDistance } = useRouteStore();
+
   // RouteRecommendModal 오픈 처리
   useEffect(() => {
     if (isRouteRecommendBtnPressed) {
+      console.log('[MapScreen] 추천경로 탭 클릭, distance:', distance);
+
+      // distance가 null이면 기본값 5로 설정
+      if (distance === null) {
+        console.log('[MapScreen] distance가 null이므로 5로 초기화');
+        setDistance(5);
+      }
+
       routeRecommendModalRef.current?.present();
       setIsRouteRecommendBtnPressed(false);
     }
-  }, [isRouteRecommendBtnPressed]);
+  }, [isRouteRecommendBtnPressed, distance, setDistance]);
 
   //////////
 
@@ -122,8 +130,6 @@ const MapScreen = () => {
         onClose={() => routeRecommendModalRef.current?.dismiss()}
       >
         <RouteRecommendModal
-          distance={distance}
-          setDistance={setDistance}
           navigation={navigation}
           routeRecommendModalRef={routeRecommendModalRef}
           setIsRouteRecommendBtnPressed={setIsRouteRecommendBtnPressed}

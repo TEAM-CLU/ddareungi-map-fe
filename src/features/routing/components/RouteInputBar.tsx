@@ -11,7 +11,7 @@ import {
 } from '@/shared/components/icons';
 import { RoutePoint, RouteType } from '../model/routing.types';
 import { createStartPoint, createEndPoint } from '../model/routing.data';
-import { canRemoveWaypoint, canAddWaypoint } from '../utils/validateWaypoint';
+import { canRemoveWaypoint } from '../utils/validateWaypoint';
 import IconArrowsUpDown from '@/shared/components/icons/IconArrowsUpDown';
 import { useRouteStore } from '../stores/routeStore';
 
@@ -36,6 +36,7 @@ const RouteInputBar = ({
     setEnd,
     addWaypoint,
     removeWaypoint,
+    resetRouteInputData,
   } = useRouteStore();
 
   // 출발지, 도착지 포인트 생성
@@ -68,6 +69,7 @@ const RouteInputBar = ({
   // 닫기 버튼 핸들러
   const handleClosePress = useCallback(() => {
     onClose();
+    resetRouteInputData();
   }, [onClose]);
 
   // 경유지 추가

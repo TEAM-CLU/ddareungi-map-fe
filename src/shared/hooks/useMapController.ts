@@ -26,7 +26,6 @@ export const useMapController = () => {
 
   const { showPlaceMarker } = useMapSearch(webRef);
 
-  // Zustand store에서 상태 가져오기
   const { showSearchOverlay, setShowSearchOverlay, hasAnyRouteData } =
     useRouteStore();
 
@@ -72,11 +71,29 @@ export const useMapController = () => {
         showPlaceMarker(place.latitude, place.longitude, place.name, place);
       }
 
+      // returnTo 파라미터가 있으면 해당 화면으로 이동
+      const returnTo = route.params?.returnTo;
+      if (returnTo) {
+        if (returnTo === 'RouteSelect') {
+          navigation.navigate('RouteSelect', {
+            selectedPlace: place,
+            placeType: currentPlaceType || 'auto',
+          });
+        } else if (returnTo === 'RouteRecommend') {
+          navigation.navigate('RouteRecommend', {
+            selectedPlace: place,
+            placeType: currentPlaceType || 'start',
+          });
+        }
+        setCurrentPlaceType(null);
+        return;
+      }
+
       // 이미 입력란이 하나라도 채워져 있으면 PlaceDetailModal 스킵하고 바로 RouteSelect로 이동
       if (hasAnyRouteData()) {
         navigation.navigate('RouteSelect', {
           selectedPlace: place,
-          placeType: currentPlaceType || 'auto', // currentPlaceType이 있으면 사용, 없으면 'auto'
+          placeType: currentPlaceType || 'auto',
         });
         // placeType 초기화
         setCurrentPlaceType(null);
@@ -93,6 +110,7 @@ export const useMapController = () => {
       hasAnyRouteData,
       navigation,
       currentPlaceType,
+      route.params?.returnTo,
     ],
   );
 

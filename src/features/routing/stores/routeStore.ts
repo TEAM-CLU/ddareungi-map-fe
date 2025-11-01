@@ -6,8 +6,9 @@ import {
   RouteType,
   RouteResponse,
   FullJourneyPayload,
+  CircularJourneyPayload,
 } from '../model/routing.types';
-import { postFullJourney } from '../services/routing.api';
+import { postFullJourney, postCircularJourney } from '../services/routing.api';
 import { Alert } from 'react-native';
 
 // Waypoint 타입 정의
@@ -23,9 +24,11 @@ interface RouteState {
   start: AutocompleteResult | null;
   end: AutocompleteResult | null;
   waypoints: Waypoint[]; // 배열로 관리
+  distance: number | null;
 
   // UI 상태
   showSearchOverlay: boolean;
+  showRecommendModal: boolean;
   currentSelectedPoint: RoutePoint | null;
   currentFieldType: 'start' | 'end' | 'waypoint' | null;
 
@@ -38,6 +41,7 @@ interface RouteState {
   setRouteType: (type: RouteType) => void;
   setStart: (place: AutocompleteResult) => void;
   setEnd: (place: AutocompleteResult) => void;
+  setDistance: (distance: number) => void;
 
   addWaypoint: (place: AutocompleteResult) => void;
   removeWaypoint: (id: string) => void;
@@ -47,11 +51,13 @@ interface RouteState {
 
   // UI Actions
   setShowSearchOverlay: (show: boolean) => void;
+  setShowRecommendModal: (show: boolean) => void;
   setCurrentSelectedPoint: (point: RoutePoint | null) => void;
   setCurrentFieldType: (type: 'start' | 'end' | 'waypoint' | null) => void;
 
   // API Actions
   searchRoutes: () => Promise<void>;
+  searchCircularRoutes: () => Promise<void>;
   resetRouteSearch: () => void;
 
   // Utility Actions
@@ -73,8 +79,10 @@ export const useRouteStore = create<RouteState>()(
       start: null,
       end: null,
       waypoints: [],
+      distance: null,
 
       showSearchOverlay: false,
+      showRecommendModal: false,
       currentSelectedPoint: null,
       currentFieldType: null,
 
@@ -124,6 +132,10 @@ export const useRouteStore = create<RouteState>()(
           set({ start: place }, false, 'syncStartWithEnd');
         }
       },
+
+      // 이동 거리 설정
+      setDistance: (distance: number) =>
+        set({ distance }, false, 'setDistance'),
 
       // 경유지 추가 (최대 3개)
       addWaypoint: place =>
@@ -203,6 +215,9 @@ export const useRouteStore = create<RouteState>()(
       setShowSearchOverlay: (show: boolean) =>
         set({ showSearchOverlay: show }, false, 'setShowSearchOverlay'),
 
+      setShowRecommendModal: (show: boolean) =>
+        set({ showRecommendModal: show }, false, 'setShowRecommendModal'),
+
       setCurrentSelectedPoint: (point: RoutePoint | null) =>
         set({ currentSelectedPoint: point }, false, 'setCurrentSelectedPoint'),
 
@@ -220,14 +235,11 @@ export const useRouteStore = create<RouteState>()(
         );
 
         try {
-          Alert.alert(
-            '[RouteStore] 경로 검색 시작 - 원본 데이터:',
-            JSON.stringify({
-              start,
-              end,
-              waypoints,
-            }),
-          );
+          console.log('[RouteStore] 경로 검색 시작:', {
+            start: start?.name,
+            end: end?.name,
+            waypointsCount: waypoints.length,
+          });
 
           if (!start || !end) {
             throw new Error('출발지와 도착지를 모두 설정해주세요.');
@@ -240,15 +252,12 @@ export const useRouteStore = create<RouteState>()(
             !end.latitude ||
             !end.longitude
           ) {
-            Alert.alert(
-              '[RouteStore] 좌표 누락:',
-              JSON.stringify({
-                startLat: start.latitude,
-                startLng: start.longitude,
-                endLat: end.latitude,
-                endLng: end.longitude,
-              }),
-            );
+            console.error('[RouteStore] 좌표 누락:', {
+              startLat: start.latitude,
+              startLng: start.longitude,
+              endLat: end.latitude,
+              endLng: end.longitude,
+            });
             throw new Error('출발지 또는 도착지의 좌표 정보가 없습니다.');
           }
 
@@ -266,14 +275,11 @@ export const useRouteStore = create<RouteState>()(
               lng: wp.place!.longitude!,
             }));
 
-          Alert.alert(
-            '[RouteStore] 필터링된 경유지:',
-            JSON.stringify({
-              원본개수: waypoints.length,
-              필터링후개수: filledWaypoints.length,
-              경유지목록: filledWaypoints,
-            }),
-          );
+          console.log('[RouteStore] 필터링된 경유지:', {
+            원본개수: waypoints.length,
+            필터링후개수: filledWaypoints.length,
+            경유지목록: filledWaypoints,
+          });
 
           const payload: FullJourneyPayload = {
             start: {
@@ -287,15 +293,12 @@ export const useRouteStore = create<RouteState>()(
             waypoints: filledWaypoints.length > 0 ? filledWaypoints : undefined,
           };
 
-          Alert.alert(
-            '[RouteStore] 경로 검색 요청 Payload:',
-            JSON.stringify({
-              start: start.name,
-              end: end.name,
-              waypointsCount: filledWaypoints.length,
-              payload: JSON.stringify(payload, null, 2),
-            }),
-          );
+          console.log('[RouteStore] 경로 검색 요청 Payload:', {
+            start: start.name,
+            end: end.name,
+            waypointsCount: filledWaypoints.length,
+            payload,
+          });
 
           const response = await postFullJourney(payload);
 
@@ -310,16 +313,12 @@ export const useRouteStore = create<RouteState>()(
             'searchRoutes-success',
           );
         } catch (error) {
-          Alert.alert(
-            '[RouteStore] 경로 검색 실패:',
-            JSON.stringify({
-              error,
-              errorType: typeof error,
-              errorMessage:
-                error instanceof Error ? error.message : String(error),
-              errorStack: error instanceof Error ? error.stack : undefined,
-            }),
-          );
+          console.error('[RouteStore] 경로 검색 실패:', {
+            error,
+            errorType: typeof error,
+            errorMessage:
+              error instanceof Error ? error.message : String(error),
+          });
 
           const errorMessage =
             error instanceof Error
@@ -338,6 +337,85 @@ export const useRouteStore = create<RouteState>()(
           );
         }
       },
+
+      // 원형 경로 추천 API 호출
+      searchCircularRoutes: async () => {
+        const { start, distance } = get();
+
+        set(
+          { isLoadingRoutes: true, routeSearchError: null },
+          false,
+          'searchCircularRoutes-start',
+        );
+
+        try {
+          if (!start) {
+            throw new Error('출발지를 설정해주세요.');
+          }
+
+          // 좌표 유효성 검사
+          if (!start.latitude || !start.longitude) {
+            console.error('[RouteStore] 출발지 좌표 누락:', {
+              startLat: start.latitude,
+              startLng: start.longitude,
+            });
+            throw new Error('출발지의 좌표 정보가 없습니다.');
+          }
+
+          if (distance === null || distance <= 0) {
+            throw new Error('이동 거리를 설정해주세요.');
+          }
+
+          const payload: CircularJourneyPayload = {
+            start: {
+              lat: start.latitude,
+              lng: start.longitude,
+            },
+            targetDistance: distance * 1000, // km를 m로 변환
+          };
+
+          console.log('[RouteStore] 원형 경로 검색 요청:', {
+            start: start.name,
+            distance: distance,
+            payload,
+          });
+
+          const response = await postCircularJourney(payload);
+
+          console.log('[RouteStore] 원형 경로 검색 성공:', {
+            routesCount: response.data?.length || 0,
+          });
+
+          set(
+            { routes: response, isLoadingRoutes: false },
+            false,
+            'searchCircularRoutes-success',
+          );
+        } catch (error) {
+          console.error('[RouteStore] 원형 경로 검색 실패:', {
+            error,
+            errorMessage:
+              error instanceof Error ? error.message : String(error),
+          });
+
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : '원형 경로 검색 중 오류가 발생했습니다.';
+
+          Alert.alert('원형 경로 검색 실패', errorMessage);
+
+          set(
+            {
+              routeSearchError: errorMessage,
+              isLoadingRoutes: false,
+            },
+            false,
+            'searchCircularRoutes-error',
+          );
+        }
+      },
+
       resetRouteSearch: () =>
         set(
           { routes: null, routeSearchError: null },
@@ -372,21 +450,27 @@ export const useRouteStore = create<RouteState>()(
         ),
 
       // RouteInputBar X 버튼용 초기화 (모드별 기본 상태로 리셋)
-      resetRouteInputData: () =>
+      resetRouteInputData: () => {
+        console.log(
+          '[RouteStore] resetRouteInputData 호출 - 모든 데이터 초기화',
+        );
         set(
           {
             start: null,
             end: null,
             waypoints: [],
+            distance: null,
             routes: null,
             routeSearchError: null,
             showSearchOverlay: false,
+            showRecommendModal: false,
             currentSelectedPoint: null,
             currentFieldType: null,
           },
           false,
           'resetRouteInputData',
-        ),
+        );
+      },
 
       // 경로 완성 여부 체크
       isRouteComplete: () => {

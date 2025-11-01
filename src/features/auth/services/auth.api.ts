@@ -15,7 +15,6 @@ import {
 import { SERVER_URL } from '@/shared/model/index.constants';
 import axios from 'axios';
 
-// default instance ip주소로변경
 const authApi = axios.create({
   baseURL: `${SERVER_URL}/auth`,
   timeout: 10000,
