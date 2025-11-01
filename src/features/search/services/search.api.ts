@@ -89,7 +89,7 @@ export const searchPlacesByKeyword = async (
     }
 
     const data: KakaoSearchResponse = await kakaoApiHelper.request(
-      '/keyword.json',
+      '/search/keyword.json',
       params,
     );
     return data.documents.map(place =>
