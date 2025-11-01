@@ -107,6 +107,7 @@ const MapScreen = () => {
         onClose={handleSearchClose}
         onPlaceSelect={handlePlaceSelect}
         placeholder="오늘은 어디로 갈까요?"
+        currentLocation={myPosition}
       />
 
       <View style={[tw('absolute right-3'), { bottom: 150 }]}>
