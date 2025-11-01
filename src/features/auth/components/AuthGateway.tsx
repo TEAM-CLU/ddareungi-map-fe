@@ -1,8 +1,6 @@
 import { useAuth } from '@/app/providers';
 import { RootStackParamList } from '@/app/types';
 import AccountLinks from '@/features/auth/components/AccountLinks';
-import IdFinder from '@/features/auth/components/IdFinder';
-import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
 import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import { LoginUserResponse } from '@/features/auth/model/auth.types';
 import { useLoginUserMutation } from '@/features/auth/services/user.queries';
@@ -12,9 +10,12 @@ import Input from '@/shared/components/Input/Input';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { tw } from '@/shared/libs/tw-helper';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { TouchableOpacity, View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AccountFinder from '@/features/auth/components/AccountFinder';
+import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
 
 interface AuthGatewayProps {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -34,7 +35,7 @@ const AuthGateway = ({
   const [isPwdValid, setIsPwdValid] = useState<boolean>(true);
   const [isAvailable, setIsAvailable] = useState<boolean>(false);
   const [accountFeatures, setAccountFeatures] = useState<
-    'findId' | 'resetPwd' | null
+    'findAccount' | 'resetPwd' | null
   >(null);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -86,15 +87,9 @@ const AuthGateway = ({
     try {
       const response: LoginUserResponse = await login(payload);
 
-      if ('statusCode' in response) {
-        Alert.alert(`${response.message}`);
-        setIsIdValid(false);
-        setIsPwdValid(false);
-        return;
-      }
       // 성공시
-      if (!!response.accessToken) {
-        await setToken(response.accessToken);
+      if (!!response.data.accessToken) {
+        await setToken(response.data.accessToken);
         setIsLoading(true);
         setTimeout(() => {
           setIsLoading(false);
@@ -102,8 +97,15 @@ const AuthGateway = ({
         navigation.navigate('Map');
         return;
       }
-    } catch (_) {
-      Alert.alert('로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        Alert.alert(
+          `${
+            error.response?.data?.message ??
+            '로그인 중 오류가 발생했습니다. 다시 시도해주세요.'
+          }`,
+        );
+      }
       setIsIdValid(false);
       setIsPwdValid(false);
       return;
@@ -115,13 +117,13 @@ const AuthGateway = ({
     setIsPwdValid(true);
   }, [id, pwd]);
 
-  if (accountFeatures === 'findId')
-    return <IdFinder setAccountFeatures={setAccountFeatures} />;
+  if (accountFeatures === 'findAccount')
+    return <AccountFinder setAccountFeatures={setAccountFeatures} />;
   if (accountFeatures === 'resetPwd')
     return <PwdResetContainer setAccountFeatures={setAccountFeatures} />;
 
   return (
-    <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20  ')}>
+    <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20')}>
       <TouchableOpacity
         onPress={handleCloseButtonPress}
         style={tw('fixed top-5 left-4')}

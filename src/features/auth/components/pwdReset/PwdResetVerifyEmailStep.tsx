@@ -13,6 +13,7 @@ import {
   VerifyEmailPayload,
   VerifyEmailResponse,
 } from '@/features/auth/model/auth.types';
+import axios from 'axios';
 
 interface PwdResetVerifyEmailStepProps {
   email: string;
@@ -74,12 +75,6 @@ const PwdResetVerifyEmailStep = ({
       const response: SendVerificationEmailResponse =
         await sendVerificationCode(payload);
 
-      if ('statusCode' in response) {
-        setCodeSuccessDescription('');
-        setCodeErrorDescription(`${response.message}`);
-        return;
-      }
-
       // 성공 시
       Alert.alert('인증 코드가 전송되었습니다.');
       setIsValidEmail(true);
@@ -87,10 +82,14 @@ const PwdResetVerifyEmailStep = ({
       setShowCodeInput(true);
       setEmailErrorDescription('');
       setCodeSuccessDescription(`${response.message}`);
-    } catch (_) {
+    } catch (error) {
       // 네트워크 또는 서버 오류 처리
       setCodeSuccessDescription('');
-      setCodeErrorDescription('인증 코드 전송 실패. 다시 시도해주세요.');
+      if (axios.isAxiosError(error)) {
+        setCodeErrorDescription(
+          `${error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'}`,
+        );
+      }
     }
   };
 
@@ -155,13 +154,6 @@ const PwdResetVerifyEmailStep = ({
     try {
       const response: VerifyEmailResponse = await verifyCode(payload);
 
-      if ('statusCode' in response) {
-        setCodeSuccessDescription('');
-        setIsValidCode(false);
-        setCodeErrorDescription(`${response.message}`);
-        return;
-      }
-
       setCodeErrorDescription('');
       setIsValidCode(true);
       setCodeSuccessDescription(`${response.message}`);
@@ -169,7 +161,11 @@ const PwdResetVerifyEmailStep = ({
     } catch (error) {
       setCodeSuccessDescription('');
       setIsValidCode(false);
-      setCodeErrorDescription('인증 코드 확인 실패. 다시 시도해주세요.');
+      if (axios.isAxiosError(error)) {
+        setCodeErrorDescription(
+          `${error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'}`,
+        );
+      }
     }
   };
 

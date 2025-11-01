@@ -1,5 +1,7 @@
 import PwdResetSetPasswordStep from '@/features/auth/components/pwdReset/PwdResetSetPasswordStep';
 import PwdResetVerifyEmailStep from '@/features/auth/components/pwdReset/PwdResetVerifyEmailStep';
+import SignUpPwdStep from '@/features/auth/components/signUp/SignUpPwdStep';
+import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
 import { tw } from '@/shared/libs/tw-helper';
 import { useState } from 'react';
@@ -13,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface PwdResetContainerProps {
   setAccountFeatures: React.Dispatch<
-    React.SetStateAction<'findId' | 'resetPwd' | null>
+    React.SetStateAction<'findAccount' | 'resetPwd' | null>
   >;
 }
 

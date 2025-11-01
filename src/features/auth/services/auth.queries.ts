@@ -1,15 +1,22 @@
 import { RootStackParamList } from '@/app/types';
 import {
+  FindAccountPayload,
   ResetPasswordPayload,
   SendVerificationEmailPayload,
-  SocialAuthType,
+  SocialAuthCheckStatusQueryPayload,
+  SocialAuthCheckStatusResponse,
+  SocialAuthExchangeTokenPayload,
+  SocialType,
   VerifyEmailPayload,
 } from '@/features/auth/model/auth.types';
 import {
-  getSocialAuth,
   postLogout,
+  getSocialAuthCheckStatus,
+  getSocialAuthUrl,
+  postFindAccount,
   postResetPassword,
   postSendVerificationEmail,
+  postSocialAuthExchangeToken,
   postVerifyEmail,
 } from '@/features/auth/services/auth.api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,7 +25,7 @@ import {
   NavigationProp,
   useNavigation,
 } from '@react-navigation/native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 
@@ -41,30 +48,10 @@ export const useVerifyEmailMutation = () => {
   return mutation;
 };
 
-// // 소셜 회원가입/로그인 PKCE-> get이지만 토큰 취득이란 행위에 포커싱, mutation으로 지정 / useQuery는 바로 자동요청 되므로...
-// export const useSocialAuthPkceMutation = () => {
-//   const mutation = useMutation({
-//     mutationFn: (socialType: SocialAuthType) => getSocialAuthPkce(socialType),
-//   });
-
-//   return mutation;
-// };
-
-// // 소셜 회원가입/로그인 exhange token
-// export const useSocialAuthExchangeTokenMutation = () => {
-//   const mutation = useMutation({
-//     mutationFn: (payload: SocialAuthExchangeTokenPayload) =>
-//       postSocialAuthExchangeToken(payload),
-//   });
-
-//   return mutation;
-// };
-
-// 소셜 회원가입/로그인
-export const useSocialAuthMutation = () => {
+// 계정 찾기
+export const useFindAccountMutation = () => {
   const mutation = useMutation({
-    mutationFn: (socialAuthType: SocialAuthType) =>
-      getSocialAuth(socialAuthType),
+    mutationFn: (payload: FindAccountPayload) => postFindAccount(payload),
   });
 
   return mutation;
@@ -86,7 +73,7 @@ export const useLogoutMutation = () => {
 
   const mutation = useMutation({
     mutationFn: postLogout,
-    onSuccess: async (data) => {
+    onSuccess: async data => {
       await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
       queryClient.clear();
       navigation.dispatch(
@@ -110,6 +97,64 @@ export const useLogoutMutation = () => {
       );
       Alert.alert('로그아웃 중 문제가 발생했습니다.');
     },
+  });
+
+  return mutation;
+};
+
+// 소셜 회원가입/로그인 auth url 요청 - 사용자가 버튼을 눌렀을때만 작동하도록 mutaation으로 구현
+export const useSocialAuthGetUrlMutation = () => {
+  const mutation = useMutation({
+    mutationFn: (socialType: SocialType) => getSocialAuthUrl(socialType),
+  });
+
+  return mutation;
+};
+
+// 소셜 회원가입/로그인 상태 확인
+export const useSocialAuthCheckStatusQuery = (
+  payload: SocialAuthCheckStatusQueryPayload,
+) => {
+  return useQuery({
+    queryKey: [
+      'auth',
+      'check-status',
+      payload.payloadForApi.clientState,
+    ] as const,
+    queryFn: async ({ signal }) => {
+      if (!!payload.canRun && payload.payloadForApi) {
+        const response = await getSocialAuthCheckStatus(
+          payload.payloadForApi,
+          signal,
+        );
+        return response;
+      }
+      return null;
+    },
+    enabled: payload.canRun,
+    staleTime: 0,
+    gcTime: 2 * 60 * 1000,
+    refetchInterval: query => {
+      const queryData = query.state.data as
+        | SocialAuthCheckStatusResponse
+        | null
+        | undefined;
+      if (!queryData) return payload.pollMs ?? 3000;
+      return queryData.data.isComplete
+        ? false
+        : queryData.data.recommendedPollingInterval ?? 3000;
+    },
+    retry: 1,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: 'always',
+  });
+};
+
+// 소셜 회원가입/로그인 토큰 교환
+export const useSocialAuthExchangeTokenMutation = () => {
+  const mutation = useMutation({
+    mutationFn: (payload: SocialAuthExchangeTokenPayload) =>
+      postSocialAuthExchangeToken(payload),
   });
 
   return mutation;

@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { use, useEffect, useRef, useState } from 'react';
 import { Alert, Keyboard, Platform, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,11 +19,24 @@ import RoundButton from '@/shared/components/button/RoundButton';
 import IconBicycle from '@/shared/components/icons/IconBicycle';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { useAuth } from '@/app/providers';
+import axios from 'axios';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import SlideModal from '@/shared/components/modal/SlideModal';
+import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
 
 const RegisterScreen = () => {
   const { mutateAsync: signUp } = useCreateUserMutation();
+  const { setToken } = useAuth();
+
   const [isLoading, setIsLoading] = useState(false);
   const [signUpStep, setSignUpStep] = useState<1 | 2 | 3 | 4>(1);
+
+  const [isConsentOptionalAgreed, setIsConsentOptionalAgreed] = useState(false);
+  const [isConsentRequiredAgreed, setIsConsentRequiredAgreed] = useState(false);
+  // 동의한 시각
+  const [consentedAt, setConsentedAt] = useState<string | null>(null);
+  const [isPrivacyConsentModalOpen, setIsPrivacyConsentModalOpen] =
+    useState(true); // 개인정보 동의서 모달
 
   const [email, setEmail] = useState<string>('');
   const [pwd, setPwd] = useState<string>('');
@@ -31,23 +44,35 @@ const RegisterScreen = () => {
   const [name, setName] = useState<string>('');
   const [birthDate, setBirthDate] = useState<string>('');
   const [gender, setGender] = useState<'M' | 'F' | undefined>(undefined);
-  const [address, setAddress] = useState<string>('');
+  const [address, setAddress] = useState<string | null>(null);
 
   const [isReadyToSignUp, setIsReadyToSignUp] = useState<boolean>(false);
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const handleSignUpButtonPress = async () => {
-    if (!email || !pwd || !name || !birthDate || !gender || !address) {
+    if (
+      !email ||
+      !pwd ||
+      !name ||
+      !birthDate ||
+      !gender ||
+      (!address && isConsentOptionalAgreed) ||
+      !isConsentRequiredAgreed ||
+      !consentedAt
+    ) {
       Alert.alert('오류', '모든 필수 정보를 입력해주세요.');
       setSignUpStep(1);
       setName('');
       setBirthDate('');
       setGender(undefined);
-      setAddress('');
+      setAddress(null);
       setPwd('');
       setConfirmPwd('');
       setEmail('');
+      setIsConsentOptionalAgreed(false);
+      setIsConsentRequiredAgreed(false);
+      setConsentedAt(null);
       setIsReadyToSignUp(false);
       navigation.navigate('Login');
       return;
@@ -60,35 +85,30 @@ const RegisterScreen = () => {
       name: name,
       gender: gender,
       birthDate: birthDate,
-      address: address,
+      address: isConsentOptionalAgreed && address ? address : null,
+      consentedAt: consentedAt,
+      requiredAgreed: isConsentRequiredAgreed,
+      optionalAgreed: isConsentOptionalAgreed,
     };
 
     if (signUpStep === 4 && isReadyToSignUp) {
       try {
         const response: CreateUserResponse = await signUp(payload);
-        if ('statusCode' in response) {
-          Alert.alert(`${response.message}`);
-          setSignUpStep(1);
-          setEmail('');
-          setPwd('');
-          setConfirmPwd('');
-          setName('');
-          setBirthDate('');
-          setGender(undefined);
-          setAddress('');
-          setIsReadyToSignUp(false);
-          navigation.navigate('Login');
-          return;
-        }
-
-        Alert.alert(`${response.message}`);
+        Alert.alert('회원가입 성공', response.message);
+        // 성공시
         setIsLoading(true);
         setTimeout(() => {
           setIsLoading(false);
         }, 2000);
         navigation.navigate('Login');
-      } catch (_) {
-        Alert.alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          Alert.alert(
+            '오류',
+            error.response?.data?.message ?? '회원가입 중 오류가 발생했습니다.',
+          );
+        }
+
         setSignUpStep(1);
         setEmail('');
         setPwd('');
@@ -98,13 +118,16 @@ const RegisterScreen = () => {
         setGender(undefined);
         setAddress('');
         setIsReadyToSignUp(false);
+        setIsConsentOptionalAgreed(false);
+        setIsConsentRequiredAgreed(false);
+        setConsentedAt(null);
         navigation.navigate('Login');
         return;
       }
     }
   };
 
-  if (isLoading) return <SimpleLoading title="로그인 후 이용해주세요." />;
+  if (isLoading) return <SimpleLoading title="" />;
 
   if (isReadyToSignUp)
     return (
@@ -145,7 +168,7 @@ const RegisterScreen = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView
         style={[
-          tw('flex flex-1 bg-surface-secondary pt-8'),
+          tw('flex flex-1 bg-surface-secondary pt-8 relative'),
           { paddingHorizontal: 36 },
         ]}
       >
@@ -175,6 +198,7 @@ const RegisterScreen = () => {
             address={address}
             setAddress={setAddress}
             setSignUpStep={setSignUpStep}
+            isConsentOptionalAgreed={isConsentOptionalAgreed}
           />
         ) : signUpStep === 4 ? (
           <SignUpPermissionStep setIsReadyToSignUp={setIsReadyToSignUp} />
@@ -185,6 +209,15 @@ const RegisterScreen = () => {
             setSignUpStep={setSignUpStep}
           />
         )}
+        <PrivacyConsentModal
+          setIsPrivacyConsentModalOpen={setIsPrivacyConsentModalOpen}
+          setIsConsentOptionalAgreed={setIsConsentOptionalAgreed}
+          setIsConsentRequiredAgreed={setIsConsentRequiredAgreed}
+          setConsentedAt={setConsentedAt}
+          isPrivacyConsentModalOpen={isPrivacyConsentModalOpen}
+          isConsentOptionalAgreed={isConsentOptionalAgreed}
+          isConsentRequiredAgreed={isConsentRequiredAgreed}
+        />
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );

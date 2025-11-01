@@ -7,17 +7,10 @@ export interface SendVerificationEmailPayload {
   email: string;
 }
 
-export type SendVerificationEmailResponse =
-  | SendVerificationEmailResponseSuccess
-  | SendVerificationEmailResponseFailed;
-
-interface SendVerificationEmailResponseSuccess {
-  message: string;
-}
-
-interface SendVerificationEmailResponseFailed {
+export interface SendVerificationEmailResponse {
   statusCode: number;
   message: string;
+  data: null;
 }
 
 // 이메일 인증 코드 확인
@@ -26,75 +19,81 @@ export interface VerifyEmailPayload {
   verificationCode: string;
 }
 
-export type VerifyEmailResponse =
-  | VerifyEmailResponseSuccess
-  | VerifyEmailResponseFailed;
-interface VerifyEmailResponseSuccess {
-  message: string;
-  isVerified: boolean;
-}
-
-interface VerifyEmailResponseFailed {
+export interface VerifyEmailResponse {
   statusCode: number;
   message: string;
+  data: {
+    isVerified: boolean;
+    securityToken: string;
+  };
+}
+
+// 계정 찾기
+export interface FindAccountPayload {
+  securityToken: string;
+}
+
+export interface FindAccountResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    isRegistered: boolean;
+    accountType: '소셜' | '자체';
+  };
 }
 
 // 소셜 회원가입/로그인
-export type SocialAuthType = 'naver' | 'kakao' | 'google';
+export type SocialType = 'naver' | 'kakao' | 'google';
 
-export type SocialAuthResponse =
-  | SocialAuthResponseSuccess
-  | SocialAuthResponseFailed;
-export interface SocialAuthResponseSuccess {
-  accessToken: string;
-}
-
-export interface SocialAuthResponseFailed {
-  statusCode: number;
+export interface SocialAuthGetUrlResponse {
+  status: number;
   message: string;
+  data: {
+    authUrl: string;
+    codeVerifier: string;
+    state: string;
+  };
 }
 
-// export interface SocialAuthPkceResponse {
-//   message: string;
-//   authUrl: string;
-//   codeVerifier: string;
-//   state: string;
-// }
+export interface SocialAuthCheckStatusPayload {
+  clientState: string;
+}
+export interface SocialAuthCheckStatusResponse {
+  status: number;
+  message: string;
+  data: {
+    state: string | null;
+    isComplete: boolean;
+    recommendedPollingInterval: number;
+  };
+}
 
-// export interface SocialAuthExchangeTokenPayload {
-//   codeVerifier: string;
-//   state: string;
-// }
+export interface SocialAuthExchangeTokenPayload {
+  codeVerifier: string;
+}
 
-// export type SocialAuthExchangeTokenResponse =
-//   | SocialAuthExchangeTokenResponseSuccess
-//   | SocialAuthExchangeTokenResponseFailed;
+export interface SocialAuthExchangeTokenResponse {
+  status: number;
+  message: string;
+  data: {
+    accessToken: string;
+  };
+}
 
-// interface SocialAuthExchangeTokenResponseSuccess {
-//   accessToken: string;
-//   message: string;
-// }
-
-// interface SocialAuthExchangeTokenResponseFailed {
-//   statusCode: number;
-//   message: string;
-// }
-
+export interface SocialAuthCheckStatusQueryPayload {
+  pollMs: number;
+  canRun: boolean;
+  payloadForApi: SocialAuthCheckStatusPayload;
+}
 // 비밀번호 재설정(비밀번호 찾기)
 export interface ResetPasswordPayload {
   email: string;
   newPassword: string;
 }
-export type ResetPasswordResponse =
-  | ResetPasswordResponseSuccess
-  | ResetPasswordResponseFailed;
-interface ResetPasswordResponseSuccess {
+export interface ResetPasswordResponse {
+  status: number;
   message: string;
-}
-
-interface ResetPasswordResponseFailed {
-  statusCode: number;
-  message: string;
+  data: null;
 }
 
 // 로그아웃
@@ -112,19 +111,16 @@ export interface CreateUserPayload {
   name: string;
   gender: 'M' | 'F';
   birthDate: string;
-  address: string;
+  address: string | null;
+  consentedAt: string;
+  requiredAgreed: boolean;
+  optionalAgreed: boolean;
 }
 
-export type CreateUserResponse =
-  | CreateUserResponseSuccess
-  | CreateUserResponseFailed;
-interface CreateUserResponseSuccess {
-  message: string;
-}
-
-interface CreateUserResponseFailed {
+export interface CreateUserResponse {
   statusCode: number;
   message: string;
+  data: null;
 }
 
 // 유저 로그인
@@ -133,18 +129,12 @@ export interface LoginUserPayload {
   password: string;
 }
 
-export type LoginUserResponse =
-  | LoginUserResponseSuccess
-  | LoginUserResponseFailed;
-
-interface LoginUserResponseSuccess {
-  message: string;
-  accessToken: string;
-}
-
-interface LoginUserResponseFailed {
+export interface LoginUserResponse {
   statusCode: number;
   message: string;
+  data: {
+    accessToken: string;
+  };
 }
 
 // 유저 정보 조회
@@ -189,17 +179,10 @@ export interface CheckEmailPayload {
   email: string;
 }
 
-export type CheckEmailResponse =
-  | CheckEmailResponseSuccess
-  | CheckEmailResponseFailed;
-
-interface CheckEmailResponseSuccess {
-  message: string;
-}
-
-interface CheckEmailResponseFailed {
+export interface CheckEmailResponse {
   statusCode: number;
   message: string;
+  data: null;
 }
 
 // 권한 타입
