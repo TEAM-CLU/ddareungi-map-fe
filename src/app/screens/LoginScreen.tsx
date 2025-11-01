@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Keyboard, TouchableWithoutFeedback, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import AuthChoice from '@/features/auth/components/AuthChoice';
@@ -8,6 +8,14 @@ import SimpleLoading from '@/shared/components/SimpleLoading';
 const LoginScreen = () => {
   const [loginScreenStep, setLoginScreenStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isLoading) {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 180000);
+    }
+  }, [isLoading]);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
