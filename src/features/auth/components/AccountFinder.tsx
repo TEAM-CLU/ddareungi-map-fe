@@ -180,7 +180,7 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
       setIsValidCode(true);
       setCodeSuccessDescription(`${response.message}`);
       setCanShowRegistrationInfo(true);
-      securityToken.current = response.securityToken;
+      securityToken.current = response.data.securityToken;
     } catch (error) {
       setCodeSuccessDescription('');
       setIsValidCode(false);
@@ -194,7 +194,7 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
 
   const handleQueryRegistrationInfoBtnPress = async () => {
     if (!securityToken.current) {
-      Alert.alert('토큰 없음. 다시 시도해주세요.');
+      Alert.alert('요청 실패. 다시 시도해주세요.');
       setAccountFeatures(null);
       return;
     }
@@ -207,7 +207,7 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
       const response: FindAccountResponse = await findAccount(payload);
       const sentences = response.message.split('.');
       setRegistrationInfoMessage(sentences);
-      setAccountType(response.accountType);
+      setAccountType(response.data.accountType);
       setShowRegistrationInfo(true);
     } catch (error) {
       if (axios.isAxiosError(error)) {

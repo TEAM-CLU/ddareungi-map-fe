@@ -8,7 +8,9 @@ export interface SendVerificationEmailPayload {
 }
 
 export interface SendVerificationEmailResponse {
+  statusCode: number;
   message: string;
+  data: null;
 }
 
 // 이메일 인증 코드 확인
@@ -17,41 +19,53 @@ export interface VerifyEmailPayload {
   verificationCode: string;
 }
 
+export interface VerifyEmailResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    isVerified: boolean;
+    securityToken: string;
+  };
+}
+
 // 계정 찾기
 export interface FindAccountPayload {
   securityToken: string;
 }
 
 export interface FindAccountResponse {
-  isRegistered: boolean;
-  accountType: '소셜' | '자체';
+  statusCode: number;
   message: string;
-}
-
-export interface VerifyEmailResponse {
-  message: string;
-  isVerified: boolean;
-  securityToken: string;
+  data: {
+    isRegistered: boolean;
+    accountType: '소셜' | '자체';
+  };
 }
 
 // 소셜 회원가입/로그인
 export type SocialType = 'naver' | 'kakao' | 'google';
 
 export interface SocialAuthGetUrlResponse {
+  status: number;
   message: string;
-  authUrl: string;
-  state: string;
-  codeVerifier: string;
+  data: {
+    authUrl: string;
+    codeVerifier: string;
+    state: string;
+  };
 }
 
 export interface SocialAuthCheckStatusPayload {
   clientState: string;
 }
 export interface SocialAuthCheckStatusResponse {
-  state: string | null;
-  isComplete: boolean;
+  status: number;
   message: string;
-  recommendedPollingInterval: number;
+  data: {
+    state: string | null;
+    isComplete: boolean;
+    recommendedPollingInterval: number;
+  };
 }
 
 export interface SocialAuthExchangeTokenPayload {
@@ -59,8 +73,11 @@ export interface SocialAuthExchangeTokenPayload {
 }
 
 export interface SocialAuthExchangeTokenResponse {
-  accessToken: string;
+  status: number;
   message: string;
+  data: {
+    accessToken: string;
+  };
 }
 
 export interface SocialAuthCheckStatusQueryPayload {
@@ -74,7 +91,9 @@ export interface ResetPasswordPayload {
   newPassword: string;
 }
 export interface ResetPasswordResponse {
+  status: number;
   message: string;
+  data: null;
 }
 
 /********** 유저 **********/
@@ -88,14 +107,15 @@ export interface CreateUserPayload {
   gender: 'M' | 'F';
   birthDate: string;
   address: string | null;
-  consented_at: string;
-  required_agreed: boolean;
-  optional_agreed: boolean;
+  consentedAt: string;
+  requiredAgreed: boolean;
+  optionalAgreed: boolean;
 }
 
 export interface CreateUserResponse {
-  accessToken: string;
+  statusCode: number;
   message: string;
+  data: null;
 }
 
 // 유저 로그인
@@ -105,8 +125,11 @@ export interface LoginUserPayload {
 }
 
 export interface LoginUserResponse {
+  statusCode: number;
   message: string;
-  accessToken: string;
+  data: {
+    accessToken: string;
+  };
 }
 
 // 이메일 중복 확인
@@ -115,7 +138,9 @@ export interface CheckEmailPayload {
 }
 
 export interface CheckEmailResponse {
+  statusCode: number;
   message: string;
+  data: null;
 }
 
 // 권한 타입

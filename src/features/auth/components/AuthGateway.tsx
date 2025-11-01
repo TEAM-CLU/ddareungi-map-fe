@@ -89,8 +89,8 @@ const AuthGateway = ({
       const response: LoginUserResponse = await login(payload);
 
       // 성공시
-      if (!!response.accessToken) {
-        await setToken(response.accessToken);
+      if (!!response.data.accessToken) {
+        await setToken(response.data.accessToken);
         setIsLoading(true);
         setTimeout(() => {
           setIsLoading(false);

@@ -49,13 +49,17 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
 
     try {
       const response: SocialAuthGetUrlResponse = await getAuthUrl(socialType);
-      if (!response.authUrl || !response.state || !response.codeVerifier) {
+      if (
+        !response.data.authUrl ||
+        !response.data.state ||
+        !response.data.codeVerifier
+      ) {
         resetFlow();
         return;
       }
-      Linking.openURL(response.authUrl);
-      clientState.current = response.state;
-      codeVerifier.current = response.codeVerifier;
+      Linking.openURL(response.data.authUrl);
+      clientState.current = response.data.state;
+      codeVerifier.current = response.data.codeVerifier;
       waitingForAuth.current = true;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -98,11 +102,11 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
   // 토큰 교환
   useEffect(() => {
     const handleSocialLogin = async () => {
-      if (!loginStatusInfo?.isComplete || !loginStatusInfo?.state) {
+      if (!loginStatusInfo?.data.isComplete || !loginStatusInfo?.data.state) {
         return;
       }
 
-      if (clientState.current !== loginStatusInfo.state) {
+      if (clientState.current !== loginStatusInfo.data.state) {
         resetFlow();
         Alert.alert(
           '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
@@ -114,7 +118,7 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
         const response: SocialAuthExchangeTokenResponse = await exchangeToken(
           payload,
         );
-        if (!response.accessToken) {
+        if (!response.data.accessToken) {
           resetFlow();
           Alert.alert(
             '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
@@ -125,7 +129,7 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
         const key = ['auth', 'check-status', clientState.current] as const;
         await queryClient.cancelQueries({ queryKey: key });
         queryClient.removeQueries({ queryKey: key, exact: true });
-        setToken(response.accessToken);
+        setToken(response.data.accessToken);
         navigation.navigate('Map');
         setTimeout(() => {
           setIsLoading(false);

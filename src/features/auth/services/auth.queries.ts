@@ -90,12 +90,14 @@ export const useSocialAuthCheckStatusQuery = (
     staleTime: 0,
     gcTime: 2 * 60 * 1000,
     refetchInterval: query => {
-      const data = query.state.data as
+      const queryData = query.state.data as
         | SocialAuthCheckStatusResponse
         | null
         | undefined;
-      if (!data) return payload.pollMs ?? 3000;
-      return data.isComplete ? false : data.recommendedPollingInterval ?? 3000;
+      if (!queryData) return payload.pollMs ?? 3000;
+      return queryData.data.isComplete
+        ? false
+        : queryData.data.recommendedPollingInterval ?? 3000;
     },
     retry: 1,
     refetchOnWindowFocus: false,

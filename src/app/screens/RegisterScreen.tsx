@@ -86,25 +86,21 @@ const RegisterScreen = () => {
       gender: gender,
       birthDate: birthDate,
       address: isConsentOptionalAgreed && address ? address : null,
-      consented_at: consentedAt,
-      required_agreed: isConsentRequiredAgreed,
-      optional_agreed: isConsentOptionalAgreed,
+      consentedAt: consentedAt,
+      requiredAgreed: isConsentRequiredAgreed,
+      optionalAgreed: isConsentOptionalAgreed,
     };
 
     if (signUpStep === 4 && isReadyToSignUp) {
       try {
         const response: CreateUserResponse = await signUp(payload);
-
+        Alert.alert('회원가입 성공', response.message);
         // 성공시
-        if (!!response.accessToken) {
-          await setToken(response.accessToken);
-          Alert.alert(`${response.message}`);
-          setIsLoading(true);
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 2000);
-          navigation.navigate('Login');
-        }
+        setIsLoading(true);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 2000);
+        navigation.navigate('Login');
       } catch (error) {
         if (axios.isAxiosError(error)) {
           Alert.alert(
