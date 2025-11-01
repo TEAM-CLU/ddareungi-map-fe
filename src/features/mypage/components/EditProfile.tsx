@@ -34,16 +34,16 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
 
   useEffect(() => {
     if (user) {
-      setName(user.name ?? '');
-      setGender(user.gender as 'M' | 'F');
-      if (user.birthDate) {
-        const [y, m, d] = user.birthDate.split('-').map(Number);
+      setName(user.data.name ?? '');
+      setGender(user.data.gender as 'M' | 'F');
+      if (user.data.birthDate) {
+        const [y, m, d] = user.data.birthDate.split('-').map(Number);
         setYear(y);
         setMonth(m);
         setDay(d);
       }
-      if (user.address) {
-        const parts = user.address.split('-');
+      if (user.data.address) {
+        const parts = user.data.address.split('-');
         if (parts.length >= 3) {
           setGu(parts[1]);
           setDong(parts[2]);
@@ -54,12 +54,12 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
 
   const formattedBirthDate = useMemo(() => {
     if (year && month && day) return formatBirthDate(year, month, day);
-    return user?.birthDate ?? '';
+    return user?.data.birthDate ?? '';
   }, [year, month, day]);
 
   const formattedAddress = useMemo(() => {
     if (gu && dong) return formatAddress(gu, dong);
-    return user?.address ?? '';
+    return user?.data.address ?? '';
   }, [gu, dong]);
 
   const isValidName = name.trim().length > 0 && name.trim() !== '';
@@ -77,22 +77,30 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
     }
 
     const updatedData = {
-      name: name ?? user?.name ?? '',
-      gender: gender ?? user?.gender ?? '',
-      birthDate: formattedBirthDate ?? user?.birthDate ?? '',
-      address: formattedAddress ?? user?.address ?? '',
+      name: name ?? user?.data.name ?? '',
+      gender: gender ?? user?.data.gender ?? '',
+      birthDate: formattedBirthDate ?? user?.data.birthDate ?? '',
+      address: formattedAddress ?? user?.data.address ?? '',
     };
+
+    console.log('[EditProfile] 수정 요청 데이터:', updatedData);
 
     updateUser(updatedData, {
       onSuccess: res => {
+        console.log('[EditProfile] 수정 성공:', res);
         if ('message' in res) {
           Alert.alert(res.message);
         } else {
           Alert.alert('저장되었습니다.');
         }
       },
-      onError: () => {
-        Alert.alert('수정 중 오류가 발생했습니다.');
+      onError: (error: any) => {
+        console.error('[EditProfile] 수정 실패:', error);
+        console.error('[EditProfile] 실패 응답:', error.response?.data);
+        Alert.alert(
+          '수정 중 오류가 발생했습니다.',
+          error.response?.data?.message || error.message,
+        );
       },
     });
   };

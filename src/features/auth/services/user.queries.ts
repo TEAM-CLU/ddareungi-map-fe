@@ -2,7 +2,7 @@ import { RootStackParamList } from '@/app/types';
 import {
   CheckEmailPayload,
   CreateUserPayload,
-  GetUserInfoResponseSuccess,
+  GetUserInfoResponse,
   LoginUserPayload,
   UpdateUserPayload,
   UpdateUserResponse,
@@ -43,10 +43,10 @@ export const useLoginUserMutation = () => {
 
 // 유저 정보 조회
 export const useUserInfoQuery = () => {
-  return useQuery<GetUserInfoResponseSuccess>({
+  return useQuery<GetUserInfoResponse>({
     queryKey: ['userInfo'],
     queryFn: getUserInfo,
-    staleTime: Infinity,
+    // staleTime: Infinity,
   });
 };
 

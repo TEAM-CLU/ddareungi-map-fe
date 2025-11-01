@@ -148,7 +148,12 @@ interface LoginUserResponseFailed {
 }
 
 // 유저 정보 조회
-export interface GetUserInfoResponseSuccess {
+export interface GetUserInfoResponse {
+  message: string;
+  data: UserInfo;
+}
+
+export interface UserInfo {
   name: string;
   email: string;
   birthDate: string;
@@ -161,15 +166,6 @@ export interface GetUserInfoResponseSuccess {
   treesPlanted: number;
 }
 
-export interface GetUserInfoResponseFailed {
-  statusCode: number;
-  message: string;
-}
-
-export type GetUserInfoResponse =
-  | GetUserInfoResponseSuccess
-  | GetUserInfoResponseFailed;
-
 // 유저 정보 수정
 export interface UpdateUserPayload {
   name: string;
@@ -178,20 +174,9 @@ export interface UpdateUserPayload {
   address: string;
 }
 
-export type UpdateUserResponse =
-  | UpdateUserResponseSuccess
-  | UpdateUserResponseFailed;
-
-interface UpdateUserResponseSuccess {
-  name: string;
-  birthDate: string;
-  gender: 'M' | 'F';
-  address: string;
-}
-
-interface UpdateUserResponseFailed {
-  statusCode: number;
+export interface UpdateUserResponse {
   message: string;
+  data: UpdateUserPayload;
 }
 
 // 유저 삭제

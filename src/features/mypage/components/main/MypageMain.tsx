@@ -16,8 +16,18 @@ const MypageMain = ({
 }: {
   onNavigate: (page: 'updateInfo' | 'updatePassword' | 'help') => void;
 }) => {
-  const { data: user } = useUserInfoQuery();
+  const { data: user, isLoading, isError, error } = useUserInfoQuery();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  console.log('[MypageMain] user:', user);
+  console.log('[MypageMain] isLoading:', isLoading);
+  console.log('[MypageMain] isError:', isError);
+  console.log('[MypageMain] error:', error);
+  console.log('[MypageMain] user?.email:', user?.data.email);
+
+  React.useEffect(() => {
+    console.log('[MypageMain] user 변경됨:', JSON.stringify(user, null, 2));
+  }, [user]);
 
   const handleNavigate = (page: 'updateInfo' | 'updatePassword' | 'help') => {
     if (page === 'help') {
@@ -50,7 +60,7 @@ const MypageMain = ({
           </Text>
         </View>
 
-        {user ? (
+        {user && user.data.email ? (
           <>
             {/* 사용자 프로필 */}
             <View style={tw('flex-row items-center mb-6')}>
@@ -67,14 +77,14 @@ const MypageMain = ({
                       'text-on-surface-primary font-primary-700 text-xl',
                     )}
                   >
-                    {user.name}님
+                    {user.data.name}님
                   </Text>
                   <Text
                     style={tw(
                       'text-on-surface-primary font-primary-700 text-base',
                     )}
                   >
-                    {user.email}
+                    {user.data.email}
                   </Text>
                 </View>
               </View>
@@ -83,17 +93,17 @@ const MypageMain = ({
             {/* 이용이력 카드 */}
             <View style={tw('px-5 mb-4')}>
               <UsageCard
-                totalDistance={user.totalDistance}
-                totalTime={user.totalTime}
-                calories={user.calories}
+                totalDistance={user.data.totalDistance}
+                totalTime={user.data.totalTime}
+                calories={user.data.calories}
               />
             </View>
 
             {/* 탄소발자국 카드 */}
             <View style={tw('px-5 mb-6')}>
               <CarbonStatusCard
-                carbonReduction={user.carbonReduction}
-                plantingTrees={user.treesPlanted}
+                carbonReduction={user.data.carbonReduction}
+                plantingTrees={user.data.treesPlanted}
               />
             </View>
           </>
