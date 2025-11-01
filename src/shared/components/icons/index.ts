@@ -1,3 +1,4 @@
+export { default as IconArrowsUpDown } from './IconArrowsUpDown';
 export { default as IconAudio } from './IconAudio';
 export { default as IconBackArrow } from './IconBackArrow';
 export { default as IconBicycle } from './IconBicycle';

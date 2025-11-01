@@ -5,8 +5,88 @@ import TreeBadge from '@/shared/components/badge/TreeBadge';
 import WalkTimeBadge from '@/shared/components/badge/WalkTimeBadge';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { RouteResponse } from '../model/routing.types';
 
-const RouteSelectContainer = () => {
+interface RouteSelectContainerProps {
+  routes?: RouteResponse | null;
+  isLoading?: boolean;
+  error?: string | null;
+}
+
+const RouteSelectContainer = ({
+  routes,
+  isLoading,
+  error,
+}: RouteSelectContainerProps) => {
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <View
+        style={[
+          tw(
+            'bg-surface-primary w-full px-4 py-5 flex items-center justify-center',
+          ),
+          { height: 300 },
+        ]}
+      >
+        <Text style={tw('text-on-surface-placeholder font-primary-500')}>
+          경로를 검색하고 있습니다...
+        </Text>
+      </View>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <View
+        style={[
+          tw(
+            'bg-surface-primary w-full px-4 py-5 flex items-center justify-center',
+          ),
+          { height: 300 },
+        ]}
+      >
+        <Text style={tw('text-red-500 font-primary-500 text-center')}>
+          {error}
+        </Text>
+      </View>
+    );
+  }
+
+  // 경로 데이터가 없는 경우
+  if (!routes || !routes.data || routes.data.length === 0) {
+    return (
+      <View
+        style={[
+          tw(
+            'bg-surface-primary w-full px-4 py-5 flex items-center justify-center',
+          ),
+          { height: 300 },
+        ]}
+      >
+        <Text
+          style={tw('text-on-surface-placeholder font-primary-500 text-center')}
+        >
+          출발지와 도착지를 설정하면{'\n'}경로를 검색해드릴게요
+        </Text>
+      </View>
+    );
+  }
+
+  // 첫 번째 경로 표시 (추후 여러 경로 선택 기능 추가 가능)
+  const firstRoute = routes.data[0];
+  const { summary } = firstRoute;
+
+  // 시간을 분으로 변환하여 표시
+  const totalMinutes = Math.round(summary.time / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const timeText = hours > 0 ? `${hours}시간 ${minutes}분` : `${minutes}분`;
+
+  // 거리를 km로 변환
+  const distanceKm = (summary.distance / 1000).toFixed(1);
+
   return (
     <TouchableOpacity
       style={[
@@ -32,7 +112,7 @@ const RouteSelectContainer = () => {
             { fontSize: 24 },
           ]}
         >
-          1시간 12분
+          {timeText}
         </Text>
         <Text
           style={[
@@ -40,7 +120,7 @@ const RouteSelectContainer = () => {
             { fontSize: 12 },
           ]}
         >
-          오전 9:48 - 오전 10:57
+          총 거리: {distanceKm}km
         </Text>
         <View
           style={[
