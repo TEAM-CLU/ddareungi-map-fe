@@ -1,4 +1,5 @@
 PODS:
+  - BEMCheckBox (1.4.1)
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
@@ -2347,6 +2348,9 @@ PODS:
     - SocketRocket
   - RNCAsyncStorage (2.2.0):
     - React-Core
+  - RNCCheckbox (0.5.20):
+    - BEMCheckBox (~> 1.4)
+    - React-Core
   - RNCPicker (2.11.4):
     - React-Core
   - RNDateTimePicker (8.5.0):
@@ -2676,6 +2680,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - "RNCCheckbox (from `../node_modules/@react-native-community/checkbox`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -2691,6 +2696,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - BEMCheckBox
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -2851,6 +2857,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNCCheckbox:
+    :path: "../node_modules/@react-native-community/checkbox"
   RNCPicker:
     :path: "../node_modules/@react-native-picker/picker"
   RNDateTimePicker:
@@ -2875,6 +2883,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  BEMCheckBox: 5ba6e37ade3d3657b36caecc35c8b75c6c2b1a4e
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
@@ -2920,7 +2929,7 @@ SPEC CHECKSUMS:
   react-native-geolocation-service: 608e1da71a1ac31b4de64d9ef2815f697978c55b
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-pager-view: b4e217732fa31c068149a30cada1a0afbeac1807
-  react-native-safe-area-context: e48706fb09fde89f82e12bfb49b140cfdcb761f7
+  react-native-safe-area-context: aac2745e96999c8633d2f6119e4e39b499c2ac8b
   react-native-webview: a742b11276a0443e856cc5dc3e21a3fdf3351cdf
   React-NativeModulesApple: 9ec9240159974c94886ebbe4caec18e3395f6aef
   React-oscompat: b12c633e9c00f1f99467b1e0e0b8038895dae436
@@ -2950,15 +2959,16 @@ SPEC CHECKSUMS:
   React-timing: 36da85e32e53008ce73f87528818191e7f2508ba
   React-utils: 71e53d55ce778c6e7c7c9db4b1b9d63ef8f55289
   ReactAppDependencyProvider: 448b422f8af1dedf81374eacc90a15439a0ed7f5
-  ReactCodegen: 4ed67099acb911177efce794a4aa3bc1887847ca
+  ReactCodegen: 6d3ec010ddc7466d2381c4419b1131bd72351d22
   ReactCommon: e897f9a1b4afab370cfefaaf5fb3c80371bc3937
   RNCAsyncStorage: 23e56519cc41d3bade3c8d4479f7760cb1c11996
+  RNCCheckbox: 471ebdc33884c084f362615c1ef3507496cc07f1
   RNCPicker: 0ce5d66262fe7f79e95664bae9447b0d7ed857da
-  RNDateTimePicker: b5afe456eedb040a6c8099c5e5d17b3af4ef94af
-  RNGestureHandler: b96eca4019a9014e75552a1edae282d2b38b1480
-  RNPermissions: 3c7fbd4263810772d82566f046a0dc9222965a5a
-  RNReanimated: d708f1eb85ecfbbbd7c751cdf490b3d728fed0ec
-  RNScreens: 1bc0ddb1a9c8dcc6f95afb87a3d038e3169a2f9e
+  RNDateTimePicker: e1e3719be6e3f88077c44037f44070ff6c476bac
+  RNGestureHandler: 4e01eefc427d3af22b877fdb4f7bc826132daab6
+  RNPermissions: 455518fb9341f89760d677da99ea5662c9980c9c
+  RNReanimated: 097ebb1d529c0e05556907abe8da13be71e5173d
+  RNScreens: 8577e694c5e1d2e15ae927bccf6a16873ad08eca
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
   RNSVG: c9dd030d3528c9c9c4d53524f397edf2e0314077
   RNVectorIcons: db7630db4a5f05d808f5c7990781cbe7bb160b4f

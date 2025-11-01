@@ -1,5 +1,5 @@
 import Input from '@/shared/components/Input/Input';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 
 import { Alert, Text, View } from 'react-native';
@@ -18,6 +18,9 @@ import {
 } from '@/features/auth/model/auth.types';
 import { useCheckEmailMutation } from '@/features/auth/services/user.queries';
 import axios from 'axios';
+import SlideModal from '@/shared/components/modal/SlideModal';
+import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 interface SignUpEmailStepProps {
   email: string;
@@ -209,7 +212,7 @@ const SignUpEmailStep = ({
   return (
     <View
       style={[
-        tw('w-full flex-1 flex flex-col justify-between items-center'),
+        tw('w-full flex-1 flex flex-col justify-between items-center mb-4'),
         { marginTop: 55 },
       ]}
     >

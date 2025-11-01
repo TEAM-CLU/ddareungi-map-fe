@@ -17,7 +17,7 @@ interface PwdResetSetPasswordStepProps {
   setEmail: React.Dispatch<React.SetStateAction<string>>;
   setResetPwdStep: React.Dispatch<React.SetStateAction<1 | 2>>;
   setAccountFeatures: React.Dispatch<
-    React.SetStateAction<'findId' | 'resetPwd' | null>
+    React.SetStateAction<'findAccount' | 'resetPwd' | null>
   >;
 }
 

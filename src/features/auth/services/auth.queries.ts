@@ -1,4 +1,6 @@
+import { RootStackParamList } from '@/app/types';
 import {
+  FindAccountPayload,
   ResetPasswordPayload,
   SendVerificationEmailPayload,
   SocialAuthCheckStatusQueryPayload,
@@ -8,14 +10,24 @@ import {
   VerifyEmailPayload,
 } from '@/features/auth/model/auth.types';
 import {
+  postLogout,
   getSocialAuthCheckStatus,
   getSocialAuthUrl,
+  postFindAccount,
   postResetPassword,
   postSendVerificationEmail,
   postSocialAuthExchangeToken,
   postVerifyEmail,
 } from '@/features/auth/services/auth.api';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  CommonActions,
+  NavigationProp,
+  useNavigation,
+} from '@react-navigation/native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Alert } from 'react-native';
+import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 
 // 이메일 인증 코드 발송
 export const useSendVerificationEmailMutation = () => {
@@ -36,10 +48,55 @@ export const useVerifyEmailMutation = () => {
   return mutation;
 };
 
+// 계정 찾기
+export const useFindAccountMutation = () => {
+  const mutation = useMutation({
+    mutationFn: (payload: FindAccountPayload) => postFindAccount(payload),
+  });
+
+  return mutation;
+};
+
 // 비밀번호 재설정(비밀번호 찾기)
 export const useResetPasswordMutation = () => {
   const mutation = useMutation({
     mutationFn: (payload: ResetPasswordPayload) => postResetPassword(payload),
+  });
+
+  return mutation;
+};
+
+// 로그아웃
+export const useLogoutMutation = () => {
+  const queryClient = useQueryClient();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const mutation = useMutation({
+    mutationFn: postLogout,
+    onSuccess: async data => {
+      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+      queryClient.clear();
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        }),
+      );
+      if (data?.message) {
+        Alert.alert(data.message);
+      }
+    },
+    onError: async () => {
+      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+      queryClient.clear();
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        }),
+      );
+      Alert.alert('로그아웃 중 문제가 발생했습니다.');
+    },
   });
 
   return mutation;
@@ -78,14 +135,18 @@ export const useSocialAuthCheckStatusQuery = (
     staleTime: 0,
     gcTime: 2 * 60 * 1000,
     refetchInterval: query => {
-      const data = query.state.data as
+      const queryData = query.state.data as
         | SocialAuthCheckStatusResponse
+        | null
         | undefined;
-      if (!data) return false;
-      return data.isComplete ? false : data.recommendedPollingInterval ?? 3000;
+      if (!queryData) return payload.pollMs ?? 3000;
+      return queryData.data.isComplete
+        ? false
+        : queryData.data.recommendedPollingInterval ?? 3000;
     },
     retry: 1,
     refetchOnWindowFocus: false,
+    refetchOnReconnect: 'always',
   });
 };
 

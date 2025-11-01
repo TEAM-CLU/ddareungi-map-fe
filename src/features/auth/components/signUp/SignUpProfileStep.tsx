@@ -17,11 +17,10 @@ interface SignUpProfileStepProps {
   setBirthDate: React.Dispatch<React.SetStateAction<string>>;
   gender: 'M' | 'F' | undefined;
   setGender: React.Dispatch<React.SetStateAction<'M' | 'F' | undefined>>;
-  address: string;
-  setAddress: React.Dispatch<React.SetStateAction<string>>;
-  setSignUpStep: React.Dispatch<
-    React.SetStateAction<1 | 2 | 3 | 4>
-  >;
+  address: string | null;
+  setAddress: React.Dispatch<React.SetStateAction<string | null>>;
+  setSignUpStep: React.Dispatch<React.SetStateAction<1 | 2 | 3 | 4>>;
+  isConsentOptionalAgreed: boolean;
 }
 const SignUpProfileStep = ({
   name,
@@ -33,6 +32,7 @@ const SignUpProfileStep = ({
   address,
   setAddress,
   setSignUpStep,
+  isConsentOptionalAgreed,
 }: SignUpProfileStepProps) => {
   const [year, setYear] = useState<number | null>(null);
   const [month, setMonth] = useState<number | null>(null);
@@ -60,7 +60,7 @@ const SignUpProfileStep = ({
   const isValidName = name.trim().length > 0 && name.trim() !== ''; // isValie* 상태로 선언안해도 값이 변하는 이유: 상태값으로 할당하기 때문에 상태가변하면 리렌더링됨
   const isValidGender = gender === 'M' || gender === 'F';
   const isValidBirthDate = !!formattedBirthDate;
-  const isValidAddress = !!formattedAddress;
+  const isValidAddress = isConsentOptionalAgreed ? !!formattedAddress : true;
 
   const isFormReady =
     isValidName && isValidGender && isValidBirthDate && isValidAddress;
@@ -68,7 +68,7 @@ const SignUpProfileStep = ({
   const handleNextStepButtonPress = () => {
     if (!isFormReady) return;
     setBirthDate(formattedBirthDate);
-    setAddress(formattedAddress);
+    setAddress(isConsentOptionalAgreed ? formattedAddress : null);
     setSignUpStep(4);
   };
 
@@ -162,24 +162,33 @@ const SignUpProfileStep = ({
             />
           </View>
         </View>
-        <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-label-input text-left'),
-              { fontSize: 15 },
-            ]}
-          >
-            주소
-          </Text>
+        {isConsentOptionalAgreed && (
           <View
-            style={[
-              tw('flex flex-row flex-nowrap items-center justify-start'),
-              { gap: 9 },
-            ]}
+            style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
           >
-            <AddressInput gu={gu} setGu={setGu} dong={dong} setDong={setDong} />
+            <Text
+              style={[
+                tw('font-primary-600 text-on-surface-label-input text-left'),
+                { fontSize: 15 },
+              ]}
+            >
+              주소
+            </Text>
+            <View
+              style={[
+                tw('flex flex-row flex-nowrap items-center justify-start'),
+                { gap: 9 },
+              ]}
+            >
+              <AddressInput
+                gu={gu}
+                setGu={setGu}
+                dong={dong}
+                setDong={setDong}
+              />
+            </View>
           </View>
-        </View>
+        )}
       </View>
 
       <SquareButton

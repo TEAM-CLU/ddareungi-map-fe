@@ -1,4 +1,7 @@
 import {
+  LogoutResponse,
+  FindAccountPayload,
+  FindAccountResponse,
   ResetPasswordPayload,
   ResetPasswordResponse,
   SendVerificationEmailPayload,
@@ -40,6 +43,14 @@ export const postVerifyEmail = async (
   return response.data;
 };
 
+// 계정 찾기
+export const postFindAccount = async (
+  payload: FindAccountPayload,
+): Promise<FindAccountResponse> => {
+  const response = await authApi.post('/find-account', payload);
+  return response.data;
+};
+
 // 비밀번호 재설정(비밀번호 찾기)
 export const postResetPassword = async (
   payload: ResetPasswordPayload,
@@ -73,5 +84,11 @@ export const postSocialAuthExchangeToken = async (
   payload: SocialAuthExchangeTokenPayload,
 ): Promise<SocialAuthExchangeTokenResponse> => {
   const response = await authApi.post('/exchange-token', payload);
+  return response.data;
+};
+
+// 로그아웃
+export const postLogout = async (): Promise<LogoutResponse> => {
+  const response = await authApi.post('/logout', {}, { withCredentials: true });
   return response.data;
 };

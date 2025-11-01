@@ -1,30 +1,27 @@
-import AccountLinks from '@/features/auth/components/AccountLinks';
 import PwdResetSetPasswordStep from '@/features/auth/components/pwdReset/PwdResetSetPasswordStep';
 import PwdResetVerifyEmailStep from '@/features/auth/components/pwdReset/PwdResetVerifyEmailStep';
 import SignUpPwdStep from '@/features/auth/components/signUp/SignUpPwdStep';
 import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
-import Input from '@/shared/components/Input/Input';
 import { tw } from '@/shared/libs/tw-helper';
 import { useState } from 'react';
 import {
   TouchableOpacity,
   View,
-  Text,
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface PwdResetterContainerProps {
+interface PwdResetContainerProps {
   setAccountFeatures: React.Dispatch<
-    React.SetStateAction<'findId' | 'resetPwd' | null>
+    React.SetStateAction<'findAccount' | 'resetPwd' | null>
   >;
 }
 
-const PwdResetterContainer = ({
+const PwdResetContainer = ({
   setAccountFeatures,
-}: PwdResetterContainerProps) => {
+}: PwdResetContainerProps) => {
   const [resetPwdStep, setResetPwdStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState<string>('');
 
@@ -71,4 +68,4 @@ const PwdResetterContainer = ({
   );
 };
 
-export default PwdResetterContainer;
+export default PwdResetContainer;
