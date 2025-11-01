@@ -9,11 +9,12 @@ const LoginScreen = () => {
   const [loginScreenStep, setLoginScreenStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 1분뒤 로딩 자동종료
   useEffect(() => {
     if (isLoading) {
       setTimeout(() => {
         setIsLoading(false);
-      }, 180000);
+      }, 60000);
     }
   }, [isLoading]);
 

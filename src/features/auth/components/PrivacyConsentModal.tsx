@@ -97,6 +97,7 @@ const PrivacyConsentModal = ({
               value={isConsentRequiredAgreed}
               onValueChange={setIsConsentRequiredAgreed}
               style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+              disabled={isConsentRequiredAgreed}
             />
           </View>
           <Text
@@ -232,7 +233,7 @@ const PrivacyConsentModal = ({
           onPress={handleAgreeBtnPress}
           disabled={!canProceed}
           preset={'lg'}
-        ></RoundButton>
+        />
       </View>
     </Modal>
   );

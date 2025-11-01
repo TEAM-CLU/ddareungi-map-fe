@@ -122,6 +122,9 @@ const RegisterScreen = () => {
         setGender(undefined);
         setAddress('');
         setIsReadyToSignUp(false);
+        setIsConsentOptionalAgreed(false);
+        setIsConsentRequiredAgreed(false);
+        setConsentedAt(null);
         navigation.navigate('Login');
         return;
       }
