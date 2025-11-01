@@ -1,4 +1,5 @@
 import {
+  LogoutResponse,
   FindAccountPayload,
   FindAccountResponse,
   ResetPasswordPayload,
@@ -83,5 +84,11 @@ export const postSocialAuthExchangeToken = async (
   payload: SocialAuthExchangeTokenPayload,
 ): Promise<SocialAuthExchangeTokenResponse> => {
   const response = await authApi.post('/exchange-token', payload);
+  return response.data;
+};
+
+// 로그아웃
+export const postLogout = async (): Promise<LogoutResponse> => {
+  const response = await authApi.post('/logout', {}, { withCredentials: true });
   return response.data;
 };

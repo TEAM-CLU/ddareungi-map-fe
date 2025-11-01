@@ -217,6 +217,10 @@ const RegisterScreen = () => {
           isPrivacyConsentModalOpen={isPrivacyConsentModalOpen}
           isConsentOptionalAgreed={isConsentOptionalAgreed}
           isConsentRequiredAgreed={isConsentRequiredAgreed}
+          onCancel={() => {
+            navigation.navigate('Login');
+            setIsPrivacyConsentModalOpen(false);
+          }}
         />
       </SafeAreaView>
     </TouchableWithoutFeedback>

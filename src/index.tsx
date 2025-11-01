@@ -8,7 +8,6 @@ import { PaperProvider } from 'react-native-paper';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { tw } from './shared/libs/tw-helper';
 
 const Root = () => {
   const queryClient = new QueryClient();
@@ -19,11 +18,11 @@ const Root = () => {
         <SafeAreaProvider>
           <PaperProvider>
             <AuthProvider>
-              <QueryClientProvider client={queryClient}>
-                <BottomSheetModalProvider>
-                  <App />
-                </BottomSheetModalProvider>
-              </QueryClientProvider>
+                <QueryClientProvider client={queryClient}>
+                  <BottomSheetModalProvider>
+                    <App />
+                  </BottomSheetModalProvider>
+                </QueryClientProvider>
             </AuthProvider>
           </PaperProvider>
         </SafeAreaProvider>

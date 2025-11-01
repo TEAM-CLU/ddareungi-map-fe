@@ -1,4 +1,5 @@
 import { RootStackParamList } from '@/app/types';
+import { GetUserInfoResponse } from '@/features/auth/model/auth.types';
 import { ImageStyle, StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 type RNStyle = StyleProp<ViewStyle | TextStyle | ImageStyle>;
@@ -22,6 +23,13 @@ export interface AuthContextType {
   getToken: () => Promise<string | null>;
   removeToken: () => Promise<void>;
   hasToken: () => boolean;
+}
+
+export interface UserContextType {
+  user: GetUserInfoResponse | null;
+  setUser: (user: GetUserInfoResponse) => Promise<void>;
+  updateUser: (data: Partial<GetUserInfoResponse>) => Promise<void>;
+  removeUser: () => Promise<void>;
 }
 
 export type FooterRoutes = keyof RootStackParamList;

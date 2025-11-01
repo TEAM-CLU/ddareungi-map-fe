@@ -59,6 +59,9 @@ export const SERVER_URL =
 // AsyncStorage에 저장할 토큰 키
 export const ACCESS_TOKEN_KEY = '@auth_access_token';
 
+// AsyncStorage에 저장할 유저 정보 키
+export const USER_INFO_KEY = '@user_info';
+
 // footer 메뉴
 export const FOOTER_MENU: {
   name: string;

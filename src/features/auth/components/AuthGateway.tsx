@@ -1,8 +1,6 @@
 import { useAuth } from '@/app/providers';
 import { RootStackParamList } from '@/app/types';
 import AccountLinks from '@/features/auth/components/AccountLinks';
-import IdFinder from '@/features/auth/components/AccountFinder';
-import PwdResetterContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
 import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import { LoginUserResponse } from '@/features/auth/model/auth.types';
 import { useLoginUserMutation } from '@/features/auth/services/user.queries';
@@ -17,6 +15,7 @@ import { useEffect, useState } from 'react';
 import { TouchableOpacity, View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AccountFinder from '@/features/auth/components/AccountFinder';
+import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
 
 interface AuthGatewayProps {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -121,7 +120,7 @@ const AuthGateway = ({
   if (accountFeatures === 'findAccount')
     return <AccountFinder setAccountFeatures={setAccountFeatures} />;
   if (accountFeatures === 'resetPwd')
-    return <PwdResetterContainer setAccountFeatures={setAccountFeatures} />;
+    return <PwdResetContainer setAccountFeatures={setAccountFeatures} />;
 
   return (
     <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20')}>

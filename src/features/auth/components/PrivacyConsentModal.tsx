@@ -16,6 +16,7 @@ interface PrivacyConsentModalProps {
   isPrivacyConsentModalOpen: boolean;
   isConsentRequiredAgreed: boolean;
   isConsentOptionalAgreed: boolean;
+  onCancel: () => void;
 }
 const PrivacyConsentModal = ({
   setIsPrivacyConsentModalOpen,
@@ -25,6 +26,7 @@ const PrivacyConsentModal = ({
   isPrivacyConsentModalOpen,
   isConsentRequiredAgreed,
   isConsentOptionalAgreed,
+  onCancel,
 }: PrivacyConsentModalProps) => {
   const [canProceed, setCanProceed] = useState(false);
 
@@ -40,8 +42,7 @@ const PrivacyConsentModal = ({
   };
 
   const handleCancleBtnPress = () => {
-    navigation.navigate('Login');
-    setIsPrivacyConsentModalOpen(false);
+    onCancel();
   };
 
   useEffect(() => {

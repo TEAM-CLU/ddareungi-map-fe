@@ -96,6 +96,11 @@ export interface ResetPasswordResponse {
   data: null;
 }
 
+// 로그아웃
+export interface LogoutResponse {
+  message: string;
+}
+
 /********** 유저 **********/
 
 // 유저 회원가입
@@ -130,6 +135,49 @@ export interface LoginUserResponse {
   data: {
     accessToken: string;
   };
+}
+
+// 유저 정보 조회
+export interface GetUserInfoResponse {
+  message: string;
+  data: UserInfo;
+}
+
+export interface UserInfo {
+  name: string;
+  email: string;
+  birthDate: string;
+  gender: 'M' | 'F';
+  address: string | null;
+  totalTime: number;
+  totalDistance: number;
+  calories: number;
+  carbonReduction: number;
+  treesPlanted: number;
+  consentedAt: string;
+  requiredAgreed: boolean;
+  optionalAgreed: boolean;
+}
+
+// 유저 정보 수정
+export interface UpdateUserPayload {
+  name: string;
+  birthDate: string;
+  gender: 'M' | 'F';
+  address: string | null;
+  consentedAt: string;
+  requiredAgreed: boolean;
+  optionalAgreed: boolean;
+}
+
+export interface UpdateUserResponse {
+  message: string;
+  data: UpdateUserPayload;
+}
+
+// 유저 삭제
+export interface DeleteUserResponse {
+  message: string;
 }
 
 // 이메일 중복 확인

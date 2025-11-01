@@ -3,13 +3,18 @@ import {
   CheckEmailResponse,
   CreateUserPayload,
   CreateUserResponse,
+  DeleteUserResponse,
+  GetUserInfoResponse,
   LoginUserPayload,
   LoginUserResponse,
+  UpdateUserPayload,
+  UpdateUserResponse,
 } from '@/features/auth/model/auth.types';
-import { SERVER_URL } from '@/shared/model/index.constants';
+import { ACCESS_TOKEN_KEY, SERVER_URL } from '@/shared/model/index.constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { Alert } from 'react-native';
 
-// default instance
 const userApi = axios.create({
   baseURL: `${SERVER_URL}/user`,
   timeout: 4000,
@@ -34,10 +39,50 @@ export const postLoginUser = async (
   return response.data;
 };
 
-// 내 정보 조회
-// 내 정보 수정
+// 유저 정보 조회
+export const getUserInfo = async (): Promise<GetUserInfoResponse> => {
+  const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+  const response = await userApi.get('/mypage', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+// 유저 정보 수정
+export const updateUserInfo = async (
+  payload: UpdateUserPayload,
+): Promise<UpdateUserResponse> => {
+  try {
+    const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+    const response = await userApi.put('/info-update', payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    Alert.alert(
+      '유저 정보 수정 실패',
+      error.response?.data?.message || error.message || '알 수 없는 오류',
+    );
+    throw error;
+  }
+};
+
+// 유저 삭제
+export const deleteUser = async (): Promise<DeleteUserResponse> => {
+  const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+  const response = await userApi.delete('/withdraw', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
 // 비밀번호 변경
-// 마이페이지 정보 조회
 
 // 이메일 중복 확인
 export const postCheckEmail = async (
