@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
@@ -12,6 +12,10 @@ import StationMarkersToggleButton from '@/features/station/components/StationMar
 import StationDetailModal from '@/features/station/components/StationDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import { useMapController } from '@/shared/hooks/useMapController';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import RouteRecommendModal from '@/features/routing/components/RouteRecommendModal';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '@/app/types';
 
 const MapScreen = () => {
   const {
@@ -46,6 +50,20 @@ const MapScreen = () => {
       setIsStationButtonPressed(false);
     }
   }, [isStationButtonPressed]);
+
+  //////////
+  const [isRouteRecommendBtnPressed, setIsRouteRecommendBtnPressed] =
+    useState(false);
+  const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
+  const [distance, setDistance] = useState<number>(5.0);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  // RouteRecommendModal 오픈 처리
+  useEffect(() => {
+    if (isRouteRecommendBtnPressed) {
+      routeRecommendModalRef.current?.present();
+      setIsRouteRecommendBtnPressed(false);
+    }
+  }, [isRouteRecommendBtnPressed]);
 
   //////////
 
@@ -92,8 +110,26 @@ const MapScreen = () => {
         <StationMarkersToggleButton webRef={webRef} />
       </View>
 
-      <Footer setIsStationButtonPressed={setIsStationButtonPressed} />
+      <Footer
+        setIsStationButtonPressed={setIsStationButtonPressed}
+        setIsRouteRecommendBtnPressed={setIsRouteRecommendBtnPressed}
+      />
 
+      {/* 경로추천 모달 */}
+      <SlideModal
+        ref={routeRecommendModalRef}
+        snapPoints={['45%', '48%']}
+        initialIndex={1}
+        onClose={() => routeRecommendModalRef.current?.dismiss()}
+      >
+        <RouteRecommendModal
+          distance={distance}
+          setDistance={setDistance}
+          navigation={navigation}
+          routeRecommendModalRef={routeRecommendModalRef}
+          setIsRouteRecommendBtnPressed={setIsRouteRecommendBtnPressed}
+        />
+      </SlideModal>
       {/* Nearby 대여소 모달 */}
       <SlideModal
         ref={nearbyStationModalRef}

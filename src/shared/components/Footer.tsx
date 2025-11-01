@@ -8,8 +8,12 @@ import { FOOTER_MENU } from '../model/index.constants';
 
 interface FooterProps {
   setIsStationButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsRouteRecommendBtnPressed: React.Dispatch<React.SetStateAction<boolean>>;
 }
-const Footer = ({ setIsStationButtonPressed }: FooterProps) => {
+const Footer = ({
+  setIsStationButtonPressed,
+  setIsRouteRecommendBtnPressed,
+}: FooterProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -27,6 +31,11 @@ const Footer = ({ setIsStationButtonPressed }: FooterProps) => {
           onPress={() => {
             if (item.name === 'station') {
               setIsStationButtonPressed(true);
+              return;
+            }
+
+            if (item.name === 'routeRecommend') {
+              setIsRouteRecommendBtnPressed(true);
               return;
             }
 
