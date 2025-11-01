@@ -61,6 +61,9 @@ const RouteSelectScreen = () => {
   const [currentEditingPoint, setCurrentEditingPoint] =
     React.useState<RoutePoint | null>(null);
 
+  // 경로 시간 계산 기준 시간 (리프레시 가능)
+  const [baseTime, setBaseTime] = React.useState<Date>(new Date());
+
   // 1. route params에서 routeType 먼저 설정
   useEffect(() => {
     if (route.params?.routeType) {
@@ -75,11 +78,14 @@ const RouteSelectScreen = () => {
     if (route.params?.selectedPlace && route.params?.placeType) {
       const { selectedPlace, placeType } = route.params;
 
-      Alert.alert('[RouteSelectScreen] 장소 선택됨:', JSON.stringify({
-        placeType,
-        placeName: selectedPlace.name,
-        currentWaypointsCount: waypoints.length,
-      }));
+      Alert.alert(
+        '[RouteSelectScreen] 장소 선택됨:',
+        JSON.stringify({
+          placeType,
+          placeName: selectedPlace.name,
+          currentWaypointsCount: waypoints.length,
+        }),
+      );
 
       // 'auto' 타입이면 첫 번째 빈 필드에 자동 할당
       if (placeType === 'auto') {
@@ -277,11 +283,15 @@ const RouteSelectScreen = () => {
 
       {!showSearchOverlay && (
         <>
-          <RouteTimeRefreshBar />
+          <RouteTimeRefreshBar
+            baseTime={baseTime}
+            onRefresh={() => setBaseTime(new Date())}
+          />
           <RouteSelectContainer
             routes={routes}
             isLoading={isLoadingRoutes}
             error={routeSearchError}
+            baseTime={baseTime}
           />
         </>
       )}

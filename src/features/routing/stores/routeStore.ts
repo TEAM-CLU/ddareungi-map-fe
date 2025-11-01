@@ -220,8 +220,36 @@ export const useRouteStore = create<RouteState>()(
         );
 
         try {
+          Alert.alert(
+            '[RouteStore] 경로 검색 시작 - 원본 데이터:',
+            JSON.stringify({
+              start,
+              end,
+              waypoints,
+            }),
+          );
+
           if (!start || !end) {
             throw new Error('출발지와 도착지를 모두 설정해주세요.');
+          }
+
+          // 좌표 유효성 검사
+          if (
+            !start.latitude ||
+            !start.longitude ||
+            !end.latitude ||
+            !end.longitude
+          ) {
+            Alert.alert(
+              '[RouteStore] 좌표 누락:',
+              JSON.stringify({
+                startLat: start.latitude,
+                startLng: start.longitude,
+                endLat: end.latitude,
+                endLng: end.longitude,
+              }),
+            );
+            throw new Error('출발지 또는 도착지의 좌표 정보가 없습니다.');
           }
 
           // 실제 데이터가 있는 경유지만 필터링 (순서 유지)
@@ -238,29 +266,42 @@ export const useRouteStore = create<RouteState>()(
               lng: wp.place!.longitude!,
             }));
 
+          Alert.alert(
+            '[RouteStore] 필터링된 경유지:',
+            JSON.stringify({
+              원본개수: waypoints.length,
+              필터링후개수: filledWaypoints.length,
+              경유지목록: filledWaypoints,
+            }),
+          );
+
           const payload: FullJourneyPayload = {
             start: {
-              lat: start.latitude || 0,
-              lng: start.longitude || 0,
+              lat: start.latitude,
+              lng: start.longitude,
             },
             end: {
-              lat: end.latitude || 0,
-              lng: end.longitude || 0,
+              lat: end.latitude,
+              lng: end.longitude,
             },
             waypoints: filledWaypoints.length > 0 ? filledWaypoints : undefined,
           };
 
-          console.log('[RouteStore] 경로 검색 요청:', {
-            start: start.name,
-            end: end.name,
-            waypointsCount: filledWaypoints.length,
-            payload,
-          });
+          Alert.alert(
+            '[RouteStore] 경로 검색 요청 Payload:',
+            JSON.stringify({
+              start: start.name,
+              end: end.name,
+              waypointsCount: filledWaypoints.length,
+              payload: JSON.stringify(payload, null, 2),
+            }),
+          );
 
           const response = await postFullJourney(payload);
 
           console.log('[RouteStore] 경로 검색 성공:', {
             routesCount: response.data?.length || 0,
+            response,
           });
 
           set(
@@ -269,12 +310,23 @@ export const useRouteStore = create<RouteState>()(
             'searchRoutes-success',
           );
         } catch (error) {
-          console.error('[RouteStore] 경로 검색 실패:', error);
+          Alert.alert(
+            '[RouteStore] 경로 검색 실패:',
+            JSON.stringify({
+              error,
+              errorType: typeof error,
+              errorMessage:
+                error instanceof Error ? error.message : String(error),
+              errorStack: error instanceof Error ? error.stack : undefined,
+            }),
+          );
 
           const errorMessage =
             error instanceof Error
               ? error.message
               : '경로 검색 중 오류가 발생했습니다.';
+
+          Alert.alert('경로 검색 실패', errorMessage);
 
           set(
             {

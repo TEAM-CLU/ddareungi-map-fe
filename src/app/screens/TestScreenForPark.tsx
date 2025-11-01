@@ -17,10 +17,15 @@ type MapScreenRouteProp = RouteProp<RootStackParamList, 'Map'>;
 type MapScreenNavigationProp = NavigationProp<RootStackParamList>;
 
 const TestScreenForPark = () => {
+  const [baseTime, setBaseTime] = useState<Date>(new Date());
+
   return (
     <View style={tw('flex-1 bg-white')}>
       <View style={tw('px-4 pt-12')}>
-        <RouteTimeRefreshBar />
+        <RouteTimeRefreshBar
+          baseTime={baseTime}
+          onRefresh={() => setBaseTime(new Date())}
+        />
       </View>
     </View>
   );

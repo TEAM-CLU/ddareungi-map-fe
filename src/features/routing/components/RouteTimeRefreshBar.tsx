@@ -3,7 +3,15 @@ import { tw } from '@/shared/libs/tw-helper';
 import { IconRefresh } from '@/shared/components/icons';
 import { useEffect, useState } from 'react';
 
-const RouteTimeRefreshBar = () => {
+interface RouteTimeRefreshBarProps {
+  baseTime: Date;
+  onRefresh: () => void;
+}
+
+const RouteTimeRefreshBar = ({
+  baseTime,
+  onRefresh,
+}: RouteTimeRefreshBarProps) => {
   const [currentTime, setCurrentTime] = useState('');
 
   const formatTime = (date: Date) => {
@@ -16,20 +24,23 @@ const RouteTimeRefreshBar = () => {
   };
 
   useEffect(() => {
-    const now = new Date();
-    setCurrentTime(formatTime(now));
-  }, []);
+    setCurrentTime(formatTime(baseTime));
+  }, [baseTime]);
 
   const handleRefreshTime = () => {
-    const now = new Date();
-    setCurrentTime(formatTime(now));
+    onRefresh();
   };
 
   return (
     <View
       style={[
         tw('w-full bg-surface-primary flex-row items-center px-4'),
-        { height: 43, borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#D8D8D8' },
+        {
+          height: 43,
+          borderTopWidth: 1,
+          borderBottomWidth: 1,
+          borderColor: '#D8D8D8',
+        },
       ]}
     >
       <Text

@@ -13,7 +13,6 @@ export type RootStackParamList = {
   Register: undefined;
   Map:
     | {
-        // selectedPlace?: AutocompleteResult;
         openSearchOverlay?: boolean; // 검색창 자동 열기 여부
         placeType?: string; // 현재 설정 중인 포인트 타입
         returnTo?: 'RouteSelect'; // 돌아갈 화면
