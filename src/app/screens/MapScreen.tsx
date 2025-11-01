@@ -16,20 +16,19 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import RouteRecommendModal from '@/features/routing/components/RouteRecommendModal';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '@/app/types';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 const MapScreen = () => {
   const {
     webRef,
     showSearchOverlay,
-    routeType,
     selectedPlaceForModal,
+    setSelectedPlaceForModal,
     handleSearchbarPress,
     handleSearchClose,
     searchText,
     setSearchText,
     handlePlaceSelect,
-    handlePlaceTypeConfirm,
-    toggleRouteType,
     placeDetailModalRef,
     stationDetailModalRef,
     nearbyStationModalRef,
@@ -56,7 +55,7 @@ const MapScreen = () => {
     useState(false);
   const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
   const [distance, setDistance] = useState<number>(5.0);
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   // RouteRecommendModal 오픈 처리
   useEffect(() => {
     if (isRouteRecommendBtnPressed) {
@@ -161,16 +160,13 @@ const MapScreen = () => {
       <SlideModal
         ref={placeDetailModalRef}
         onClose={() => placeDetailModalRef.current?.dismiss()}
-        snapPoints={['25%']}
+        snapPoints={['35%', '50%']}
       >
         {selectedPlaceForModal && (
           <PlaceDetailModal
             place={selectedPlaceForModal}
-            routeType={routeType}
-            onSetAsStart={() => handlePlaceTypeConfirm('start')}
-            onSetAsEnd={() => handlePlaceTypeConfirm('end')}
-            onSetAsWaypoint={() => handlePlaceTypeConfirm('waypoint')}
-            onToggleRouteType={toggleRouteType}
+            navigation={navigation}
+            onClose={() => placeDetailModalRef.current?.dismiss()}
           />
         )}
       </SlideModal>

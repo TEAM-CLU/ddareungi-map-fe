@@ -1,9 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Animated } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { AutocompleteResult } from '../hooks/useAutocomplete';
 import { IconBicycle } from '@/shared/components/icons';
 import { RouteType } from '@/features/routing/model/routing.types';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '@/app/types';
+import { useRouteStore } from '@/features/routing/stores/routeStore';
 
 export interface PlaceDetailModalProps {
   place: AutocompleteResult;
@@ -11,24 +14,36 @@ export interface PlaceDetailModalProps {
     latitude: number;
     longitude: number;
   };
-  onSetAsStart: () => void;
-  onSetAsEnd: () => void;
-  onSetAsWaypoint?: () => void;
-  onToggleRouteType: () => void;
-  routeType: RouteType;
+  navigation: StackNavigationProp<RootStackParamList>;
+  onClose?: () => void;
 }
 
 const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   place,
   currentLocation,
-  onSetAsStart,
-  onSetAsEnd,
-  onSetAsWaypoint,
-  onToggleRouteType,
-  routeType,
+  navigation,
+  onClose,
 }) => {
-  // 토글 애니메이션
-  const toggleAnimation = React.useRef(
+  // Zustand store에서 상태와 액션 가져오기
+  const {
+    routeType,
+    setRouteType,
+    setStart,
+    setEnd,
+    addWaypoint,
+    waypoints,
+    syncStartEndInLoopMode,
+  } = useRouteStore();
+
+  // RouteType 토글 함수
+  const toggleRouteType = () => {
+    const newRouteType =
+      routeType === RouteType.CONSTANT ? RouteType.LOOP : RouteType.CONSTANT;
+    setRouteType(newRouteType);
+  };
+
+  // 토글 애니메이션을 위한 Animated Value
+  const toggleAnimation = useRef(
     new Animated.Value(routeType === RouteType.LOOP ? 1 : 0),
   ).current;
 
@@ -42,17 +57,53 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
   }, [routeType, toggleAnimation]);
 
   // 토글 버튼 핸들러
-  const handleTogglePress = () => onToggleRouteType();
+  const handleTogglePress = () => toggleRouteType();
 
-  // 첫 번째 버튼 (원점/출발) 핸들러
-  const handleFirstButtonPress = () => onSetAsStart();
+  // 첫 번째 버튼 (출발/원점) 핸들러
+  const handleFirstButtonPress = () => {
+    onClose?.(); // 모달 닫기
+
+    const placeData: AutocompleteResult = {
+      id: `start-${Date.now()}`, // 출발지는 고유 ID
+      name: place.name,
+      address: place.address,
+      latitude: place.latitude!,
+      longitude: place.longitude!,
+    };
+
+    // LOOP 모드면 출발-도착 동기화
+    if (routeType === RouteType.LOOP) {
+      syncStartEndInLoopMode(placeData, 'start');
+    } else {
+      setStart(placeData);
+    }
+    // RouteSelect 화면으로 이동
+    navigation.navigate('RouteSelect');
+  };
 
   // 두 번째 버튼 (반환점/도착) 핸들러
   const handleSecondButtonPress = () => {
-    if (routeType === RouteType.LOOP && onSetAsWaypoint) onSetAsWaypoint();
-    else onSetAsEnd();
-  };
+    onClose?.(); // 모달 닫기
 
+    const placeData: AutocompleteResult = {
+      id: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
+      name: place.name,
+      address: place.address,
+      latitude: place.latitude!,
+      longitude: place.longitude!,
+    };
+
+    if (routeType === RouteType.LOOP) {
+      // 루프 모드: 반환점(경유지) 추가 - ID는 addWaypoint에서 자동 생성
+      addWaypoint(placeData);
+    } else {
+      // 일반 모드: 도착지 설정
+      setEnd(placeData);
+    }
+
+    // RouteSelect 화면으로 이동
+    navigation.navigate('RouteSelect');
+  };
   return (
     <View style={tw('flex-1')}>
       <View style={tw('flex-row justify-between items-start mb-1')}>

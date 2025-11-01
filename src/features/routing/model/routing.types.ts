@@ -7,7 +7,7 @@ export enum RouteType {
 
 export interface RoutePoint {
   id: string;
-  placeholder: string;
+  placeholder?: string;
   value: string;
   type: 'start' | 'waypoint' | 'end';
 }
@@ -20,37 +20,22 @@ export interface Coordinate {
   lng: number;
 }
 
+// 경로 요약 (전체 요약 정보)
+export interface Summary {
+  distance: number;
+  time: number;
+  ascent: number;
+  descent: number;
+  bikeRoadRatio: number;
+  maxGradient: number;
+}
+
 // 구간의 최소/최대 좌표 영역
-export interface BoundingBox {
+export interface Bbox {
   minLng: number;
   minLat: number;
   maxLng: number;
   maxLat: number;
-}
-
-// 구간 요약 정보
-export interface SegmentSummary {
-  distance: number; // 총 거리 (m)
-  time: number; // 예상 소요 시간 (초)
-  ascent: number; // 상승 고도 (m)
-  descent: number; // 하강 고도 (m)
-  bike_road_ratio?: number; // 자전거 도로 비율 (선택적)
-}
-
-// 구간 경로 좌표
-export interface Geometry {
-  /** [lng, lat, elevation] 배열 */
-  points: [number, number, number][];
-}
-
-// 구간 단위 (걷기 / 자전거)
-export interface RouteSegment {
-  type: 'walking' | 'biking';
-  summary: SegmentSummary;
-  bbox: BoundingBox;
-  geometry: Geometry;
-  /** 자전거 구간의 경우 프로필 타입 추가 */
-  profile?: 'safe_bike' | 'fast_bike' | string;
 }
 
 // 따릉이 대여소 정보
@@ -62,16 +47,50 @@ export interface Station {
   current_bikes: number;
 }
 
-// 경로 요약 (전체 요약 정보)
-export interface RouteSummary {
+export type Segment = WalkingSegment | BikingSegment;
+
+// 도보 구간 타입
+interface WalkingSegment {
+  type: 'walking';
+  summary: WalkingSegmentSummary;
+  bbox: Bbox;
+  geometry: Geometry;
+}
+
+// 자전거 구간 타입
+interface BikingSegment {
+  type: 'biking';
+  summary: BikingSegmentSummary;
+  bbox: Bbox;
+  geometry: Geometry;
+  profile: 'safe_bike' | 'fast_bike';
+}
+
+// 도보 구간의 summary 타입
+interface WalkingSegmentSummary {
   distance: number;
   time: number;
   ascent: number;
   descent: number;
-  bike_road_ratio?: number;
 }
 
-/********** 통합 경로 탐색 **********/
+// 자전거 구간의 summary 타입
+interface BikingSegmentSummary {
+  distance: number;
+  time: number;
+  ascent: number;
+  descent: number;
+  bikeRoadRatio: number;
+  maxGradient: number;
+}
+
+// 구간 경로 좌표
+export interface Geometry {
+  /** [lng, lat, elevation] 배열 */
+  points: [number, number, number][];
+}
+
+/********** 경로 탐색 **********/
 // 통합 경로 탐색 요청 페이로드
 export interface FullJourneyPayload {
   start: Coordinate;
@@ -79,48 +98,25 @@ export interface FullJourneyPayload {
   waypoints?: Coordinate[];
 }
 
-// 통합 경로 탐색 응답 타입
-export interface FullJourneyResponse {
-  message: string;
-  data?: IntegratedRoute[];
-}
-
-// 단일 통합 경로
-export interface IntegratedRoute {
-  routeCategory: string;
-  summary: RouteSummary;
-  bbox: BoundingBox;
-  startStation: Station;
-  endStation: Station;
-  segments: RouteSegment[];
-}
-
-/********** 왕복 경로 탐색 **********/
-export type WaypointType = 'waypoint' | 'return_point';
-
-// Waypoint 데이터 구조 - 반환점은 1개만 허용
-export interface WaypointDto {
-  type: WaypointType;
-  location: Coordinate;
-}
-
-// 왕복 경로 탐색 요청 페이로드
-export interface RoundTripSearchPayload {
+// 원형 경로 탐색 요청 페이로드
+export interface CircularJourneyPayload {
   start: Coordinate;
-  waypoints?: WaypointDto[];
+  targetDistance: number;
 }
 
-// 왕복 경로 탐색 응답 타입
-export interface RoundTripSearchResponse {
+// 통합/원형 경로 탐색 응답 타입
+export interface RouteResponse {
   message: string;
-  data?: RoundTripRoute[];
+  data?: Route[];
 }
 
-// 개별 경로 결과 (카테고리별)
-// "자전거 도로 우선", "최소 시간", "최단 거리"
-export interface RoundTripRoute {
+// 경로 객체 타입
+export interface Route {
   routeCategory: string;
-  summary: RouteSummary;
-  bbox: BoundingBox;
-  segments: RouteSegment[];
+  routeId: string;
+  summary: Summary;
+  bbox: Bbox;
+  startStation: Station;
+  endStation?: Station;
+  segments: Segment[];
 }

@@ -10,65 +10,83 @@ import {
   IconMinus,
 } from '@/shared/components/icons';
 import { RoutePoint, RouteType } from '../model/routing.types';
-import { ROUTE_CONSTANTS } from '../model/routing.constants';
 import { createStartPoint, createEndPoint } from '../model/routing.data';
 import { canRemoveWaypoint, canAddWaypoint } from '../utils/validateWaypoint';
-import { useRouteInput } from '../hooks/useRouteInput';
 import IconArrowsUpDown from '@/shared/components/icons/IconArrowsUpDown';
+import { useRouteStore } from '../stores/routeStore';
 
 interface RouteInputBarProps {
-  routeType: RouteType;
-  routeData?: { [key: string]: AutocompleteResult };
   onClose: () => void;
   onRoutePointPress: (point: RoutePoint) => void;
-  onSwapStartEnd?: () => void;
-  onRouteDataComplete?: (isComplete: boolean) => void; // 라우트 데이터 다 채워졌는지
+  onAddWaypointAndEdit: () => void;
 }
 
 const RouteInputBar = ({
-  routeType,
-  routeData = {},
   onClose,
   onRoutePointPress,
-  onSwapStartEnd,
-  onRouteDataComplete,
+  onAddWaypointAndEdit,
 }: RouteInputBarProps) => {
+
   const {
-    internalRouteData,
-    setInternalRouteData,
-    waypoints,
-    setWaypoints,
-    handleAddWaypointPress,
-    handleRemoveWaypointPress,
-    resetWaypoints,
-  } = useRouteInput({
     routeType,
-    routeData,
-    onRouteDataComplete,
-  });
+    start,
+    end,
+    waypoints,
+    setStart,
+    setEnd,
+    addWaypoint,
+    removeWaypoint,
+  } = useRouteStore();
 
-  // 출발지와 도착지 교환 함수
-  const handleSwapPress = useCallback(() => {
-    setInternalRouteData(prev => ({
-      ...prev,
-      start: prev.end,
-      end: prev.start,
-    }));
-    onSwapStartEnd?.();
-  }, [onSwapStartEnd]);
-
-  // RouteInputBar 닫기 및 데이터 초기화
-  const handleClosePress = useCallback(() => {
-    resetWaypoints();
-    onClose();
-  }, [resetWaypoints, onClose]);
-
-  // 출발지 & 도착지 포인트 생성
-  const startPoint: RoutePoint = createStartPoint(
-    internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.START]?.name || '',
+  // 출발지, 도착지 포인트 생성
+  const startPoint = useMemo(
+    () => createStartPoint(start?.name || ''),
+    [start],
   );
-  const endPoint: RoutePoint = createEndPoint(
-    internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.END]?.name || '',
+  const endPoint = useMemo(() => createEndPoint(end?.name || ''), [end]);
+
+  // 경유지를 UI에 맞게 변환
+  const waypointPoints = useMemo(() => {
+    return waypoints.map((wp, index) => ({
+      id: wp.id,
+      type: 'waypoint' as const,
+      placeholder: `경유지 ${index + 1}`,
+      value: wp.place?.name || '',
+    }));
+  }, [waypoints]);
+
+  // 출발지와 도착지 교환 함수 (LOOP에서는 비활성)
+  const handleSwapPress = useCallback(() => {
+    if (routeType === RouteType.LOOP) return;
+    if (start && end) {
+      const tempStart = start;
+      setStart(end);
+      setEnd(tempStart);
+    }
+  }, [routeType, start, end, setStart, setEnd]);
+
+  // 닫기 버튼 핸들러
+  const handleClosePress = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  // 경유지 추가
+  const handleAddWaypointPress = useCallback(() => {
+    if (waypoints.length >= 3) {
+      console.warn('경유지는 최대 3개까지 추가 가능합니다.');
+      return;
+    }
+    onAddWaypointAndEdit();
+  }, [onAddWaypointAndEdit, waypoints]);
+
+  // 경유지 삭제
+  const handleRemoveWaypointPress = useCallback(
+    (id: string) => {
+      if (canRemoveWaypoint(routeType, waypoints.length)) {
+        removeWaypoint(id);
+      }
+    },
+    [routeType, waypoints, removeWaypoint],
   );
 
   return (
@@ -81,7 +99,9 @@ const RouteInputBar = ({
       <View style={tw('relative')}>
         {/* 좌측 스위치 버튼 - 경유지가 없을 때만 */}
         {waypoints.length === 0 && (
-          <View style={tw('absolute left-2 top-0 bottom-0 justify-center z-10')}>
+          <View
+            style={tw('absolute left-2 top-0 bottom-0 justify-center z-10')}
+          >
             <TouchableOpacity
               onPress={handleSwapPress}
               style={tw('w-8 h-8 items-center justify-center')}
@@ -137,7 +157,9 @@ const RouteInputBar = ({
         )}
 
         {/* 인풋 필드들 */}
-        <View style={tw(`${waypoints.length > 0 ? 'pl-2' : 'pl-12'} pr-12 py-2`)}>
+        <View
+          style={tw(`${waypoints.length > 0 ? 'pl-2' : 'pl-12'} pr-12 py-2`)}
+        >
           {/* 출발지 */}
           <View
             style={tw(
@@ -147,12 +169,14 @@ const RouteInputBar = ({
             {/* 좌측 드래그 핸들 (경유지가 있을 때만) */}
             {waypoints.length > 0 && (
               <View style={tw('w-8 mr-1 items-center justify-center')}>
-                <TouchableOpacity style={tw('w-6 h-6 items-center justify-center')}>
+                <TouchableOpacity
+                  style={tw('w-6 h-6 items-center justify-center')}
+                >
                   <IconArrowsUpDown width={13} height={13} />
                 </TouchableOpacity>
               </View>
             )}
-            
+
             {/* 좌측 아이콘 */}
             <View style={tw('w-6 mr-1 items-center')}>
               <IconOval
@@ -169,24 +193,18 @@ const RouteInputBar = ({
             >
               <Text
                 style={tw(
-                  internalRouteData[
-                    ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.START
-                  ]?.name || startPoint.value
+                  start?.name || startPoint.value
                     ? 'text-on-surface-primary font-primary-500 text-base'
                     : 'text-on-surface-placeholder font-primary-500 text-base',
                 )}
               >
-                {internalRouteData[
-                  ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.START
-                ]?.name ||
-                  startPoint.value ||
-                  startPoint.placeholder}
+                {start?.name || startPoint.value || startPoint.placeholder}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* 경유지들 */}
-          {waypoints.map((waypoint, index) => (
+          {waypointPoints.map((waypoint, index) => (
             <View
               key={waypoint.id}
               style={tw(
@@ -195,7 +213,9 @@ const RouteInputBar = ({
             >
               {/* 좌측 드래그 핸들 */}
               <View style={tw('w-8 mr-1 items-center justify-center')}>
-                <TouchableOpacity style={tw('w-6 h-6 items-center justify-center')}>
+                <TouchableOpacity
+                  style={tw('w-6 h-6 items-center justify-center')}
+                >
                   <IconArrowsUpDown width={13} height={13} />
                 </TouchableOpacity>
               </View>
@@ -212,14 +232,12 @@ const RouteInputBar = ({
               >
                 <Text
                   style={tw(
-                    routeData[waypoint.id]?.name || waypoint.value
+                    waypoint.value
                       ? 'text-on-surface-primary font-primary-500 text-base'
                       : 'text-on-surface-placeholder font-primary-500 text-base',
                   )}
                 >
-                  {routeData[waypoint.id]?.name ||
-                    waypoint.value ||
-                    waypoint.placeholder}
+                  {waypoint.value || waypoint.placeholder}
                 </Text>
               </TouchableOpacity>
 
@@ -240,7 +258,7 @@ const RouteInputBar = ({
               {routeType === RouteType.LOOP &&
                 waypoints.length === 1 &&
                 index === 0 &&
-                canAddWaypoint(waypoints.length) && (
+                waypoints.length < 3 && (
                   <TouchableOpacity
                     style={tw(
                       'ml-2 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
@@ -258,12 +276,14 @@ const RouteInputBar = ({
             {/* 좌측 드래그 핸들 (경유지가 있을 때만) */}
             {waypoints.length > 0 && (
               <View style={tw('w-8 mr-1 items-center justify-center')}>
-                <TouchableOpacity style={tw('w-6 h-6 items-center justify-center')}>
+                <TouchableOpacity
+                  style={tw('w-6 h-6 items-center justify-center')}
+                >
                   <IconArrowsUpDown width={13} height={13} />
                 </TouchableOpacity>
               </View>
             )}
-            
+
             {/* 좌측 아이콘 */}
             <View style={tw('w-6 mr-1 items-center')}>
               <IconOval width={20} height={20} color="gray" />
@@ -276,23 +296,19 @@ const RouteInputBar = ({
             >
               <Text
                 style={tw(
-                  internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.END]
-                    ?.name || endPoint.value
+                  end?.name || endPoint.value
                     ? 'text-on-surface-primary font-primary-500 text-base'
                     : 'text-on-surface-placeholder font-primary-500 text-base',
                 )}
               >
-                {internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.END]
-                  ?.name ||
-                  endPoint.value ||
-                  endPoint.placeholder}
+                {end?.name || endPoint.value || endPoint.placeholder}
               </Text>
             </TouchableOpacity>
 
             {/* + 버튼 - 경유지가 2개 이상이거나 constant 모드일 때 도착지 우측에 표시 */}
             {((routeType === RouteType.LOOP && waypoints.length >= 2) ||
               (routeType === RouteType.CONSTANT && waypoints.length > 0)) &&
-              canAddWaypoint(waypoints.length) && (
+              waypoints.length < 3 && (
                 <TouchableOpacity
                   style={tw(
                     'ml-2 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
