@@ -78,15 +78,6 @@ const RouteSelectScreen = () => {
     if (route.params?.selectedPlace && route.params?.placeType) {
       const { selectedPlace, placeType } = route.params;
 
-      Alert.alert(
-        '[RouteSelectScreen] 장소 선택됨:',
-        JSON.stringify({
-          placeType,
-          placeName: selectedPlace.name,
-          currentWaypointsCount: waypoints.length,
-        }),
-      );
-
       // 'auto' 타입이면 첫 번째 빈 필드에 자동 할당
       if (placeType === 'auto') {
         if (!start?.name) {
@@ -131,12 +122,9 @@ const RouteSelectScreen = () => {
       } else if (placeType === 'end') {
         setEnd(selectedPlace);
       } else if (placeType === 'waypoint-new') {
-        // 새로운 경유지 추가
-        Alert.alert('[RouteSelectScreen] 새로운 경유지 추가');
         addWaypoint(selectedPlace);
       } else if (placeType.startsWith('waypoint-')) {
         // 기존 경유지 업데이트 (id 직접 전달)
-        Alert.alert('[RouteSelectScreen] 기존 경유지 업데이트:', placeType);
         updateWaypoint(placeType, selectedPlace);
       }
 

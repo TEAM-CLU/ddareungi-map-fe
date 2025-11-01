@@ -290,14 +290,6 @@ const SearchOverlay = ({
               }
             } catch (geocodeError) {
               console.error('[SearchOverlay] 역지오코딩 오류:', geocodeError);
-              Alert.alert(
-                '오류',
-                `주소 변환 실패: ${
-                  geocodeError instanceof Error
-                    ? geocodeError.message
-                    : '알 수 없는 오류'
-                }`,
-              );
             } finally {
               setIsLoadingCurrentLocation(false);
             }
