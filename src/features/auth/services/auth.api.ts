@@ -1,10 +1,16 @@
 import {
+  FindAccountPayload,
+  FindAccountResponse,
   ResetPasswordPayload,
   ResetPasswordResponse,
   SendVerificationEmailPayload,
   SendVerificationEmailResponse,
-  SocialAuthResponse,
-  SocialAuthType,
+  SocialAuthCheckStatusPayload,
+  SocialAuthCheckStatusResponse,
+  SocialAuthExchangeTokenPayload,
+  SocialAuthExchangeTokenResponse,
+  SocialAuthGetUrlResponse,
+  SocialType,
   VerifyEmailPayload,
   VerifyEmailResponse,
 } from '@/features/auth/model/auth.types';
@@ -14,7 +20,7 @@ import axios from 'axios';
 // default instance ip주소로변경
 const authApi = axios.create({
   baseURL: `${SERVER_URL}/auth`,
-  timeout: 4000,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -36,27 +42,11 @@ export const postVerifyEmail = async (
   return response.data;
 };
 
-// // 소셜 회원가입/로그인 PKCE
-// export const getSocialAuthPkce = async (
-//   socialAuthType: SocialAuthType,
-// ): Promise<SocialAuthPkceResponse> => {
-//   const response = await authApi.get(`/${socialAuthType}/pkce`);
-//   return response.data;
-// };
-
-// // 소셜 회원가입/로그인 exchange token
-// export const postSocialAuthExchangeToken = async (
-//   payload: SocialAuthExchangeTokenPayload,
-// ): Promise<SocialAuthExchangeTokenResponse> => {
-//   const response = await authApi.post(`/exchange-token`, payload);
-//   return response.data;
-// };
-
-//  소셜 회원가입/로그인
-export const getSocialAuth = async (
-  socialAuthType: SocialAuthType,
-): Promise<SocialAuthResponse> => {
-  const response = await authApi.get(`/${socialAuthType}`);
+// 계정 찾기
+export const postFindAccount = async (
+  payload: FindAccountPayload,
+): Promise<FindAccountResponse> => {
+  const response = await authApi.post('/find-account', payload);
   return response.data;
 };
 
@@ -65,5 +55,33 @@ export const postResetPassword = async (
   payload: ResetPasswordPayload,
 ): Promise<ResetPasswordResponse> => {
   const response = await authApi.post('/reset-password', payload);
+  return response.data;
+};
+
+// 소셜 회원가입/로그인 auth url 요청
+export const getSocialAuthUrl = async (
+  socialType: SocialType,
+): Promise<SocialAuthGetUrlResponse> => {
+  const response = await authApi.get(`/${socialType}/pkce`);
+  return response.data;
+};
+
+// 소셜 회원가입/로그인 상태 확인
+export const getSocialAuthCheckStatus = async (
+  payload: SocialAuthCheckStatusPayload,
+  signal?: AbortSignal,
+): Promise<SocialAuthCheckStatusResponse> => {
+  const response = await authApi.get('/check-status', {
+    params: payload,
+    signal,
+  });
+  return response.data;
+};
+
+// 소셜 회원가입/로그인 토큰 교환
+export const postSocialAuthExchangeToken = async (
+  payload: SocialAuthExchangeTokenPayload,
+): Promise<SocialAuthExchangeTokenResponse> => {
+  const response = await authApi.post('/exchange-token', payload);
   return response.data;
 };

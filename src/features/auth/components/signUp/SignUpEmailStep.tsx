@@ -1,5 +1,5 @@
 import Input from '@/shared/components/Input/Input';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 
 import { Alert, Text, View } from 'react-native';
@@ -17,6 +17,10 @@ import {
   VerifyEmailResponse,
 } from '@/features/auth/model/auth.types';
 import { useCheckEmailMutation } from '@/features/auth/services/user.queries';
+import axios from 'axios';
+import SlideModal from '@/shared/components/modal/SlideModal';
+import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 interface SignUpEmailStepProps {
   email: string;
@@ -77,15 +81,6 @@ const SignUpEmailStep = ({
     try {
       const response: CheckEmailResponse = await checkEmailRedundancy(payload);
 
-      // 중복된 이메일인 경우
-      if ('statusCode' in response && response.statusCode === 409) {
-        setEmailSuccessDescription('');
-        setIsValidEmail(false);
-        setEmailErrorDescription(`${response.message}`);
-
-        return;
-      }
-
       // 사용 가능한 이메일인 경우
       setEmailErrorDescription('');
       setIsValidEmail(true);
@@ -94,27 +89,33 @@ const SignUpEmailStep = ({
       try {
         const response: SendVerificationEmailResponse =
           await sendVerificationCode(payload);
-        if ('statusCode' in response) {
-          setCodeSuccessDescription('');
-          setCodeErrorDescription(`${response.message}`);
-          return;
-        }
+
         Alert.alert('인증 코드가 전송되었습니다.'); // 한번더 강조
         setIsValidEmail(true);
         setIsValidCode(true);
         setShowCodeInput(true);
         setCodeErrorDescription('');
         setCodeSuccessDescription(`${response.message}`);
-      } catch (_) {
+      } catch (error) {
         // 네트워크 또는 서버 오류 처리
         setCodeSuccessDescription('');
-        setCodeErrorDescription(`인증 코드 전송 실패. 다시 시도해주세요.`);
+        if (axios.isAxiosError(error)) {
+          setCodeErrorDescription(
+            `${
+              error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'
+            }`,
+          );
+        }
       }
-    } catch (_) {
+    } catch (error) {
       // 네트워크 또는 서버 오류 처리
       setEmailSuccessDescription('');
       setIsValidEmail(false);
-      setEmailErrorDescription(`이메일 중복 확인 실패. 다시 시도해주세요.`);
+      if (axios.isAxiosError(error)) {
+        setEmailErrorDescription(
+          `${error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'}`,
+        );
+      }
     }
   };
 
@@ -178,24 +179,20 @@ const SignUpEmailStep = ({
     try {
       const response: VerifyEmailResponse = await verifyCode(payload);
 
-      // 유효하지 않은 인증코드인 경우
-      if ('statusCode' in response) {
-        setCodeSuccessDescription('');
-        setIsValidCode(false);
-        setCodeErrorDescription(`${response.message}`);
-        return;
-      }
-
       // 유효한 인증코드인 경우
       setCodeErrorDescription('');
       setIsValidCode(true);
       setCodeSuccessDescription(`${response.message}`);
       setCanGoNextStep(true);
-    } catch (e) {
+    } catch (error) {
       // 네트워크 또는 서버 오류 처리
       setCodeSuccessDescription('');
       setIsValidCode(false);
-      setCodeErrorDescription(`인증 코드 확인 실패. 다시 시도해주세요.`);
+      if (axios.isAxiosError(error)) {
+        setCodeErrorDescription(
+          `${error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'}`,
+        );
+      }
       return;
     }
   };
@@ -215,7 +212,7 @@ const SignUpEmailStep = ({
   return (
     <View
       style={[
-        tw('w-full flex-1 flex flex-col justify-between items-center'),
+        tw('w-full flex-1 flex flex-col justify-between items-center mb-4'),
         { marginTop: 55 },
       ]}
     >
