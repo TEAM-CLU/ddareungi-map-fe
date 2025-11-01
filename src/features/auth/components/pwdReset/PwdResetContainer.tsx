@@ -18,7 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface PwdResetterContainerProps {
   setAccountFeatures: React.Dispatch<
-    React.SetStateAction<'findId' | 'resetPwd' | null>
+    React.SetStateAction<'findAccount' | 'resetPwd' | null>
   >;
 }
 

@@ -1,4 +1,6 @@
 import {
+  FindAccountPayload,
+  FindAccountResponse,
   ResetPasswordPayload,
   ResetPasswordResponse,
   SendVerificationEmailPayload,
@@ -37,6 +39,14 @@ export const postVerifyEmail = async (
   payload: VerifyEmailPayload,
 ): Promise<VerifyEmailResponse> => {
   const response = await authApi.post('/verify-email', payload);
+  return response.data;
+};
+
+// 계정 찾기
+export const postFindAccount = async (
+  payload: FindAccountPayload,
+): Promise<FindAccountResponse> => {
+  const response = await authApi.post('/find-account', payload);
   return response.data;
 };
 

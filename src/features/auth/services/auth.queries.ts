@@ -1,4 +1,5 @@
 import {
+  FindAccountPayload,
   ResetPasswordPayload,
   SendVerificationEmailPayload,
   SocialAuthCheckStatusQueryPayload,
@@ -10,6 +11,7 @@ import {
 import {
   getSocialAuthCheckStatus,
   getSocialAuthUrl,
+  postFindAccount,
   postResetPassword,
   postSendVerificationEmail,
   postSocialAuthExchangeToken,
@@ -32,6 +34,15 @@ export const useSendVerificationEmailMutation = () => {
 export const useVerifyEmailMutation = () => {
   const mutation = useMutation({
     mutationFn: (payload: VerifyEmailPayload) => postVerifyEmail(payload),
+  });
+
+  return mutation;
+};
+
+// 계정 찾기
+export const useFindAccountMutation = () => {
+  const mutation = useMutation({
+    mutationFn: (payload: FindAccountPayload) => postFindAccount(payload),
   });
 
   return mutation;

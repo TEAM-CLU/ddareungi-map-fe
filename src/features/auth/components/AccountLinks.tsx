@@ -5,20 +5,20 @@ import { View, TouchableOpacity, Text } from 'react-native';
 
 interface AccountLinksProps {
   setAccountFeatures: React.Dispatch<
-    React.SetStateAction<'findId' | 'resetPwd' | null>
+    React.SetStateAction<'findAccount' | 'resetPwd' | null>
   >;
 }
 
 const AccountLinks = ({ setAccountFeatures }: AccountLinksProps) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const handleSignUpbuttonPress = () => navigation.navigate('Register');
-  const handleFindIdButtonPress = () => setAccountFeatures('findId');
+  const handleFindAccountButtonPress = () => setAccountFeatures('findAccount');
   const handleFindPwdButtonPress = () => setAccountFeatures('resetPwd');
 
   return (
     <View
       style={[
-        tw('tems-center justify-center flex flex-row flex-nowrap h-4 w-full'),
+        tw('items-center justify-center flex flex-row flex-nowrap h-4 w-full'),
         { gap: 5 },
       ]}
     >
@@ -65,7 +65,7 @@ const AccountLinks = ({ setAccountFeatures }: AccountLinksProps) => {
         ㅣ
       </Text>
       <TouchableOpacity
-        onPress={handleFindIdButtonPress}
+        onPress={handleFindAccountButtonPress}
         style={tw('flex justify-center items-center')}
       >
         <Text

@@ -17,9 +17,21 @@ export interface VerifyEmailPayload {
   verificationCode: string;
 }
 
+// 계정 찾기
+export interface FindAccountPayload {
+  securityToken: string;
+}
+
+export interface FindAccountResponse {
+  isRegistered: boolean;
+  accountType: '소셜' | '자체';
+  message: string;
+}
+
 export interface VerifyEmailResponse {
   message: string;
   isVerified: boolean;
+  securityToken: string;
 }
 
 // 소셜 회원가입/로그인
