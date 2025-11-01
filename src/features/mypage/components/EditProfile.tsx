@@ -5,6 +5,7 @@ import BackButton from '@/shared/components/button/BackButton';
 import { formatBirthDate } from '@/shared/utils/date';
 import { formatAddress } from '@/shared/utils/address';
 import {
+  useDeleteUserMutation,
   useUpdateUserInfoMutation,
   useUserInfoQuery,
 } from '@/features/auth/services/user.queries';
@@ -15,13 +16,13 @@ import GenderButton from '@/shared/components/button/GenderButton';
 import AddressInput from '@/shared/components/Input/AddressInput';
 import SquareButton from '@/shared/components/button/SquareButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { DUMMY_USER_INFO } from '../model/mypage.constants';
 import { useLogoutMutation } from '@/features/auth/services/auth.queries';
 
 const EditProfile = ({ onBack }: { onBack: () => void }) => {
   const { data: user, isLoading } = useUserInfoQuery();
-  const { mutate: updateUser } = useUpdateUserInfoMutation();
-  const { mutate: logout } = useLogoutMutation();
+  const { mutateAsync: updateUser } = useUpdateUserInfoMutation();
+  const { mutateAsync: logout } = useLogoutMutation();
+  const { mutateAsync: deleteUser } = useDeleteUserMutation();
 
   const [name, setName] = useState('');
   const [year, setYear] = useState<number | null>(null);
@@ -114,6 +115,30 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
                 Alert.alert('로그아웃 중 오류가 발생했습니다.');
               },
             });
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
+
+  const handleWithdrawPress = () => {
+    Alert.alert(
+      '회원탈퇴',
+      '정말 회원탈퇴 하시겠어요? 탈퇴 시 모든 정보가 삭제되며 복구할 수 없습니다.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '확인',
+          style: 'destructive',
+          onPress: () => {
+            deleteUser()
+              .then(res => {
+                Alert.alert(res.message);
+              })
+              .catch(() => {
+                Alert.alert('회원탈퇴 중 오류가 발생했습니다.');
+              });
           },
         },
       ],
@@ -248,7 +273,7 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
             </Text>
           </TouchableOpacity>
           <Text style={tw('mx-2 text-placeholder text-xs')}>|</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleWithdrawPress}>
             <Text style={tw('text-placeholder font-primary-500 text-xs')}>
               회원탈퇴
             </Text>

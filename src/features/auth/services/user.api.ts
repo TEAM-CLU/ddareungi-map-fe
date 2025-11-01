@@ -3,7 +3,7 @@ import {
   CheckEmailResponse,
   CreateUserPayload,
   CreateUserResponse,
-  GetUserInfoResponse,
+  DeleteUserResponse,
   GetUserInfoResponseSuccess,
   LoginUserPayload,
   LoginUserResponse,
@@ -15,7 +15,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Alert } from 'react-native';
 
-// default instance
 const userApi = axios.create({
   baseURL: `${SERVER_URL}/user`,
   timeout: 4000,
@@ -60,8 +59,19 @@ export const getUserInfo = async (): Promise<GetUserInfoResponseSuccess> => {
 export const updateUserInfo = async (
   payload: UpdateUserPayload,
 ): Promise<UpdateUserResponse> => {
-  const token = await AsyncStorage.getItem('ACCESS_TOKEN_KEY');
+  const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
   const response = await userApi.put('/info-update', payload, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+// 유저 삭제
+export const deleteUser = async (): Promise<DeleteUserResponse> => {
+  const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+  const response = await userApi.delete('/withdraw', {
     headers: {
       Authorization: `Bearer ${token}`,
     },

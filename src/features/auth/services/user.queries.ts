@@ -1,4 +1,4 @@
-import { useAuth } from '@/app/providers';
+import { RootStackParamList } from '@/app/types';
 import {
   CheckEmailPayload,
   CreateUserPayload,
@@ -8,13 +8,22 @@ import {
   UpdateUserResponse,
 } from '@/features/auth/model/auth.types';
 import {
+  deleteUser,
   getUserInfo,
   postCheckEmail,
   postCreateUser,
   postLoginUser,
   updateUserInfo,
 } from '@/features/auth/services/user.api';
+import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  CommonActions,
+  NavigationProp,
+  useNavigation,
+} from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Alert } from 'react-native';
 
 // 유저 회원가입
 export const useCreateUserMutation = () => {
@@ -50,6 +59,40 @@ export const useUpdateUserInfoMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['userInfo'] });
     },
   });
+};
+
+// 유저 삭제
+export const useDeleteUserMutation = () => {
+  const queryClient = useQueryClient();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const mutation = useMutation({
+    mutationFn: () => deleteUser(),
+    onSuccess: async (res) => {
+      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+      queryClient.clear();
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        }),
+      );
+      if (res.message) {
+        Alert.alert(res.message);
+      }
+    },
+    onError: async () => {
+      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+      queryClient.clear();
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        }),
+      );
+      Alert.alert('회원탈퇴 중 문제가 발생했습니다.');
+    },
+  });
+  return mutation;
 };
 
 // 이메일 중복 확인

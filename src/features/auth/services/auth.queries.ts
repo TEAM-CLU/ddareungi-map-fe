@@ -86,8 +86,8 @@ export const useLogoutMutation = () => {
 
   const mutation = useMutation({
     mutationFn: postLogout,
-    onSuccess: data => {
-      AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+    onSuccess: async (data) => {
+      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
       queryClient.clear();
       navigation.dispatch(
         CommonActions.reset({

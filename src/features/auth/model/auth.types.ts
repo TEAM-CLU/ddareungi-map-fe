@@ -194,6 +194,11 @@ interface UpdateUserResponseFailed {
   message: string;
 }
 
+// 유저 삭제
+export interface DeleteUserResponse {
+  message: string;
+}
+
 // 이메일 중복 확인
 export interface CheckEmailPayload {
   email: string;
