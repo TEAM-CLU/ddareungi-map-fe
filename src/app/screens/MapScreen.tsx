@@ -12,20 +12,21 @@ import StationMarkersToggleButton from '@/features/station/components/StationMar
 import StationDetailModal from '@/features/station/components/StationDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import { useMapController } from '@/shared/hooks/useMapController';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types';
 
 const MapScreen = () => {
   const {
     webRef,
     showSearchOverlay,
-    routeType,
     selectedPlaceForModal,
+    setSelectedPlaceForModal,
     handleSearchbarPress,
     handleSearchClose,
     searchText,
     setSearchText,
     handlePlaceSelect,
-    handlePlaceTypeConfirm,
-    toggleRouteType,
     placeDetailModalRef,
     stationDetailModalRef,
     nearbyStationModalRef,
@@ -48,6 +49,7 @@ const MapScreen = () => {
   }, [isStationButtonPressed]);
 
   //////////
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <View style={tw('flex-1 relative w-full')}>
@@ -125,16 +127,13 @@ const MapScreen = () => {
       <SlideModal
         ref={placeDetailModalRef}
         onClose={() => placeDetailModalRef.current?.dismiss()}
-        snapPoints={['25%']}
+        snapPoints={['35%', '50%']}
       >
         {selectedPlaceForModal && (
           <PlaceDetailModal
             place={selectedPlaceForModal}
-            routeType={routeType}
-            onSetAsStart={() => handlePlaceTypeConfirm('start')}
-            onSetAsEnd={() => handlePlaceTypeConfirm('end')}
-            onSetAsWaypoint={() => handlePlaceTypeConfirm('waypoint')}
-            onToggleRouteType={toggleRouteType}
+            navigation={navigation}
+            onClose={() => placeDetailModalRef.current?.dismiss()}
           />
         )}
       </SlideModal>

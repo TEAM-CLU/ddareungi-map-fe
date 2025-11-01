@@ -4,6 +4,7 @@ import { RouteType } from '@/features/routing/model/routing.types';
 import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
 import { useMapSearch } from '@/features/search/hooks/useMapSearch';
 import { MapAreaStationsData } from '@/features/station/model/station.types';
+import { useRouteStore } from '@/features/routing/stores/routeStore';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
   NavigationProp,
@@ -25,80 +26,79 @@ export const useMapController = () => {
 
   const { showPlaceMarker } = useMapSearch(webRef);
 
-  const [showSearchOverlay, setShowSearchOverlay] = useState(false);
-  const [currentPlaceType, setCurrentPlaceType] = useState<
-    'start' | 'end' | 'waypoint'
-  >('start');
+  // Zustand store에서 상태 가져오기
+  const { showSearchOverlay, setShowSearchOverlay, hasAnyRouteData } =
+    useRouteStore();
+
+  const [currentPlaceType, setCurrentPlaceType] = useState<string | null>(null);
   const [selectedPlaceForModal, setSelectedPlaceForModal] =
     useState<AutocompleteResult | null>(null);
-  const [routeType, setRouteType] = useState<RouteType>(RouteType.CONSTANT);
+
   const [currentLocation, setCurrentLocation] = useState<{
     coordinates: Coordinates | null;
   }>({ coordinates: null });
 
   const placeDetailModalRef = useRef<BottomSheetModal | null>(null);
 
+  // RouteSelect에서 넘어올 때 검색창 자동 오픈
+  // Route parameters 처리 - 검색 오버레이 열기
   useEffect(() => {
-    if (route.params?.openSearchOverlay) setShowSearchOverlay(true);
-    if (route.params?.placeType) setCurrentPlaceType(route.params.placeType);
-  }, [route.params]);
+    if (route.params?.openSearchOverlay) {
+      setShowSearchOverlay(true);
+      setCurrentPlaceType(route.params.placeType ?? null);
+    }
+  }, [
+    route.params?.openSearchOverlay,
+    route.params?.placeType,
+    setShowSearchOverlay,
+  ]);
 
   const handleSearchbarPress = useCallback(() => {
     setShowSearchOverlay(true);
-  }, []);
+  }, [setShowSearchOverlay]);
 
+  // 검색 닫기
   const handleSearchClose = useCallback(() => {
     setShowSearchOverlay(false);
-    if (route.params?.openSearchOverlay) navigation.goBack();
-  }, [route.params, navigation]);
+  }, [setShowSearchOverlay]);
 
   const handlePlaceSelect = useCallback(
     (place: AutocompleteResult) => {
-      // RouteSelect에서 온 경우
-      if (route.params?.openSearchOverlay) {
-        setShowSearchOverlay(false);
-        navigation.navigate('RouteSelect', {
-          selectedPlace: place,
-          placeType: currentPlaceType,
-        });
-        return;
-      }
+      // 검색 오버레이 닫기
+      setShowSearchOverlay(false);
 
-      // 일반 검색의 경우
+      // 지도에 마커 표시
       if (place.latitude && place.longitude) {
         showPlaceMarker(place.latitude, place.longitude, place.name, place);
       }
 
-      setShowSearchOverlay(false);
+      // 이미 입력란이 하나라도 채워져 있으면 PlaceDetailModal 스킵하고 바로 RouteSelect로 이동
+      if (hasAnyRouteData()) {
+        navigation.navigate('RouteSelect', {
+          selectedPlace: place,
+          placeType: currentPlaceType || 'auto', // currentPlaceType이 있으면 사용, 없으면 'auto'
+        });
+        // placeType 초기화
+        setCurrentPlaceType(null);
+        return;
+      }
+
+      // 아무것도 채워져 있지 않으면 기존처럼 PlaceDetailModal 표시
       setSelectedPlaceForModal(place);
       placeDetailModalRef.current?.present();
     },
-    [route.params, navigation, currentPlaceType, showPlaceMarker],
+    [
+      setShowSearchOverlay,
+      showPlaceMarker,
+      hasAnyRouteData,
+      navigation,
+      currentPlaceType,
+    ],
   );
 
   const [searchText, setSearchText] = useState('');
 
-  // 출발지/도착지/경유지 설정
-  const handlePlaceTypeConfirm = useCallback(
-    (type: 'start' | 'end' | 'waypoint') => {
-      if (!selectedPlaceForModal) return;
-      placeDetailModalRef.current?.dismiss();
-      navigation.navigate('RouteSelect', {
-        selectedPlace: selectedPlaceForModal,
-        placeType: type,
-        routeType,
-      });
-    },
-    [selectedPlaceForModal, routeType, navigation],
-  );
-
-  const toggleRouteType = useCallback(() => {
-    setRouteType(prev =>
-      prev === RouteType.CONSTANT ? RouteType.LOOP : RouteType.CONSTANT,
-    );
-  }, []);
-
-  // station 및 관련 모달
+  // 장소 상세 모달에서 "출발/도착/경유지로 설정" 눌렀을 때
   const [stationMetaData, setStationMetaData] =
     useState<MapAreaStationsData | null>(null);
   const [myPosition, setMyPosition] = useState<Coordinates | undefined>(
@@ -109,25 +109,25 @@ export const useMapController = () => {
   const stationDetailModalRef = useRef<BottomSheetModal | null>(null);
 
   return {
+    // 핵심 refs
     webRef,
     placeDetailModalRef,
 
+    // Zustand store 상태 (필요시에만)
     showSearchOverlay,
-    routeType,
-    selectedPlaceForModal,
 
-    setShowSearchOverlay,
+    // 로컬 상태
+    selectedPlaceForModal,
     setSelectedPlaceForModal,
     searchText,
     setSearchText,
 
+    // 핸들러들
     handleSearchbarPress,
     handleSearchClose,
     handlePlaceSelect,
-    handlePlaceTypeConfirm,
-    toggleRouteType,
 
-    // station 및 관련 모달
+    // 기존 station 관련 (그대로 유지)
     nearbyStationModalRef,
     stationDetailModalRef,
     stationMetaData,

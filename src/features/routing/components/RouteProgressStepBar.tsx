@@ -3,9 +3,19 @@ import IconRun from '@/shared/components/icons/IconRun';
 import { tw } from '@/shared/libs/tw-helper';
 import { Text, View } from 'react-native';
 
-const RouteProgressStepBar = () => {
+interface RouteProgressStepBarProps {
+  firstWalkingMinutes: number;
+  bikingMinutes: number;
+  lastWalkingMinutes: number;
+}
+
+const RouteProgressStepBar = ({
+  firstWalkingMinutes,
+  bikingMinutes,
+  lastWalkingMinutes,
+}: RouteProgressStepBarProps) => {
   return (
-    <View style={tw('w-full flex flex-row ')}>
+    <View style={tw('w-full flex flex-row')}>
       <View
         style={[
           tw(
@@ -20,7 +30,7 @@ const RouteProgressStepBar = () => {
             { fontSize: 8 },
           ]}
         >
-          7
+          {firstWalkingMinutes}
         </Text>
         <Text
           style={[
@@ -97,7 +107,7 @@ const RouteProgressStepBar = () => {
             { fontSize: 8 },
           ]}
         >
-          57
+          {bikingMinutes}
         </Text>
         <Text
           style={[
@@ -148,7 +158,7 @@ const RouteProgressStepBar = () => {
             { fontSize: 8 },
           ]}
         >
-          5
+          {lastWalkingMinutes}
         </Text>
         <Text
           style={[
