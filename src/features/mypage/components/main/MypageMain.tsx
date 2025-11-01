@@ -16,25 +16,15 @@ const MypageMain = ({
 }: {
   onNavigate: (page: 'updateInfo' | 'updatePassword' | 'help') => void;
 }) => {
-  const { data: user, isLoading, isError, error } = useUserInfoQuery();
+  const { data: user } = useUserInfoQuery();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
-  console.log('[MypageMain] user:', user);
-  console.log('[MypageMain] isLoading:', isLoading);
-  console.log('[MypageMain] isError:', isError);
-  console.log('[MypageMain] error:', error);
-  console.log('[MypageMain] user?.email:', user?.data.email);
-
-  React.useEffect(() => {
-    console.log('[MypageMain] user 변경됨:', JSON.stringify(user, null, 2));
-  }, [user]);
 
   const handleNavigate = (page: 'updateInfo' | 'updatePassword' | 'help') => {
     if (page === 'help') {
       onNavigate(page);
       return;
     }
-    if (!user) {
+    if (!user || !user.data) {
       Alert.alert('로그인이 필요한 서비스입니다.', '로그인 하시겠습니까?', [
         { text: '취소', style: 'cancel' },
         { text: '확인', onPress: () => navigation.navigate('Login') },
@@ -60,7 +50,7 @@ const MypageMain = ({
           </Text>
         </View>
 
-        {user && user.data.email ? (
+        {user && user.data ? (
           <>
             {/* 사용자 프로필 */}
             <View style={tw('flex-row items-center mb-6')}>
@@ -79,13 +69,13 @@ const MypageMain = ({
                   >
                     {user.data.name}님
                   </Text>
-                  <Text
-                    style={tw(
-                      'text-on-surface-primary font-primary-700 text-base',
-                    )}
-                  >
-                    {user.data.email}
-                  </Text>
+                    <Text
+                      style={tw(
+                        'text-on-surface-primary font-primary-700 text-base',
+                      )}
+                    >
+                      {user.data.email}
+                    </Text>
                 </View>
               </View>
             </View>

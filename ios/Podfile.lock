@@ -2348,6 +2348,9 @@ PODS:
     - SocketRocket
   - RNCAsyncStorage (2.2.0):
     - React-Core
+  - RNCCheckbox (0.5.20):
+    - BEMCheckBox (~> 1.4)
+    - React-Core
   - RNCPicker (2.11.4):
     - React-Core
   - RNDateTimePicker (8.4.5):
@@ -2959,6 +2962,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 6d3ec010ddc7466d2381c4419b1131bd72351d22
   ReactCommon: e897f9a1b4afab370cfefaaf5fb3c80371bc3937
   RNCAsyncStorage: 23e56519cc41d3bade3c8d4479f7760cb1c11996
+  RNCCheckbox: 471ebdc33884c084f362615c1ef3507496cc07f1
   RNCPicker: 0ce5d66262fe7f79e95664bae9447b0d7ed857da
   RNDateTimePicker: e1e3719be6e3f88077c44037f44070ff6c476bac
   RNGestureHandler: 4e01eefc427d3af22b877fdb4f7bc826132daab6

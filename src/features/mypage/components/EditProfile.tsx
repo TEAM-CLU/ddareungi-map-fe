@@ -9,6 +9,7 @@ import {
   useUpdateUserInfoMutation,
   useUserInfoQuery,
 } from '@/features/auth/services/user.queries';
+import { UpdateUserPayload } from '@/features/auth/model/auth.types';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import Input from '@/shared/components/Input/Input';
 import BirthDateInput from '@/shared/components/Input/BirthDateInput';
@@ -17,6 +18,7 @@ import AddressInput from '@/shared/components/Input/AddressInput';
 import SquareButton from '@/shared/components/button/SquareButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLogoutMutation } from '@/features/auth/services/auth.queries';
+import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
 
 const EditProfile = ({ onBack }: { onBack: () => void }) => {
   const { data: user, isLoading } = useUserInfoQuery();
@@ -32,10 +34,24 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
   const [gu, setGu] = useState<string | null>(null);
   const [dong, setDong] = useState<string | null>(null);
 
+  // 개인정보 동의 모달 상태
+  const [isPrivacyConsentModalOpen, setIsPrivacyConsentModalOpen] =
+    useState(false);
+  const [isConsentRequiredAgreed, setIsConsentRequiredAgreed] = useState(false);
+  const [isConsentOptionalAgreed, setIsConsentOptionalAgreed] = useState(false);
+  const [consentedAt, setConsentedAt] = useState<string | null>(null);
+  const [isAddressInputEnabled, setIsAddressInputEnabled] = useState(false);
+
   useEffect(() => {
     if (user) {
       setName(user.data.name ?? '');
       setGender(user.data.gender as 'M' | 'F');
+
+      setIsConsentRequiredAgreed(true); // 필수 동의는 항상 true (회원가입시 완료)
+      setIsConsentOptionalAgreed(user.data.optionalAgreed ?? false);
+      setIsAddressInputEnabled(user.data.optionalAgreed ?? false);
+      setConsentedAt(user.data.consentedAt ?? null);
+
       if (user.data.birthDate) {
         const [y, m, d] = user.data.birthDate.split('-').map(Number);
         setYear(y);
@@ -52,6 +68,13 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
     }
   }, [user]);
 
+  // 동의 모달에서 필수 동의 완료 시 주소 입력 활성화
+  useEffect(() => {
+    if (isConsentOptionalAgreed && !isPrivacyConsentModalOpen) {
+      setIsAddressInputEnabled(true);
+    }
+  }, [isConsentOptionalAgreed, isPrivacyConsentModalOpen]);
+
   const formattedBirthDate = useMemo(() => {
     if (year && month && day) return formatBirthDate(year, month, day);
     return user?.data.birthDate ?? '';
@@ -65,44 +88,42 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
   const isValidName = name.trim().length > 0 && name.trim() !== '';
   const isValidGender = gender === 'M' || gender === 'F';
   const isValidBirthDate = !!formattedBirthDate;
-  const isValidAddress = !!formattedAddress;
 
-  const isFormReady =
-    isValidName && isValidGender && isValidBirthDate && isValidAddress;
+  const isFormReady = isValidName && isValidGender && isValidBirthDate;
 
-  const handleSavePress = () => {
+  const handleSavePress = async () => {
     if (!isFormReady) {
-      Alert.alert('모든 항목을 입력해주세요.');
+      Alert.alert('필수 항목을 입력해주세요.');
       return;
     }
 
-    const updatedData = {
+    const updatedData: UpdateUserPayload = {
       name: name ?? user?.data.name ?? '',
-      gender: gender ?? user?.data.gender ?? '',
+      gender: gender ?? user?.data.gender ?? 'M',
       birthDate: formattedBirthDate ?? user?.data.birthDate ?? '',
       address: formattedAddress ?? user?.data.address ?? '',
+      requiredAgreed: true, // 필수 동의는 항상 true
+      optionalAgreed: isConsentOptionalAgreed,
+      consentedAt:
+        consentedAt ?? user?.data.consentedAt ?? new Date().toISOString(),
     };
 
-    console.log('[EditProfile] 수정 요청 데이터:', updatedData);
-
-    updateUser(updatedData, {
-      onSuccess: res => {
-        console.log('[EditProfile] 수정 성공:', res);
-        if ('message' in res) {
-          Alert.alert(res.message);
-        } else {
-          Alert.alert('저장되었습니다.');
-        }
-      },
-      onError: (error: any) => {
-        console.error('[EditProfile] 수정 실패:', error);
-        console.error('[EditProfile] 실패 응답:', error.response?.data);
-        Alert.alert(
+    try {
+      const res = await updateUser(updatedData);
+      Alert.alert('수정 완료', res?.message || '정보가 수정되었습니다.', [
+        {
+          text: '확인',
+          onPress: () => onBack(),
+        },
+      ]);
+    } catch (error: any) {
+      Alert.alert(
+        '수정 실패',
+        error.response?.data?.message ||
+          error.message ||
           '수정 중 오류가 발생했습니다.',
-          error.response?.data?.message || error.message,
-        );
-      },
-    });
+      );
+    }
   };
 
   const handleLogoutPress = () => {
@@ -246,31 +267,41 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
           </View>
 
           {/* 주소 */}
-          <View
-            style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
+          <TouchableOpacity
+            onPress={() => {
+              if (!isAddressInputEnabled) {
+                setIsPrivacyConsentModalOpen(true);
+              }
+            }}
+            activeOpacity={isAddressInputEnabled ? 1 : 0.7}
           >
-            <Text
-              style={[
-                tw('font-primary-600 text-on-surface-label-input text-left'),
-                { fontSize: 15 },
-              ]}
-            >
-              주소
-            </Text>
             <View
-              style={[
-                tw('flex flex-row flex-nowrap items-center justify-start'),
-                { gap: 9 },
-              ]}
+              style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
             >
-              <AddressInput
-                gu={gu}
-                setGu={setGu}
-                dong={dong}
-                setDong={setDong}
-              />
+              <Text
+                style={[
+                  tw('font-primary-600 text-on-surface-label-input text-left'),
+                  { fontSize: 15 },
+                ]}
+              >
+                주소 {!isAddressInputEnabled && '(동의 필요)'}
+              </Text>
+              <View
+                style={[
+                  tw('flex flex-row flex-nowrap items-center justify-start'),
+                  { gap: 9 },
+                ]}
+                pointerEvents={isAddressInputEnabled ? 'auto' : 'none'}
+              >
+                <AddressInput
+                  gu={gu}
+                  setGu={setGu}
+                  dong={dong}
+                  setDong={setDong}
+                />
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* 로그아웃 / 회원탈퇴 */}
@@ -297,6 +328,18 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
           />
         </View>
       </View>
+
+      {/* 개인정보 동의 모달 */}
+      <PrivacyConsentModal
+        setIsPrivacyConsentModalOpen={setIsPrivacyConsentModalOpen}
+        setIsConsentRequiredAgreed={setIsConsentRequiredAgreed}
+        setIsConsentOptionalAgreed={setIsConsentOptionalAgreed}
+        setConsentedAt={setConsentedAt}
+        isPrivacyConsentModalOpen={isPrivacyConsentModalOpen}
+        isConsentRequiredAgreed={isConsentRequiredAgreed}
+        isConsentOptionalAgreed={isConsentOptionalAgreed}
+        onCancel={() => setIsPrivacyConsentModalOpen(false)}
+      />
     </SafeAreaView>
   );
 };

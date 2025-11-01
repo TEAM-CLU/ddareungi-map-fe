@@ -76,9 +76,6 @@ export const useDeleteUserMutation = () => {
           routes: [{ name: 'Login' }],
         }),
       );
-      if (res.message) {
-        Alert.alert(res.message);
-      }
     },
     onError: async () => {
       await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);

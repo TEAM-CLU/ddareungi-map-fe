@@ -148,12 +148,15 @@ export interface UserInfo {
   email: string;
   birthDate: string;
   gender: 'M' | 'F';
-  address: string;
+  address: string | null;
   totalTime: number;
   totalDistance: number;
   calories: number;
   carbonReduction: number;
   treesPlanted: number;
+  consentedAt: string;
+  requiredAgreed: boolean;
+  optionalAgreed: boolean;
 }
 
 // 유저 정보 수정
@@ -161,7 +164,10 @@ export interface UpdateUserPayload {
   name: string;
   birthDate: string;
   gender: 'M' | 'F';
-  address: string;
+  address: string | null;
+  consentedAt: string;
+  requiredAgreed: boolean;
+  optionalAgreed: boolean;
 }
 
 export interface UpdateUserResponse {
