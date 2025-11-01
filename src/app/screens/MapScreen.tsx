@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
@@ -12,20 +12,20 @@ import StationMarkersToggleButton from '@/features/station/components/StationMar
 import StationDetailModal from '@/features/station/components/StationDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import { useMapController } from '@/shared/hooks/useMapController';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
 import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '@/app/types';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types';
+import { useRouteStore } from '@/features/routing/stores/routeStore';
 
 const MapScreen = () => {
   const {
     webRef,
     showSearchOverlay,
     selectedPlaceForModal,
-    setSelectedPlaceForModal,
     handleSearchbarPress,
     handleSearchClose,
-    searchText,
-    setSearchText,
     handlePlaceSelect,
     placeDetailModalRef,
     stationDetailModalRef,
@@ -49,7 +49,30 @@ const MapScreen = () => {
   }, [isStationButtonPressed]);
 
   //////////
+  const [isRouteRecommendBtnPressed, setIsRouteRecommendBtnPressed] =
+    useState(false);
+  const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  const { distance, setDistance } = useRouteStore();
+
+  // RouteRecommendModal 오픈 처리
+  useEffect(() => {
+    if (isRouteRecommendBtnPressed) {
+      console.log('[MapScreen] 추천경로 탭 클릭, distance:', distance);
+
+      // distance가 null이면 기본값 5로 설정
+      if (distance === null) {
+        console.log('[MapScreen] distance가 null이므로 5로 초기화');
+        setDistance(5);
+      }
+
+      routeRecommendModalRef.current?.present();
+      setIsRouteRecommendBtnPressed(false);
+    }
+  }, [isRouteRecommendBtnPressed, distance, setDistance]);
+
+  //////////
 
   return (
     <View style={tw('flex-1 relative w-full')}>
@@ -84,6 +107,7 @@ const MapScreen = () => {
         onClose={handleSearchClose}
         onPlaceSelect={handlePlaceSelect}
         placeholder="오늘은 어디로 갈까요?"
+        currentLocation={myPosition}
       />
 
       <View style={[tw('absolute right-3'), { bottom: 150 }]}>
@@ -94,8 +118,24 @@ const MapScreen = () => {
         <StationMarkersToggleButton webRef={webRef} />
       </View>
 
-      <Footer setIsStationButtonPressed={setIsStationButtonPressed} />
+      <Footer
+        setIsStationButtonPressed={setIsStationButtonPressed}
+        setIsRouteRecommendBtnPressed={setIsRouteRecommendBtnPressed}
+      />
 
+      {/* 경로추천 모달 */}
+      <SlideModal
+        ref={routeRecommendModalRef}
+        snapPoints={['45%', '48%']}
+        initialIndex={1}
+        onClose={() => routeRecommendModalRef.current?.dismiss()}
+      >
+        <RouteRecommendModal
+          navigation={navigation}
+          routeRecommendModalRef={routeRecommendModalRef}
+          setIsRouteRecommendBtnPressed={setIsRouteRecommendBtnPressed}
+        />
+      </SlideModal>
       {/* Nearby 대여소 모달 */}
       <SlideModal
         ref={nearbyStationModalRef}

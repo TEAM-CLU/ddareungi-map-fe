@@ -24,15 +24,13 @@ const kakaoApiHelper = {
 
   // HTTP 요청 헬퍼
   async request(endpoint: string, params: URLSearchParams) {
-    const response = await fetch(
-      `${this.baseURL}${endpoint}?${params.toString()}`,
-      {
-        headers: {
-          Authorization: `KakaoAK ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
+    const url = `${this.baseURL}${endpoint}?${params.toString()}`;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `KakaoAK ${this.apiKey}`,
+        'Content-Type': 'application/json',
       },
-    );
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -91,7 +89,7 @@ export const searchPlacesByKeyword = async (
     }
 
     const data: KakaoSearchResponse = await kakaoApiHelper.request(
-      '/keyword.json',
+      '/search/keyword.json',
       params,
     );
     return data.documents.map(place =>
@@ -116,11 +114,8 @@ export const searchAddressCoordinates = async (
       query: address.trim(),
     });
 
-    const data = await kakaoApiHelper.request('/address.json', params);
-
-    if (data.documents.length === 0) {
-      return null;
-    }
+    const data = await kakaoApiHelper.request('/search/address.json', params);
+    if (!data.documents?.length) return null;
 
     const place = data.documents[0];
     return {
@@ -133,6 +128,44 @@ export const searchAddressCoordinates = async (
     };
   } catch (error) {
     console.error('Kakao address search error:', error);
+    throw error;
+  }
+};
+
+// 좌표로 주소 검색 (역지오코딩)
+export const reverseGeocode = async (
+  latitude: number,
+  longitude: number,
+): Promise<PlaceInfo | null> => {
+  if (!kakaoApiHelper.validateApiKey()) {
+    throw new Error(SEARCH_CONSTANTS.ERROR_MESSAGES.API_KEY_NOT_SET);
+  }
+
+  try {
+    const params = new URLSearchParams({
+      x: longitude.toString(),
+      y: latitude.toString(),
+      input_coord: 'WGS84',
+    });
+
+    const data = await kakaoApiHelper.request(
+      '/geo/coord2address.json',
+      params,
+    );
+    if (!data.documents?.length) return null;
+
+    const { road_address, address } = data.documents[0];
+    return {
+      id: `currentLocation_${Date.now()}`,
+      name: road_address?.building_name || address.address_name || '현재 위치',
+      address: address.address_name,
+      roadAddress: road_address?.address_name,
+      latitude,
+      longitude,
+      category: '현재 위치',
+    };
+  } catch (error) {
+    console.error('[Kakao] Reverse Geocode Error:', error);
     throw error;
   }
 };

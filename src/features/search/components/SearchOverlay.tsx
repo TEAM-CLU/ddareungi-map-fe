@@ -7,6 +7,7 @@ import {
   Animated,
   Keyboard,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import SearchBar from './SearchBar';
@@ -19,12 +20,17 @@ import {
   IconClose,
   IconLocatorMark,
 } from '@/shared/components/icons';
+import { reverseGeocode } from '../services/search.api';
+import { Coordinates } from '@/features/map/model/map.types';
+import Geolocation from 'react-native-geolocation-service';
+import { requestLocationPermission } from '@/features/map/utils/location';
 
 interface SearchOverlayProps {
   isVisible: boolean;
   onClose: () => void;
   onPlaceSelect: (place: AutocompleteResult) => void;
   placeholder?: string;
+  currentLocation?: Coordinates; // 현재 위치 추가
 }
 
 const SearchOverlay = ({
@@ -32,8 +38,11 @@ const SearchOverlay = ({
   onClose,
   onPlaceSelect,
   placeholder = '오늘은 어디로 갈까요?',
+  currentLocation,
 }: SearchOverlayProps) => {
   const [searchText, setSearchText] = useState('');
+  const [isLoadingCurrentLocation, setIsLoadingCurrentLocation] =
+    useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const {
@@ -208,6 +217,111 @@ const SearchOverlay = ({
     [handleRecentSelect, removeRecentSearch],
   );
 
+  // 현위치 버튼 핸들러
+  const handleCurrentLocationPress = useCallback(async () => {
+    console.log('[SearchOverlay] 현위치 버튼 클릭');
+    setIsLoadingCurrentLocation(true);
+
+    try {
+      // currentLocation이 있으면 사용, 없으면 Geolocation으로 가져오기
+      if (currentLocation) {
+        console.log('[SearchOverlay] currentLocation 사용:', currentLocation);
+        const place = await reverseGeocode(
+          currentLocation.lat,
+          currentLocation.lon,
+        );
+
+        console.log('[SearchOverlay] 역지오코딩 결과:', place);
+
+        if (place) {
+          const autocompleteResult: AutocompleteResult = {
+            id: place.id,
+            name: place.name,
+            address: place.address,
+            latitude: place.latitude,
+            longitude: place.longitude,
+            distance: '',
+            category: place.category || '',
+          };
+          handlePlaceSelect(autocompleteResult);
+        } else {
+          Alert.alert(
+            '주소 변환 실패',
+            '현재 위치의 주소를 가져올 수 없습니다.',
+          );
+        }
+      } else {
+        console.log('[SearchOverlay] Geolocation으로 위치 가져오기 시작');
+        // currentLocation이 없으면 직접 위치 가져오기
+        const hasPermission = await requestLocationPermission();
+        console.log('[SearchOverlay] 위치 권한:', hasPermission);
+
+        if (!hasPermission) {
+          Alert.alert('권한 필요', '위치 권한이 필요합니다.');
+          setIsLoadingCurrentLocation(false);
+          return;
+        }
+
+        Geolocation.getCurrentPosition(
+          async position => {
+            console.log('[SearchOverlay] 위치 가져오기 성공:', position.coords);
+            const { latitude, longitude } = position.coords;
+
+            try {
+              const place = await reverseGeocode(latitude, longitude);
+              console.log('[SearchOverlay] 역지오코딩 결과:', place);
+
+              if (place) {
+                const autocompleteResult: AutocompleteResult = {
+                  id: place.id,
+                  name: place.name,
+                  address: place.address,
+                  latitude: place.latitude,
+                  longitude: place.longitude,
+                  distance: '',
+                  category: place.category || '',
+                };
+                handlePlaceSelect(autocompleteResult);
+              } else {
+                Alert.alert(
+                  '주소 변환 실패',
+                  '현재 위치의 주소를 가져올 수 없습니다.',
+                );
+              }
+            } catch (geocodeError) {
+              console.error('[SearchOverlay] 역지오코딩 오류:', geocodeError);
+            } finally {
+              setIsLoadingCurrentLocation(false);
+            }
+          },
+          error => {
+            console.error('[SearchOverlay] 위치 가져오기 오류:', error);
+            Alert.alert(
+              '오류',
+              `현재 위치를 가져올 수 없습니다. (${error.message})`,
+            );
+            setIsLoadingCurrentLocation(false);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
+        );
+        return; // Geolocation 콜백에서 setIsLoadingCurrentLocation 처리
+      }
+    } catch (error) {
+      console.error('[SearchOverlay] 현위치 주소 변환 오류:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      Alert.alert(
+        '오류',
+        `현재 위치의 주소를 가져오는 중 오류가 발생했습니다.\n상세: ${errorMessage}`,
+      );
+    } finally {
+      if (currentLocation) {
+        // currentLocation 경로에서만 여기서 처리
+        setIsLoadingCurrentLocation(false);
+      }
+    }
+  }, [currentLocation, handlePlaceSelect]);
+
   if (!isVisible) {
     return null;
   }
@@ -246,19 +360,25 @@ const SearchOverlay = ({
             style={tw(
               'bg-brand-primary rounded-full px-3 py-2 flex-row items-center',
             )}
-            onPress={() => {
-              // 내 위치 기능 구현 예정
-              Alert.alert('내 위치 선택');
-            }}
+            onPress={handleCurrentLocationPress}
+            disabled={isLoadingCurrentLocation}
           >
-            <View style={tw('w-4 h-4 mr-1 items-center justify-center')}>
-              <IconLocatorMark width={25} height={25} />
-            </View>
-            <Text
-              style={tw('text-on-surface-secondary font-primary-700 text-xs')}
-            >
-              현위치
-            </Text>
+            {isLoadingCurrentLocation ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <>
+                <View style={tw('w-4 h-4 mr-1 items-center justify-center')}>
+                  <IconLocatorMark width={25} height={25} />
+                </View>
+                <Text
+                  style={tw(
+                    'text-on-surface-secondary font-primary-700 text-xs',
+                  )}
+                >
+                  현위치
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity

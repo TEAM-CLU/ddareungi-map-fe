@@ -10,7 +10,7 @@ import MyPageScreen from '@/app/screens/MyPageScreen';
 import LandingScreen from '@/app/screens/LandingScreen';
 import MapScreen from '@/app/screens/MapScreen';
 import RouteSelectScreen from '@/app/screens/RouteSelectScreen';
-import RouteRecommendScreen from '../screens/RouteRecommend';
+import RouteRecommendScreen from '../screens/RouteRecommendScreen';
 import TestScreenForCho from '@/app/screens/TestScreenForCho';
 import TestScreenForPark from '@/app/screens/TestScreenForPark';
 import { RootStackParamList } from '@/app/types';

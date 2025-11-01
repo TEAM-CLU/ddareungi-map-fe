@@ -4,7 +4,7 @@ import StationBadge from '@/shared/components/badge/StationBadge';
 import TreeBadge from '@/shared/components/badge/TreeBadge';
 import WalkTimeBadge from '@/shared/components/badge/WalkTimeBadge';
 import { tw } from '@/shared/libs/tw-helper';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import type { RouteResponse, Segment } from '../model/routing.types';
 
 interface RouteSelectContainerProps {
@@ -113,7 +113,7 @@ const RouteSelectContainer = ({
 
   // 모든 경로 렌더링
   return (
-    <View style={tw('w-full')}>
+    <ScrollView style={tw('w-full')}>
       {routes.data.map((route, index) => {
         const { routeCategory, summary, startStation, endStation, segments } =
           route;
@@ -223,7 +223,7 @@ const RouteSelectContainer = ({
           </TouchableOpacity>
         );
       })}
-    </View>
+    </ScrollView>
   );
 };
 

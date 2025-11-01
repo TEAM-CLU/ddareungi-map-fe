@@ -1,6 +1,6 @@
 export const SEARCH_CONSTANTS = {
   // API 설정
-  KAKAO_BASE_URL: 'https://dapi.kakao.com/v2/local/search',
+  KAKAO_BASE_URL: 'https://dapi.kakao.com/v2/local',
 
   // 검색 옵션 기본값
   DEFAULT_PAGE_SIZE: 15,
