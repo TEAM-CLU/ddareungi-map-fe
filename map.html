@@ -4,7 +4,7 @@
     <meta name="referrer" content="origin" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=d83ffe38adc94c04aa0c98329cbc19be&autoload=false&libraries=services,clusterer,drawing"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=fbed190463c333db6e8802fd012b7df3&autoload=false&libraries=services,clusterer,drawing"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css"
@@ -62,24 +62,24 @@
           Station.initStationSeting(kakao, map);
           // 실시간 맵 센터 좌표 RN에 전송(대여소 조회용)
           (function sendInitialCenter() {
-            const c = map.getCenter();
+            const centerCoord = map.getCenter();
             window.ReactNativeWebView?.postMessage(
               JSON.stringify({
                 type: 'mapCenterChanged',
-                lat: c.getLat(),
-                lon: c.getLng(),
+                lat: centerCoord.getLat(),
+                lon: centerCoord.getLng(),
               }),
             );
           })();
 
           // 2) 이후엔 idle 때마다 전송
           kakao.maps.event.addListener(map, 'idle', () => {
-            const c = map.getCenter();
+            const centerCoord = map.getCenter();
             window.ReactNativeWebView?.postMessage(
               JSON.stringify({
                 type: 'mapCenterChanged',
-                lat: c.getLat(),
-                lon: c.getLng(),
+                lat: centerCoord.getLat(),
+                lon: centerCoord.getLng(),
               }),
             );
           });
@@ -110,7 +110,6 @@
           //   ],
           // };
           // Route.drawStaticRoute(mockRoute);
-          alert('초기화 완료');
         }
       }, 100);
 
@@ -126,7 +125,6 @@
     const handleMessage = event => {
       try {
         const data = JSON.parse(event.data);
-        console.log('[WEB] msg:', data.type, data); // ✅ 꼭 넣기
 
         // 1. 내 위치 업데이트
         if (data.type === 'myLocation') {
@@ -219,8 +217,20 @@
         }
 
         // === 대여소 기능 ===
+
+        // 16. 대여소 마커 표시
         if (data.type === 'stationsDataUpdate') {
           Station.createStationMarkers(data.stations);
+        }
+
+        // 17. 대여소 재고정보 업데이트
+        if (data.type === 'updateStationsInventories') {
+          Station.updateStationsInventories(data.inventories);
+        }
+
+        // 18. 대여소 마커 표시 on/off
+        if (data.type === 'toggleStationMarkers') {
+          Station.toggleStationMarkers(data.isVisible);
         }
       } catch (error) {
         console.error('메시지 처리 실패:', error);

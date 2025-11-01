@@ -26,8 +26,9 @@ export const useRecentSearches = () => {
       if (stored) {
         const parsed = JSON.parse(stored);
         // 시간순으로 정렬 (최신순)
-        const sorted = parsed.sort((a: RecentSearchItem, b: RecentSearchItem) => 
-          b.timestamp - a.timestamp
+        const sorted = parsed.sort(
+          (a: RecentSearchItem, b: RecentSearchItem) =>
+            b.timestamp - a.timestamp,
         );
         setRecentSearches(sorted);
       }
@@ -53,13 +54,13 @@ export const useRecentSearches = () => {
       setRecentSearches(prev => {
         // 중복 제거 (같은 장소는 최신 검색으로 업데이트)
         const filtered = prev.filter(item => item.id !== place.id);
-        
+
         // 새 항목 추가하고 최대 개수 제한
         const updated = [newItem, ...filtered].slice(0, MAX_RECENT_SEARCHES);
-        
+
         // AsyncStorage에 저장
         AsyncStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(updated));
-        
+
         return updated;
       });
     } catch (error) {
