@@ -60,12 +60,12 @@
           Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LON);
           Search.initSearchSetting(kakao, map);
           Station.initStationSeting(kakao, map);
-          // 실시간 맵 센터 좌표 RN에 전송(대여소 조회용)
+          // 실시간 맵 센터 좌표 RN에 최조 전송(대여소 조회용)
           (function sendInitialCenter() {
             const centerCoord = map.getCenter();
             window.ReactNativeWebView?.postMessage(
               JSON.stringify({
-                type: 'mapCenterChanged',
+                type: 'changeMapCenter',
                 lat: centerCoord.getLat(),
                 lon: centerCoord.getLng(),
               }),
@@ -77,7 +77,7 @@
             const centerCoord = map.getCenter();
             window.ReactNativeWebView?.postMessage(
               JSON.stringify({
-                type: 'mapCenterChanged',
+                type: 'changeMapCenter',
                 lat: centerCoord.getLat(),
                 lon: centerCoord.getLng(),
               }),
@@ -219,12 +219,12 @@
         // === 대여소 기능 ===
 
         // 16. 대여소 마커 표시
-        if (data.type === 'stationsDataUpdate') {
+        if (data.type === 'updateStationsData') {
           Station.createStationMarkers(data.stations);
         }
 
         // 17. 대여소 재고정보 업데이트
-        if (data.type === 'updateStationsInventories') {
+        if (data.type === 'updateStationsBikeCount') {
           Station.updateStationsInventories(data.inventories);
         }
 

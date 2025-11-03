@@ -33,7 +33,7 @@ const NearbyStationModal = ({
   const [distances, setDistances] = useState<number[]>([]); // 거리 3개 배열
 
   // 리스트 클릭시 상세대여소 모달로 이동
-  const handleStationItemButtonPress = async (
+  const handleStationItemBtnPress = async (
     stationMetaData: MapAreaStationsData,
   ) => {
     await setStationMetaData(stationMetaData);
@@ -97,7 +97,7 @@ const NearbyStationModal = ({
       {nearbyStationsDataList.map((nearbyStationData, idx) => {
         return (
           <TouchableOpacity
-            onPress={() => handleStationItemButtonPress(nearbyStationData)}
+            onPress={() => handleStationItemBtnPress(nearbyStationData)}
             key={nearbyStationData.number}
             style={[
               tw('w-full flex flex-col justify-start border-b pb-5'),

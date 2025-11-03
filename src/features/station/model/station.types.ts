@@ -1,3 +1,7 @@
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { RefObject } from 'react';
+import WebView from 'react-native-webview';
+
 // 가장 가까운 대여소 3개 검색
 export interface NearbyStationsData {
   name: string;
@@ -48,17 +52,26 @@ export interface MapAreaQueryPayload {
 }
 
 // 대여소 재고 정보 조회
-
-export interface LatestStationsInventoriesData {
+export interface StationsLatestBikeCountData {
   station_number: string;
   currentBikes: number;
 }
-export interface GetLatestStationsInventoriesPayload {
+export interface GetStationsLatestBikeCountPayload {
   stationNumbers: string[];
 }
 
-export interface GetLatestStationsInventoriesResponse {
+export interface GetStationsLatestBikeCountResponse {
   statusCode: number;
   message: string;
-  data: LatestStationsInventoriesData[];
+  data: StationsLatestBikeCountData[];
+}
+
+// useStation hook 내부 상태 타입
+export interface UseStationsProps {
+  webRef: RefObject<WebView | null>;
+  isMapReady: boolean;
+  setStationMetaData?: React.Dispatch<
+    React.SetStateAction<MapAreaStationsData | null>
+  >;
+  stationDetailModalRef?: RefObject<BottomSheetModal | null>;
 }

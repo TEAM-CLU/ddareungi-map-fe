@@ -24,9 +24,10 @@ const Map = ({
     webRef,
     setMyPosition,
   });
+
   const {
-    handleMapCenterChanged,
-    handleStationsInventoriesUpdate,
+    handleMapCenterIdle,
+    handleStationsBikeCountUpdate,
     handleStationMarkerClick,
   } = useStation({
     webRef,
@@ -37,10 +38,11 @@ const Map = ({
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     handleMapReadyMessage(event);
-    handleMapCenterChanged(event);
-    handleStationsInventoriesUpdate(event);
+    handleMapCenterIdle(event);
+    handleStationsBikeCountUpdate(event);
     handleStationMarkerClick(event);
   };
+
   return (
     <WebView
       ref={webRef}

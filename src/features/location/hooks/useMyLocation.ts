@@ -11,11 +11,8 @@ import {
   MyLocationMessage,
   WebViewMessageToRN,
 } from '@/shared/model/map.webview.types';
+import { UseMyLocationProps } from '@/features/location/model/location.types';
 
-interface UseMyLocationProps {
-  webRef: React.RefObject<WebView | null>;
-  setMyPosition: React.Dispatch<React.SetStateAction<Coordinates | undefined>>;
-}
 export const useMyLocation = ({
   webRef,
   setMyPosition,

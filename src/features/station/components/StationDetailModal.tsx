@@ -101,7 +101,7 @@ const StationDetailModal = ({
 
   // 따릉이 앱 열기
 
-  const openDaerungiAppOrStore = async () => {
+  const openDdareungiApp = async () => {
     // 시도할 스킴 (없을 수도 있음)
     const scheme = 'seoulbike://'; // 임의로 정해본 예시
     // 스토어 URLs
@@ -110,8 +110,8 @@ const StationDetailModal = ({
     const androidStoreUrl = 'market://details?id=com.dki.spb_android';
 
     try {
-      const can = await Linking.canOpenURL(scheme);
-      if (can) {
+      const canOpenApp = await Linking.canOpenURL(scheme);
+      if (canOpenApp) {
         await Linking.openURL(scheme);
       } else {
         const storeUrl = Platform.OS === 'ios' ? iosStoreUrl : androidStoreUrl;
@@ -269,7 +269,7 @@ const StationDetailModal = ({
         </View>
       </View>
       <TouchableOpacity
-        onPress={openDaerungiAppOrStore}
+        onPress={openDdareungiApp}
         style={[
           tw('w-full flex flex-row items-center justify-center'),
           { borderRadius: 10, backgroundColor: '#77838F', height: 60 },

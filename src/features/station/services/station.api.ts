@@ -1,13 +1,10 @@
 import {
-  GetLatestStationsInventoriesPayload,
-  GetLatestStationsInventoriesResponse,
-  LatestStationsInventoriesData,
+  GetStationsLatestBikeCountPayload,
   MapAreaStationsData,
   MapAreaStationsPayload,
-  MapAreaStationsResponse,
   NearbyStationsData,
   NearbyStationsPayload,
-  NearbyStationsResponse,
+  StationsLatestBikeCountData,
 } from '@/features/station/model/station.types';
 import { SERVER_URL } from '@/shared/model/index.constants';
 import axios from 'axios';
@@ -43,10 +40,12 @@ export const getMapAreaStations = async (
 };
 
 // 대여소 재고 정보 조회
-export const postGetLatestStationsInventories = async (
-  payload: GetLatestStationsInventoriesPayload,
+export const postStationsLatestBikeCount = async (
+  payload: GetStationsLatestBikeCountPayload,
   signal?: AbortSignal,
-): Promise<LatestStationsInventoriesData[]> => {
-  const response = await stationApi.post('/inventories', payload, { signal });
+): Promise<StationsLatestBikeCountData[]> => {
+  const response = await stationApi.post('/realtime-sync/batch', payload, {
+    signal,
+  });
   return response.data.data ?? [];
 };

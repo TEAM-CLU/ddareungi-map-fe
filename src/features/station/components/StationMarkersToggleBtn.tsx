@@ -6,16 +6,14 @@ import IconStationMarkerOn from '@/shared/components/icons/IconStationMarkerOn';
 import IconStationMarkerOff from '@/shared/components/icons/IconStationMarkerOff';
 import { ToggleStationMarkersMessage } from '@/shared/model/map.webview.types';
 
-interface StationMarkersToggleButtonProps {
+interface StationMarkersToggleBtnProps {
   webRef: RefObject<WebView | null>;
 }
 
-const StationMarkersToggleButton = ({
-  webRef,
-}: StationMarkersToggleButtonProps) => {
+const StationMarkersToggleBtn = ({ webRef }: StationMarkersToggleBtnProps) => {
   const [mode, setMode] = useState<'on' | 'off'>('on');
 
-  const handleToggleButtonPress = () => {
+  const handleToggleBtnPress = () => {
     if (mode === 'on') {
       setMode('off');
       const toggleStationMarkersMessage: ToggleStationMarkersMessage = {
@@ -38,7 +36,7 @@ const StationMarkersToggleButton = ({
   };
   return (
     <TouchableOpacity
-      onPress={handleToggleButtonPress}
+      onPress={handleToggleBtnPress}
       style={[
         tw(
           'bg-icon-container-secondary rounded-full w-10 h-10 flex justify-center items-center shadow-md',
@@ -51,4 +49,4 @@ const StationMarkersToggleButton = ({
   );
 };
 
-export default StationMarkersToggleButton;
+export default StationMarkersToggleBtn;
