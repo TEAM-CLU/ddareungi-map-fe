@@ -148,6 +148,7 @@ const MapScreen = () => {
           stationDetailModalRef={stationDetailModalRef}
           setStationMetaData={setStationMetaData}
           nearByModalRef={nearbyStationModalRef}
+          webRef={webRef}
         />
       </SlideModal>
 
@@ -161,6 +162,8 @@ const MapScreen = () => {
         <StationDetailModal
           myPosition={myPosition}
           stationMetaData={stationMetaData}
+          navigation={navigation}
+          onClose={() => stationDetailModalRef.current?.dismiss()}
         />
       </SlideModal>
       {/* 장소 상세 모달 */}

@@ -219,13 +219,12 @@
         // === 대여소 기능 ===
 
         // 16. 대여소 마커 표시
-        if (data.type === 'updateStationsData') {
+        if (data.type === 'updateStationDataList') {
           Station.createStationMarkers(data.stations);
         }
-
         // 17. 대여소 재고정보 업데이트
-        if (data.type === 'updateStationsBikeCount') {
-          Station.updateStationsInventories(data.inventories);
+        if (data.type === 'updateTargetedStationBikeCountList') {
+          Station.updateStationBikeCountList(data.stationBikeCountList);
         }
 
         // 18. 대여소 마커 표시 on/off

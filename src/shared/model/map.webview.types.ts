@@ -2,8 +2,8 @@
 // RN 쪽에서만 import 해서 사용 (useMapWebview, useMapSearch, useMapRouting, Map.tsx)
 
 import {
-  StationsLatestBikeCountData,
-  MapAreaStationsData,
+  MapAreaStationData,
+  StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
 
 export interface MapWebviewMessage {
@@ -136,14 +136,14 @@ export interface RouteClearedMessage {
 }
 
 // === 대여소 관련 메시지 ===
-export interface UpdateTargetedStationsBikeCountMessage {
-  type: 'updateTargetedStationsBikeCount';
-  inventories: StationsLatestBikeCountData[];
+export interface UpdateTargetedStationBikeCountListMessage {
+  type: 'updateTargetedStationBikeCountList';
+  stationBikeCountList: StationLatestBikeCountData[];
 }
 
-export interface UpdateStationsDataMessage {
-  type: 'updateStationsData';
-  stations: MapAreaStationsData[];
+export interface UpdateStationDataListMessage {
+  type: 'updateStationDataList';
+  stations: MapAreaStationData[];
 }
 
 export interface ToggleStationMarkersMessage {

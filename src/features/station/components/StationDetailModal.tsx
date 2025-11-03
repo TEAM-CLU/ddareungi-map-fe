@@ -1,9 +1,13 @@
+import { RootStackParamList } from '@/app/types';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import { RouteType } from '@/features/routing/model/routing.types';
-import { MapAreaStationsData } from '@/features/station/model/station.types';
+import { useRouteStore } from '@/features/routing/stores/routeStore';
+import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
+import { MapAreaStationData } from '@/features/station/model/station.types';
 import { removeOverlappingPart } from '@/features/station/utils/string';
 import { tw } from '@/shared/libs/tw-helper';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 import {
@@ -13,26 +17,36 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
-import Geolocation from 'react-native-geolocation-service';
 
 interface StationDetailModalProps {
-  onSetAsStart?: () => void;
-  onSetAsEnd?: () => void;
-  onSetAsWaypoint?: () => void;
-  onToggleRouteType?: () => void;
   myPosition: Coordinates | undefined;
-  stationMetaData: MapAreaStationsData | null;
-  routeType?: RouteType;
+  stationMetaData: MapAreaStationData | null;
+  navigation: StackNavigationProp<RootStackParamList>;
+  onClose?: () => void;
 }
 const StationDetailModal = ({
-  onSetAsStart = () => {},
-  onSetAsEnd = () => {},
-  onSetAsWaypoint = () => {},
-  onToggleRouteType = () => {},
   myPosition,
   stationMetaData,
-  routeType,
+  navigation,
+  onClose,
 }: StationDetailModalProps) => {
+  const {
+    routeType,
+    setRouteType,
+    setStart,
+    setEnd,
+    addWaypoint,
+    waypoints,
+    syncStartEndInLoopMode,
+  } = useRouteStore();
+
+  // RouteType 토글 함수
+  const toggleRouteType = () => {
+    const newRouteType =
+      routeType === RouteType.CONSTANT ? RouteType.LOOP : RouteType.CONSTANT;
+    setRouteType(newRouteType);
+  };
+
   // 토글 애니메이션을 위한 Animated Value
   const toggleAnimation = useRef(
     new Animated.Value(routeType === RouteType.LOOP ? 1 : 0),
@@ -48,40 +62,60 @@ const StationDetailModal = ({
   }, [routeType, toggleAnimation]);
 
   // 토글 버튼 핸들러
-  const handleTogglePress = () => {
-    onToggleRouteType();
-  };
+  const handleTogglePress = () => toggleRouteType();
 
-  // 첫 번째 버튼 (원점/출발) 핸들러
+  // 첫 번째 버튼 (출발/원점) 핸들러
   const handleFirstButtonPress = () => {
+    onClose?.(); // 모달 닫기
+
+    const placeData: AutocompleteResult = {
+      id: `start-${Date.now()}`,
+      name: stationMetaData!.name,
+      address: stationMetaData!.address,
+      latitude: stationMetaData!.latitude!,
+      longitude: stationMetaData!.longitude!,
+    };
+
+    // LOOP 모드면 출발-도착 동기화
     if (routeType === RouteType.LOOP) {
-      // Loop 모드: 원점 - 출발지=도착지로 동일하게 설정
-      onSetAsStart();
+      syncStartEndInLoopMode(placeData, 'start');
     } else {
-      // Constant 모드: 출발지 설정
-      onSetAsStart();
+      setStart(placeData);
     }
+    // RouteSelect 화면으로 이동
+    navigation.navigate('RouteSelect');
   };
 
   // 두 번째 버튼 (반환점/도착) 핸들러
   const handleSecondButtonPress = () => {
+    onClose?.(); // 모달 닫기
+
+    const placeData: AutocompleteResult = {
+      id: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
+      name: stationMetaData!.name,
+      address: stationMetaData!.address,
+      latitude: stationMetaData!.latitude!,
+      longitude: stationMetaData!.longitude!,
+    };
+
     if (routeType === RouteType.LOOP) {
-      // Loop 모드: 반환점 - 경유지로 설정
-      if (onSetAsWaypoint) {
-        onSetAsWaypoint();
-      }
+      // 루프 모드: 반환점(경유지) 추가 - ID는 addWaypoint에서 자동 생성
+      addWaypoint(placeData);
     } else {
-      // Constant 모드: 도착지 설정
-      onSetAsEnd();
+      // 일반 모드: 도착지 설정
+      setEnd(placeData);
     }
+
+    // RouteSelect 화면으로 이동
+    navigation.navigate('RouteSelect');
   };
 
   // 내 위치와 대여소 간 거리 계산
-  const [distance, setDistance] = useState<number | undefined>(undefined);
+  const [distance, setDistance] = useState<number | null>(null);
 
   useEffect(() => {
     if (!myPosition || !stationMetaData) {
-      setDistance(undefined);
+      setDistance(null);
       return;
     }
     const distance = getDistanceBetweenCoords(
@@ -117,8 +151,8 @@ const StationDetailModal = ({
         const storeUrl = Platform.OS === 'ios' ? iosStoreUrl : androidStoreUrl;
         await Linking.openURL(storeUrl);
       }
-    } catch (err) {
-      console.warn('따릉이 앱 실행 실패:', err);
+    } catch (error) {
+      console.error('따릉이 앱 실행 실패:', error);
       const storeUrl = Platform.OS === 'ios' ? iosStoreUrl : androidStoreUrl;
       await Linking.openURL(storeUrl);
     }

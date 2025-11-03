@@ -113,7 +113,7 @@
       const targetedStationMetaData = targetedStationMarker.metaData || null;
       window.ReactNativeWebView?.postMessage(
         JSON.stringify({
-          type: 'stationMarkerClicked',
+          type: 'clickStationMarker',
           stationData: targetedStationMetaData,
         }),
       );
@@ -172,7 +172,7 @@
     // 최초 1회 바로 실행
     window.ReactNativeWebView?.postMessage(
       JSON.stringify({
-        type: 'needUpdateStationsBikeCount',
+        type: 'needUpdateStationBikeCountList',
         stationNumbers: targetedStationsNumberList,
       }),
     );
@@ -182,24 +182,28 @@
     stationIntervalId = setInterval(() => {
       window.ReactNativeWebView?.postMessage(
         JSON.stringify({
-          type: 'needUpdateStationsBikeCount',
+          type: 'needUpdateStationBikeCountList',
           stationNumbers: targetedStationsNumberList,
         }),
       );
     }, 5000);
   };
 
-  const updateStationsInventories = inventories => {
-    if (!inventories || inventories.length === 0 || stationMarkers.length === 0)
+  const updateStationBikeCountList = stationBikeCountList => {
+    if (
+      !stationBikeCountList ||
+      stationBikeCountList.length === 0 ||
+      stationMarkers.length === 0
+    )
       return;
 
     stationMarkers.forEach(({ number, marker, metaData }) => {
-      const targetedStationInventory = inventories.find(
+      const targetedStation = stationBikeCountList.find(
         i => i.station_number === number,
       );
-      if (!targetedStationInventory) return;
+      if (!targetedStation) return;
       // 메타데이터 최신화
-      metaData.current_bikes = targetedStationInventory.current_bikes;
+      metaData.current_bikes = targetedStation.current_bikes;
 
       // 컨텐츠 교체 (DOM으로 다시 생성)
       const newElement = buildStationContentElement(
@@ -238,7 +242,7 @@
   window.Station = {
     initStationSeting,
     createStationMarkers,
-    updateStationsInventories,
+    updateStationBikeCountList,
     toggleStationMarkers,
     destroyStation,
   };

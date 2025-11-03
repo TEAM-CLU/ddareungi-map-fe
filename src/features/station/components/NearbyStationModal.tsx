@@ -1,10 +1,9 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import {
-  MapAreaStationsData,
-  NearbyStationsData,
-  NearbyStationsPayload,
-  NearbyStationsResponse,
+  MapAreaStationData,
+  NearbyStationListPayload,
+  NearbyStationData,
 } from '@/features/station/model/station.types';
 import { useNearbyStationsMutation } from '@/features/station/services/station.queries';
 import { tw } from '@/shared/libs/tw-helper';
@@ -16,7 +15,7 @@ interface NearbyStationModalProps {
   myPosition: Coordinates | undefined;
   stationDetailModalRef: RefObject<BottomSheetModal | null>;
   setStationMetaData: React.Dispatch<
-    React.SetStateAction<MapAreaStationsData | null>
+    React.SetStateAction<MapAreaStationData | null>
   >;
   nearByModalRef: RefObject<BottomSheetModal | null>;
 }
@@ -28,13 +27,13 @@ const NearbyStationModal = ({
 }: NearbyStationModalProps) => {
   const { mutateAsync: getNearbyStations } = useNearbyStationsMutation();
   const [nearbyStationsDataList, setNearbyStationsDataList] = useState<
-    NearbyStationsData[] | null
+    NearbyStationData[] | null
   >(null);
   const [distances, setDistances] = useState<number[]>([]); // 거리 3개 배열
 
   // 리스트 클릭시 상세대여소 모달로 이동
   const handleStationItemBtnPress = async (
-    stationMetaData: MapAreaStationsData,
+    stationMetaData: MapAreaStationData,
   ) => {
     await setStationMetaData(stationMetaData);
     await stationDetailModalRef.current?.present();
@@ -46,12 +45,12 @@ const NearbyStationModal = ({
     const handleNearbyStations = async () => {
       if (!myPosition) return;
       try {
-        const payload: NearbyStationsPayload = {
+        const payload: NearbyStationListPayload = {
           latitude: myPosition.lat,
           longitude: myPosition.lon,
         };
 
-        const response: NearbyStationsData[] = await getNearbyStations(payload);
+        const response: NearbyStationData[] = await getNearbyStations(payload);
         setNearbyStationsDataList(response);
       } catch (error) {
         console.error('Error fetching nearby stations:', error);

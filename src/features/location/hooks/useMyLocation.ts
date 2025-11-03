@@ -120,22 +120,9 @@ export const useMyLocation = ({
     try {
       const data: WebViewMessageToRN = JSON.parse(event.nativeEvent.data);
 
-      switch (data.type) {
-        case 'mapReady':
-          console.log('✅ 지도 준비 완료');
-          setIsMapReady(true);
-          break;
-
-        case 'placeMarkerShown':
-          console.log('📍 장소 마커 표시됨:', data.placeName);
-          break;
-
-        case 'mapMovedToLocation':
-          console.log('🗺️ 지도 이동 완료:', data);
-          break;
-
-        default:
-          console.warn('🔔 처리되지 않은 메시지:', data);
+      if (data.type === 'mapReady') {
+        console.log('✅ 지도 준비 완료');
+        setIsMapReady(true);
       }
     } catch (error) {
       console.error('Invalid JSON from WebView:', event.nativeEvent.data);

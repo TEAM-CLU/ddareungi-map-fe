@@ -3,7 +3,7 @@ import { Coordinates } from '@/features/map/model/map.types';
 import { RouteType } from '@/features/routing/model/routing.types';
 import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
 import { useMapSearch } from '@/features/search/hooks/useMapSearch';
-import { MapAreaStationsData } from '@/features/station/model/station.types';
+import { MapAreaStationData } from '@/features/station/model/station.types';
 import { useRouteStore } from '@/features/routing/stores/routeStore';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import {
@@ -118,7 +118,7 @@ export const useMapController = () => {
 
   // 장소 상세 모달에서 "출발/도착/경유지로 설정" 눌렀을 때
   const [stationMetaData, setStationMetaData] =
-    useState<MapAreaStationsData | null>(null);
+    useState<MapAreaStationData | null>(null);
   const [myPosition, setMyPosition] = useState<Coordinates | undefined>(
     undefined,
   );

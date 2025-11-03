@@ -3,7 +3,7 @@ import { RefObject } from 'react';
 import WebView from 'react-native-webview';
 
 // 가장 가까운 대여소 3개 검색
-export interface NearbyStationsData {
+export interface NearbyStationData {
   name: string;
   number: string;
   address: string;
@@ -12,19 +12,19 @@ export interface NearbyStationsData {
   current_bikes: number;
 }
 
-export interface NearbyStationsPayload {
+export interface NearbyStationListPayload {
   latitude: number;
   longitude: number;
 }
 
-export interface NearbyStationsResponse {
+export interface NearbyStationListResponse {
   statusCode: number;
   message: string;
-  data: NearbyStationsData[];
+  data: NearbyStationData[];
 }
 
 // 지도 특정 영역 내 대여소 조회
-export interface MapAreaStationsData {
+export interface MapAreaStationData {
   name: string;
   number: string;
   address: string;
@@ -32,16 +32,16 @@ export interface MapAreaStationsData {
   longitude: number;
   current_bikes: number;
 }
-export interface MapAreaStationsPayload {
+export interface MapAreaStationListPayload {
   latitude: number;
   longitude: number;
   radius: number;
 }
 
-export interface MapAreaStationsResponse {
+export interface MapAreaStationListResponse {
   statusCode: number;
   message: string;
-  data: MapAreaStationsData[];
+  data: MapAreaStationData[];
 }
 
 export interface MapAreaQueryPayload {
@@ -52,18 +52,18 @@ export interface MapAreaQueryPayload {
 }
 
 // 대여소 재고 정보 조회
-export interface StationsLatestBikeCountData {
+export interface StationLatestBikeCountData {
   station_number: string;
   currentBikes: number;
 }
-export interface GetStationsLatestBikeCountPayload {
+export interface GetStationLatestBikeCountListPayload {
   stationNumbers: string[];
 }
 
-export interface GetStationsLatestBikeCountResponse {
+export interface GetStationLatestBikeCountListResponse {
   statusCode: number;
   message: string;
-  data: StationsLatestBikeCountData[];
+  data: StationLatestBikeCountData[];
 }
 
 // useStation hook 내부 상태 타입
@@ -71,7 +71,7 @@ export interface UseStationsProps {
   webRef: RefObject<WebView | null>;
   isMapReady: boolean;
   setStationMetaData?: React.Dispatch<
-    React.SetStateAction<MapAreaStationsData | null>
+    React.SetStateAction<MapAreaStationData | null>
   >;
   stationDetailModalRef?: RefObject<BottomSheetModal | null>;
 }
