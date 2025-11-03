@@ -207,7 +207,7 @@
 
       // 컨텐츠 교체 (DOM으로 다시 생성)
       const newElement = buildStationContentElement(
-        targetedStationInventory.current_bikes,
+        targetedStation.current_bikes,
         '#01DA86',
         number,
       );
@@ -230,6 +230,23 @@
     });
   };
 
+  // nearby 모달 클릭시 포커싱
+  const focusOnTargetedNearbyStation = targetedStationData => {
+    const targetedStationPos = new kakaoRef.maps.LatLng(
+      targetedStationData.latitude,
+      targetedStationData.longitude,
+    );
+
+    // 맵 센터 이동
+    mapRef.setCenter(targetedStationPos);
+
+    // 줌 레벨 조정
+    const currentLevel = mapRef.getLevel();
+    if (currentLevel > 3) {
+      mapRef.setLevel(3, { animate: true });
+    }
+  };
+
   // 인터벌/리스너 해제
   const destroyStation = () => {
     if (stationIntervalId) {
@@ -245,6 +262,7 @@
     updateStationBikeCountList,
     toggleStationMarkers,
     destroyStation,
+    focusOnTargetedNearbyStation,
   };
 
   window.addEventListener('pagehide', () => {

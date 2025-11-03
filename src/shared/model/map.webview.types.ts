@@ -151,6 +151,11 @@ export interface ToggleStationMarkersMessage {
   isVisible: boolean;
 }
 
+export interface FocusOnTargetedNearbyStationMessage {
+  type: 'focusOnTargetedNearbyStation';
+  targetedStationData: MapAreaStationData;
+}
+
 // 모든 메시지 타입 유니온
 export type WebViewMessageFromRN =
   | MyLocationMessage

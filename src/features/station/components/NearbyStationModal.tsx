@@ -7,9 +7,11 @@ import {
 } from '@/features/station/model/station.types';
 import { useNearbyStationsMutation } from '@/features/station/services/station.queries';
 import { tw } from '@/shared/libs/tw-helper';
+import { FocusOnTargetedNearbyStationMessage } from '@/shared/model/map.webview.types';
 import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { RefObject, use, useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import WebView from 'react-native-webview';
 
 interface NearbyStationModalProps {
   myPosition: Coordinates | undefined;
@@ -18,12 +20,14 @@ interface NearbyStationModalProps {
     React.SetStateAction<MapAreaStationData | null>
   >;
   nearByModalRef: RefObject<BottomSheetModal | null>;
+  webRef: RefObject<WebView | null>;
 }
 const NearbyStationModal = ({
   myPosition,
   stationDetailModalRef,
   setStationMetaData,
   nearByModalRef,
+  webRef,
 }: NearbyStationModalProps) => {
   const { mutateAsync: getNearbyStations } = useNearbyStationsMutation();
   const [nearbyStationsDataList, setNearbyStationsDataList] = useState<
@@ -36,6 +40,16 @@ const NearbyStationModal = ({
     stationMetaData: MapAreaStationData,
   ) => {
     await setStationMetaData(stationMetaData);
+    try {
+      const targetedNearbyStationData: FocusOnTargetedNearbyStationMessage = {
+        type: 'focusOnTargetedNearbyStation',
+        targetedStationData: stationMetaData,
+      };
+      webRef.current?.postMessage(JSON.stringify(targetedNearbyStationData));
+    } catch (error) {
+      console.error('Invalid JSON from WebView:', error);
+    }
+
     await stationDetailModalRef.current?.present();
     await nearByModalRef.current?.dismiss();
   };

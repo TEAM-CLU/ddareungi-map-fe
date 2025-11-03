@@ -231,6 +231,11 @@
         if (data.type === 'toggleStationMarkers') {
           Station.toggleStationMarkers(data.isVisible);
         }
+
+        // 19. Nearby 클릭 대여소 포커싱
+        if (data.type === 'focusOnTargetedNearbyStation') {
+          Station.focusOnTargetedNearbyStation(data.targetedStationData);
+        }
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }
