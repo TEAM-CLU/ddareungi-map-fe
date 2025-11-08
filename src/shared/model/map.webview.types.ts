@@ -2,8 +2,8 @@
 // RN 쪽에서만 import 해서 사용 (useMapWebview, useMapSearch, useMapRouting, Map.tsx)
 
 import {
-  LatestStationsInventoriesData,
-  MapAreaStationsData,
+  MapAreaStationData,
+  StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
 
 export interface MapWebviewMessage {
@@ -136,19 +136,24 @@ export interface RouteClearedMessage {
 }
 
 // === 대여소 관련 메시지 ===
-export interface UpdateTargetedStationsInventoriesMessage {
-  type: 'updateTargetedStationsInventories';
-  inventories: LatestStationsInventoriesData[];
+export interface UpdateTargetedStationBikeCountListMessage {
+  type: 'updateTargetedStationBikeCountList';
+  stationBikeCountList: StationLatestBikeCountData[];
 }
 
-export interface StationsDataUpdateMessage {
-  type: 'stationsDataUpdate';
-  stations: MapAreaStationsData[]; // 필요에 따라 구체적인 타입으로 변경
+export interface UpdateStationDataListMessage {
+  type: 'updateStationDataList';
+  stations: MapAreaStationData[];
 }
 
 export interface ToggleStationMarkersMessage {
   type: 'toggleStationMarkers';
   isVisible: boolean;
+}
+
+export interface FocusOnTargetedNearbyStationMessage {
+  type: 'focusOnTargetedNearbyStation';
+  targetedStationData: MapAreaStationData;
 }
 
 // 모든 메시지 타입 유니온

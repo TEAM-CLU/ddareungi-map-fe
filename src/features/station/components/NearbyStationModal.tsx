@@ -1,42 +1,57 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import {
-  MapAreaStationsData,
-  NearbyStationsData,
-  NearbyStationsPayload,
-  NearbyStationsResponse,
+  MapAreaStationData,
+  NearbyStationListPayload,
+  NearbyStationData,
 } from '@/features/station/model/station.types';
 import { useNearbyStationsMutation } from '@/features/station/services/station.queries';
 import { tw } from '@/shared/libs/tw-helper';
+import { FocusOnTargetedNearbyStationMessage } from '@/shared/model/map.webview.types';
 import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { RefObject, use, useEffect, useState } from 'react';
+import { RefObject, use, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import WebView from 'react-native-webview';
 
 interface NearbyStationModalProps {
   myPosition: Coordinates | undefined;
   stationDetailModalRef: RefObject<BottomSheetModal | null>;
   setStationMetaData: React.Dispatch<
-    React.SetStateAction<MapAreaStationsData | null>
+    React.SetStateAction<MapAreaStationData | null>
   >;
   nearByModalRef: RefObject<BottomSheetModal | null>;
+  webRef: RefObject<WebView | null>;
+  lamda: RefObject<number>;
 }
 const NearbyStationModal = ({
   myPosition,
   stationDetailModalRef,
   setStationMetaData,
   nearByModalRef,
+  webRef,
+  lamda,
 }: NearbyStationModalProps) => {
   const { mutateAsync: getNearbyStations } = useNearbyStationsMutation();
   const [nearbyStationsDataList, setNearbyStationsDataList] = useState<
-    NearbyStationsData[] | null
+    NearbyStationData[] | null
   >(null);
   const [distances, setDistances] = useState<number[]>([]); // 거리 3개 배열
 
   // 리스트 클릭시 상세대여소 모달로 이동
-  const handleStationItemButtonPress = async (
-    stationMetaData: MapAreaStationsData,
+  const handleStationItemBtnPress = async (
+    stationMetaData: MapAreaStationData,
   ) => {
     await setStationMetaData(stationMetaData);
+    try {
+      const targetedNearbyStationData: FocusOnTargetedNearbyStationMessage = {
+        type: 'focusOnTargetedNearbyStation',
+        targetedStationData: stationMetaData,
+      };
+      webRef.current?.postMessage(JSON.stringify(targetedNearbyStationData));
+    } catch (error) {
+      console.error('Invalid JSON from WebView:', error);
+    }
+
     await stationDetailModalRef.current?.present();
     await nearByModalRef.current?.dismiss();
   };
@@ -46,12 +61,12 @@ const NearbyStationModal = ({
     const handleNearbyStations = async () => {
       if (!myPosition) return;
       try {
-        const payload: NearbyStationsPayload = {
+        const payload: NearbyStationListPayload = {
           latitude: myPosition.lat,
           longitude: myPosition.lon,
         };
 
-        const response: NearbyStationsData[] = await getNearbyStations(payload);
+        const response: NearbyStationData[] = await getNearbyStations(payload);
         setNearbyStationsDataList(response);
       } catch (error) {
         console.error('Error fetching nearby stations:', error);
@@ -97,7 +112,7 @@ const NearbyStationModal = ({
       {nearbyStationsDataList.map((nearbyStationData, idx) => {
         return (
           <TouchableOpacity
-            onPress={() => handleStationItemButtonPress(nearbyStationData)}
+            onPress={() => handleStationItemBtnPress(nearbyStationData)}
             key={nearbyStationData.number}
             style={[
               tw('w-full flex flex-col justify-start border-b pb-5'),
@@ -146,7 +161,17 @@ const NearbyStationModal = ({
               <Text
                 style={[tw('font-primary-500 text-black'), { fontSize: 15 }]}
               >
-                {`${distances[idx] ? distances[idx] + 'm' : '거리 측정 중...'}`}
+                {`${
+                  distances[idx]
+                    ? distances[idx] >= 1000
+                      ? `${(
+                          Math.round(distances[idx] * lamda.current) / 1000
+                        ).toFixed(1)}km`
+                      : `${Math.round(distances[idx] * lamda.current).toFixed(
+                          0,
+                        )}m`
+                    : '거리 측정 중...'
+                }`}
               </Text>
             </View>
           </TouchableOpacity>

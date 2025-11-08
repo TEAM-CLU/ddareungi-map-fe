@@ -3,14 +3,14 @@ import { useMyLocation } from '@/features/location/hooks/useMyLocation';
 import { useStation } from '@/features/station/hooks/useStation';
 import { RefObject } from 'react';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { MapAreaStationsData } from '@/features/station/model/station.types';
+import { MapAreaStationData } from '@/features/station/model/station.types';
 import { Coordinates } from '@/features/map/model/map.types';
 
 interface MapProps {
   webRef: React.RefObject<WebView | null>;
   stationDetailModalRef: RefObject<BottomSheetModal | null>;
   setStationMetaData: React.Dispatch<
-    React.SetStateAction<MapAreaStationsData | null>
+    React.SetStateAction<MapAreaStationData | null>
   >;
   setMyPosition: React.Dispatch<React.SetStateAction<Coordinates | undefined>>;
 }
@@ -24,9 +24,10 @@ const Map = ({
     webRef,
     setMyPosition,
   });
+
   const {
-    handleMapCenterChanged,
-    handleStationsInventoriesUpdate,
+    handleMapCenterIdle,
+    handleStationBikeCountListUpdate,
     handleStationMarkerClick,
   } = useStation({
     webRef,
@@ -37,10 +38,11 @@ const Map = ({
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     handleMapReadyMessage(event);
-    handleMapCenterChanged(event);
-    handleStationsInventoriesUpdate(event);
+    handleMapCenterIdle(event);
+    handleStationBikeCountListUpdate(event);
     handleStationMarkerClick(event);
   };
+
   return (
     <WebView
       ref={webRef}
@@ -50,7 +52,7 @@ const Map = ({
       onMessage={handleWebViewMessage}
       onError={e => console.log('WebView error', e.nativeEvent)}
       source={{
-        uri: 'https://2589a936a00d.ngrok-free.app/map.html',
+        uri: 'https://0a961d74ca7a.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
     />
   );

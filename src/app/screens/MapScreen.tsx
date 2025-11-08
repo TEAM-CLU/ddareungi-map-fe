@@ -8,7 +8,6 @@ import SlideModal from '@/shared/components/modal/SlideModal';
 import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
 import SearchBar from '@/features/search/components/SearchBar';
 import MyLocationButton from '@/features/location/components/MyLocationButton';
-import StationMarkersToggleButton from '@/features/station/components/StationMarkersToggleButton';
 import StationDetailModal from '@/features/station/components/StationDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import { useMapController } from '@/shared/hooks/useMapController';
@@ -18,6 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '@/app/types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useRouteStore } from '@/features/routing/stores/routeStore';
+import StationMarkersToggleBtn from '@/features/station/components/StationMarkersToggleBtn';
 
 const MapScreen = () => {
   const {
@@ -74,6 +74,8 @@ const MapScreen = () => {
 
   //////////
 
+  const lamda = useRef<number>(1.2); // 실제 도로 거리를 고려한 보정 계수
+
   return (
     <View style={tw('flex-1 relative w-full')}>
       <Map
@@ -115,7 +117,7 @@ const MapScreen = () => {
       </View>
 
       <View style={[tw('absolute right-3'), { bottom: 100 }]}>
-        <StationMarkersToggleButton webRef={webRef} />
+        <StationMarkersToggleBtn webRef={webRef} />
       </View>
 
       <Footer
@@ -148,6 +150,8 @@ const MapScreen = () => {
           stationDetailModalRef={stationDetailModalRef}
           setStationMetaData={setStationMetaData}
           nearByModalRef={nearbyStationModalRef}
+          webRef={webRef}
+          lamda={lamda}
         />
       </SlideModal>
 
@@ -161,6 +165,9 @@ const MapScreen = () => {
         <StationDetailModal
           myPosition={myPosition}
           stationMetaData={stationMetaData}
+          navigation={navigation}
+          onClose={() => stationDetailModalRef.current?.dismiss()}
+          lamda={lamda}
         />
       </SlideModal>
       {/* 장소 상세 모달 */}

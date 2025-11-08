@@ -16,7 +16,6 @@
     const s = document.createElement('style');
     s.id = 'no-tap-style';
     s.textContent = `
-    /* 탭 하이라이트, 터치 호출, 텍스트 선택, 포커스 아웃라인 제거 */
     .station-marker, .station-marker * {
       -webkit-tap-highlight-color: rgba(0,0,0,0);
       -webkit-touch-callout: none;
@@ -24,9 +23,7 @@
       -webkit-user-select: none;
       outline: none;
     }
-    /* 혹시 액티브 상태에서 기본 배경이 들어오는 브라우저 대비 */
     .station-marker:active { background: transparent !important; }
-    /* SVG 텍스트 선택/하이라이트 방지 강화 */
     .station-marker svg text {
       pointer-events: none;
       user-select: none;
@@ -34,13 +31,6 @@
     }
   `;
     document.head.appendChild(s);
-  };
-
-  const clearStationMarkers = () => {
-    if (stationMarkers.length > 0) {
-      stationMarkers.forEach(stationData => stationData.marker.setMap(null));
-      stationMarkers = [];
-    }
   };
 
   // 대여소 마커 SVG 생성 함수
@@ -123,11 +113,18 @@
       const targetedStationMetaData = targetedStationMarker.metaData || null;
       window.ReactNativeWebView?.postMessage(
         JSON.stringify({
-          type: 'stationMarkerClicked',
+          type: 'clickStationMarker',
           stationData: targetedStationMetaData,
         }),
       );
     };
+  };
+
+  const clearStationMarkers = () => {
+    if (stationMarkers.length > 0) {
+      stationMarkers.forEach(stationData => stationData.marker.setMap(null));
+      stationMarkers = [];
+    }
   };
 
   const createStationMarkers = stationsDataList => {
@@ -149,11 +146,12 @@
 
       stationMarker = new kakaoRef.maps.CustomOverlay({
         position: stationPos,
-        content: contentElement, // 문자열이 아닌 DOM으로 전달
+        content: contentElement,
         yAnchor: 1,
         zIndex: 11,
         clickable: true,
       });
+
       stationMarker.setMap(mapRef);
 
       stationMarkers.push({
@@ -174,7 +172,7 @@
     // 최초 1회 바로 실행
     window.ReactNativeWebView?.postMessage(
       JSON.stringify({
-        type: 'needUpdateStationInventories',
+        type: 'needUpdateStationBikeCountList',
         stationNumbers: targetedStationsNumberList,
       }),
     );
@@ -184,28 +182,32 @@
     stationIntervalId = setInterval(() => {
       window.ReactNativeWebView?.postMessage(
         JSON.stringify({
-          type: 'needUpdateStationInventories',
+          type: 'needUpdateStationBikeCountList',
           stationNumbers: targetedStationsNumberList,
         }),
       );
     }, 5000);
   };
 
-  const updateStationsInventories = inventories => {
-    if (!inventories || inventories.length === 0 || stationMarkers.length === 0)
+  const updateStationBikeCountList = stationBikeCountList => {
+    if (
+      !stationBikeCountList ||
+      stationBikeCountList.length === 0 ||
+      stationMarkers.length === 0
+    )
       return;
 
     stationMarkers.forEach(({ number, marker, metaData }) => {
-      const targetedStationInventory = inventories.find(
+      const targetedStation = stationBikeCountList.find(
         i => i.station_number === number,
       );
-      if (!targetedStationInventory) return;
+      if (!targetedStation) return;
       // 메타데이터 최신화
-      metaData.current_bikes = targetedStationInventory.current_bikes;
+      metaData.current_bikes = targetedStation.current_bikes;
 
       // 컨텐츠 교체 (DOM으로 다시 생성)
       const newElement = buildStationContentElement(
-        targetedStationInventory.current_bikes,
+        targetedStation.current_bikes,
         '#01DA86',
         number,
       );
@@ -228,6 +230,23 @@
     });
   };
 
+  // nearby 모달 클릭시 포커싱
+  const focusOnTargetedNearbyStation = targetedStationData => {
+    const targetedStationPos = new kakaoRef.maps.LatLng(
+      targetedStationData.latitude,
+      targetedStationData.longitude,
+    );
+
+    // 맵 센터 이동
+    mapRef.setCenter(targetedStationPos);
+
+    // 줌 레벨 조정
+    const currentLevel = mapRef.getLevel();
+    if (currentLevel > 3) {
+      mapRef.setLevel(3, { animate: true });
+    }
+  };
+
   // 인터벌/리스너 해제
   const destroyStation = () => {
     if (stationIntervalId) {
@@ -240,9 +259,10 @@
   window.Station = {
     initStationSeting,
     createStationMarkers,
-    updateStationsInventories,
+    updateStationBikeCountList,
     toggleStationMarkers,
     destroyStation,
+    focusOnTargetedNearbyStation,
   };
 
   window.addEventListener('pagehide', () => {

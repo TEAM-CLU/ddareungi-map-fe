@@ -1,13 +1,10 @@
 import {
-  GetLatestStationsInventoriesPayload,
-  GetLatestStationsInventoriesResponse,
-  LatestStationsInventoriesData,
-  MapAreaStationsData,
-  MapAreaStationsPayload,
-  MapAreaStationsResponse,
-  NearbyStationsData,
-  NearbyStationsPayload,
-  NearbyStationsResponse,
+  GetStationLatestBikeCountListPayload,
+  MapAreaStationData,
+  MapAreaStationListPayload,
+  NearbyStationListPayload,
+  NearbyStationData,
+  StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
 import { SERVER_URL } from '@/shared/model/index.constants';
 import axios from 'axios';
@@ -21,9 +18,9 @@ const stationApi = axios.create({
 });
 
 // 가장 가까운 대여소 3개 조회
-export const getNearbyStations = async (
-  payload: NearbyStationsPayload,
-): Promise<NearbyStationsData[]> => {
+export const getNearbyStationList = async (
+  payload: NearbyStationListPayload,
+): Promise<NearbyStationData[]> => {
   const response = await stationApi.get('/nearby', {
     params: payload,
   });
@@ -31,10 +28,10 @@ export const getNearbyStations = async (
 };
 
 // 지도 특정 영역 내 대여소 조회
-export const getMapAreaStations = async (
-  payload: MapAreaStationsPayload,
+export const getMapAreaStationList = async (
+  payload: MapAreaStationListPayload,
   signal?: AbortSignal,
-): Promise<MapAreaStationsData[]> => {
+): Promise<MapAreaStationData[]> => {
   const response = await stationApi.get('/map-area', {
     params: payload,
     signal,
@@ -43,10 +40,12 @@ export const getMapAreaStations = async (
 };
 
 // 대여소 재고 정보 조회
-export const postGetLatestStationsInventories = async (
-  payload: GetLatestStationsInventoriesPayload,
+export const postStationLatestBikeCountList = async (
+  payload: GetStationLatestBikeCountListPayload,
   signal?: AbortSignal,
-): Promise<LatestStationsInventoriesData[]> => {
-  const response = await stationApi.post('/inventories', payload, { signal });
+): Promise<StationLatestBikeCountData[]> => {
+  const response = await stationApi.post('/realtime-sync/batch', payload, {
+    signal,
+  });
   return response.data.data ?? [];
 };
