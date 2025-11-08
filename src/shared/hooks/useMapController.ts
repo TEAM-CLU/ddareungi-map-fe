@@ -1,6 +1,5 @@
 import { RootStackParamList } from '@/app/types';
 import { Coordinates } from '@/features/map/model/map.types';
-import { RouteType } from '@/features/routing/model/routing.types';
 import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
 import { useMapSearch } from '@/features/search/hooks/useMapSearch';
 import { MapAreaStationData } from '@/features/station/model/station.types';

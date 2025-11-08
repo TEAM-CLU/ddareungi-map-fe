@@ -74,6 +74,8 @@ const MapScreen = () => {
 
   //////////
 
+  const lamda = useRef<number>(1.2); // 실제 도로 거리를 고려한 보정 계수
+
   return (
     <View style={tw('flex-1 relative w-full')}>
       <Map
@@ -149,6 +151,7 @@ const MapScreen = () => {
           setStationMetaData={setStationMetaData}
           nearByModalRef={nearbyStationModalRef}
           webRef={webRef}
+          lamda={lamda}
         />
       </SlideModal>
 
@@ -164,6 +167,7 @@ const MapScreen = () => {
           stationMetaData={stationMetaData}
           navigation={navigation}
           onClose={() => stationDetailModalRef.current?.dismiss()}
+          lamda={lamda}
         />
       </SlideModal>
       {/* 장소 상세 모달 */}

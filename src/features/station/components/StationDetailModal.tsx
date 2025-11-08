@@ -8,7 +8,7 @@ import { MapAreaStationData } from '@/features/station/model/station.types';
 import { removeOverlappingPart } from '@/features/station/utils/string';
 import { tw } from '@/shared/libs/tw-helper';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useEffect, useRef, useState } from 'react';
+import { RefObject, useEffect, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 import {
   View,
@@ -23,12 +23,14 @@ interface StationDetailModalProps {
   stationMetaData: MapAreaStationData | null;
   navigation: StackNavigationProp<RootStackParamList>;
   onClose?: () => void;
+  lamda: RefObject<number>;
 }
 const StationDetailModal = ({
   myPosition,
   stationMetaData,
   navigation,
   onClose,
+  lamda,
 }: StationDetailModalProps) => {
   const {
     routeType,
@@ -185,7 +187,15 @@ const StationDetailModal = ({
             { fontSize: 15 },
           ]}
         >
-          {`${distance ? distance + 'm' : '거리 측정 중...'}`}
+          {`${
+            distance
+              ? distance >= 1000
+                ? `${(Math.round(distance * lamda.current) / 1000).toFixed(
+                    1,
+                  )}km`
+                : `${Math.round(distance * lamda.current).toFixed(0)}m`
+              : '거리 측정 중...'
+          }`}
         </Text>
       </View>
       <Text

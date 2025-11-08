@@ -9,7 +9,7 @@ import { useNearbyStationsMutation } from '@/features/station/services/station.q
 import { tw } from '@/shared/libs/tw-helper';
 import { FocusOnTargetedNearbyStationMessage } from '@/shared/model/map.webview.types';
 import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { RefObject, use, useEffect, useState } from 'react';
+import { RefObject, use, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import WebView from 'react-native-webview';
 
@@ -21,6 +21,7 @@ interface NearbyStationModalProps {
   >;
   nearByModalRef: RefObject<BottomSheetModal | null>;
   webRef: RefObject<WebView | null>;
+  lamda: RefObject<number>;
 }
 const NearbyStationModal = ({
   myPosition,
@@ -28,6 +29,7 @@ const NearbyStationModal = ({
   setStationMetaData,
   nearByModalRef,
   webRef,
+  lamda,
 }: NearbyStationModalProps) => {
   const { mutateAsync: getNearbyStations } = useNearbyStationsMutation();
   const [nearbyStationsDataList, setNearbyStationsDataList] = useState<
@@ -159,7 +161,17 @@ const NearbyStationModal = ({
               <Text
                 style={[tw('font-primary-500 text-black'), { fontSize: 15 }]}
               >
-                {`${distances[idx] ? distances[idx] + 'm' : '거리 측정 중...'}`}
+                {`${
+                  distances[idx]
+                    ? distances[idx] >= 1000
+                      ? `${(
+                          Math.round(distances[idx] * lamda.current) / 1000
+                        ).toFixed(1)}km`
+                      : `${Math.round(distances[idx] * lamda.current).toFixed(
+                          0,
+                        )}m`
+                    : '거리 측정 중...'
+                }`}
               </Text>
             </View>
           </TouchableOpacity>
