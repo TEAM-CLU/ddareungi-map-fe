@@ -9,7 +9,7 @@ import { Alert } from 'react-native';
 
 const routingApi = axios.create({
   baseURL: `${SERVER_URL}/routes`,
-  timeout: 10000,
+  timeout: 1000000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -47,6 +47,7 @@ export const postCircularJourney = async (
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const message = error.response?.data?.message || error.message;
+      Alert.alert('원형 경로 검색 실패', message, error.response?.data);
       throw new Error(`원형 경로 검색 실패: ${message}`);
     }
     throw error;

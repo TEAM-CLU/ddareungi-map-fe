@@ -5,13 +5,15 @@ import TreeBadge from '@/shared/components/badge/TreeBadge';
 import WalkTimeBadge from '@/shared/components/badge/WalkTimeBadge';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import type { RouteResponse, Segment } from '../model/routing.types';
+import type { Route, RouteResponse, Segment } from '../model/routing.types';
+import { calculateWalkingTime, formatDistance, formatTime, formatTimeRange } from '@/shared/utils/formatting';
 
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
   isLoading?: boolean;
   error?: string | null;
   baseTime: Date;
+  onRoutePress: (route: Route) => void; // RouteResponse['data'][0] 타입
 }
 
 const RouteSelectContainer = ({
@@ -19,42 +21,8 @@ const RouteSelectContainer = ({
   isLoading,
   error,
   baseTime,
+  onRoutePress,
 }: RouteSelectContainerProps) => {
-  // 시간 포맷팅 함수 (초 → n시간 n분)
-  const formatTime = (seconds: number): string => {
-    const totalMinutes = Math.round(seconds / 60);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return hours > 0 ? `${hours}시간 ${minutes}분` : `${minutes}분`;
-  };
-
-  // 거리 포맷팅 함수 (미터 → km)
-  const formatDistance = (meters: number): string => {
-    return (meters / 1000).toFixed(1);
-  };
-
-  // 도보 시간 계산 함수 (segments에서 walking 구간 찾기)
-  const calculateWalkingTime = (segments: Segment[]): number => {
-    return segments
-      .filter(seg => seg.type === 'walking')
-      .reduce((total, seg) => total + seg.summary.time, 0);
-  };
-
-  // 시간대 포맷팅 함수 (baseTime 기준 ~ 도착 예정 시간)
-  const formatTimeRange = (durationSeconds: number): string => {
-    const arrival = new Date(baseTime.getTime() + durationSeconds * 1000);
-
-    const formatHourMinute = (date: Date): string => {
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
-      const period = hours < 12 ? '오전' : '오후';
-      const displayHours = hours % 12 || 12;
-      return `${period} ${displayHours}:${minutes.toString().padStart(2, '0')}`;
-    };
-
-    return `${formatHourMinute(baseTime)} - ${formatHourMinute(arrival)}`;
-  };
-
   // 로딩 상태
   if (isLoading) {
     return (
@@ -118,22 +86,11 @@ const RouteSelectContainer = ({
         const { routeCategory, summary, startStation, endStation, segments } =
           route;
 
-        // 시간 포맷팅
         const timeText = formatTime(summary.time);
-
-        // 거리 포맷팅
         const distanceKm = formatDistance(summary.distance);
-
-        // 도보 시간 계산 (분 단위)
         const walkingMinutes = Math.round(calculateWalkingTime(segments) / 60);
-
-        // 시간대 범위 (현재 ~ 도착 예정)
-        const timeRange = formatTimeRange(summary.time);
-
-        // 세그먼트별 시간 계산
-        const firstWalkingSegment = segments.find(
-          seg => seg.type === 'walking',
-        );
+        const timeRange = formatTimeRange(baseTime, summary.time);
+        const firstWalkingSegment = segments.find(seg => seg.type === 'walking');
         const bikingSegment = segments.find(seg => seg.type === 'biking');
         const lastWalkingSegment = segments
           .slice()
@@ -154,6 +111,7 @@ const RouteSelectContainer = ({
         return (
           <TouchableOpacity
             key={route.routeId || `route-${index}`}
+            onPress={() => onRoutePress(route)}
             style={[
               tw(
                 'bg-surface-primary w-full px-4 py-5 flex flex-col items-start justify-between border-b',
@@ -166,7 +124,7 @@ const RouteSelectContainer = ({
               <Text
                 style={[
                   tw('font-primary-700 text-brand-primary text-left'),
-                  { fontSize: 12 },
+                  { fontSize: 14 },
                 ]}
               >
                 {routeCategory}
@@ -174,7 +132,7 @@ const RouteSelectContainer = ({
               <Text
                 style={[
                   tw('font-primary-700 text-on-surface-primary text-left'),
-                  { fontSize: 24 },
+                  { fontSize: 26 },
                 ]}
               >
                 {timeText}
@@ -182,7 +140,7 @@ const RouteSelectContainer = ({
               <Text
                 style={[
                   tw('font-primary-500 text-on-surface-primary text-left'),
-                  { fontSize: 12 },
+                  { fontSize: 14 },
                 ]}
               >
                 {timeRange}
@@ -196,7 +154,7 @@ const RouteSelectContainer = ({
                 <Text
                   style={[
                     tw('font-primary-600 text-on-surface-primary'),
-                    { fontSize: 15 },
+                    { fontSize: 17 },
                   ]}
                 >
                   {distanceKm}km

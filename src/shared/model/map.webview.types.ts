@@ -77,6 +77,10 @@ export interface UpdateRouteMessage {
     lng: number;
     name: string;
   }>;
+  path?: Array<{
+    lat: number;
+    lng: number;
+  }>;
 }
 
 export interface ClearRouteMessage {

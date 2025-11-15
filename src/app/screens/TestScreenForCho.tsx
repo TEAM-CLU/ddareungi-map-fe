@@ -1,5 +1,5 @@
 import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
-import RouteSelectDetailModal from '@/features/routing/components/RouteSelectDetailModal';
+import RouteSelectDetailModal from '@/features/routing/components/RouteSelectedDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import CalorieBadge from '@/shared/components/badge/CalorieBadge';
 import SlideModal from '@/shared/components/modal/SlideModal';

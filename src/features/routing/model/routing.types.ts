@@ -6,7 +6,13 @@ export enum RouteType {
 }
 
 export interface RoutePoint {
-  id: string;
+    /**
+   * 입력 필드를 고유하게 식별하는 문자열 ID
+   * - 출발지 : "start"
+   * - 도착지 : "end"
+   * - 경유지 : "waypoint-{number}"
+   */
+  fieldKey: string;
   placeholder?: string;
   value: string;
   type: 'start' | 'waypoint' | 'end';

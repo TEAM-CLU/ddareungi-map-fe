@@ -11,13 +11,11 @@ import { useRouteStore } from '../../stores/routeStore';
 interface RouteRecommendModalProps {
   navigation: NavigationProp<RootStackParamList>;
   routeRecommendModalRef: React.RefObject<BottomSheetModal | null>;
-  setIsRouteRecommendBtnPressed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const RouteRecommendModal = ({
   navigation,
   routeRecommendModalRef,
-  setIsRouteRecommendBtnPressed,
 }: RouteRecommendModalProps) => {
   const { distance, setDistance } = useRouteStore();
 
@@ -28,9 +26,7 @@ const RouteRecommendModal = ({
     if (currentRoute.name !== 'RouteRecommend') {
       navigation.navigate('RouteRecommend');
     }
-
     routeRecommendModalRef?.current?.dismiss();
-    setIsRouteRecommendBtnPressed && setIsRouteRecommendBtnPressed(false);
   };
 
   const handleDecreaseDistanceBtnPress = () => {

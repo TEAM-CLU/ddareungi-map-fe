@@ -1,15 +1,14 @@
 import React, { useCallback, useEffect } from 'react';
-import { Text, View, TouchableOpacity, Alert } from 'react-native';
+import { View, Alert, TouchableOpacity, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import RouteInputBar from '@/features/routing/components/RouteInputBar';
-import SearchOverlay from '@/features/search/components/SearchOverlay';
-import { RoutePoint, RouteType } from '@/features/routing/model/routing.types';
-import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
+import { Route, RouteData, RoutePoint, RouteType } from '@/features/routing/model/routing.types';
 import {
   RouteProp,
   useRoute,
   useNavigation,
   NavigationProp,
+  useFocusEffect,
 } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
 import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
@@ -32,60 +31,94 @@ const RouteSelectScreen = () => {
 
     setStart,
     setEnd,
+    setSelectedRouteData,
 
     addWaypoint,
-    removeWaypoint,
     updateWaypoint,
 
     syncStartEndInLoopMode,
     isRouteComplete,
-
-    showSearchOverlay,
-    setShowSearchOverlay,
-
-    currentSelectedPoint,
-    setCurrentSelectedPoint,
-    currentFieldType,
-    setCurrentFieldType,
+    needReset,
+    setNeedReset,
 
     routes,
     isLoadingRoutes,
     routeSearchError,
     searchRoutes,
-    resetRouteInputData,
     resetAllData,
-    hasAnyRouteData,
   } = useRouteStore();
-
-  // 현재 편집 중인 인풋 필드
-  const [currentEditingPoint, setCurrentEditingPoint] =
-    React.useState<RoutePoint | null>(null);
 
   // 경로 시간 계산 기준 시간 (리프레시 가능)
   const [baseTime, setBaseTime] = React.useState<Date>(new Date());
 
-  // 1. route params에서 routeType 먼저 설정
+  // ---------- LOOP/CONSTANT 동기화 처리 ----------
+
   useEffect(() => {
     if (route.params?.routeType) {
       setRouteType(route.params.routeType);
     }
   }, [route.params?.routeType, setRouteType]);
 
-  // Map에서 장소 선택 후 돌아온 경우 반영
-  // placeType: 'start' | 'end' | 'waypoint-1 | 'waypoint-2' | ... | 'auto' 로 넘김
-  // selectedPlace: AutocompleteResult
+  // ---------- 화면 나갔을 때 경로 데이터 초기화 ----------
+
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('beforeRemove', () => {
+  //     resetAllData();
+  //   });
+
+  //   return unsubscribe;
+  // }, [navigation, resetAllData]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // 스토어에서 직접 최신 상태를 가져옴
+      const state = useRouteStore.getState();
+
+      // 만약 모달 띄우는 중 (true)이면,
+      // 데이터를 초기화하지 않고 그냥 리턴
+      if (state.showSelectedRouteDetailModal) {
+        return;
+      }
+
+      // 그 외의 경우 (사용자가 헤더의 뒤로가기 버튼을 누르는 등)
+      // 데이터를 초기화
+      resetAllData();
+    });
+
+    return unsubscribe;
+  }, [navigation, resetAllData]);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      // 이 화면이 다시 포커스될 때마다 실행
+      if (needReset) {
+        // 1. 스토어의 "초기화 필요" 플래그가 켜져 있으면
+        resetAllData(); // 2. 모든 데이터를 초기화 (화면이 깨끗해짐)
+        setNeedReset(false); // 3. 플래그를 다시 끔 (무한 루프 방지)
+      }
+    }, [needReset, resetAllData, setNeedReset])
+  );
+
+  // ---------- Map → RouteSelect ----------
+  // ---------- Map에서 선택한 장소를 출발지/도착지/경유지에 반영 ----------
+
   useEffect(() => {
     if (route.params?.selectedPlace && route.params?.placeType) {
       const { selectedPlace, placeType } = route.params;
 
-      // 'auto' 타입이면 첫 번째 빈 필드에 자동 할당
+      // auto 모드: 검색이 아닌 지도에서 핀 찍는 등에서의 로직
+      // 자동으로 빈 곳을 찾아 할당
+      // 필요하면 사용 -> 추후 삭제 가능
       if (placeType === 'auto') {
+        // 1순위: 출발지 비어있으면 출발지로 설정
         if (!start?.name) {
           setStart(selectedPlace);
+          // 2순위: CONSTANT 일 때 도착지 비어있으면 도착지로 설정
         } else if (routeType === RouteType.CONSTANT && !end?.name) {
           setEnd(selectedPlace);
         } else {
-          // 경유지 자동 채우기
+          // 3순위: LOOP 일 때 경유지로 설정
           const emptyIndex = waypoints.findIndex(wp => !wp.place?.name);
           if (emptyIndex !== -1) {
             const targetId = `waypoint-${emptyIndex}`;
@@ -94,195 +127,133 @@ const RouteSelectScreen = () => {
             addWaypoint(selectedPlace);
           }
         }
-        // params 초기화
+        // 파라미터 초기화
         navigation.setParams({
           selectedPlace: undefined,
           placeType: undefined,
-        } as any);
+        } as Partial<RootStackParamList['RouteSelect']>);
         return;
       }
 
-      // LOOP 모드에서 출발지/도착지 동기화 (중복 실행 방지)
+      // LOOP 모드
+      // 출발지/도착지 동기화 처리 -> 출발지/도착지 중 하나 변경 시 다른 하나도 동일하게 설정
       if (
         routeType === RouteType.LOOP &&
         (placeType === 'start' || placeType === 'end')
       ) {
         syncStartEndInLoopMode(selectedPlace, placeType);
-        // params 초기화
+
         navigation.setParams({
           selectedPlace: undefined,
           placeType: undefined,
-        } as any);
+        } as Partial<RootStackParamList['RouteSelect']>);
         return;
       }
 
-      // 일반적인 필드 할당
+      // 일반 지정 모드
+      // 명확한 출발지/도착지/경유지 지정
       if (placeType === 'start') {
         setStart(selectedPlace);
       } else if (placeType === 'end') {
         setEnd(selectedPlace);
       } else if (placeType === 'waypoint-new') {
-        addWaypoint(selectedPlace);
+        addWaypoint(selectedPlace); // 새 경유지 배열에 추가
       } else if (placeType.startsWith('waypoint-')) {
-        // 기존 경유지 업데이트 (id 직접 전달)
-        updateWaypoint(placeType, selectedPlace);
+        updateWaypoint(placeType, selectedPlace); // 기존 경유지 수정
       }
 
-      // params 초기화
       navigation.setParams({
         selectedPlace: undefined,
         placeType: undefined,
-      } as any);
+      } as Partial<RootStackParamList['RouteSelect']>);
     }
   }, [route.params?.selectedPlace, route.params?.placeType]);
 
-  // 경로 완성 시 자동 검색
-  useEffect(() => {
-    if (isRouteComplete()) {
-      searchRoutes();
-    }
-  }, [start, end, waypoints, isRouteComplete, searchRoutes]);
+  // ---------- Event handlers ----------
 
-  // 특정 인풋(출발/도착/경유) 눌렀을 때 Map으로 이동해서 검색 시작
+  // 출발지/도착지/경유지 입력창 터치
+  // Map으로 이동하여 SearchOverlay 오픈
   const handleRoutePointPress = useCallback(
-    (point: RoutePoint) => {
-      // 어떤 필드를 수정 중인지 상태로 보관
-      setCurrentEditingPoint(point);
-
+    (field: RoutePoint) => {
       navigation.navigate('Map', {
         openSearchOverlay: true,
-        placeType: point.id, // 'start' | 'end' | 'waypoint-0'
+        placeType: field.fieldKey,
         returnTo: 'RouteSelect',
       });
     },
     [navigation],
   );
 
-  // 경유지 추가 버튼에서 부를 헬퍼:
-  // 1) Map으로 이동해서 장소 선택
-  // 2) 돌아오면 새 경유지로 추가
+  // 새로운 경유지 추가 및 편집
   const handleAddNewWaypointAndEdit = useCallback(() => {
-    if (waypoints.length >= 3) {
-      Alert.alert('경유지는 최대 3개까지 추가할 수 있습니다.');
-      return;
-    }
-
-    // 빈 경유지를 미리 추가하지 않고 Map으로 바로 이동
-    // placeType을 'waypoint-new'로 설정해서 새로운 경유지임을 표시
     navigation.navigate('Map', {
       openSearchOverlay: true,
-      placeType: 'waypoint-new', // 새로운 경유지 추가용
+      placeType: 'waypoint-new', // 새로운 경유지 추가
       returnTo: 'RouteSelect',
     });
   }, [navigation, waypoints.length]);
 
-  // 경유지 제거하면 배열에서도 빼줘야 하므로 내려줄 핸들러
-  const handleRemoveWaypointFromParent = useCallback(
-    (index: number) => {
-      const targetId = `waypoint-${index}`;
-      removeWaypoint(targetId);
-    },
-    [removeWaypoint],
-  );
-
-  // SearchOverlay에서 장소 선택 시 해당 필드에 입력하고 SearchOverlay 닫기
-  const handlePlaceSelect = useCallback(
-    (place: AutocompleteResult) => {
-      if (!currentSelectedPoint || !currentFieldType) return;
-
-      if (currentFieldType === 'start') {
-        routeType === RouteType.LOOP
-          ? syncStartEndInLoopMode(place, 'start')
-          : setStart(place);
-      } else if (currentFieldType === 'end') {
-        routeType === RouteType.LOOP
-          ? syncStartEndInLoopMode(place, 'end')
-          : setEnd(place);
-      } else if (currentFieldType === 'waypoint') {
-        updateWaypoint(currentSelectedPoint.id, place);
-      }
-
-      setShowSearchOverlay(false);
-      setCurrentSelectedPoint(null);
-      setCurrentFieldType(null);
-    },
-    [
-      currentSelectedPoint,
-      currentFieldType,
-      routeType,
-      syncStartEndInLoopMode,
-      setStart,
-      setEnd,
-      updateWaypoint,
-      setShowSearchOverlay,
-      setCurrentSelectedPoint,
-      setCurrentFieldType,
-    ],
-  );
-
-  // SearchOverlay 닫기
-  const handleSearchClose = useCallback(() => {
-    setShowSearchOverlay(false);
-    setCurrentSelectedPoint(null);
-    setCurrentFieldType(null);
-  }, [setShowSearchOverlay, setCurrentSelectedPoint, setCurrentFieldType]);
-
-  // RouteInputBar 닫기 및 초기화 처리
+  // RouteInputBar 닫기 버튼
   const handleRouteInputBarClose = useCallback(() => {
-    resetRouteInputData();
+    resetAllData();
     navigation.goBack();
-  }, [resetRouteInputData, navigation]);
+  }, [resetAllData, navigation]);
 
-  // RouteInputBar 데이터 초기화 처리 - Zustand store 사용
-  const handleRouteDataReset = () => {
-    // resetAllData를 사용하거나 개별적으로 리셋
-    useRouteStore.getState().resetAllData();
-    setCurrentSelectedPoint(null);
-  };
+  // 경로 검색 버튼
+  const handleRouteSearchConfirm = useCallback(() => {
+    if (!isRouteComplete()) {
+      Alert.alert('경로 검색', '출발지, 도착지, 경유지를 모두 설정해주세요.');
+      return;
+    }
+
+    searchRoutes();
+  }, [isRouteComplete, searchRoutes]);
+
+  // 검색된 경로 클릭 핸들러
+  const handleRouteItemPress = useCallback(
+    (selectedRouteData: Route) => {
+      setSelectedRouteData(selectedRouteData);
+      navigation.goBack();
+    },
+    [navigation, setSelectedRouteData],
+  );
 
   return (
-    <View style={tw('flex-1 bg-white')}>
-      {/* 상단 RouteInputBar 영역 */}
-      {!showSearchOverlay && (
-        <View style={tw('bg-brand-primary w-full pt-16 pb-4')}>
-          <View style={tw('mx-2')}>
-            <RouteInputBar
-              onRoutePointPress={handleRoutePointPress}
-              onAddWaypointAndEdit={handleAddNewWaypointAndEdit}
-              onClose={handleRouteInputBarClose}
-            />
-          </View>
+    <View style={tw('flex-1 bg-surface-primary')}>
+      {/* RouteInputBar */}
+      <View style={tw('bg-brand-primary w-full pt-16 pb-4')}>
+        <View style={tw('mx-2')}>
+          <RouteInputBar
+            onRoutePointPress={handleRoutePointPress}
+            onAddWaypointAndEdit={handleAddNewWaypointAndEdit}
+            onClose={handleRouteInputBarClose}
+          />
         </View>
-      )}
+      </View>
+      <TouchableOpacity
+        onPress={handleRouteSearchConfirm}
+        activeOpacity={0.8}
+        style={tw(
+          'bg-surface-primary py-3 items-center justify-center shadow-sm',
+        )}
+      >
+        <Text style={tw('text-brand-primary font-primary-700 text-base')}>
+          경로 검색하기
+        </Text>
+      </TouchableOpacity>
 
-      {/* SearchOverlay */}
-      <SearchOverlay
-        isVisible={showSearchOverlay}
-        onClose={handleSearchClose}
-        onPlaceSelect={handlePlaceSelect}
-        placeholder={
-          currentFieldType === 'start'
-            ? '출발지를 검색하세요'
-            : currentFieldType === 'end'
-            ? '도착지를 검색하세요'
-            : '경유지를 검색하세요'
-        }
+      <RouteTimeRefreshBar
+        baseTime={baseTime}
+        onRefresh={() => setBaseTime(new Date())}
       />
 
-      {!showSearchOverlay && (
-        <>
-          <RouteTimeRefreshBar
-            baseTime={baseTime}
-            onRefresh={() => setBaseTime(new Date())}
-          />
-          <RouteSelectContainer
-            routes={routes}
-            isLoading={isLoadingRoutes}
-            error={routeSearchError}
-            baseTime={baseTime}
-          />
-        </>
-      )}
+      <RouteSelectContainer
+        routes={routes}
+        isLoading={isLoadingRoutes}
+        error={routeSearchError}
+        baseTime={baseTime}
+        onRoutePress={handleRouteItemPress}
+      />
     </View>
   );
 };

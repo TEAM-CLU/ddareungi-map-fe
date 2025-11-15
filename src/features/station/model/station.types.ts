@@ -10,6 +10,7 @@ export interface NearbyStationData {
   latitude: number;
   longitude: number;
   current_bikes: number;
+  distance: number;
 }
 
 export interface NearbyStationListPayload {

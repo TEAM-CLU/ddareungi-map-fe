@@ -16,12 +16,11 @@ const RouteRecommendInputBar = ({
   onRoutePointPress,
   onDistancePress,
 }: RouteRecommendInputBarProps) => {
-  const { start, distance, resetRouteInputData } = useRouteStore();
+  const { start, distance } = useRouteStore();
 
   const handleClosePress = useCallback(() => {
-    resetRouteInputData();
     onClose();
-  }, [onClose, resetRouteInputData]);
+  }, [onClose]);
 
   const startPoint = useMemo(
     () => createStartPoint(start?.name || ''),

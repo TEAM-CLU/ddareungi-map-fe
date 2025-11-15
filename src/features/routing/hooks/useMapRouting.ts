@@ -19,12 +19,16 @@ export const useMapRouting = (webRef: React.RefObject<WebView | null>) => {
     (
       routeType: 'CONSTANT' | 'LOOP',
       points: Array<{ id: string; lat: number; lng: number; name: string }>,
+      path?: Array<{ lat: number; lng: number }>,
     ) => {
       const message: UpdateRouteMessage = {
         type: 'updateRoute',
         routeType,
         points,
       };
+      if (path && path.length > 0) {
+        message.path = path;
+      }
       sendMessage(message);
     },
     [sendMessage],

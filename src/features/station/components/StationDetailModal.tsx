@@ -71,7 +71,7 @@ const StationDetailModal = ({
     onClose?.(); // 모달 닫기
 
     const placeData: AutocompleteResult = {
-      id: `start-${Date.now()}`,
+      placeKey: `start-${Date.now()}`,
       name: stationMetaData!.name,
       address: stationMetaData!.address,
       latitude: stationMetaData!.latitude!,
@@ -93,7 +93,7 @@ const StationDetailModal = ({
     onClose?.(); // 모달 닫기
 
     const placeData: AutocompleteResult = {
-      id: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
+      placeKey: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
       name: stationMetaData!.name,
       address: stationMetaData!.address,
       latitude: stationMetaData!.latitude!,

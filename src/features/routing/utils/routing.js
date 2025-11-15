@@ -7,6 +7,8 @@
   let routeRemaining;
   let routePassed;
   let currentRouteType = 'CONSTANT'; // 'CONSTANT' | 'LOOP'
+  let currentRoutePoints = [];
+  let currentRoutePath = [];
 
   const ROUTE_STYLE = {
     remaining: {
@@ -119,7 +121,6 @@
   </svg>
 `;
 
-  // 기존 마커 삭제
   const clearWaypointsMarkers = () => {
     if (waypointsMarkers.length > 0) {
       waypointsMarkers.forEach(wayPointMarker => wayPointMarker.setMap(null));
@@ -305,9 +306,123 @@
     currentRouteType = routeType;
   };
 
+  /*
+   초기화
+   */
+  const clearRoute = () => {
+    currentRoutePoints = [];
+    currentRoutePath = [];
+
+    // 마커들 지도에서 제거
+    if (startMarker) startMarker.setMap(null);
+    if (endMarker) endMarker.setMap(null);
+    if (originMarker) originMarker.setMap(null);
+    clearWaypointsMarkers();
+
+    // 폴리라인 제거
+    if (routeRemaining) {
+      routeRemaining.setPath([]);
+      routeRemaining.setMap(null);
+    }
+    if (routePassed) {
+      routePassed.setPath([]);
+      routePassed.setMap(null);
+    }
+  };
+
+  /*
+    좌표 정규화 함수
+    외부에서 들어오는 좌표 데이터 이름이 제각각일 경우 통일
+  */
+  const normalizeLatLon = coord => {
+    // lat, latitude 둘 중 있는 거 사용
+    const lat = coord.lat ?? coord.latitude;
+    // lon, lng, longitude 셋 중 있는 거 사용
+    const lon = coord.lon ?? coord.lng ?? coord.longitude;
+    return { lat, lon };
+  };
+
+  /*
+    경로 업데이트 함수
+    useRoutePreviewOnMap 훅에서 updateRoute(...)를 호출하면 실행
+  */
+  const updateRoute = (routeType = 'CONSTANT', points = [], path = []) => {
+    // 1. 데이터가 없으면 모두 초기화 후 종료
+    if (!points || points.length === 0) {
+      clearRoute();
+      return;
+    }
+
+    currentRouteType = routeType;
+    currentRoutePoints = points;
+
+    // 2. 좌표 데이터 이름 통일
+    const normalizedPoints = points
+      .map(point => ({
+        ...point,
+        ...normalizeLatLon(point),
+      }))
+      .filter(
+        point => typeof point.lat === 'number' && typeof point.lon === 'number',
+      );
+
+    if (normalizedPoints.length === 0) {
+      clearRoute();
+      return;
+    }
+
+    // 3. 출발/도착/경유지 분류
+    const startPoint =
+      normalizedPoints.find(point => point.id === 'start') ||
+      normalizedPoints[0];
+    const endPoint =
+      normalizedPoints.find(point => point.id === 'end') ||
+      normalizedPoints[normalizedPoints.length - 1];
+    const waypointPoints = normalizedPoints.filter(point =>
+      point.id.startsWith('waypoint-'),
+    );
+
+    // 4. 경로 데이터 처리
+    // 서버에서 받은 경로 (path)가 있으면 사용, 없으면 포인트들 이은 직선 경로 생성
+    const normalizedPath = (
+      path && path.length > 0
+        ? path
+        : normalizedPoints.map(point => ({ lat: point.lat, lon: point.lon }))
+    )
+      .map(coord => normalizeLatLon(coord));
+
+    currentRoutePath = normalizedPath;
+
+    // 5. 경로 그리기
+    drawStaticRoute({
+      mode: routeType === 'LOOP' ? 'round' : 'full',
+      start: routeType === 'LOOP' ? null : startPoint,
+      end: routeType === 'LOOP' ? null : endPoint,
+      origin: routeType === 'LOOP' ? startPoint : undefined,
+      waypoints: waypointPoints,
+      path: normalizedPath,
+    });
+  };
+
+  /*
+    특정 경로 포인트로 지도 이동
+   */
+  const moveToRoutePoint = pointId => {
+    if (!mapRef || !kakaoRef || !pointId) return;
+    const target = currentRoutePoints.find(point => point.id === pointId);
+    if (!target) return;
+    const lat = target.lat ?? target.latitude;
+    const lon = target.lng ?? target.lon ?? target.longitude;
+    const targetPosition = new kakaoRef.maps.LatLng(lat, lon);
+    mapRef.panTo(targetPosition);
+  };
+
   window.Route = {
     initRouteSetting,
     drawStaticRoute,
     setRouteType,
+    updateRoute,
+    clearRoute,
+    moveToRoutePoint,
   };
 })();

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useRef } from 'react';
+import { View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
@@ -11,68 +11,45 @@ import MyLocationButton from '@/features/location/components/MyLocationButton';
 import StationDetailModal from '@/features/station/components/StationDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import { useMapController } from '@/shared/hooks/useMapController';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '@/app/types';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useRouteStore } from '@/features/routing/stores/routeStore';
 import StationMarkersToggleBtn from '@/features/station/components/StationMarkersToggleBtn';
+import { useRoutePreviewOnMap } from '@/features/routing/hooks/useRoutePreviewOnMap';
+import RouteSelectedDetailModal from '@/features/routing/components/RouteSelectedDetailModal';
+import { useRouteStore } from '@/features/routing/stores/routeStore';
 
 const MapScreen = () => {
   const {
     webRef,
+    navigation,
+
     showSearchOverlay,
-    selectedPlaceForModal,
+    selectedPlaceInfoForModal, // 장소 상세 모달에 띄울 데이터
+    selectedRouteData,        // 선택된 경로 상세 모달에 띄울 데이터
+
     handleSearchbarPress,
     handleSearchClose,
     handlePlaceSelect,
+    handleOpenNearbyStationModal,
+    handleOpenRouteRecommendModal,
+    handleSelectedRouteDetailModalClose,
+    handleStartNavigationPress,
+
     placeDetailModalRef,
     stationDetailModalRef,
     nearbyStationModalRef,
+    routeRecommendModalRef,
+    selectedRouteDetailModalRef,
+
     myPosition,
     setMyPosition,
     stationMetaData,
     setStationMetaData,
   } = useMapController();
 
-  ///////////
+  const { start, end, waypoints } = useRouteStore();
 
-  const [isStationButtonPressed, setIsStationButtonPressed] = useState(false);
-
-  // NearbyStationModal 오픈 처리
-  useEffect(() => {
-    if (isStationButtonPressed) {
-      nearbyStationModalRef.current?.present();
-      setIsStationButtonPressed(false);
-    }
-  }, [isStationButtonPressed]);
-
-  //////////
-  const [isRouteRecommendBtnPressed, setIsRouteRecommendBtnPressed] =
-    useState(false);
-  const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-
-  const { distance, setDistance } = useRouteStore();
-
-  // RouteRecommendModal 오픈 처리
-  useEffect(() => {
-    if (isRouteRecommendBtnPressed) {
-      console.log('[MapScreen] 추천경로 탭 클릭, distance:', distance);
-
-      // distance가 null이면 기본값 5로 설정
-      if (distance === null) {
-        console.log('[MapScreen] distance가 null이므로 5로 초기화');
-        setDistance(5);
-      }
-
-      routeRecommendModalRef.current?.present();
-      setIsRouteRecommendBtnPressed(false);
-    }
-  }, [isRouteRecommendBtnPressed, distance, setDistance]);
-
-  //////////
+  // 경로 마커 및 폴리라인 미리보기
+  useRoutePreviewOnMap(webRef);
 
   const lamda = useRef<number>(1.2); // 실제 도로 거리를 고려한 보정 계수
 
@@ -109,7 +86,6 @@ const MapScreen = () => {
         onClose={handleSearchClose}
         onPlaceSelect={handlePlaceSelect}
         placeholder="오늘은 어디로 갈까요?"
-        currentLocation={myPosition}
       />
 
       <View style={[tw('absolute right-3'), { bottom: 150 }]}>
@@ -121,8 +97,8 @@ const MapScreen = () => {
       </View>
 
       <Footer
-        setIsStationButtonPressed={setIsStationButtonPressed}
-        setIsRouteRecommendBtnPressed={setIsRouteRecommendBtnPressed}
+        setIsStationButtonPressed={handleOpenNearbyStationModal}
+        setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
       />
 
       {/* 경로추천 모달 */}
@@ -135,9 +111,9 @@ const MapScreen = () => {
         <RouteRecommendModal
           navigation={navigation}
           routeRecommendModalRef={routeRecommendModalRef}
-          setIsRouteRecommendBtnPressed={setIsRouteRecommendBtnPressed}
         />
       </SlideModal>
+
       {/* Nearby 대여소 모달 */}
       <SlideModal
         ref={nearbyStationModalRef}
@@ -170,19 +146,37 @@ const MapScreen = () => {
           lamda={lamda}
         />
       </SlideModal>
+
       {/* 장소 상세 모달 */}
       <SlideModal
         ref={placeDetailModalRef}
         onClose={() => placeDetailModalRef.current?.dismiss()}
         snapPoints={['35%', '50%']}
       >
-        {selectedPlaceForModal && (
+        {selectedPlaceInfoForModal && (
           <PlaceDetailModal
-            place={selectedPlaceForModal}
+            place={selectedPlaceInfoForModal}
             navigation={navigation}
             onClose={() => placeDetailModalRef.current?.dismiss()}
+            myPosition={myPosition}
           />
         )}
+      </SlideModal>
+
+      {/* 선택된 경로 상세 모달 */}
+      <SlideModal
+        ref={selectedRouteDetailModalRef}
+        snapPoints={['50%']}
+        onClose={handleSelectedRouteDetailModalClose}
+        >
+          <RouteSelectedDetailModal
+          selectedRouteData={selectedRouteData}
+          startAddress={start?.address || start?.name}
+          endAddress={end?.address || end?.name}
+          waypoints={waypoints}
+          onStartNavigationPress={handleStartNavigationPress}
+          onClose={handleSelectedRouteDetailModalClose}
+        />
       </SlideModal>
     </View>
   );

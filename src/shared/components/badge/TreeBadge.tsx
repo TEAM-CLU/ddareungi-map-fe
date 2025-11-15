@@ -11,21 +11,21 @@ const TreeBadge = ({ value }: TreeBadgeProps) => (
   <View
     style={[
       tw(
-        'h-5 w-full flex-row justify-center items-center bg-icon-container-primary',
+        'h-7 flex-row justify-center items-center bg-icon-container-primary',
       ),
       {
-        maxWidth: 44,
+        maxWidth: '70%',
         borderRadius: 20,
         paddingHorizontal: 11,
-        paddingVertical: 4,
+        paddingVertical: 6,
       },
     ]}
   >
     <IconTree />
     <Text
       style={[
-        tw('text-on-surface-secondary font-primary-500 ml-0.5'),
-        { fontSize: 10 },
+        tw('text-on-surface-secondary font-primary-600 ml-0.5'),
+        { fontSize: 13 },
       ]}
     >
       +{value}

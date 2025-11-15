@@ -21,13 +21,13 @@ const RouteProgressStepBar = ({
           tw(
             'bg-decorative-default relative flex justify-center items-center flex-row rounded-full',
           ),
-          { height: 11, flexGrow: 1, paddingVertical: 1 },
+          { height: 15, flexGrow: 1, paddingVertical: 1 },
         ]}
       >
         <Text
           style={[
             tw('font-primary-600 text-on-surface-quaternary'),
-            { fontSize: 8 },
+            { fontSize: 12 },
           ]}
         >
           {firstWalkingMinutes}
@@ -35,7 +35,7 @@ const RouteProgressStepBar = ({
         <Text
           style={[
             tw('font-primary-600 text-on-surface-quaternary'),
-            { fontSize: 6 },
+            { fontSize: 10 },
           ]}
         >
           분
@@ -47,9 +47,9 @@ const RouteProgressStepBar = ({
             ),
             {
               zIndex: 10,
-              width: 20,
-              height: 20,
-              borderRadius: 10,
+              width: 24,
+              height: 24,
+              borderRadius: 14,
             },
           ]}
         >
@@ -57,9 +57,9 @@ const RouteProgressStepBar = ({
             style={[
               tw('bg-icon-container-primary items-center justify-center'),
               {
-                width: 16,
-                height: 16,
-                borderRadius: 8,
+                width: 20,
+                height: 20,
+                borderRadius: 12,
               },
             ]}
           >
@@ -72,7 +72,7 @@ const RouteProgressStepBar = ({
           tw(
             'bg-brand-primary flex justify-center items-center flex-row relative',
           ),
-          { height: 11, flexGrow: 3, paddingVertical: 1, zIndex: 5 },
+          { height: 15, flexGrow: 3, paddingVertical: 1, zIndex: 5 },
         ]}
       >
         <View
@@ -80,9 +80,9 @@ const RouteProgressStepBar = ({
             tw('absolute items-center justify-center'),
             {
               zIndex: 10,
-              width: 20,
-              height: 20,
-              borderRadius: 10,
+              width: 24,
+              height: 24,
+              borderRadius: 14,
               backgroundColor: '#B2F9DE',
               left: -18.5,
             },
@@ -92,19 +92,19 @@ const RouteProgressStepBar = ({
             style={[
               tw('bg-brand-primary items-center justify-center'),
               {
-                width: 16,
-                height: 16,
-                borderRadius: 8,
+                width: 20,
+                height: 20,
+                borderRadius: 12,
               },
             ]}
           >
-            <IconBicycle width={10} height={6} />
+            <IconBicycle width={14} height={10} />
           </View>
         </View>
         <Text
           style={[
             tw('font-primary-600 text-on-surface-secondary'),
-            { fontSize: 8 },
+            { fontSize: 12 },
           ]}
         >
           {bikingMinutes}
@@ -112,7 +112,7 @@ const RouteProgressStepBar = ({
         <Text
           style={[
             tw('font-primary-600 text-on-surface-secondary'),
-            { fontSize: 6 },
+            { fontSize: 10 },
           ]}
         >
           분
@@ -122,9 +122,9 @@ const RouteProgressStepBar = ({
             tw('absolute items-center justify-center'),
             {
               zIndex: 10,
-              width: 20,
-              height: 20,
-              borderRadius: 10,
+              width: 24,
+              height: 24,
+              borderRadius: 14,
               backgroundColor: '#B2F9DE',
               right: -18.5,
             },
@@ -134,13 +134,13 @@ const RouteProgressStepBar = ({
             style={[
               tw('bg-brand-primary items-center justify-center'),
               {
-                width: 16,
-                height: 16,
-                borderRadius: 8,
+                width: 20,
+                height: 20,
+                borderRadius: 12,
               },
             ]}
           >
-            <IconBicycle width={10} height={6} />
+            <IconBicycle width={14} height={10} />
           </View>
         </View>
       </View>
@@ -149,13 +149,13 @@ const RouteProgressStepBar = ({
           tw(
             'bg-decorative-default flex justify-center items-center flex-row rounded-full',
           ),
-          { height: 11, flexGrow: 1, paddingVertical: 1 },
+          { height: 15, flexGrow: 1, paddingVertical: 1 },
         ]}
       >
         <Text
           style={[
             tw('font-primary-600 text-on-surface-quaternary'),
-            { fontSize: 8 },
+            { fontSize: 12 },
           ]}
         >
           {lastWalkingMinutes}
@@ -163,7 +163,7 @@ const RouteProgressStepBar = ({
         <Text
           style={[
             tw('font-primary-600 text-on-surface-quaternary'),
-            { fontSize: 6 },
+            { fontSize: 10 },
           ]}
         >
           분
@@ -175,9 +175,9 @@ const RouteProgressStepBar = ({
             ),
             {
               zIndex: 10,
-              width: 20,
-              height: 20,
-              borderRadius: 10,
+              width: 24,
+              height: 24,
+              borderRadius: 14,
             },
           ]}
         >
@@ -185,9 +185,9 @@ const RouteProgressStepBar = ({
             style={[
               tw('bg-icon-container-primary items-center justify-center'),
               {
-                width: 16,
-                height: 16,
-                borderRadius: 8,
+                width: 20,
+                height: 20,
+                borderRadius: 12,
               },
             ]}
           >

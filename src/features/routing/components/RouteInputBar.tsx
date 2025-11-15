@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
 import {
   IconOval,
   IconSwitch,
@@ -11,7 +10,6 @@ import {
 } from '@/shared/components/icons';
 import { RoutePoint, RouteType } from '../model/routing.types';
 import { createStartPoint, createEndPoint } from '../model/routing.data';
-import { canRemoveWaypoint } from '../utils/validateWaypoint';
 import IconArrowsUpDown from '@/shared/components/icons/IconArrowsUpDown';
 import { useRouteStore } from '../stores/routeStore';
 
@@ -34,9 +32,7 @@ const RouteInputBar = ({
     waypoints,
     setStart,
     setEnd,
-    addWaypoint,
     removeWaypoint,
-    resetRouteInputData,
   } = useRouteStore();
 
   // 출발지, 도착지 포인트 생성
@@ -49,9 +45,8 @@ const RouteInputBar = ({
   // 경유지를 UI에 맞게 변환
   const waypointPoints = useMemo(() => {
     return waypoints.map((wp, index) => ({
-      id: wp.id,
+      fieldKey: wp.waypointKey,
       type: 'waypoint' as const,
-      placeholder: `경유지 ${index + 1}`,
       value: wp.place?.name || '',
     }));
   }, [waypoints]);
@@ -69,22 +64,17 @@ const RouteInputBar = ({
   // 닫기 버튼 핸들러
   const handleClosePress = useCallback(() => {
     onClose();
-    resetRouteInputData();
   }, [onClose]);
 
   // 경유지 추가
   const handleAddWaypointPress = useCallback(() => {
-    if (waypoints.length >= 3) {
-      console.warn('경유지는 최대 3개까지 추가 가능합니다.');
-      return;
-    }
     onAddWaypointAndEdit();
   }, [onAddWaypointAndEdit, waypoints]);
 
   // 경유지 삭제
   const handleRemoveWaypointPress = useCallback(
     (id: string) => {
-      if (canRemoveWaypoint(routeType, waypoints.length)) {
+      if (routeType === RouteType.LOOP && waypoints.length <= 1) {
         removeWaypoint(id);
       }
     },
@@ -208,7 +198,7 @@ const RouteInputBar = ({
           {/* 경유지들 */}
           {waypointPoints.map((waypoint, index) => (
             <View
-              key={waypoint.id}
+              key={waypoint.fieldKey}
               style={tw(
                 'flex-row items-center py-1 border-b border-line-default',
               )}
@@ -239,18 +229,18 @@ const RouteInputBar = ({
                       : 'text-on-surface-placeholder font-primary-500 text-base',
                   )}
                 >
-                  {waypoint.value || waypoint.placeholder}
+                  {waypoint.value}
                 </Text>
               </TouchableOpacity>
 
               {/* 우측 삭제 버튼 - loop 모드에서 경유지가 1개일 때는 숨김 */}
-              {canRemoveWaypoint(routeType, waypoints.length) && (
+              {routeType === RouteType.LOOP && waypoints.length <= 1 && (
                 <TouchableOpacity
                   style={[
                     tw('ml-2 w-6 h-6 items-center justify-center rounded-full'),
                     { backgroundColor: '#D1D1D1' },
                   ]}
-                  onPress={() => handleRemoveWaypointPress(waypoint.id)}
+                  onPress={() => handleRemoveWaypointPress(waypoint.fieldKey)}
                 >
                   <IconMinus width={20} color="white" />
                 </TouchableOpacity>

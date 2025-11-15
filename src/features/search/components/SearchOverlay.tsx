@@ -21,16 +21,15 @@ import {
   IconLocatorMark,
 } from '@/shared/components/icons';
 import { reverseGeocode } from '../services/search.api';
-import { Coordinates } from '@/features/map/model/map.types';
 import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
+import { useMapController } from '@/shared/hooks/useMapController';
 
 interface SearchOverlayProps {
   isVisible: boolean;
   onClose: () => void;
   onPlaceSelect: (place: AutocompleteResult) => void;
   placeholder?: string;
-  currentLocation?: Coordinates; // 현재 위치 추가
 }
 
 const SearchOverlay = ({
@@ -38,7 +37,6 @@ const SearchOverlay = ({
   onClose,
   onPlaceSelect,
   placeholder = '오늘은 어디로 갈까요?',
-  currentLocation,
 }: SearchOverlayProps) => {
   const [searchText, setSearchText] = useState('');
   const [isLoadingCurrentLocation, setIsLoadingCurrentLocation] =
@@ -61,6 +59,8 @@ const SearchOverlay = ({
     removeRecentSearch,
     clearRecentSearches,
   } = useRecentSearches();
+
+  const { myPosition } = useMapController();
 
   // 오버레이 표시/숨김 애니메이션
   useEffect(() => {
@@ -114,7 +114,7 @@ const SearchOverlay = ({
   const handleRecentSelect = useCallback(
     (recent: AutocompleteResult) => {
       const autocompleteResult: AutocompleteResult = {
-        id: recent.id,
+        placeKey: recent.placeKey,
         name: recent.name,
         address: recent.address,
         latitude: recent.latitude,
@@ -207,7 +207,7 @@ const SearchOverlay = ({
         </View>
         <TouchableOpacity
           style={tw('p-2')}
-          onPress={() => removeRecentSearch(item.id)}
+          onPress={() => removeRecentSearch(item.placeKey)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <IconClose width={12} height={12} color="#999" />
@@ -219,23 +219,18 @@ const SearchOverlay = ({
 
   // 현위치 버튼 핸들러
   const handleCurrentLocationPress = useCallback(async () => {
-    console.log('[SearchOverlay] 현위치 버튼 클릭');
     setIsLoadingCurrentLocation(true);
 
     try {
-      // currentLocation이 있으면 사용, 없으면 Geolocation으로 가져오기
-      if (currentLocation) {
-        console.log('[SearchOverlay] currentLocation 사용:', currentLocation);
+      if (myPosition) {
         const place = await reverseGeocode(
-          currentLocation.lat,
-          currentLocation.lon,
+          myPosition.lat,
+          myPosition.lon,
         );
-
-        console.log('[SearchOverlay] 역지오코딩 결과:', place);
 
         if (place) {
           const autocompleteResult: AutocompleteResult = {
-            id: place.id,
+            placeKey: place.id,
             name: place.name,
             address: place.address,
             latitude: place.latitude,
@@ -251,10 +246,8 @@ const SearchOverlay = ({
           );
         }
       } else {
-        console.log('[SearchOverlay] Geolocation으로 위치 가져오기 시작');
-        // currentLocation이 없으면 직접 위치 가져오기
+        // myPosition이 없으면 직접 위치 가져오기
         const hasPermission = await requestLocationPermission();
-        console.log('[SearchOverlay] 위치 권한:', hasPermission);
 
         if (!hasPermission) {
           Alert.alert('권한 필요', '위치 권한이 필요합니다.');
@@ -264,16 +257,14 @@ const SearchOverlay = ({
 
         Geolocation.getCurrentPosition(
           async position => {
-            console.log('[SearchOverlay] 위치 가져오기 성공:', position.coords);
             const { latitude, longitude } = position.coords;
 
             try {
               const place = await reverseGeocode(latitude, longitude);
-              console.log('[SearchOverlay] 역지오코딩 결과:', place);
 
               if (place) {
                 const autocompleteResult: AutocompleteResult = {
-                  id: place.id,
+                  placeKey: place.id,
                   name: place.name,
                   address: place.address,
                   latitude: place.latitude,
@@ -315,12 +306,11 @@ const SearchOverlay = ({
         `현재 위치의 주소를 가져오는 중 오류가 발생했습니다.\n상세: ${errorMessage}`,
       );
     } finally {
-      if (currentLocation) {
-        // currentLocation 경로에서만 여기서 처리
+      if (myPosition) {
         setIsLoadingCurrentLocation(false);
       }
     }
-  }, [currentLocation, handlePlaceSelect]);
+  }, [myPosition, handlePlaceSelect]);
 
   if (!isVisible) {
     return null;
@@ -434,7 +424,7 @@ const SearchOverlay = ({
             <FlatList
               data={recentSearches}
               renderItem={renderRecentResult}
-              keyExtractor={item => item.id}
+              keyExtractor={item => item.placeKey}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
               onScrollBeginDrag={() => Keyboard.dismiss()}
@@ -458,7 +448,7 @@ const SearchOverlay = ({
               <FlatList
                 data={results}
                 renderItem={renderSearchResult}
-                keyExtractor={item => item.id}
+                keyExtractor={item => item.placeKey}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 onScrollBeginDrag={() => Keyboard.dismiss()}

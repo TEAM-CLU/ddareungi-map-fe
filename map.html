@@ -198,7 +198,7 @@
 
         // 12. 경로 업데이트
         if (data.type === 'updateRoute') {
-          Route.updateRoute(data.routeType, data.points);
+          Route.updateRoute(data.routeType, data.points, data.path);
         }
 
         // 13. 경로 클리어
