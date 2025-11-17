@@ -13,16 +13,13 @@ import {
   CreateUserPayload,
   CreateUserResponse,
 } from '@/features/auth/model/auth.types';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '@/app/types';
 import RoundButton from '@/shared/components/button/RoundButton';
 import IconBicycle from '@/shared/components/icons/IconBicycle';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { useAuth } from '@/app/providers';
 import axios from 'axios';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import SlideModal from '@/shared/components/modal/SlideModal';
 import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 const RegisterScreen = () => {
   const { mutateAsync: signUp } = useCreateUserMutation();
@@ -48,7 +45,7 @@ const RegisterScreen = () => {
 
   const [isReadyToSignUp, setIsReadyToSignUp] = useState<boolean>(false);
 
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
 
   const handleSignUpButtonPress = async () => {
     if (

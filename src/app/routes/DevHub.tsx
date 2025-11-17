@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text, TouchableOpacity } from 'react-native';
@@ -14,6 +14,17 @@ import RouteRecommendScreen from '../screens/RouteRecommendScreen';
 import TestScreenForCho from '@/app/screens/TestScreenForCho';
 import TestScreenForPark from '@/app/screens/TestScreenForPark';
 import { RootStackParamList } from '@/app/types';
+import RouteSelectedDetailModal from '@/features/routing/components/RouteSelectedDetailModal';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
+import SlideModal from '@/shared/components/modal/SlideModal';
+import { useMapController } from '@/shared/hooks/useMapController';
+import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
+import NearbyStationModal from '@/features/station/components/NearbyStationModal';
+import StationDetailModal from '@/features/station/components/StationDetailModal';
+import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import { StackNavigationProp } from '@react-navigation/stack';
+import GlobalModals from '@/shared/components/modal/GlobalModals';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -56,28 +67,31 @@ const DevHubScreen = ({ navigation }: any) => {
 };
 
 const DevHub = () => {
-  const linking = {
-    prefixes: ['ddareungimap://'],
-    config: {
-      screens: {
-        Landing: 'landing',
-        Onboarding: 'onboarding',
-        Login: {
-          path: 'login',
-          parse: {
-            state: (state: string) => state,
+  const linking = useMemo(
+    () => ({
+      prefixes: ['ddareungimap://'],
+      config: {
+        screens: {
+          Landing: 'landing',
+          Onboarding: 'onboarding',
+          Login: {
+            path: 'login',
+            parse: {
+              state: (state: string) => state,
+            },
           },
+          Register: 'register',
+          Map: 'map',
+          RouteSelect: 'routeselect',
+          RouteRecommend: 'routerecommend',
+          MyPage: 'mypage',
+          TestCho: 'testcho',
+          TestPark: 'testpark',
         },
-        Register: 'register',
-        Map: 'map',
-        RouteSelect: 'routeselect',
-        RouteRecommend: 'routerecommend',
-        MyPage: 'mypage',
-        TestCho: 'testcho',
-        TestPark: 'testpark',
       },
-    },
-  };
+    }),
+    [],
+  );
   return (
     <NavigationContainer linking={linking}>
       <Stack.Navigator
@@ -100,6 +114,7 @@ const DevHub = () => {
         <Stack.Screen name="TestCho" component={TestScreenForCho} />
         <Stack.Screen name="TestPark" component={TestScreenForPark} />
       </Stack.Navigator>
+      <GlobalModals />
     </NavigationContainer>
   );
 };

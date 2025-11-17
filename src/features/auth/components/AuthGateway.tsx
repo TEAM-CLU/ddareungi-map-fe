@@ -9,13 +9,13 @@ import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { tw } from '@/shared/libs/tw-helper';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { TouchableOpacity, View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AccountFinder from '@/features/auth/components/AccountFinder';
 import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 interface AuthGatewayProps {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,7 +38,7 @@ const AuthGateway = ({
     'findAccount' | 'resetPwd' | null
   >(null);
 
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
 
   useEffect(() => {
     if (!!id && !!pwd) {

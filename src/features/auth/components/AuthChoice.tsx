@@ -1,7 +1,7 @@
 import { RootStackParamList } from '@/app/types';
 import RoundButton from '@/shared/components/button/RoundButton';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { tw } from '@/shared/libs/tw-helper';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -10,8 +10,7 @@ interface AuthChoiceProps {
 }
 
 const AuthChoice = ({ setLoginScreenStep }: AuthChoiceProps) => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
+  const { navigation } = useAppNavigation();
   const handleLoginButtonPress = () => setLoginScreenStep(2);
   const handleNonMemberButtonPress = () => navigation.navigate('Map');
 

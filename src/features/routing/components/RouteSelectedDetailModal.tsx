@@ -6,7 +6,7 @@ import { IconSpotMarker } from '@/shared/components/icons';
 import { ScrollView } from 'react-native-gesture-handler';
 import RouteProgressStepVerticalBar from '@/features/routing/components/RoutePrgressStepVerticalBar';
 import RoundButton from '@/shared/components/button/RoundButton';
-import { Route } from '../model/routing.types';
+import { Route, Waypoint } from '../model/routing.types';
 import {
   formatDistance,
   formatMinutes,
@@ -15,15 +15,12 @@ import {
   getCategoryText,
 } from '@/shared/utils/formatting';
 import React from 'react';
-import { Waypoint } from '../stores/routeStore';
 
 interface RouteSelectedDetailModalProps {
   selectedRouteData: Route | null;
   startAddress: string | undefined;
   endAddress: string | undefined;
   waypoints?: Waypoint[];
-  onStartNavigationPress: () => void;
-  onClose: () => void;
   baseTime?: Date;
 }
 
@@ -32,8 +29,6 @@ const RouteSelectedDetailModal = ({
   startAddress,
   endAddress,
   waypoints,
-  onStartNavigationPress,
-  onClose,
   baseTime = new Date(),
 }: RouteSelectedDetailModalProps) => {
   if (!selectedRouteData) {
@@ -74,7 +69,7 @@ const RouteSelectedDetailModal = ({
     <ScrollView
       contentContainerStyle={[
         tw('w-full flex flex-col flex-1 bg-surface-primary justify-start'),
-        { gap: 13 },
+        { gap: 13, paddingBottom: 40 },
       ]}
     >
       <View style={[tw('flex flex-col items-start w-full'), { gap: 16 }]}>
@@ -290,11 +285,7 @@ const RouteSelectedDetailModal = ({
         </View>
       </View>
 
-      <RoundButton
-        preset="lg"
-        title="안내 시작하기"
-        onPress={onStartNavigationPress}
-      />
+      <RoundButton preset="lg" title="안내 시작하기" onPress={() => {}} />
     </ScrollView>
   );
 };

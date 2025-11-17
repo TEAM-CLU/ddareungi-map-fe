@@ -11,9 +11,8 @@ import {
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import SearchBar from './SearchBar';
-import { useAutocomplete, AutocompleteResult } from '../hooks/useAutocomplete';
+import { useAutocomplete } from '../hooks/useAutocomplete';
 import { useRecentSearches } from '../hooks/useRecentSearches';
-import { SEARCH_CONSTANTS } from '../model/search.constants';
 import {
   IconPlace,
   IconSearch,
@@ -24,6 +23,9 @@ import { reverseGeocode } from '../services/search.api';
 import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
 import { useMapController } from '@/shared/hooks/useMapController';
+import { AutocompleteResult } from '../model/search.types';
+import { ANIMATION_DURATION } from '../model/search.constants';
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 
 interface SearchOverlayProps {
   isVisible: boolean;
@@ -60,7 +62,7 @@ const SearchOverlay = ({
     clearRecentSearches,
   } = useRecentSearches();
 
-  const { myPosition } = useMapController();
+  const { myPosition } = useMyPositionStore();
 
   // 오버레이 표시/숨김 애니메이션
   useEffect(() => {
@@ -68,13 +70,13 @@ const SearchOverlay = ({
       fadeAnim.setValue(0);
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: SEARCH_CONSTANTS.ANIMATION_DURATION,
+        duration: ANIMATION_DURATION,
         useNativeDriver: true,
       }).start();
     } else {
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: SEARCH_CONSTANTS.ANIMATION_DURATION,
+        duration: ANIMATION_DURATION,
         useNativeDriver: true,
       }).start();
     }
@@ -223,10 +225,7 @@ const SearchOverlay = ({
 
     try {
       if (myPosition) {
-        const place = await reverseGeocode(
-          myPosition.lat,
-          myPosition.lon,
-        );
+        const place = await reverseGeocode(myPosition.lat, myPosition.lon);
 
         if (place) {
           const autocompleteResult: AutocompleteResult = {

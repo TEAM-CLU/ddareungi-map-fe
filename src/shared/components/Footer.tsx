@@ -1,10 +1,9 @@
-import { RootStackParamList } from '@/app/types';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '../libs/tw-helper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FOOTER_MENU } from '../model/index.constants';
+import { useAppNavigation } from '../hooks/useAppNavigation';
 
 interface FooterProps {
   setIsStationButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
@@ -15,7 +14,7 @@ const Footer = ({
   setIsRouteRecommendBtnPressed,
 }: FooterProps) => {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
 
   return (
     <View

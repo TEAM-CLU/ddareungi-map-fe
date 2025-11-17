@@ -7,13 +7,11 @@ import {
 } from '@/shared/model/map.webview.types';
 import { useCallback } from 'react';
 
-import WebView from 'react-native-webview';
-
 /**
  * 검색 관련 WebView 통신 훅
  */
-export const useMapSearch = (webRef: React.RefObject<WebView | null>) => {
-  const { sendMessage } = useMapWebview(webRef);
+export const useMapSearch = () => {
+  const { sendMessage } = useMapWebview();
 
   const showPlaceMarker = useCallback(
     (lat: number, lng: number, placeName: string, placeInfo?: any) => {

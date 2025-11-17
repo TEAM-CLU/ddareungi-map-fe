@@ -68,11 +68,6 @@ export interface GetStationLatestBikeCountListResponse {
 }
 
 // useStation hook 내부 상태 타입
-export interface UseStationsProps {
-  webRef: RefObject<WebView | null>;
+export interface UseStationsOptions {
   isMapReady: boolean;
-  setStationMetaData?: React.Dispatch<
-    React.SetStateAction<MapAreaStationData | null>
-  >;
-  stationDetailModalRef?: RefObject<BottomSheetModal | null>;
 }

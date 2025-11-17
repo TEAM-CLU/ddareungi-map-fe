@@ -1,26 +1,25 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Alert, TouchableOpacity, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import RouteInputBar from '@/features/routing/components/RouteInputBar';
-import { Route, RouteData, RoutePoint, RouteType } from '@/features/routing/model/routing.types';
 import {
-  RouteProp,
-  useRoute,
-  useNavigation,
-  NavigationProp,
-  useFocusEffect,
-} from '@react-navigation/native';
-import { RootStackParamList } from '../types';
+  Route,
+  RouteData,
+  RoutePoint,
+  RouteType,
+} from '@/features/routing/model/routing.types';
+import { RouteProp, useRoute, useFocusEffect } from '@react-navigation/native';
 import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
 import RouteTimeRefreshBar from '@/features/routing/components/RouteTimeRefreshBar';
-import { useRouteStore } from '@/features/routing/stores/routeStore';
-
-type RouteSelectScreenRouteProp = RouteProp<RootStackParamList, 'RouteSelect'>;
-type RouteSelectScreenNavigationProp = NavigationProp<RootStackParamList>;
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
+import { useMapController } from '@/shared/hooks/useMapController';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { useAppRoute } from '@/shared/hooks/useAppRoute';
 
 const RouteSelectScreen = () => {
-  const route = useRoute<RouteSelectScreenRouteProp>();
-  const navigation = useNavigation<RouteSelectScreenNavigationProp>();
+  const route = useAppRoute<'RouteSelect'>();
+  const { navigation } = useAppNavigation();
 
   const {
     routeType,
@@ -38,8 +37,6 @@ const RouteSelectScreen = () => {
 
     syncStartEndInLoopMode,
     isRouteComplete,
-    needReset,
-    setNeedReset,
 
     routes,
     isLoadingRoutes,
@@ -48,8 +45,13 @@ const RouteSelectScreen = () => {
     resetAllData,
   } = useRouteStore();
 
+  const { showSelectedRouteDetailModal, setShowSelectedRouteDetailModal } =
+    useModalStore();
+
   // 경로 시간 계산 기준 시간 (리프레시 가능)
   const [baseTime, setBaseTime] = React.useState<Date>(new Date());
+  // 파라미터 중복 소비 방지 플래그
+  const [paramsConsumed, setParamsConsumed] = useState(true);
 
   // ---------- LOOP/CONSTANT 동기화 처리 ----------
 
@@ -60,6 +62,12 @@ const RouteSelectScreen = () => {
   }, [route.params?.routeType, setRouteType]);
 
   // ---------- 화면 나갔을 때 경로 데이터 초기화 ----------
+  // 화면이 포커스될 때마다 파라미터 소비 준비
+  useFocusEffect(
+    useCallback(() => {
+      setParamsConsumed(false);
+    }, []),
+  );
 
   // useEffect(() => {
   //   const unsubscribe = navigation.addListener('beforeRemove', () => {
@@ -69,42 +77,35 @@ const RouteSelectScreen = () => {
   //   return unsubscribe;
   // }, [navigation, resetAllData]);
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      // 스토어에서 직접 최신 상태를 가져옴
-      const state = useRouteStore.getState();
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+  //     // 스토어에서 직접 최신 상태를 가져옴
+  //     const state = useRouteStore.getState();
 
-      // 만약 모달 띄우는 중 (true)이면,
-      // 데이터를 초기화하지 않고 그냥 리턴
-      if (state.showSelectedRouteDetailModal) {
-        return;
-      }
+  //     // 만약 모달 띄우는 중 (true)이면,
+  //     // 데이터를 초기화하지 않고 그냥 리턴
+  //     if (state.showSelectedRouteDetailModal) {
+  //       return;
+  //     }
 
-      // 그 외의 경우 (사용자가 헤더의 뒤로가기 버튼을 누르는 등)
-      // 데이터를 초기화
-      resetAllData();
-    });
+  //     // 그 외의 경우 (사용자가 헤더의 뒤로가기 버튼을 누르는 등)
+  //     // 데이터를 초기화
+  //     resetAllData();
+  //   });
 
-    return unsubscribe;
-  }, [navigation, resetAllData]);
-
-
-  useFocusEffect(
-    useCallback(() => {
-      // 이 화면이 다시 포커스될 때마다 실행
-      if (needReset) {
-        // 1. 스토어의 "초기화 필요" 플래그가 켜져 있으면
-        resetAllData(); // 2. 모든 데이터를 초기화 (화면이 깨끗해짐)
-        setNeedReset(false); // 3. 플래그를 다시 끔 (무한 루프 방지)
-      }
-    }, [needReset, resetAllData, setNeedReset])
-  );
+  //   return unsubscribe;
+  // }, [navigation, resetAllData]);
 
   // ---------- Map → RouteSelect ----------
   // ---------- Map에서 선택한 장소를 출발지/도착지/경유지에 반영 ----------
 
   useEffect(() => {
-    if (route.params?.selectedPlace && route.params?.placeType) {
+    if (
+      route.params?.selectedPlace &&
+      route.params?.placeType &&
+      !paramsConsumed
+    ) {
+      setParamsConsumed(true);
       const { selectedPlace, placeType } = route.params;
 
       // auto 모드: 검색이 아닌 지도에서 핀 찍는 등에서의 로직
@@ -127,11 +128,6 @@ const RouteSelectScreen = () => {
             addWaypoint(selectedPlace);
           }
         }
-        // 파라미터 초기화
-        navigation.setParams({
-          selectedPlace: undefined,
-          placeType: undefined,
-        } as Partial<RootStackParamList['RouteSelect']>);
         return;
       }
 
@@ -142,11 +138,6 @@ const RouteSelectScreen = () => {
         (placeType === 'start' || placeType === 'end')
       ) {
         syncStartEndInLoopMode(selectedPlace, placeType);
-
-        navigation.setParams({
-          selectedPlace: undefined,
-          placeType: undefined,
-        } as Partial<RootStackParamList['RouteSelect']>);
         return;
       }
 
@@ -161,13 +152,22 @@ const RouteSelectScreen = () => {
       } else if (placeType.startsWith('waypoint-')) {
         updateWaypoint(placeType, selectedPlace); // 기존 경유지 수정
       }
-
-      navigation.setParams({
-        selectedPlace: undefined,
-        placeType: undefined,
-      } as Partial<RootStackParamList['RouteSelect']>);
     }
-  }, [route.params?.selectedPlace, route.params?.placeType]);
+  }, [
+    route.params?.selectedPlace,
+    route.params?.placeType,
+    paramsConsumed,
+    setParamsConsumed,
+    start,
+    end,
+    waypoints,
+    routeType,
+    setStart,
+    setEnd,
+    addWaypoint,
+    updateWaypoint,
+    syncStartEndInLoopMode,
+  ]);
 
   // ---------- Event handlers ----------
 
@@ -196,7 +196,7 @@ const RouteSelectScreen = () => {
   // RouteInputBar 닫기 버튼
   const handleRouteInputBarClose = useCallback(() => {
     resetAllData();
-    navigation.goBack();
+    navigation.navigate('Map');
   }, [resetAllData, navigation]);
 
   // 경로 검색 버튼
@@ -213,9 +213,10 @@ const RouteSelectScreen = () => {
   const handleRouteItemPress = useCallback(
     (selectedRouteData: Route) => {
       setSelectedRouteData(selectedRouteData);
-      navigation.goBack();
+      setShowSelectedRouteDetailModal(true);
+      navigation.navigate('Map');
     },
-    [navigation, setSelectedRouteData],
+    [navigation, setSelectedRouteData, showSelectedRouteDetailModal],
   );
 
   return (

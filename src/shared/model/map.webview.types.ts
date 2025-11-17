@@ -6,11 +6,6 @@ import {
   StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
 
-export interface MapWebviewMessage {
-  type: string;
-  [key: string]: any;
-}
-
 // === 위치 관련 메시지 ===
 export interface MyLocationMessage {
   type: 'myLocation';
@@ -161,11 +156,14 @@ export interface FocusOnTargetedNearbyStationMessage {
 }
 
 // 모든 메시지 타입 유니온
-export type WebViewMessageFromRN =
-  | MyLocationMessage
-  | MyHeadingMessage
-  | MyLocationFollowingMessage
-  | CompassModeMessage
+export type WebViewMessageToRN =
+  | MapReadyMessage
+  | ShowPlaceDetailModalMessage
+  | PlaceMarkerShownMessage
+  | MapMovedToLocationMessage
+  | RouteTypeUpdatedMessage
+  | RouteClearedMessage
+  | FocusOnTargetedNearbyStationMessage
   | ShowPlaceMarkerMessage
   | MoveToLocationMessage
   | ShowSearchResultsMessage
@@ -173,12 +171,11 @@ export type WebViewMessageFromRN =
   | UpdateRouteMessage
   | ClearRouteMessage
   | SetRouteTypeMessage
-  | MoveToRoutePointMessage;
-
-export type WebViewMessageToRN =
-  | MapReadyMessage
-  | ShowPlaceDetailModalMessage
-  | PlaceMarkerShownMessage
-  | MapMovedToLocationMessage
-  | RouteTypeUpdatedMessage
-  | RouteClearedMessage;
+  | MoveToRoutePointMessage
+  | ToggleStationMarkersMessage
+  | MyLocationFollowingMessage
+  | CompassModeMessage
+  | MyLocationMessage
+  | MyHeadingMessage
+  | UpdateTargetedStationBikeCountListMessage
+  | UpdateStationDataListMessage;

@@ -1,13 +1,15 @@
 import { RefObject, useCallback } from 'react';
 import WebView from 'react-native-webview';
-import { WebViewMessageFromRN } from '../../../shared/model/map.webview.types';
+import { WebViewMessageToRN } from '../../../shared/model/map.webview.types';
+import { useMapStore } from '../stores/useMapStore';
 
 /**
  * RN ↔ WebView 간 메시지 전송을 위한 공통 Hook
  */
-export const useMapWebview = (webRef: RefObject<WebView | null>) => {
+export const useMapWebview = () => {
+  const { webRef } = useMapStore();
   const sendMessage = useCallback(
-    (message: WebViewMessageFromRN) => {
+    (message: WebViewMessageToRN) => {
       if (!webRef.current) {
         console.warn('⚠️ WebView ref is null — 메시지 전송 불가');
         return;

@@ -1,18 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AutocompleteResult } from './useAutocomplete';
-
-const RECENT_SEARCH_KEY = '@ddareungi_recent_searches';
-const MAX_RECENT_SEARCHES = 10;
-
-export interface RecentSearchItem {
-  placeKey: string;
-  name: string;
-  address: string;
-  timestamp: number;
-  latitude?: number;
-  longitude?: number;
-}
+import { AutocompleteResult, RecentSearchItem } from '../model/search.types';
+import {
+  RECENT_SEARCH_KEY,
+  MAX_RECENT_SEARCHES,
+} from '../model/search.constants';
 
 export const useRecentSearches = () => {
   const [recentSearches, setRecentSearches] = useState<RecentSearchItem[]>([]);

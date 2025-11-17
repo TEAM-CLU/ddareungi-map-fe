@@ -6,7 +6,12 @@ import WalkTimeBadge from '@/shared/components/badge/WalkTimeBadge';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import type { Route, RouteResponse, Segment } from '../model/routing.types';
-import { calculateWalkingTime, formatDistance, formatTime, formatTimeRange } from '@/shared/utils/formatting';
+import {
+  calculateWalkingTime,
+  formatDistance,
+  formatTime,
+  formatTimeRange,
+} from '@/shared/utils/formatting';
 
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
@@ -90,7 +95,9 @@ const RouteSelectContainer = ({
         const distanceKm = formatDistance(summary.distance);
         const walkingMinutes = Math.round(calculateWalkingTime(segments) / 60);
         const timeRange = formatTimeRange(baseTime, summary.time);
-        const firstWalkingSegment = segments.find(seg => seg.type === 'walking');
+        const firstWalkingSegment = segments.find(
+          seg => seg.type === 'walking',
+        );
         const bikingSegment = segments.find(seg => seg.type === 'biking');
         const lastWalkingSegment = segments
           .slice()
@@ -157,7 +164,7 @@ const RouteSelectContainer = ({
                     { fontSize: 17 },
                   ]}
                 >
-                  {distanceKm}km
+                  {distanceKm}
                 </Text>
                 <View style={[tw('flex flex-row items-center'), { gap: 8 }]}>
                   <CalorieBadge value={143} />
@@ -167,6 +174,7 @@ const RouteSelectContainer = ({
             </View>
 
             <RouteProgressStepBar
+              route={route}
               firstWalkingMinutes={firstWalkingMinutes}
               bikingMinutes={bikingMinutes}
               lastWalkingMinutes={lastWalkingMinutes}

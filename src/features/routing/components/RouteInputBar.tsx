@@ -11,7 +11,7 @@ import {
 import { RoutePoint, RouteType } from '../model/routing.types';
 import { createStartPoint, createEndPoint } from '../model/routing.data';
 import IconArrowsUpDown from '@/shared/components/icons/IconArrowsUpDown';
-import { useRouteStore } from '../stores/routeStore';
+import { useRouteStore } from '../stores/useRouteStore';
 
 interface RouteInputBarProps {
   onClose: () => void;
@@ -24,16 +24,8 @@ const RouteInputBar = ({
   onRoutePointPress,
   onAddWaypointAndEdit,
 }: RouteInputBarProps) => {
-
-  const {
-    routeType,
-    start,
-    end,
-    waypoints,
-    setStart,
-    setEnd,
-    removeWaypoint,
-  } = useRouteStore();
+  const { routeType, start, end, waypoints, setStart, setEnd, removeWaypoint } =
+    useRouteStore();
 
   // 출발지, 도착지 포인트 생성
   const startPoint = useMemo(

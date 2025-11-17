@@ -1,12 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Animated } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  ActivityIndicator,
+} from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { AutocompleteResult } from '../hooks/useAutocomplete';
 import { IconBicycle } from '@/shared/components/icons';
 import { RouteType } from '@/features/routing/model/routing.types';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/app/types';
-import { useRouteStore } from '@/features/routing/stores/routeStore';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useMapController } from '@/shared/hooks/useMapController';
 import { useNearbyStationsMutation } from '@/features/station/services/station.queries';
 import {
@@ -16,20 +21,17 @@ import {
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { NavigationProp } from '@react-navigation/native';
 import { Coordinates } from '@/features/map/model/map.types';
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import { useMapStore } from '@/features/map/stores/useMapStore';
+import { AutocompleteResult } from '../model/search.types';
 
 export interface PlaceDetailModalProps {
-  place: AutocompleteResult;
-  navigation: NavigationProp<RootStackParamList>;
+  place: AutocompleteResult | null;
   onClose?: () => void;
-  myPosition?: Coordinates;
 }
 
-const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
-  place,
-  navigation,
-  onClose,
-  myPosition,
-}) => {
+const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   const {
     routeType,
     setRouteType,
@@ -39,29 +41,30 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
     syncStartEndInLoopMode,
   } = useRouteStore();
 
+  const { globalNavigation } = useMapStore();
+  const { myPosition } = useMyPositionStore();
+
   const { mutateAsync: fetchNearbyStationDataList } =
     useNearbyStationsMutation();
   const [statoinFullName, setStationFullName] =
     useState<string>('가져오는 중...');
-  const [stationDistance, setStationDistance] = useState<number | string>(
-    '측정 중...',
-  );
+  const [stationDistance, setStationDistance] = useState<number | null>(null);
   const [placeDistance, setPlaceDistance] = useState<number | null>(null);
 
   // --------------- 대여소 정보 적용 -----------------
 
   useEffect(() => {
     const applyStationNameAndDistance = async () => {
-      if (!place.latitude || !place.latitude) return;
+      if (!place!.latitude || !place!.latitude) return;
       try {
         const payload: NearbyStationListPayload = {
-          latitude: place.latitude!,
-          longitude: place.longitude!,
+          latitude: place!.latitude!,
+          longitude: place!.longitude!,
         };
         const response: NearbyStationData[] = await fetchNearbyStationDataList(
           payload,
         );
-        setStationFullName(`${response[0].number}. ${response[0].name}`);
+        setStationFullName(`${response[0].number}. ${response[0].name}까지`);
         setStationDistance(response[0].distance);
       } catch (error) {
         console.error('Error fetching nearby stations:', error);
@@ -71,18 +74,14 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
     applyStationNameAndDistance();
   }, [place]);
 
-
-  
   useEffect(() => {
-    if (!myPosition || !place.latitude || !place.longitude) return;
+    if (!myPosition || !place!.latitude || !place!.longitude) return;
     const distance = getDistanceBetweenCoords(
       { lat: myPosition.lat, lon: myPosition.lon },
-      { lat: place.latitude!, lon: place.longitude! },
+      { lat: place!.latitude, lon: place!.longitude },
     );
     setPlaceDistance(Math.round(distance));
   }, [myPosition, place]);
-
-
 
   // --------------- 토글 관련 -----------------
   // LOOP <-> CONSTANT 토글
@@ -106,8 +105,6 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
     }).start();
   }, [routeType, toggleAnimation]);
 
-
-
   // --------------- 버튼 핸들러 -----------------
   /* 
     첫 번째 버튼 (출발/원점) 핸들러
@@ -117,10 +114,10 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
 
     const placeData: AutocompleteResult = {
       placeKey: `start-${Date.now()}`, // 출발지는 고유 ID
-      name: place.name,
-      address: place.address,
-      latitude: place.latitude!,
-      longitude: place.longitude!,
+      name: place!.name,
+      address: place!.address,
+      latitude: place!.latitude,
+      longitude: place!.longitude,
     };
 
     // LOOP 모드: 출발-도착 동기화
@@ -129,7 +126,7 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
     } else {
       setStart(placeData);
     }
-    navigation.navigate('RouteSelect');
+    globalNavigation.navigate('RouteSelect');
   };
 
   /*
@@ -140,10 +137,10 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
 
     const placeData: AutocompleteResult = {
       placeKey: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
-      name: place.name,
-      address: place.address,
-      latitude: place.latitude!,
-      longitude: place.longitude!,
+      name: place!.name,
+      address: place!.address,
+      latitude: place!.latitude!,
+      longitude: place!.longitude!,
     };
 
     if (routeType === RouteType.LOOP) {
@@ -153,8 +150,16 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
       // CONSTANT 모드: 도착지 설정
       setEnd(placeData);
     }
-    navigation.navigate('RouteSelect');
+    globalNavigation.navigate('RouteSelect');
   };
+
+  if (!place) {
+    return (
+      <View style={tw('flex justify-center w-full flex-1 items-center')}>
+        <ActivityIndicator size="large" color="#01DA86" />
+      </View>
+    );
+  }
 
   return (
     <View style={tw('flex-1')}>
@@ -215,7 +220,14 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
         <IconBicycle width={30} height={30} color="#414548" />
         {/* 대여소 API 연결되면 변경 */}
         <Text style={tw('text-md font-primary-600 text-on-surface-primary')}>
-          {statoinFullName}까지 {stationDistance}m
+          {statoinFullName}{' '}
+          {`${
+            stationDistance
+              ? stationDistance >= 1000
+                ? `${(stationDistance / 1000).toFixed(1)}km`
+                : `${Math.round(stationDistance)}m`
+              : '거리 측정 중...'
+          }`}
         </Text>
       </View>
 

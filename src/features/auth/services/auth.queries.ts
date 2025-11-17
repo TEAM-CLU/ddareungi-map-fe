@@ -20,14 +20,11 @@ import {
   postVerifyEmail,
 } from '@/features/auth/services/auth.api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  CommonActions,
-  NavigationProp,
-  useNavigation,
-} from '@react-navigation/native';
+import { CommonActions, NavigationProp } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 // 이메일 인증 코드 발송
 export const useSendVerificationEmailMutation = () => {
@@ -69,7 +66,7 @@ export const useResetPasswordMutation = () => {
 // 로그아웃
 export const useLogoutMutation = () => {
   const queryClient = useQueryClient();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
 
   const mutation = useMutation({
     mutationFn: postLogout,

@@ -11,8 +11,8 @@ import WebView from 'react-native-webview';
 /**
  * 경로(Route) 관련 WebView 통신 훅
  */
-export const useMapRouting = (webRef: React.RefObject<WebView | null>) => {
-  const { sendMessage } = useMapWebview(webRef);
+export const useMapRouting = () => {
+  const { sendMessage } = useMapWebview();
 
   // 경로 업데이트 (출발지/도착지/경유지 정보 포함)
   const updateRoute = useCallback(

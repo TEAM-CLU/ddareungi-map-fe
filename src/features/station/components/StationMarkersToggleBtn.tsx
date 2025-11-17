@@ -5,32 +5,32 @@ import WebView from 'react-native-webview';
 import IconStationMarkerOn from '@/shared/components/icons/IconStationMarkerOn';
 import IconStationMarkerOff from '@/shared/components/icons/IconStationMarkerOff';
 import { ToggleStationMarkersMessage } from '@/shared/model/map.webview.types';
+import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 
-interface StationMarkersToggleBtnProps {
-  webRef: RefObject<WebView | null>;
-}
-
-const StationMarkersToggleBtn = ({ webRef }: StationMarkersToggleBtnProps) => {
+const StationMarkersToggleBtn = () => {
+  const { sendMessage } = useMapWebview();
+  const { webRef } = useMapStore();
   const [mode, setMode] = useState<'on' | 'off'>('on');
 
   const handleToggleBtnPress = () => {
     if (mode === 'on') {
       setMode('off');
-      const toggleStationMarkersMessage: ToggleStationMarkersMessage = {
+      const message: ToggleStationMarkersMessage = {
         type: 'toggleStationMarkers',
         isVisible: false,
       };
-      webRef.current?.postMessage(JSON.stringify(toggleStationMarkersMessage));
+      sendMessage(message);
       return;
     }
 
     if (mode === 'off') {
       setMode('on');
-      const toggleStationMarkersMessage: ToggleStationMarkersMessage = {
+      const message: ToggleStationMarkersMessage = {
         type: 'toggleStationMarkers',
         isVisible: true,
       };
-      webRef.current?.postMessage(JSON.stringify(toggleStationMarkersMessage));
+      sendMessage(message);
       return;
     }
   };

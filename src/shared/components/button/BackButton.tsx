@@ -1,8 +1,7 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import IconBackArrow from '@/shared/components/icons/IconBackArrow';
-import { RootStackParamList } from '@/app/types';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 interface BackButtonProps {
   type: 'previous' | 'custom';
@@ -19,7 +18,7 @@ const BackButton = ({
   iconHeight = 20,
   onPress,
 }: BackButtonProps) => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
 
   const handlePress = () => {
     if (type === 'previous') {

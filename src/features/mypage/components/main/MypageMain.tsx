@@ -8,8 +8,7 @@ import CarbonStatusCard from '@/features/mypage/components/main/CarbonStatusCard
 import BackButton from '@/shared/components/button/BackButton';
 import { MYPAGE_MENU_ITEMS } from '../../model/mypage.constants';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '@/app/types';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 const MypageMain = ({
   onNavigate,
@@ -17,7 +16,7 @@ const MypageMain = ({
   onNavigate: (page: 'updateInfo' | 'updatePassword' | 'help') => void;
 }) => {
   const { data: user } = useUserInfoQuery();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
 
   const handleNavigate = (page: 'updateInfo' | 'updatePassword' | 'help') => {
     if (page === 'help') {
@@ -69,13 +68,13 @@ const MypageMain = ({
                   >
                     {user.data.name}님
                   </Text>
-                    <Text
-                      style={tw(
-                        'text-on-surface-primary font-primary-700 text-base',
-                      )}
-                    >
-                      {user.data.email}
-                    </Text>
+                  <Text
+                    style={tw(
+                      'text-on-surface-primary font-primary-700 text-base',
+                    )}
+                  >
+                    {user.data.email}
+                  </Text>
                 </View>
               </View>
             </View>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { useRouteStore } from '@/features/routing/stores/routeStore';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import RouteRecommendInputBar from '@/features/routing/components/recommend/RouteRecommendInputBar';
 import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
 import RouteTimeRefreshBar from '@/features/routing/components/RouteTimeRefreshBar';
@@ -14,20 +14,16 @@ import {
   RouteProp,
 } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import SlideModal from '@/shared/components/modal/SlideModal';
-
-type RouteRecommendScreenRouteProp = RouteProp<
-  RootStackParamList,
-  'RouteRecommend'
->;
-type RouteRecommendScreenNavigationProp = NavigationProp<RootStackParamList>;
+import { useAppRoute } from '@/shared/hooks/useAppRoute';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { useModalStore } from '@/shared/stores/useModalStore';
 
 const RouteRecommendScreen = () => {
-  const route = useRoute<RouteRecommendScreenRouteProp>();
-  const navigation = useNavigation<RouteRecommendScreenNavigationProp>();
+  const route = useAppRoute<'RouteSelect'>();
+  const { navigation } = useAppNavigation<'Map'>();
 
-  const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
+  const { setShowRouteRecommendModal, setShowSelectedRouteDetailModal } =
+    useModalStore();
 
   const {
     start,
@@ -80,7 +76,7 @@ const RouteRecommendScreen = () => {
 
   // 이동거리 입력창 터치
   const handleDistancePress = useCallback(() => {
-    routeRecommendModalRef.current?.present();
+    setShowRouteRecommendModal(true);
   }, []);
 
   // RouteInputBar 닫기 버튼
@@ -103,8 +99,9 @@ const RouteRecommendScreen = () => {
     (selectedRouteData: Route) => {
       setSelectedRouteData(selectedRouteData);
       navigation.navigate('Map');
+      setShowSelectedRouteDetailModal(true);
     },
-    [navigation, setSelectedRouteData],
+    [navigation, setSelectedRouteData, setShowSelectedRouteDetailModal],
   );
 
   return (
@@ -144,19 +141,6 @@ const RouteRecommendScreen = () => {
         baseTime={baseTime}
         onRoutePress={handleRouteItemPress}
       />
-
-      {/* 경로추천 모달 */}
-      <SlideModal
-        ref={routeRecommendModalRef}
-        snapPoints={['45%', '48%']}
-        initialIndex={1}
-        onClose={() => routeRecommendModalRef.current?.dismiss()}
-      >
-        <RouteRecommendModal
-          navigation={navigation}
-          routeRecommendModalRef={routeRecommendModalRef}
-        />
-      </SlideModal>
     </View>
   );
 };

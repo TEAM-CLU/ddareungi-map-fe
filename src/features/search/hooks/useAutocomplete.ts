@@ -1,30 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { searchPlacesByKeyword } from '../services/search.api';
-import { SearchOptions } from '../model/search.types';
-import { SEARCH_CONSTANTS } from '../model/search.constants';
+import {
+  AutocompleteResult,
+  SearchOptions,
+  UseAutocompleteOptions,
+} from '../model/search.types';
 import { useMapController } from '@/shared/hooks/useMapController';
-
-// 자동완성 검색 결과 타입
-export interface AutocompleteResult {
-  placeKey: string;   // 장소 고유 ID
-  name: string;       // 장소명 (예: 스타벅스 강남점)
-  address: string;    // 주소 (예: 서울 강남구...)
-  latitude?: number;  // 위도
-  longitude?: number; // 경도
-  distance?: string;  // 현재 위치로부터의 거리 (m)
-  category?: string;  // 장소 카테고리 (카페, 음식점 등)
-}
-
-interface UseAutocompleteOptions {
-  // 디바운싱 지연 시간
-  autoSearchDelay?: number;
-}
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
+import { DEFAULT_DEBOUNCE_DELAY, DEFAULT_SEARCH_RADIUS, ERROR_MESSAGES, MIN_SEARCH_LENGTH } from '../model/search.constants';
 
 export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
-  const {
-    autoSearchDelay = SEARCH_CONSTANTS.DEFAULT_DEBOUNCE_DELAY,
-  } = options;
-
+  const { autoSearchDelay = DEFAULT_DEBOUNCE_DELAY } = options;
   // ------------ 로컬 상태 -------------
   const [query, setQuery] = useState(''); // 현재 입력된 검색어
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +18,7 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
   const [error, setError] = useState<string | null>(null);
   const [debounceTimer, setDebounceTimer] = useState<number | null>(null); // 디바운스 타이머
 
-  const { myPosition } = useMapController();
+  const { myPosition } = useMyPositionStore();
 
   // ------------- API 호출 -------------
   // 자동완성 검색 실행
@@ -43,7 +29,7 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
       // 1. 최소 길이 검증
       if (
         !trimmedQuery ||
-        trimmedQuery.length < SEARCH_CONSTANTS.MIN_SEARCH_LENGTH
+        trimmedQuery.length < MIN_SEARCH_LENGTH
       ) {
         setResults([]);
         setIsLoading(false);
@@ -59,11 +45,11 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
           ? {
               x: myPosition.lon,
               y: myPosition.lat,
-              radius: SEARCH_CONSTANTS.DEFAULT_SEARCH_RADIUS,
-              sort: SEARCH_CONSTANTS.SORT_OPTIONS.DISTANCE,
+              radius: DEFAULT_SEARCH_RADIUS,
+              sort: 'distance',
             }
           : {
-              sort: SEARCH_CONSTANTS.SORT_OPTIONS.ACCURACY,
+              sort: 'accuracy',
             };
 
         // 3. API 호출
@@ -89,7 +75,7 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
         setResults(autocompleteResults);
       } catch (err) {
         console.error('Autocomplete search failed:', err);
-        setError(SEARCH_CONSTANTS.ERROR_MESSAGES.SEARCH_FAILED);
+        setError(ERROR_MESSAGES.SEARCH_FAILED);
         setResults([]);
       } finally {
         setIsLoading(false);
