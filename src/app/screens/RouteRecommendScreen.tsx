@@ -27,6 +27,9 @@ const RouteRecommendScreen = () => {
     useModalStore();
 
   const {
+    setTotalCaloriesBurned,
+    setTotalTrees,
+
     start,
     distance,
     setStart,
@@ -97,12 +100,24 @@ const RouteRecommendScreen = () => {
 
   // 검색된 경로 클릭 핸들러
   const handleRouteItemPress = useCallback(
-    (selectedRouteData: Route) => {
+    (
+      selectedRouteData: Route,
+      totalCaloriesBurned: number,
+      totalTrees: number,
+    ) => {
       setSelectedRouteData(selectedRouteData);
       navigation.navigate('Map');
       setShowSelectedRouteDetailModal(true);
+      setTotalCaloriesBurned(totalCaloriesBurned);
+      setTotalTrees(totalTrees);
     },
-    [navigation, setSelectedRouteData, setShowSelectedRouteDetailModal],
+    [
+      navigation,
+      setSelectedRouteData,
+      setShowSelectedRouteDetailModal,
+      setTotalCaloriesBurned,
+      setTotalTrees,
+    ],
   );
 
   return (

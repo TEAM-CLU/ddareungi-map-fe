@@ -379,6 +379,8 @@ export const useRouteStore = create<RouteState>()(
               routeType === RouteType.LOOP ? [createEmptyWaypoint(0)] : [],
             distance: null,
             routes: null,
+            totalCaloriesBurned: null,
+            totalTrees: null,
             routeSearchError: null,
             showSearchOverlay: false,
             currentSelectedPoint: null,
