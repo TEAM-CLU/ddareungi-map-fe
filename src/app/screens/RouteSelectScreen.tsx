@@ -16,6 +16,7 @@ import { useMapController } from '@/shared/hooks/useMapController';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useAppRoute } from '@/shared/hooks/useAppRoute';
+import RoundButton from '@/shared/components/button/RoundButton';
 
 const RouteSelectScreen = () => {
   const route = useAppRoute<'RouteSelect'>();
@@ -231,23 +232,24 @@ const RouteSelectScreen = () => {
           />
         </View>
       </View>
-      <TouchableOpacity
-        onPress={handleRouteSearchConfirm}
-        activeOpacity={0.8}
-        style={tw(
-          'bg-surface-primary py-3 items-center justify-center shadow-sm',
-        )}
+      <View
+        style={[
+          tw(
+            'bg-surface-primary flex flex-row w-full items-center justify-between px-4 py-1',
+          ),
+          { borderColor: '#D8D8D8', borderBottomWidth: 1 },
+        ]}
       >
-        <Text style={tw('text-brand-primary font-primary-700 text-base')}>
-          경로 검색하기
-        </Text>
-      </TouchableOpacity>
-
-      <RouteTimeRefreshBar
-        baseTime={baseTime}
-        onRefresh={() => setBaseTime(new Date())}
-      />
-
+        <RouteTimeRefreshBar
+          baseTime={baseTime}
+          onRefresh={() => setBaseTime(new Date())}
+        />
+        <RoundButton
+          title={'경로 검색하기'}
+          onPress={handleRouteSearchConfirm}
+          preset={'sm'}
+        />
+      </View>
       <RouteSelectContainer
         routes={routes}
         isLoading={isLoadingRoutes}

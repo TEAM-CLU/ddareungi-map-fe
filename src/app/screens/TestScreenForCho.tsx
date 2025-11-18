@@ -9,22 +9,10 @@ import React, { useRef, useEffect } from 'react';
 import { View, Alert, Platform, Text } from 'react-native';
 
 const TestScreenForCho = () => {
-  const RouteSelectDetailModalRef = useRef<BottomSheetModal | null>(null);
-
-  useEffect(() => {
-    RouteSelectDetailModalRef.current?.present();
-  });
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <SlideModal
-        ref={RouteSelectDetailModalRef}
-        snapPoints={['50%', '75%']}
-        initialIndex={1}
-        onClose={() => RouteSelectDetailModalRef.current?.dismiss()}
-      >
-        <RouteSelectDetailModal />
-      </SlideModal>
-    </View>
+    <View
+      style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+    ></View>
   );
 };
 
