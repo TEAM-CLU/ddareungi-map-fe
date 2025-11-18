@@ -147,6 +147,10 @@ export interface RouteState {
   waypoints: Waypoint[]; // 경유지 목록
   distance: number | null; // 목표 거리 (왕복 모드용)
 
+  // --- [Acitivity Data State] 활동 관련 데이터 ---
+  totalCaloriesBurned: number | null; // 예상 소모 칼로리
+  totalTrees: number | null; // 예상 나무 심기 효과
+
   // --- [UI State] 화면 제어 상태 ---
   showSearchOverlay: boolean; // 검색창 노출 여부
   currentSelectedPoint: RoutePoint | null; // 현재 선택된 포인트 정보
@@ -164,6 +168,10 @@ export interface RouteState {
   setEnd: (place: AutocompleteResult) => void;
   setDistance: (distance: number) => void;
   setSelectedRouteData: (route: Route | null) => void;
+
+  // --- [Acitivity Data Actions] 활동 관련 데이터 액션 ---
+  setTotalCaloriesBurned: (calories: number | null) => void;
+  setTotalTrees: (trees: number | null) => void;
 
   // --- [Waypoint Actions] 경유지 조작 액션 ---
   addWaypoint: (place: AutocompleteResult) => void;

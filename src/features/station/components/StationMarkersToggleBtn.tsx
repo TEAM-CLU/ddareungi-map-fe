@@ -1,16 +1,16 @@
 import { TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { RefObject, useState } from 'react';
+import { RefObject, use, useEffect, useState } from 'react';
 import WebView from 'react-native-webview';
 import IconStationMarkerOn from '@/shared/components/icons/IconStationMarkerOn';
 import IconStationMarkerOff from '@/shared/components/icons/IconStationMarkerOff';
 import { ToggleStationMarkersMessage } from '@/shared/model/map.webview.types';
-import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import { useMapStore } from '@/features/map/stores/useMapStore';
 
 const StationMarkersToggleBtn = () => {
   const { sendMessage } = useMapWebview();
-  const { webRef } = useMapStore();
   const [mode, setMode] = useState<'on' | 'off'>('on');
 
   const handleToggleBtnPress = () => {
@@ -34,6 +34,7 @@ const StationMarkersToggleBtn = () => {
       return;
     }
   };
+
   return (
     <TouchableOpacity
       onPress={handleToggleBtnPress}

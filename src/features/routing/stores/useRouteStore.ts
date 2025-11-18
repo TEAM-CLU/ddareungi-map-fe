@@ -30,6 +30,9 @@ export const useRouteStore = create<RouteState>()(
       waypoints: [],
       distance: null,
 
+      totalCaloriesBurned: null,
+      totalTrees: null,
+
       showSearchOverlay: false,
       showRecommendModal: false,
       showSelectedRouteDetailModal: false,
@@ -341,6 +344,14 @@ export const useRouteStore = create<RouteState>()(
           false,
           'resetRouteSearch',
         ),
+
+      // ----------- 활동 관련 데이터 설정 -------------
+
+      setTotalCaloriesBurned: (calories: number | null) =>
+        set({ totalCaloriesBurned: calories }, false, 'setTotalCaloriesBurned'),
+
+      setTotalTrees: (trees: number | null) =>
+        set({ totalTrees: trees }, false, 'setTotalTrees'),
 
       // ------------- 기타 편의 기능 -------------
 

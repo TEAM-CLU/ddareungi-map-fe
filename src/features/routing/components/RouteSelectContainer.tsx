@@ -12,13 +12,25 @@ import {
   formatTime,
   formatTimeRange,
 } from '@/shared/utils/formatting';
+import {
+  convertToTrees,
+  measureCaloriesBurned,
+  measureCarbonSaved,
+} from '@/shared/utils/measure';
+import { Gender } from '@/shared/model/index.types';
+import { useUserInfoQuery } from '@/features/auth/services/user.queries';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
   isLoading?: boolean;
   error?: string | null;
   baseTime: Date;
-  onRoutePress: (route: Route) => void; // RouteResponse['data'][0]
+  onRoutePress: (
+    route: Route,
+    totalCaloriesBurned: number,
+    totalTrees: number,
+  ) => void; // RouteResponse['data'][0]
 }
 
 const RouteSelectContainer = ({
@@ -86,7 +98,12 @@ const RouteSelectContainer = ({
 
   // 모든 경로 렌더링
   return (
-    <ScrollView style={tw('w-full')}>
+    <ScrollView
+      style={tw('w-full')}
+      bounces={false}
+      alwaysBounceVertical={false}
+      contentContainerStyle={{ paddingBottom: 150 }}
+    >
       {routes.data.map((route, index) => {
         const { routeCategory, summary, startStation, endStation, segments } =
           route;
@@ -115,15 +132,55 @@ const RouteSelectContainer = ({
             ? Math.round(lastWalkingSegment.summary.time / 60)
             : 0;
 
+        // 활동 데이터 계산
+        const { setTotalCaloriesBurned, setTotalTrees } = useRouteStore();
+        const userGender: Gender = useUserInfoQuery().data?.data.gender;
+        const caloriesBurnedWalking = measureCaloriesBurned(
+          'walking',
+          userGender,
+          walkingMinutes,
+        );
+        const caloriesBurendBiking = measureCaloriesBurned(
+          'biking',
+          userGender,
+          bikingMinutes,
+        );
+        const totalCaloriesBurned =
+          caloriesBurnedWalking + caloriesBurendBiking;
+
+        const walkingDistance = segments.reduce((acc, segment) => {
+          if (segment.type === 'walking') {
+            return acc + segment.summary.distance;
+          }
+          return acc;
+        }, 0);
+
+        const bikingDistance = segments.reduce((acc, segment) => {
+          if (segment.type === 'biking') {
+            return acc + segment.summary.distance;
+          }
+          return acc;
+        }, 0);
+
+        const carbonSavedBiking = measureCarbonSaved('biking', bikingDistance);
+
+        const carbonSavedWalking = measureCarbonSaved(
+          'walking',
+          walkingDistance,
+        );
+
+        const totalCarbonSaved = carbonSavedBiking + carbonSavedWalking;
+        const totalTrees = convertToTrees(totalCarbonSaved);
+
         return (
           <TouchableOpacity
             key={route.routeId || `route-${index}`}
-            onPress={() => onRoutePress(route)}
+            onPress={() => onRoutePress(route, totalCaloriesBurned, totalTrees)}
             style={[
               tw(
-                'bg-surface-primary w-full px-4 py-5 flex flex-col items-start justify-between border-b',
+                'bg-surface-primary w-full px-4 py-5 flex h-full flex-col items-start justify-between border-b',
               ),
-              { height: 300, borderColor: '#D8D8D8' },
+              { maxHeight: 300, borderColor: '#D8D8D8' },
             ]}
           >
             {/* 상단부 */}
@@ -167,8 +224,8 @@ const RouteSelectContainer = ({
                   {distanceKm}
                 </Text>
                 <View style={[tw('flex flex-row items-center'), { gap: 8 }]}>
-                  <CalorieBadge value={143} />
-                  <TreeBadge value={1} />
+                  <CalorieBadge value={totalCaloriesBurned} />
+                  <TreeBadge value={totalTrees} />
                 </View>
               </View>
             </View>

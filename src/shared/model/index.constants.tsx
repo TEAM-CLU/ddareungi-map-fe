@@ -93,3 +93,15 @@ export const FOOTER_MENU: {
     icon: <IconMyPage width={30} height={30} />,
   },
 ];
+
+// measure.ts - 평균 신체정보
+export const MEAN_ADULT_MAN_WEIGHT_KG = 72;
+export const MEAN_ADULT_WOMAN_WEIGHT_KG = 58;
+export const MEAN_ADULT_NEUTRAL_WEIGHT_KG = 65;
+export const MEAN_WALKING_MET = 3.3;
+export const MEAN_CYCLING_MET = 6;
+
+// measure.ts - 탄소배출계수
+export const EMISSION_CAR_PER_KM = 0.21;
+export const EMISSION_WALKING_PER_KM = 0.05;
+export const EMISSION_CYCLING_PER_KM = 0.02;

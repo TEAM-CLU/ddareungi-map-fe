@@ -1,5 +1,5 @@
-import React, { memo, useRef } from 'react';
-import { View } from 'react-native';
+import React, { memo, use, useRef } from 'react';
+import { ScrollView, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
@@ -19,6 +19,9 @@ import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import ReturnToRouteSelectButton from '@/features/map/components/ReturnToRouteSelectButton';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
+import SelectedRouteDetailBadge from '@/features/routing/components/SelectedRouteDetailBadge';
+import CalorieBadge from '@/shared/components/badge/CalorieBadge';
+import TreeBadge from '@/shared/components/badge/TreeBadge';
 
 const MapScreen = () => {
   const {
@@ -32,15 +35,37 @@ const MapScreen = () => {
   } = useMapController();
 
   const { showSelectedRouteDetailModal } = useModalStore();
+  const { selectedRouteData } = useRouteStore();
 
   return (
     <View style={tw('flex-1 relative w-full')}>
       <Map />
 
-      {showSelectedRouteDetailModal && (
-        <View style={[tw('absolute top-12 left-4'), { zIndex: 10 }]}>
+      {showSelectedRouteDetailModal && selectedRouteData && (
+        <View
+          style={[
+            tw(
+              'absolute top-12 left-4 flex flex-row justify-between items-center',
+            ),
+            { zIndex: 10, gap: 8 },
+          ]}
+        >
           <ReturnToRouteSelectButton
             onPress={handleSelectedRouteDetailModalClose}
+          />
+          <SelectedRouteDetailBadge
+            existText={String(selectedRouteData.routeCategory)}
+            textColor="#01DA86"
+          />
+          <SelectedRouteDetailBadge
+            value={selectedRouteData.summary.time}
+            textColor={'#414548'}
+            type="time"
+          />
+          <SelectedRouteDetailBadge
+            value={selectedRouteData.summary.distance}
+            textColor={'#414548'}
+            type={'distance'}
           />
         </View>
       )}

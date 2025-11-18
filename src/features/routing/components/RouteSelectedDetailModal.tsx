@@ -15,6 +15,8 @@ import {
   getCategoryText,
 } from '@/shared/utils/formatting';
 import React from 'react';
+import { useRoute } from '@react-navigation/native';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 
 interface RouteSelectedDetailModalProps {
   selectedRouteData: Route | null;
@@ -38,6 +40,8 @@ const RouteSelectedDetailModal = ({
       </View>
     );
   }
+
+  const { totalCaloriesBurned, totalTrees } = useRouteStore();
 
   const { summary, segments, startStation, endStation, routeCategory } =
     selectedRouteData;
@@ -107,8 +111,8 @@ const RouteSelectedDetailModal = ({
           >
             {distance}
           </Text>
-          <CalorieBadge value={143} />
-          <TreeBadge value={1} />
+          <CalorieBadge value={totalCaloriesBurned ?? 0} />
+          <TreeBadge value={totalTrees ?? 0} />
         </View>
       </View>
 
