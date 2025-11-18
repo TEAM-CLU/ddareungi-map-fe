@@ -18,7 +18,7 @@ interface RouteSelectContainerProps {
   isLoading?: boolean;
   error?: string | null;
   baseTime: Date;
-  onRoutePress: (route: Route) => void; // RouteResponse['data'][0] 타입
+  onRoutePress: (route: Route) => void; // RouteResponse['data'][0]
 }
 
 const RouteSelectContainer = ({
