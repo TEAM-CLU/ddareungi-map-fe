@@ -82,8 +82,6 @@ export const deleteUser = async (): Promise<DeleteUserResponse> => {
   return response.data;
 };
 
-// 비밀번호 변경
-
 // 이메일 중복 확인
 export const postCheckEmail = async (
   payload: CheckEmailPayload,

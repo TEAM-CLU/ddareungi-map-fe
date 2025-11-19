@@ -3,10 +3,8 @@ import { devtools } from 'zustand/middleware';
 import {
   RoutePoint,
   RouteType,
-  RouteResponse,
   FullJourneyPayload,
   CircularJourneyPayload,
-  RouteData,
   Route,
   RouteState,
   Waypoint,
@@ -33,7 +31,6 @@ export const useRouteStore = create<RouteState>()(
       totalCaloriesBurned: null,
       totalTrees: null,
 
-      showSearchOverlay: false,
       showRecommendModal: false,
       showSelectedRouteDetailModal: false,
       currentSelectedPoint: null,
@@ -197,13 +194,24 @@ export const useRouteStore = create<RouteState>()(
       /*
       경유지 순서 변경
       */
-      reorderWaypoints: (fromIndex, toIndex) =>
-        set(state => {
-          const newWaypoints = [...state.waypoints];
-          const [moved] = newWaypoints.splice(fromIndex, 1);
-          newWaypoints.splice(toIndex, 0, moved);
-          return withRouteInvalidation({ waypoints: newWaypoints });
-        }),
+
+      // 경유지 순서 재정렬
+      reorderWaypoints: (newOrder: string[]) =>
+        set(
+          state => {
+            const reorderedWaypoints = newOrder
+              .map((id: string) =>
+                state.waypoints.find((wp: Waypoint) => wp.waypointKey === id),
+              )
+              .filter((wp): wp is Waypoint => wp !== undefined);
+
+            return withRouteInvalidation({
+              waypoints: reorderedWaypoints,
+            });
+          },
+          false,
+          'reorderWaypoints',
+        ),
 
       // ----------- UI 상태 제어 -----------
 
@@ -222,9 +230,6 @@ export const useRouteStore = create<RouteState>()(
           false,
           'clearAllRoutes',
         ),
-
-      setShowSearchOverlay: (show: boolean) =>
-        set({ showSearchOverlay: show }, false, 'setShowSearchOverlay'),
 
       setCurrentSelectedPoint: (point: RoutePoint | null) =>
         set({ currentSelectedPoint: point }, false, 'setCurrentSelectedPoint'),
@@ -382,7 +387,6 @@ export const useRouteStore = create<RouteState>()(
             totalCaloriesBurned: null,
             totalTrees: null,
             routeSearchError: null,
-            showSearchOverlay: false,
             currentSelectedPoint: null,
             currentFieldType: null,
             selectedRouteData: null,

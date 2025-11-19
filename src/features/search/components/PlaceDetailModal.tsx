@@ -9,20 +9,14 @@ import {
 import { tw } from '@/shared/libs/tw-helper';
 import { IconBicycle } from '@/shared/components/icons';
 import { RouteType } from '@/features/routing/model/routing.types';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '@/app/types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { useMapController } from '@/shared/hooks/useMapController';
 import { useNearbyStationsMutation } from '@/features/station/services/station.queries';
 import {
   NearbyStationData,
   NearbyStationListPayload,
 } from '@/features/station/model/station.types';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
-import { NavigationProp } from '@react-navigation/native';
-import { Coordinates } from '@/features/map/model/map.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
-import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { AutocompleteResult } from '../model/search.types';
 
@@ -32,6 +26,13 @@ export interface PlaceDetailModalProps {
 }
 
 const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
+  if (!place) {
+    return (
+      <View style={tw('flex justify-center w-full flex-1 items-center')}>
+        <ActivityIndicator size="large" color="#C4C4C4" />
+      </View>
+    );
+  }
   const {
     routeType,
     setRouteType,
@@ -55,11 +56,11 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
 
   useEffect(() => {
     const applyStationNameAndDistance = async () => {
-      if (!place!.latitude || !place!.latitude) return;
+      if (!place.latitude || !place.latitude) return;
       try {
         const payload: NearbyStationListPayload = {
-          latitude: place!.latitude!,
-          longitude: place!.longitude!,
+          latitude: place.latitude,
+          longitude: place.longitude!,
         };
         const response: NearbyStationData[] = await fetchNearbyStationDataList(
           payload,
@@ -75,10 +76,10 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   }, [place]);
 
   useEffect(() => {
-    if (!myPosition || !place!.latitude || !place!.longitude) return;
+    if (!myPosition || !place.latitude || !place.longitude) return;
     const distance = getDistanceBetweenCoords(
       { lat: myPosition.lat, lon: myPosition.lon },
-      { lat: place!.latitude, lon: place!.longitude },
+      { lat: place.latitude, lon: place.longitude },
     );
     setPlaceDistance(Math.round(distance));
   }, [myPosition, place]);
@@ -114,10 +115,10 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
 
     const placeData: AutocompleteResult = {
       placeKey: `start-${Date.now()}`, // 출발지는 고유 ID
-      name: place!.name,
-      address: place!.address,
-      latitude: place!.latitude,
-      longitude: place!.longitude,
+      name: place.name,
+      address: place.address,
+      latitude: place.latitude,
+      longitude: place.longitude,
     };
 
     // LOOP 모드: 출발-도착 동기화
@@ -137,10 +138,10 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
 
     const placeData: AutocompleteResult = {
       placeKey: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
-      name: place!.name,
-      address: place!.address,
-      latitude: place!.latitude!,
-      longitude: place!.longitude!,
+      name: place.name,
+      address: place.address,
+      latitude: place.latitude,
+      longitude: place.longitude,
     };
 
     if (routeType === RouteType.LOOP) {
@@ -152,14 +153,6 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
     }
     globalNavigation.navigate('RouteSelect');
   };
-
-  if (!place) {
-    return (
-      <View style={tw('flex justify-center w-full flex-1 items-center')}>
-        <ActivityIndicator size="large" color="#01DA86" />
-      </View>
-    );
-  }
 
   return (
     <View style={tw('flex-1')}>

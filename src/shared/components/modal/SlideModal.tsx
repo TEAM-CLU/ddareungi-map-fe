@@ -6,7 +6,7 @@ interface SlideModalProps {
   children: React.ReactNode;
   snapPoints?: (string | number)[];
   initialIndex?: number; // 모달 열릴 때 기본 위치 (snapPoints 배열의 인덱스)
-  onClose: () => void;
+  onDismiss: () => void;
   enablePanDownToClose?: boolean;
 }
 
@@ -16,7 +16,7 @@ const SlideModal = forwardRef<BottomSheetModal, SlideModalProps>(
       children,
       snapPoints,
       initialIndex = 0,
-      onClose,
+      onDismiss,
       enablePanDownToClose = true,
     },
     ref,
@@ -28,7 +28,7 @@ const SlideModal = forwardRef<BottomSheetModal, SlideModalProps>(
         ref={ref}
         index={initialIndex}
         snapPoints={memoSnapPoints}
-        onDismiss={onClose}
+        onDismiss={onDismiss}
         enablePanDownToClose={enablePanDownToClose}
         enableOverDrag
         backgroundStyle={tw('bg-surface-primary rounded-t-3xl')}

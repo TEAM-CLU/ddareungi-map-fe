@@ -6,9 +6,6 @@ export const DEFAULT_SEARCH_RADIUS = 10000; // 10km
 export const DEFAULT_DEBOUNCE_DELAY = 200; // ms
 export const MIN_SEARCH_LENGTH = 1; // 최소 검색어 길이
 
-// UI 애니메이션 설정
-export const ANIMATION_DURATION = 100; // ms
-
 // 에러 메시지
 export const ERROR_MESSAGES = {
   API_KEY_NOT_SET: 'Kakao API Key is not configured',

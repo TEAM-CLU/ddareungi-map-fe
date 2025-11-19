@@ -9,7 +9,7 @@ import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import StationDetailModal from '@/features/station/components/StationDetailModal';
 import SlideModal from '@/shared/components/modal/SlideModal';
-import { useMapController } from '@/shared/hooks/useMapController';
+import { useMapController } from '@/shared/hooks/useMapOrchestrator';
 import { useModalStore } from '@/shared/stores/useModalStore';
 
 const App = () => {

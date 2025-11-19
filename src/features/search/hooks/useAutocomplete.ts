@@ -5,9 +5,13 @@ import {
   SearchOptions,
   UseAutocompleteOptions,
 } from '../model/search.types';
-import { useMapController } from '@/shared/hooks/useMapController';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
-import { DEFAULT_DEBOUNCE_DELAY, DEFAULT_SEARCH_RADIUS, ERROR_MESSAGES, MIN_SEARCH_LENGTH } from '../model/search.constants';
+import {
+  DEFAULT_DEBOUNCE_DELAY,
+  DEFAULT_SEARCH_RADIUS,
+  ERROR_MESSAGES,
+  MIN_SEARCH_LENGTH,
+} from '../model/search.constants';
 
 export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
   const { autoSearchDelay = DEFAULT_DEBOUNCE_DELAY } = options;
@@ -27,10 +31,7 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
       const trimmedQuery = searchQuery.trim();
 
       // 1. 최소 길이 검증
-      if (
-        !trimmedQuery ||
-        trimmedQuery.length < MIN_SEARCH_LENGTH
-      ) {
+      if (!trimmedQuery || trimmedQuery.length < MIN_SEARCH_LENGTH) {
         setResults([]);
         setIsLoading(false);
         return;

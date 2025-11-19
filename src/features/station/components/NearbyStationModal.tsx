@@ -1,5 +1,4 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
-import { Coordinates } from '@/features/map/model/map.types';
 import {
   MapAreaStationData,
   NearbyStationListPayload,
@@ -13,7 +12,6 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
-import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 
 const NearbyStationModal = () => {
@@ -21,7 +19,6 @@ const NearbyStationModal = () => {
   const [distances, setDistances] = useState<number[]>([]); // 거리 3개 배열
   const { setShowStationDetailModal, setShowNearByStationModal } =
     useModalStore();
-  const { webRef } = useMapStore();
   const {
     setStationMetaData,
     nearbyStationDataList,
@@ -32,10 +29,8 @@ const NearbyStationModal = () => {
   const { sendMessage } = useMapWebview();
 
   // 리스트 클릭시 상세대여소 모달로 이동
-  const handleStationItemBtnPress = async (
-    stationMetaData: MapAreaStationData,
-  ) => {
-    await setStationMetaData(stationMetaData);
+  const handleStationItemBtnPress = (stationMetaData: MapAreaStationData) => {
+    setStationMetaData(stationMetaData);
     try {
       const message: FocusOnTargetedNearbyStationMessage = {
         type: 'focusOnTargetedNearbyStation',
@@ -46,8 +41,8 @@ const NearbyStationModal = () => {
       console.error('Invalid JSON from WebView:', error);
     }
 
-    await setShowNearByStationModal(false);
-    await setShowStationDetailModal(true);
+    setShowNearByStationModal(false);
+    setShowStationDetailModal(true);
   };
 
   // 내 위치 기반으로 주변 대여소 데이터 불러오는 로직
@@ -84,7 +79,7 @@ const NearbyStationModal = () => {
   if (!nearbyStationDataList)
     return (
       <View style={tw('flex justify-center w-full flex-1 items-center')}>
-        <ActivityIndicator size="large" color="#01DA86" />
+        <ActivityIndicator size="large" color="#C4C4C4" />
       </View>
     );
 

@@ -37,29 +37,8 @@ export interface ShowPlaceMarkerMessage {
   placeInfo?: any;
 }
 
-export interface MoveToLocationMessage {
-  type: 'moveToLocation';
-  lat: number;
-  lng: number;
-  placeName: string;
-}
-
-export interface ShowSearchResultsMessage {
-  type: 'showSearchResults';
-  places: Array<{
-    lat: number;
-    lng: number;
-    name: string;
-    address?: string;
-    category?: string;
-  }>;
-}
-
-export interface ClearSearchMessage {
-  type:
-    | 'clearCurrentPlaceMarker'
-    | 'clearSearchMarkers'
-    | 'clearAllSearchElements';
+export interface ClearCurrentPlaceMarkerMessage {
+  type: 'clearCurrentPlaceMarker';
 }
 
 // === 라우팅 관련 메시지 ===
@@ -98,42 +77,6 @@ export interface MapReadyMessage {
   isReady: boolean;
 }
 
-export interface ShowPlaceDetailModalMessage {
-  type: 'showPlaceDetailModal';
-  place: {
-    name: string;
-    address: string;
-    category: string;
-    lat: number;
-    lng: number;
-    id: string;
-  };
-}
-
-export interface PlaceMarkerShownMessage {
-  type: 'placeMarkerShown';
-  lat: number;
-  lng: number;
-  placeName: string;
-}
-
-export interface MapMovedToLocationMessage {
-  type: 'mapMovedToLocation';
-  lat: number;
-  lng: number;
-  placeName: string;
-}
-
-export interface RouteTypeUpdatedMessage {
-  type: 'routeTypeUpdated';
-  routeType: 'CONSTANT' | 'LOOP';
-  pointsCount: number;
-}
-
-export interface RouteClearedMessage {
-  type: 'routeCleared';
-}
-
 // === 대여소 관련 메시지 ===
 export interface UpdateTargetedStationBikeCountListMessage {
   type: 'updateTargetedStationBikeCountList';
@@ -158,16 +101,9 @@ export interface FocusOnTargetedNearbyStationMessage {
 // 모든 메시지 타입 유니온
 export type WebViewMessageToRN =
   | MapReadyMessage
-  | ShowPlaceDetailModalMessage
-  | PlaceMarkerShownMessage
-  | MapMovedToLocationMessage
-  | RouteTypeUpdatedMessage
-  | RouteClearedMessage
   | FocusOnTargetedNearbyStationMessage
   | ShowPlaceMarkerMessage
-  | MoveToLocationMessage
-  | ShowSearchResultsMessage
-  | ClearSearchMessage
+  | ClearCurrentPlaceMarkerMessage
   | UpdateRouteMessage
   | ClearRouteMessage
   | SetRouteTypeMessage

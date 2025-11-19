@@ -2,13 +2,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import WebView from 'react-native-webview';
-
-import {
-  MapAreaStationData,
-  NearbyStationData,
-} from '@/features/station/model/station.types';
-import { Route } from '@/features/routing/model/routing.types';
 
 /**
  * ModalState
@@ -24,11 +17,11 @@ interface ModalState {
      - 여기는 단지 "참조"를 들고 있음
   ------------------------------ */
 
-  placeDetailModalRef: React.RefObject<BottomSheetModal | null>;
-  selectedRouteDetailModalRef: React.RefObject<BottomSheetModal | null>;
-  nearbyStationModalRef: React.RefObject<BottomSheetModal | null>;
-  stationDetailModalRef: React.RefObject<BottomSheetModal | null>;
-  routeRecommendModalRef: React.RefObject<BottomSheetModal | null>;
+  placeDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
+  selectedRouteDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
+  nearbyStationModalRef: React.RefObject<BottomSheetModal | null> | null;
+  stationDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
+  routeRecommendModalRef: React.RefObject<BottomSheetModal | null> | null;
   /* -----------------------------
           모달 오픈 / 닫힘 상태
   ------------------------------ */

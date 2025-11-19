@@ -12,7 +12,6 @@ import { RouteProp, useRoute, useFocusEffect } from '@react-navigation/native';
 import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
 import RouteTimeRefreshBar from '@/features/routing/components/RouteTimeRefreshBar';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { useMapController } from '@/shared/hooks/useMapController';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useAppRoute } from '@/shared/hooks/useAppRoute';

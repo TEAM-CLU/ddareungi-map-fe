@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import CalorieBadge from '@/shared/components/badge/CalorieBadge';
 import TreeBadge from '@/shared/components/badge/TreeBadge';
@@ -35,8 +35,8 @@ const RouteSelectedDetailModal = ({
 }: RouteSelectedDetailModalProps) => {
   if (!selectedRouteData) {
     return (
-      <View style={tw('flex-1 justify-center items-center')}>
-        <Text>경로 정보를 불러오는 중...</Text>
+      <View style={tw('flex justify-center w-full flex-1 items-center')}>
+        <ActivityIndicator size="large" color="#C4C4C4" />
       </View>
     );
   }

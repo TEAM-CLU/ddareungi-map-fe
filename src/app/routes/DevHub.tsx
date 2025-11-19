@@ -17,7 +17,7 @@ import { RootStackParamList } from '@/app/types';
 import RouteSelectedDetailModal from '@/features/routing/components/RouteSelectedDetailModal';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import SlideModal from '@/shared/components/modal/SlideModal';
-import { useMapController } from '@/shared/hooks/useMapController';
+import { useMapController } from '@/shared/hooks/useMapOrchestrator';
 import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import StationDetailModal from '@/features/station/components/StationDetailModal';

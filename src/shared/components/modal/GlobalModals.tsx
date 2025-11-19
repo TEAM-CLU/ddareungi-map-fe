@@ -4,7 +4,6 @@ import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
 import StationDetailModal from '@/features/station/components/StationDetailModal';
-import { useMapController } from '@/shared/hooks/useMapController';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
@@ -23,7 +22,8 @@ const GlobalModals = () => {
     placeDetailModalRef,
   } = useModalStore();
 
-  const { selectedPlaceInfoForModal } = useSearchStore();
+  const { selectedPlaceInfoForModal, setSelectedPlaceInfoForModal } =
+    useSearchStore();
 
   return (
     <>
@@ -31,7 +31,7 @@ const GlobalModals = () => {
       <SlideModal
         ref={selectedRouteDetailModalRef}
         snapPoints={['50%']}
-        onClose={() => setShowRouteRecommendModal(false)}
+        onDismiss={() => setShowRouteRecommendModal(false)}
         enablePanDownToClose={false}
       >
         <RouteSelectedDetailModal
@@ -44,9 +44,9 @@ const GlobalModals = () => {
       {/* 경로추천 모달 */}
       <SlideModal
         ref={routeRecommendModalRef}
-        snapPoints={['45%', '48%']}
+        snapPoints={['45%', '49%']}
         initialIndex={1}
-        onClose={() => setShowRouteRecommendModal(false)}
+        onDismiss={() => setShowRouteRecommendModal(false)}
       >
         <RouteRecommendModal />
       </SlideModal>
@@ -55,7 +55,7 @@ const GlobalModals = () => {
         ref={nearbyStationModalRef}
         snapPoints={['43%', '47%']}
         initialIndex={1}
-        onClose={() => setShowNearByStationModal(false)}
+        onDismiss={() => setShowNearByStationModal(false)}
       >
         <NearbyStationModal />
       </SlideModal>
@@ -64,15 +64,17 @@ const GlobalModals = () => {
         ref={stationDetailModalRef}
         snapPoints={['43%', '47%']}
         initialIndex={1}
-        onClose={() => setShowStationDetailModal(false)}
+        onDismiss={() => setShowStationDetailModal(false)}
       >
         <StationDetailModal onClose={() => setShowStationDetailModal(false)} />
       </SlideModal>
       {/* 장소 상세 모달 */}
       <SlideModal
         ref={placeDetailModalRef}
-        onClose={() => setShowPlaceDetailModal(false)}
-        snapPoints={['35%', '50%']}
+        onDismiss={() => setShowPlaceDetailModal(false)}
+        snapPoints={['33%', '37%']}
+        initialIndex={1}
+        enablePanDownToClose={false}
       >
         <PlaceDetailModal
           place={selectedPlaceInfoForModal}

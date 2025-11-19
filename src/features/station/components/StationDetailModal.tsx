@@ -125,8 +125,8 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
 
   if (!stationMetaData) {
     return (
-      <View style={tw('flex justify-center w-full items-center')}>
-        <ActivityIndicator size="large" color="#01DA86" />
+      <View style={tw('flex justify-center w-full flex-1 items-center')}>
+        <ActivityIndicator size="large" color="#C4C4C4" />
       </View>
     );
   }

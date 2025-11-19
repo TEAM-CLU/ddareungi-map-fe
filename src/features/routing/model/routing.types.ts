@@ -177,7 +177,7 @@ export interface RouteState {
   addWaypoint: (place: AutocompleteResult) => void;
   removeWaypoint: (id: string) => void;
   updateWaypoint: (id: string, place: AutocompleteResult) => void;
-  reorderWaypoints: (fromIndex: number, toIndex: number) => void;
+  reorderWaypoints: (newOrder: string[]) => void;
 
   // --- [System Actions] 초기화 및 UI 제어 ---
   clearAllRoutes: () => void;
