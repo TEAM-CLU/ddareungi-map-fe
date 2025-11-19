@@ -72,7 +72,7 @@ export const useSearchOrchestrator = () => {
    * - 검색 오버레이 표시
    */
   const handleSearchbarPress = useCallback(() => {
-    // clearCurrentPlaceMarker();
+    clearCurrentPlaceMarker();
     setSelectedPlaceInfoForModal(null);
     setShowPlaceDetailModal(false);
     setShowNearByStationModal(false);
@@ -81,7 +81,17 @@ export const useSearchOrchestrator = () => {
     setShowSearchOverlay(true);
     setIsFocused(true);
     resetAllData();
-  }, [resetAllData, setShowSearchOverlay, setIsFocused]);
+  }, [
+    resetAllData,
+    setShowSearchOverlay,
+    setIsFocused,
+    clearCurrentPlaceMarker,
+    setSelectedPlaceInfoForModal,
+    setShowPlaceDetailModal,
+    setShowNearByStationModal,
+    setShowRouteRecommendModal,
+    setShowStationDetailModal,
+  ]);
 
   /**
    * 검색창 닫기
@@ -91,7 +101,7 @@ export const useSearchOrchestrator = () => {
   const handleSearchClose = useCallback(() => {
     setShowSearchOverlay(false);
     setIsFocused(false);
-    searchInputRef!.current?.blur();
+    searchInputRef?.current?.blur();
     setCurrentPlaceType(null);
   }, [setShowSearchOverlay, setIsFocused, searchInputRef]);
 
@@ -111,7 +121,7 @@ export const useSearchOrchestrator = () => {
       // 검색 오버레이 닫기
       setShowSearchOverlay(false);
       setIsFocused(false);
-      searchInputRef!.current?.blur();
+      searchInputRef?.current?.blur();
 
       // 1) 지도에 마커 표시
       if (selectedPlace.latitude && selectedPlace.longitude) {
