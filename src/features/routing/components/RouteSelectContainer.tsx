@@ -180,7 +180,7 @@ const RouteSelectContainer = ({
               tw(
                 'bg-surface-primary w-full px-4 py-5 flex h-full flex-col items-start justify-between border-b',
               ),
-              { maxHeight: 300, borderColor: '#D8D8D8' },
+              { maxHeight: 312, borderColor: '#D8D8D8' },
             ]}
           >
             {/* 상단부 */}

@@ -10,11 +10,11 @@ interface StationBadgeProps {
 const StationBadge = ({ name }: StationBadgeProps) => (
   <View
     style={[
-      tw('h-6 flex-row justify-center items-center bg-brand-primary'),
+      tw('h-7 flex-row justify-center items-center bg-brand-primary'),
       {
         borderRadius: 20,
         paddingHorizontal: 13,
-        paddingVertical: 4,
+        paddingVertical: 6,
         maxWidth: '70%',
         gap: 6,
       },

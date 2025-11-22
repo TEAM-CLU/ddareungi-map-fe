@@ -10,14 +10,12 @@ interface WalkTimeBadgeProps {
 const WalkTimeBadge = ({ minutes }: WalkTimeBadgeProps) => (
   <View
     style={[
-      tw(
-        'h-6 flex-row justify-center items-center bg-decorative-default',
-      ),
+      tw('h-7 flex-row justify-center items-center bg-decorative-default'),
       {
         maxWidth: '70%',
         borderRadius: 20,
-        paddingHorizontal: 15,
-        paddingVertical: 4,
+        paddingHorizontal: 13,
+        paddingVertical: 6,
         gap: 4,
       },
     ]}
