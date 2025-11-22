@@ -14,6 +14,7 @@ import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
 import SearchBar from '@/features/search/components/SearchBar';
+import { ROUTE_CATEGORY_DESCRIPTIONS } from '@/features/routing/model/routing.constants';
 
 const MapScreen = () => {
   const {
@@ -24,9 +25,6 @@ const MapScreen = () => {
 
   const { showSelectedRouteDetailModal } = useModalStore();
   const { selectedRouteData } = useRouteStore();
-
-  const { showSearchOverlay } = useSearchStore();
-
   const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
     useSearchOrchestrator();
 
@@ -47,7 +45,10 @@ const MapScreen = () => {
             onPress={handleSelectedRouteDetailModalClose}
           />
           <SelectedRouteDetailBadge
-            existText={String(selectedRouteData.routeCategory)}
+            existText={String(
+              ROUTE_CATEGORY_DESCRIPTIONS[selectedRouteData.routeCategory] ||
+                selectedRouteData.routeCategory,
+            )}
             textColor="#01DA86"
           />
           <SelectedRouteDetailBadge
@@ -64,11 +65,13 @@ const MapScreen = () => {
       )}
 
       {/* 검색 오버레이 */}
-      <SearchOverlay
-        onPress={handleSearchbarPress}
-        onClose={handleSearchClose}
-        onPlaceSelect={handlePlaceSelectionFlow}
-      />
+      {!showSelectedRouteDetailModal && (
+        <SearchOverlay
+          onPress={handleSearchbarPress}
+          onClose={handleSearchClose}
+          onPlaceSelect={handlePlaceSelectionFlow}
+        />
+      )}
 
       <View style={[tw('absolute right-3'), { bottom: 150 }]}>
         <MyLocationButton />
