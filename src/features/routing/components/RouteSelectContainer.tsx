@@ -20,6 +20,7 @@ import {
 import { Gender } from '@/shared/model/index.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
+import { ROUTE_CATEGORY_DESCRIPTIONS } from '@/features/routing/model/routing.constants';
 
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
@@ -191,7 +192,7 @@ const RouteSelectContainer = ({
                   { fontSize: 14 },
                 ]}
               >
-                {routeCategory}
+                {ROUTE_CATEGORY_DESCRIPTIONS[routeCategory] || routeCategory}
               </Text>
               <Text
                 style={[
