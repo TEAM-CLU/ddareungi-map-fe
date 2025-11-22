@@ -16,6 +16,8 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useAppRoute } from '@/shared/hooks/useAppRoute';
 import RoundButton from '@/shared/components/button/RoundButton';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSearchStore } from '@/features/search/stores/useSearchStore';
 
 const RouteSelectScreen = () => {
   const route = useAppRoute<'RouteSelect'>();
@@ -51,6 +53,8 @@ const RouteSelectScreen = () => {
   const { showSelectedRouteDetailModal, setShowSelectedRouteDetailModal } =
     useModalStore();
 
+  const { setSelectedPlaceInfoForModal } = useSearchStore();
+
   // 경로 시간 계산 기준 시간 (리프레시 가능)
   const [baseTime, setBaseTime] = React.useState<Date>(new Date());
   // 파라미터 중복 소비 방지 플래그
@@ -71,36 +75,6 @@ const RouteSelectScreen = () => {
       setParamsConsumed(false);
     }, []),
   );
-
-  // useEffect(() => {
-  //   const unsubscribe = navigation.addListener('beforeRemove', () => {
-  //     resetAllData();
-  //   });
-
-  //   return unsubscribe;
-  // }, [navigation, resetAllData]);
-
-  // useEffect(() => {
-  //   const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-  //     // 스토어에서 직접 최신 상태를 가져옴
-  //     const state = useRouteStore.getState();
-
-  //     // 만약 모달 띄우는 중 (true)이면,
-  //     // 데이터를 초기화하지 않고 그냥 리턴
-  //     if (state.showSelectedRouteDetailModal) {
-  //       return;
-  //     }
-
-  //     // 그 외의 경우 (사용자가 헤더의 뒤로가기 버튼을 누르는 등)
-  //     // 데이터를 초기화
-  //     resetAllData();
-  //   });
-
-  //   return unsubscribe;
-  // }, [navigation, resetAllData]);
-
-  // ---------- Map → RouteSelect ----------
-  // ---------- Map에서 선택한 장소를 출발지/도착지/경유지에 반영 ----------
 
   useEffect(() => {
     if (
@@ -198,6 +172,7 @@ const RouteSelectScreen = () => {
 
   // RouteInputBar 닫기 버튼
   const handleRouteInputBarClose = useCallback(() => {
+    setSelectedPlaceInfoForModal(null);
     resetAllData();
     navigation.navigate('Map');
   }, [resetAllData, navigation]);
@@ -238,7 +213,7 @@ const RouteSelectScreen = () => {
   return (
     <View style={tw('flex-1 bg-surface-primary')}>
       {/* RouteInputBar */}
-      <View style={tw('bg-brand-primary w-full pt-16 pb-4')}>
+      <SafeAreaView edges={['top']} style={tw('bg-brand-primary w-full pb-4')}>
         <View style={tw('mx-2')}>
           <RouteInputBar
             onRoutePointPress={handleRoutePointPress}
@@ -246,7 +221,7 @@ const RouteSelectScreen = () => {
             onClose={handleRouteInputBarClose}
           />
         </View>
-      </View>
+      </SafeAreaView>
       <View
         style={[
           tw(

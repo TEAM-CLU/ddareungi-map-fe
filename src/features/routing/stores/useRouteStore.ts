@@ -194,25 +194,27 @@ export const useRouteStore = create<RouteState>()(
       /*
       경유지 순서 변경
       */
-
-      // 경유지 순서 재정렬
-      reorderWaypoints: (newOrder: string[]) =>
+      /** ⛳ 핵심: 드래그 후 전체 waypoints 재정렬 적용 */
+      /** ⛳ 핵심: 드래그 후 전체 waypoints 재정렬 적용 */
+      reorderWaypoints: newWaypoints =>
         set(
-          state => {
-            const reorderedWaypoints = newOrder
-              .map((id: string) =>
-                state.waypoints.find((wp: Waypoint) => wp.waypointKey === id),
-              )
-              .filter((wp): wp is Waypoint => wp !== undefined);
-
-            return withRouteInvalidation({
-              waypoints: reorderedWaypoints,
-            });
-          },
+          withRouteInvalidation({
+            waypoints: newWaypoints,
+          }),
           false,
           'reorderWaypoints',
         ),
 
+      updateRouteFromDrag: (newStart, newEnd, newWaypoints) =>
+        set(
+          withRouteInvalidation({
+            start: newStart,
+            end: newEnd,
+            waypoints: newWaypoints,
+          }),
+          false,
+          'updateRouteFromDrag',
+        ),
       // ----------- UI 상태 제어 -----------
 
       /*

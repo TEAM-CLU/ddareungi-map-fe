@@ -121,7 +121,7 @@ const RouteRecommendScreen = () => {
   );
 
   return (
-    <View style={tw('flex-1 bg-white')}>
+    <View style={tw('flex-1 bg-surface-primary')}>
       {/* RouteRecommendInputBar */}
       <View style={tw('bg-brand-primary w-full pt-16 pb-4')}>
         <View style={tw('mx-2')}>
@@ -151,7 +151,6 @@ const RouteRecommendScreen = () => {
           preset={'sm'}
         />
       </View>
-
       <RouteSelectContainer
         routes={routes}
         isLoading={isLoadingRoutes}

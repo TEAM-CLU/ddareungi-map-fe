@@ -1,9 +1,14 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, Vibration } from 'react-native';
+import React, { useCallback } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Vibration,
+  ActivityIndicator,
+} from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
   ScaleDecorator,
-  DragEndParams,
 } from 'react-native-draggable-flatlist';
 import { tw } from '@/shared/libs/tw-helper';
 import {
@@ -13,13 +18,9 @@ import {
   IconPlus,
   IconMinus,
 } from '@/shared/components/icons';
-import { RoutePoint, RouteType } from '../model/routing.types';
+import { RouteItem, RoutePoint, RouteType } from '../model/routing.types';
 import IconArrowsUpDown from '@/shared/components/icons/IconArrowsUpDown';
-import { useRouteStore } from '../stores/useRouteStore';
-import {
-  createStartPoint,
-  createEndPoint,
-} from '@/features/routing/utils/creatPoint';
+import { useRouteInput } from '../hooks/useRouteInput';
 
 interface RouteInputBarProps {
   onClose: () => void;
@@ -27,252 +28,125 @@ interface RouteInputBarProps {
   onAddWaypointAndEdit: () => void;
 }
 
-type DraggableItem = {
-  id: string;
-  type: 'start' | 'end' | 'waypoint';
-  point: RoutePoint;
-};
-
 const RouteInputBar = ({
   onClose,
   onRoutePointPress,
   onAddWaypointAndEdit,
 }: RouteInputBarProps) => {
   const {
+    items,
+    isProcessing,
     routeType,
     start,
     end,
-    waypoints,
-    setStart,
-    setEnd,
-    removeWaypoint,
-    reorderWaypoints,
-  } = useRouteStore();
+    hasWaypoints,
+    handleDragEnd,
+    handleSwap,
+    handleRemove,
+  } = useRouteInput();
 
-  // ✅ 드래그 중 실시간 위치 추적
-  const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
-  const [currentDragToIndex, setCurrentDragToIndex] = useState<number | null>(
-    null,
-  );
-
-  // ✅ 현재 표시 중인 아이템 순서 (드래그 완료 후에도 유지)
-  const [currentItems, setCurrentItems] = useState<DraggableItem[]>([]);
-
-  const startPoint = useMemo(
-    () => createStartPoint(start?.name || ''),
-    [start],
-  );
-  const endPoint = useMemo(() => createEndPoint(end?.name || ''), [end]);
-
-  // ✅ 기본 아이템 배열 (Zustand 데이터 기준)
-  const baseItems = useMemo((): DraggableItem[] => {
-    if (waypoints.length === 0) return [];
-
-    return [
-      { id: 'start', type: 'start', point: startPoint },
-      ...waypoints.map(wp => ({
-        id: wp.waypointKey,
-        type: 'waypoint' as const,
-        point: {
-          fieldKey: wp.waypointKey,
-          type: 'waypoint' as const,
-          value: wp.place?.name || '',
-        },
-      })),
-      { id: 'end', type: 'end', point: endPoint },
-    ];
-  }, [waypoints, startPoint, endPoint]);
-
-  // ✅ 표시할 아이템 배열 (currentItems가 있으면 사용, 없으면 baseItems)
-  const draggableItems = useMemo(() => {
-    if (currentItems.length === 0) {
-      return baseItems;
-    }
-
-    // currentItems의 ID로 baseItems에서 최신 데이터 찾아서 업데이트
-    return currentItems.map(currentItem => {
-      const foundItem = baseItems.find(base => base.id === currentItem.id);
-      return foundItem || currentItem;
-    });
-  }, [baseItems, currentItems]);
-
-  const handleSwapPress = useCallback(() => {
-    if (routeType === RouteType.LOOP) return;
-    if (start && end) {
-      const tempStart = start;
-      setStart(end);
-      setEnd(tempStart);
-      setCurrentItems([]); // 순서 초기화
-    }
-  }, [routeType, start, end, setStart, setEnd]);
-
-  const handleClosePress = useCallback(() => {
-    onClose();
-  }, [onClose]);
-
-  const handleAddWaypointPress = useCallback(() => {
-    setCurrentItems([]); // 순서 초기화
-    onAddWaypointAndEdit();
-  }, [onAddWaypointAndEdit]);
-
-  const handleRemoveWaypointPress = useCallback(
-    (id: string) => {
-      if (!(routeType === RouteType.LOOP && waypoints.length <= 1)) {
-        removeWaypoint(id);
-        setCurrentItems([]); // 순서 초기화
-      }
-    },
-    [routeType, waypoints, removeWaypoint],
-  );
-
-  const handleDragEnd = useCallback(
-    ({ data }: DragEndParams<DraggableItem>) => {
-      // ✅ 드래그 상태 초기화
-      setDraggingItemId(null);
-      setCurrentDragToIndex(null);
-
-      const firstItem = data[0];
-      const lastItem = data[data.length - 1];
-
-      // ✅ start가 맨 앞, end가 맨 뒤가 아니면 원상복구 (변경 무시)
-      if (firstItem.type !== 'start' || lastItem.type !== 'end') {
-        console.log('Start must be first and End must be last');
-        // 원상복구: currentItems 초기화하여 baseItems로 돌아감
-        setCurrentItems([]);
-        return;
-      }
-
-      // ✅ 드래그 완료 후 현재 순서 저장
-      setCurrentItems(data);
-
-      // ✅ 경유지만 추출하여 순서 업데이트
-      const waypointItems = data.filter(item => item.type === 'waypoint');
-
-      if (waypointItems.length > 0) {
-        const newWaypointOrder = waypointItems.map(item => item.id);
-        reorderWaypoints(newWaypointOrder);
-      }
-    },
-    [reorderWaypoints],
-  );
-
-  // ✅ 아이템의 현재 표시 인덱스 계산
-  const getItemDisplayIndex = useCallback(
-    (itemId: string, originalIndex: number): number => {
-      // 드래그 중이면 실시간 위치
-      if (draggingItemId === itemId && currentDragToIndex !== null) {
-        return currentDragToIndex;
-      }
-
-      // 드래그 완료 후: currentItems에서 위치 찾기
-      if (currentItems.length > 0) {
-        const foundIndex = currentItems.findIndex(item => item.id === itemId);
-        if (foundIndex !== -1) {
-          return foundIndex;
-        }
-      }
-
-      // 기본값
-      return originalIndex;
-    },
-    [draggingItemId, currentDragToIndex, currentItems],
-  );
-
-  const renderDraggableItem = useCallback(
-    ({ item, drag, isActive, getIndex }: RenderItemParams<DraggableItem>) => {
-      const originalIndex = getIndex() ?? 0;
-      const currentIndex = getItemDisplayIndex(item.id, originalIndex);
-      const totalItems = draggableItems.length;
-
-      const isStart = currentIndex === 0;
-      const isEnd = currentIndex === totalItems - 1;
+  const renderItem = useCallback(
+    ({ item, drag, isActive, getIndex }: RenderItemParams<RouteItem>) => {
+      const index = getIndex() ?? 0;
+      const isStart = index === 0;
+      const isEnd = index === items.length - 1;
       const isWaypoint = !isStart && !isEnd;
 
+      const waypointCount = items.length - 2;
+
       const iconColor = isStart
-        ? waypoints.length > 0
+        ? waypointCount > 0
           ? 'gray'
           : 'brand'
         : isEnd
         ? 'gray'
         : 'brand';
 
-      const showPlusButton = waypoints.length < 3 && isEnd;
-      const showMinusButton =
-        isWaypoint && !(routeType === RouteType.LOOP && waypoints.length <= 1);
+      const showPlus = isEnd && waypointCount < 3;
+      const showMinus =
+        isWaypoint && !(routeType === RouteType.LOOP && waypointCount <= 1);
+
+      const routePoint: RoutePoint = {
+        fieldKey: isStart ? 'start' : isEnd ? 'end' : item.key,
+        type: isStart ? 'start' : isEnd ? 'end' : 'waypoint',
+        value: item.place?.name || '',
+        placeholder: isStart
+          ? '출발지를 입력하세요'
+          : isEnd
+          ? '도착지를 입력하세요'
+          : '경유지를 입력하세요',
+      };
 
       return (
         <ScaleDecorator>
           <View
             style={[
-              tw('flex-row items-center'),
-              { height: 48, paddingVertical: 0 },
+              tw('flex-row items-center h-12 px-0'),
               !isEnd && tw('border-b border-line-default'),
               isActive && {
-                backgroundColor: '#F0F0F0',
-                borderRadius: 4,
+                backgroundColor: '#F5F5F5',
+                borderRadius: 8,
+                zIndex: 999,
               },
             ]}
           >
-            {/* 드래그 핸들 */}
-            <View style={tw('w-8 items-center justify-center')}>
+            {waypointCount > 0 ? (
               <TouchableOpacity
                 onLongPress={() => {
-                  Vibration.vibrate(50);
-                  setDraggingItemId(item.id);
-                  setCurrentDragToIndex(originalIndex);
+                  Vibration.vibrate(30);
                   drag();
                 }}
-                disabled={isActive}
-                style={tw('w-6 h-6 items-center justify-center')}
+                disabled={isActive || isProcessing}
+                style={tw('w-8 h-12 items-center justify-center')}
               >
-                <IconArrowsUpDown width={13} height={13} />
+                <IconArrowsUpDown width={16} height={16} />
               </TouchableOpacity>
-            </View>
+            ) : (
+              <View style={tw('w-8 h-12 items-center justify-center')} />
+            )}
 
-            {/* 좌측 아이콘 */}
-            <View style={tw('w-6 items-center')}>
+            <View style={tw('w-8 items-center justify-center')}>
               <IconOval width={20} height={20} color={iconColor} />
             </View>
 
-            {/* 입력 필드 */}
             <TouchableOpacity
-              style={tw('flex-1 ml-1')}
-              onPress={() => onRoutePointPress(item.point)}
+              style={tw('flex-1 justify-center h-full')}
+              onPress={() => !isProcessing && onRoutePointPress(routePoint)}
+              disabled={isProcessing}
             >
               <Text
                 numberOfLines={1}
                 style={tw(
-                  item.point.value
-                    ? 'text-on-surface-primary font-primary-500 text-base'
-                    : 'text-on-surface-placeholder font-primary-500 text-base',
+                  item.place?.name
+                    ? 'text-on-surface-primary text-base font-medium'
+                    : 'text-on-surface-placeholder text-base',
                 )}
               >
-                {item.point.value || item.point.placeholder}
+                {item.place?.name || routePoint.placeholder}
               </Text>
             </TouchableOpacity>
 
-            {/* - 버튼 (경유지 삭제) */}
-            {showMinusButton && (
+            {showMinus && (
               <TouchableOpacity
-                style={[
-                  tw('ml-2 w-6 h-6 items-center justify-center rounded-full'),
-                  { backgroundColor: '#D1D1D1' },
-                ]}
-                onPress={() => handleRemoveWaypointPress(item.id)}
+                style={tw(
+                  'w-8 h-8 items-center justify-center mr-1 bg-neutral-300 rounded-full',
+                )}
+                onPress={() => !isProcessing && handleRemove(item.key)}
+                disabled={isProcessing}
               >
-                <IconMinus width={20} color="white" />
+                <IconMinus width={16} color="white" />
               </TouchableOpacity>
             )}
 
-            {/* + 버튼 (경유지 추가) */}
-            {showPlusButton && (
+            {showPlus && (
               <TouchableOpacity
                 style={tw(
-                  'ml-2 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
+                  'w-8 h-8 items-center justify-center mr-1 bg-brand-primary rounded-full',
                 )}
-                onPress={handleAddWaypointPress}
+                onPress={onAddWaypointAndEdit}
+                disabled={isProcessing}
               >
-                <IconPlus />
+                <IconPlus width={16} color="white" />
               </TouchableOpacity>
             )}
           </View>
@@ -280,156 +154,79 @@ const RouteInputBar = ({
       );
     },
     [
-      waypoints,
+      items.length,
       routeType,
       onRoutePointPress,
-      handleAddWaypointPress,
-      handleRemoveWaypointPress,
-      draggableItems,
-      getItemDisplayIndex,
+      onAddWaypointAndEdit,
+      handleRemove,
+      isProcessing,
     ],
   );
 
   return (
     <View
       style={tw(
-        'bg-surface-primary rounded-xl overflow-hidden border border-line-default',
+        'relative bg-surface-primary rounded-xl overflow-hidden border border-line-default',
       )}
     >
-      {/* 메인 입력 영역 */}
-      <View style={tw('relative')}>
-        {/* 좌측 스위치 버튼 - 경유지가 없을 때만 */}
-        {waypoints.length === 0 && (
-          <View
-            style={tw('absolute left-2 top-0 bottom-0 justify-center z-10')}
+      {/* 스왑 버튼 (경유지 없을 때만) */}
+      {!hasWaypoints && (
+        <View
+          style={[
+            tw('absolute left-2 top-0 bottom-0 justify-center'),
+            { zIndex: 10 },
+          ]}
+        >
+          <TouchableOpacity
+            onPress={handleSwap}
+            style={tw('w-8 h-8 items-center justify-center')}
+            disabled={
+              routeType === RouteType.LOOP || (!start && !end) || isProcessing
+            }
           >
-            <TouchableOpacity
-              onPress={handleSwapPress}
-              style={tw('w-8 h-8 items-center justify-center')}
-            >
-              <IconSwitch />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* 우측 닫기 버튼 - 경유지가 있을 때만 */}
-        {waypoints.length > 0 && (
-          <View
-            style={tw('absolute right-2 top-0 bottom-0 justify-center z-20')}
-          >
-            <TouchableOpacity
-              onPress={handleClosePress}
-              style={tw('w-8 h-8 items-center justify-center')}
-            >
-              <IconClose color="#A7A7A7" />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* 경유지가 없을 때 우측 버튼들 */}
-        {waypoints.length === 0 && (
-          <>
-            <View
-              style={tw('absolute right-12 top-0 bottom-0 justify-center z-10')}
-            >
-              <TouchableOpacity
-                style={tw(
-                  'w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
-                )}
-                onPress={handleAddWaypointPress}
-              >
-                <IconPlus />
-              </TouchableOpacity>
-            </View>
-
-            <View
-              style={tw('absolute right-2 top-0 bottom-0 justify-center z-10')}
-            >
-              <TouchableOpacity
-                onPress={handleClosePress}
-                style={tw('w-8 h-8 items-center justify-center')}
-              >
-                <IconClose color="#A7A7A7" />
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
-
-        {/* 인풋 필드들 */}
-        <View style={tw(`${waypoints.length > 0 ? 'pl-2' : 'pl-12'} pr-12`)}>
-          {waypoints.length === 0 ? (
-            <>
-              {/* 출발지 */}
-              <View
-                style={[
-                  tw('flex-row items-center border-b border-line-default'),
-                  { height: 48 },
-                ]}
-              >
-                <View style={tw('w-6 items-center')}>
-                  <IconOval width={20} height={20} color="brand" />
-                </View>
-
-                <TouchableOpacity
-                  style={tw('flex-1 ml-1')}
-                  onPress={() => onRoutePointPress(startPoint)}
-                >
-                  <Text
-                    numberOfLines={1}
-                    style={tw(
-                      start?.name || startPoint.value
-                        ? 'text-on-surface-primary font-primary-500 text-base'
-                        : 'text-on-surface-placeholder font-primary-500 text-base',
-                    )}
-                  >
-                    {start?.name || startPoint.value || startPoint.placeholder}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* 도착지 */}
-              <View style={[tw('flex-row items-center'), { height: 48 }]}>
-                <View style={tw('w-6 items-center')}>
-                  <IconOval width={20} height={20} color="gray" />
-                </View>
-
-                <TouchableOpacity
-                  style={tw('flex-1 ml-1')}
-                  onPress={() => onRoutePointPress(endPoint)}
-                >
-                  <Text
-                    numberOfLines={1}
-                    style={tw(
-                      end?.name || endPoint.value
-                        ? 'text-on-surface-primary font-primary-500 text-base'
-                        : 'text-on-surface-placeholder font-primary-500 text-base',
-                    )}
-                  >
-                    {end?.name || endPoint.value || endPoint.placeholder}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          ) : (
-            <DraggableFlatList
-              data={draggableItems}
-              onDragEnd={handleDragEnd}
-              keyExtractor={item => item.id}
-              renderItem={renderDraggableItem}
-              scrollEnabled={false}
-              activationDistance={5}
-              containerStyle={{ paddingVertical: 0 }}
-              nestedScrollEnabled={false}
-              onPlaceholderIndexChange={placeholderIndex => {
-                // ✅ 드래그 중 실시간 위치 업데이트
-                if (draggingItemId !== null && placeholderIndex !== undefined) {
-                  setCurrentDragToIndex(placeholderIndex);
-                }
-              }}
-            />
-          )}
+            <IconSwitch color={!start && !end ? '#D1D1D1' : undefined} />
+          </TouchableOpacity>
         </View>
+      )}
+
+      {/* 닫기 버튼 */}
+      <View style={tw('absolute right-2 top-2 z-20')}>
+        <TouchableOpacity
+          onPress={onClose}
+          style={tw('w-8 h-8 items-center justify-center')}
+          disabled={isProcessing}
+        >
+          <IconClose color="#A7A7A7" />
+        </TouchableOpacity>
       </View>
+
+      {/* 리스트 영역 */}
+      <View style={tw(hasWaypoints ? 'pl-2 pr-12' : 'pl-12 pr-12')}>
+        <DraggableFlatList
+          data={items}
+          onDragEnd={handleDragEnd}
+          keyExtractor={item => item.key}
+          renderItem={renderItem}
+          scrollEnabled={false}
+          activationDistance={5}
+          containerStyle={{ paddingVertical: 0 }}
+          dragItemOverflow={true}
+        />
+      </View>
+
+      {/* 로딩 오버레이 */}
+      {isProcessing && (
+        <View
+          style={[
+            tw(
+              'absolute inset-0 flex items-center justify-center bg-surface-primary opacity-80',
+            ),
+            { zIndex: 50, width: '100%', height: '100%' },
+          ]}
+        >
+          <ActivityIndicator size="large" color="#C4C4C4" />
+        </View>
+      )}
     </View>
   );
 };

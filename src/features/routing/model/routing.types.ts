@@ -18,6 +18,12 @@ export interface RoutePoint {
   type: 'start' | 'waypoint' | 'end';
 }
 
+export interface DraggableItem {
+  id: string;
+  type: 'start' | 'end' | 'waypoint';
+  point: RoutePoint;
+}
+
 export type RouteData = { [key: string]: AutocompleteResult };
 
 /********** API 타입 **********/
@@ -137,6 +143,11 @@ export interface Waypoint {
   place: AutocompleteResult | null;
 }
 
+export interface RouteItem {
+  key: string;
+  place: AutocompleteResult | null;
+}
+
 // ---------------- 스토어 ------------------
 
 export interface RouteState {
@@ -152,7 +163,6 @@ export interface RouteState {
   totalTrees: number | null; // 예상 나무 심기 효과
 
   // --- [UI State] 화면 제어 상태 ---
-  showSearchOverlay: boolean; // 검색창 노출 여부
   currentSelectedPoint: RoutePoint | null; // 현재 선택된 포인트 정보
   currentFieldType: 'start' | 'end' | 'waypoint' | null; // 현재 활성화된 입력 필드 타입
 
@@ -164,8 +174,8 @@ export interface RouteState {
 
   // --- [Basic Actions] 기본 설정 액션 ---
   setRouteType: (type: RouteType) => void;
-  setStart: (place: AutocompleteResult) => void;
-  setEnd: (place: AutocompleteResult) => void;
+  setStart: (place: AutocompleteResult | null) => void;
+  setEnd: (place: AutocompleteResult | null) => void;
   setDistance: (distance: number) => void;
   setSelectedRouteData: (route: Route | null) => void;
 
@@ -177,11 +187,15 @@ export interface RouteState {
   addWaypoint: (place: AutocompleteResult) => void;
   removeWaypoint: (id: string) => void;
   updateWaypoint: (id: string, place: AutocompleteResult) => void;
-  reorderWaypoints: (newOrder: string[]) => void;
+  reorderWaypoints: (newWaypoints: Waypoint[]) => void; // 드래그 후 전체 경유지 배열을 통째로 교체하는 함수
+  updateRouteFromDrag: (
+    newStart: AutocompleteResult | null,
+    newEnd: AutocompleteResult | null,
+    newWaypoints: Waypoint[],
+  ) => void; // ✅ 추가: 드래그 완료 후 start/end/waypoints를 한 번에 업데이트
 
   // --- [System Actions] 초기화 및 UI 제어 ---
   clearAllRoutes: () => void;
-  setShowSearchOverlay: (show: boolean) => void;
   setCurrentSelectedPoint: (point: RoutePoint | null) => void;
   setCurrentFieldType: (type: 'start' | 'end' | 'waypoint' | null) => void;
 

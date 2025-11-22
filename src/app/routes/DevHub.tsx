@@ -14,16 +14,6 @@ import RouteRecommendScreen from '../screens/RouteRecommendScreen';
 import TestScreenForCho from '@/app/screens/TestScreenForCho';
 import TestScreenForPark from '@/app/screens/TestScreenForPark';
 import { RootStackParamList } from '@/app/types';
-import RouteSelectedDetailModal from '@/features/routing/components/RouteSelectedDetailModal';
-import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import SlideModal from '@/shared/components/modal/SlideModal';
-import { useMapController } from '@/shared/hooks/useMapOrchestrator';
-import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
-import NearbyStationModal from '@/features/station/components/NearbyStationModal';
-import StationDetailModal from '@/features/station/components/StationDetailModal';
-import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
-import { useModalStore } from '@/shared/stores/useModalStore';
-import { StackNavigationProp } from '@react-navigation/stack';
 import GlobalModals from '@/shared/components/modal/GlobalModals';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

@@ -90,7 +90,7 @@ const RouteSelectContainer = ({
         <Text
           style={tw('text-on-surface-placeholder font-primary-500 text-center')}
         >
-          출발지와 도착지를 설정하면{'\n'}경로를 검색해드릴게요
+          출발지와 도착지를 설정하면{'\n'}경로를 검색할 수 있어요
         </Text>
       </View>
     );
