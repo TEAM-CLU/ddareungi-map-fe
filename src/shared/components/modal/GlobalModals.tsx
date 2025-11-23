@@ -7,6 +7,10 @@ import StationDetailModal from '@/features/station/components/StationDetailModal
 import { useModalStore } from '@/shared/stores/useModalStore';
 import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
+import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
+import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
+import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
+import { SetStateAction } from 'react';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore();
@@ -15,14 +19,21 @@ const GlobalModals = () => {
     setShowStationDetailModal,
     setShowRouteRecommendModal,
     setShowPlaceDetailModal,
+    setShowNavigationDetailModal,
     selectedRouteDetailModalRef,
     routeRecommendModalRef,
     nearbyStationModalRef,
     stationDetailModalRef,
     placeDetailModalRef,
+    navigationDetailModalRef,
   } = useModalStore();
 
   const { selectedPlaceInfoForModal } = useSearchStore();
+
+  const { soundRef, systemVolume, setSystemVolume, navVolume, setNavVolume } =
+    useNavDetailModalStore();
+
+  useNavDetailModal();
 
   return (
     <>
@@ -78,6 +89,21 @@ const GlobalModals = () => {
         <PlaceDetailModal
           place={selectedPlaceInfoForModal}
           onClose={() => setShowPlaceDetailModal(false)}
+        />
+      </SlideModal>
+      {/* 네비게이션 디테일 모달 */}
+      <SlideModal
+        ref={navigationDetailModalRef}
+        snapPoints={['43%', '47%']}
+        initialIndex={1}
+        onDismiss={() => setShowNavigationDetailModal(false)}
+      >
+        <NavigationDetailModal
+          soundRef={soundRef}
+          systemVolume={systemVolume}
+          setSystemVolume={setSystemVolume}
+          navVolume={navVolume}
+          setNavVolume={setNavVolume}
         />
       </SlideModal>
     </>

@@ -40,6 +40,7 @@ export const useMapOrchestrator = () => {
   const nearbyStationModalLocalRef = useRef<BottomSheetModal | null>(null);
   const stationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
   const routeRecommendModalLocalRef = useRef<BottomSheetModal | null>(null);
+  const navigationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
 
   /** ----------------------------------------
    * 3. 경로/거리 관련 상태 (routeStore)
@@ -61,6 +62,7 @@ export const useMapOrchestrator = () => {
     showRouteRecommendModal,
     setShowRouteRecommendModal,
     setModalRefs,
+    showNavigationDetailModal,
   } = useModalStore();
 
   /** ----------------------------------------
@@ -87,6 +89,7 @@ export const useMapOrchestrator = () => {
       nearbyStationModalRef: nearbyStationModalLocalRef,
       stationDetailModalRef: stationDetailModalLocalRef,
       routeRecommendModalRef: routeRecommendModalLocalRef,
+      navigationDetailModalRef: navigationDetailModalLocalRef,
     });
 
     // 네비게이션 객체 전역 저장 (모달/웹뷰 이벤트에서도 navigate 가능)
@@ -134,6 +137,14 @@ export const useMapOrchestrator = () => {
     if (!modal) return;
     showPlaceDetailModal ? modal.present() : modal.dismiss();
   }, [showPlaceDetailModal]);
+
+  // 네비게이션 상세 모달
+  useEffect(() => {
+    const modal = navigationDetailModalLocalRef.current;
+    if (!modal) return;
+    // 네비게이션 상세 모달은 show 상태가 없으므로 항상 present/dismiss 하지 않음
+    showNavigationDetailModal ? modal.present() : modal.dismiss();
+  }, [showNavigationDetailModal]);
 
   /** ----------------------------------------
    * 8. 외부에서 사용할 이벤트 핸들러들

@@ -6,6 +6,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { MapAreaStationData } from '@/features/station/model/station.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '../stores/useMapStore';
+import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
 
 const Map = () => {
   const { webRef } = useMapStore();
