@@ -22,8 +22,7 @@ const GlobalModals = () => {
     placeDetailModalRef,
   } = useModalStore();
 
-  const { selectedPlaceInfoForModal, setSelectedPlaceInfoForModal } =
-    useSearchStore();
+  const { selectedPlaceInfoForModal } = useSearchStore();
 
   return (
     <>
