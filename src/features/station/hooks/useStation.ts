@@ -22,7 +22,8 @@ import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
   const { sendMessage } = useMapWebview();
-  const { setShowStationDetailModal } = useModalStore();
+  const { setShowStationDetailModal, showSelectedRouteDetailModal } =
+    useModalStore();
   const { webRef } = useMapStore();
   const { setStationMetaData } = useStationStore();
 
@@ -113,6 +114,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
 
   // 스테이션 데이터가 갱신되면 웹뷰에 전달
   useEffect(() => {
+    if (showSelectedRouteDetailModal) return;
     if (!isMapReady || !stationDataList) return;
     const message: UpdateStationDataListMessage = {
       type: 'updateStationDataList',
