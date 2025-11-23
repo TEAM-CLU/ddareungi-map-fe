@@ -35,7 +35,7 @@ const Map = () => {
       onMessage={handleWebViewMessage}
       onError={e => console.log('WebView error', e.nativeEvent)}
       source={{
-        uri: 'https://0a961d74ca7a.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://41ac7baa061b.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
     />
   );

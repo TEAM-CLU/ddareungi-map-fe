@@ -116,11 +116,13 @@ const RouteInputBar = ({
             >
               <Text
                 numberOfLines={1}
-                style={tw(
-                  item.place?.name
-                    ? 'text-on-surface-primary text-base font-medium'
-                    : 'text-on-surface-placeholder text-base',
-                )}
+                style={[
+                  tw(
+                    item.place?.name
+                      ? 'text-on-surface-primary text-base font-medium'
+                      : 'text-on-surface-placeholder text-base',
+                  ),
+                ]}
               >
                 {item.place?.name || routePoint.placeholder}
               </Text>
@@ -179,7 +181,9 @@ const RouteInputBar = ({
         >
           <TouchableOpacity
             onPress={handleSwap}
-            style={tw('w-8 h-8 items-center justify-center')}
+            style={tw(
+              'w-8 h-8 items-center justify-center bg-surface-primary rounded-full',
+            )}
             disabled={
               routeType === RouteType.LOOP || (!start && !end) || isProcessing
             }
@@ -201,7 +205,7 @@ const RouteInputBar = ({
       </View>
 
       {/* 리스트 영역 */}
-      <View style={tw(hasWaypoints ? 'pl-2 pr-12' : 'pl-12 pr-12')}>
+      <View style={tw('pl-2 pr-12')}>
         <DraggableFlatList
           data={items}
           onDragEnd={handleDragEnd}

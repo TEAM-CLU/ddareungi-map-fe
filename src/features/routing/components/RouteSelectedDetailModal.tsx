@@ -15,7 +15,6 @@ import {
   getCategoryText,
 } from '@/shared/utils/formatting';
 import React from 'react';
-import { useRoute } from '@react-navigation/native';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 
 interface RouteSelectedDetailModalProps {
@@ -148,7 +147,7 @@ const RouteSelectedDetailModal = ({
         >
           <RouteProgressStepVerticalBar />
 
-          <View style={tw('flex flex-col justify-start flex-1')}>
+          <View style={tw('flex flex-col justify-between flex-1')}>
             {firstWalkingSegment && (
               <Text
                 style={[
@@ -161,7 +160,6 @@ const RouteSelectedDetailModal = ({
                 <Text
                   style={[tw('font-primary-500 text-black'), { fontSize: 15 }]}
                 >
-                  {' '}
                   {formatMinutes(firstWalkingSegment.summary.time)}분
                 </Text>
               </Text>
@@ -253,7 +251,7 @@ const RouteSelectedDetailModal = ({
                 <Text
                   style={[
                     tw('font-primary-500 text-on-surface-quaternary'),
-                    { fontSize: 15, marginBottom: 22 },
+                    { fontSize: 15 },
                   ]}
                 >
                   {'목적지까지 도보로 '}
@@ -264,7 +262,6 @@ const RouteSelectedDetailModal = ({
                       { fontSize: 15 },
                     ]}
                   >
-                    {' '}
                     {formatMinutes(lastWalkingSegment.summary.time)}분
                   </Text>
                 </Text>

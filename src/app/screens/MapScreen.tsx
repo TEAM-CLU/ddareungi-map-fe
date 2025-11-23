@@ -14,7 +14,8 @@ import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
 import SearchBar from '@/features/search/components/SearchBar';
-import { ROUTE_CATEGORY_DESCRIPTIONS } from '@/features/routing/model/routing.constants';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { getCategoryText } from '@/shared/utils/formatting';
 
 const MapScreen = () => {
   const {
@@ -27,6 +28,10 @@ const MapScreen = () => {
   const { selectedRouteData } = useRouteStore();
   const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
     useSearchOrchestrator();
+
+  const formattedRouteCategory = getCategoryText(
+    selectedRouteData?.routeCategory ?? '',
+  );
 
   return (
     <View style={tw('flex-1 relative w-full')}>
@@ -45,10 +50,7 @@ const MapScreen = () => {
             onPress={handleSelectedRouteDetailModalClose}
           />
           <SelectedRouteDetailBadge
-            existText={String(
-              ROUTE_CATEGORY_DESCRIPTIONS[selectedRouteData.routeCategory] ||
-                selectedRouteData.routeCategory,
-            )}
+            existText={formattedRouteCategory}
             textColor="#01DA86"
           />
           <SelectedRouteDetailBadge

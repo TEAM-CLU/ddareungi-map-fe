@@ -20,8 +20,6 @@ import {
 } from '@/shared/utils/measure';
 import { Gender } from '@/shared/model/index.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
-import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
