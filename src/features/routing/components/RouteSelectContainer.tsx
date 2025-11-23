@@ -11,6 +11,7 @@ import {
   formatDistance,
   formatTime,
   formatTimeRange,
+  getCategoryText,
 } from '@/shared/utils/formatting';
 import {
   convertToTrees,
@@ -20,7 +21,7 @@ import {
 import { Gender } from '@/shared/model/index.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { ROUTE_CATEGORY_DESCRIPTIONS } from '@/features/routing/model/routing.constants';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
@@ -109,6 +110,7 @@ const RouteSelectContainer = ({
         const { routeCategory, summary, startStation, endStation, segments } =
           route;
 
+        const formattedRouteCategory = getCategoryText(routeCategory);
         const timeText = formatTime(summary.time);
         const distanceKm = formatDistance(summary.distance);
         const walkingMinutes = Math.round(calculateWalkingTime(segments) / 60);
@@ -134,7 +136,6 @@ const RouteSelectContainer = ({
             : 0;
 
         // 활동 데이터 계산
-        const { setTotalCaloriesBurned, setTotalTrees } = useRouteStore();
         const userGender: Gender = useUserInfoQuery().data?.data.gender;
         const caloriesBurnedWalking = measureCaloriesBurned(
           'walking',
@@ -192,7 +193,7 @@ const RouteSelectContainer = ({
                   { fontSize: 14 },
                 ]}
               >
-                {ROUTE_CATEGORY_DESCRIPTIONS[routeCategory] || routeCategory}
+                {formattedRouteCategory}
               </Text>
               <Text
                 style={[

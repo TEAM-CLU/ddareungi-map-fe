@@ -49,7 +49,7 @@ const RouteSelectedDetailModal = ({
   const time = formatTime(summary.time);
   const distance = formatDistance(summary.distance);
   const timeRange = formatTimeRange(baseTime, summary.time);
-  const category = getCategoryText(routeCategory);
+  const formattedRouteCategory = getCategoryText(routeCategory);
 
   const firstWalkingSegment = segments.find(seg => seg.type === 'walking');
   const lastWalkingSegment = segments
@@ -80,7 +80,7 @@ const RouteSelectedDetailModal = ({
         <Text
           style={[tw('font-primary-700 text-brand-primary'), { fontSize: 14 }]}
         >
-          {category}
+          {formattedRouteCategory}
         </Text>
         <View style={[tw('flex flex-col items-start'), { gap: 8 }]}>
           <Text
