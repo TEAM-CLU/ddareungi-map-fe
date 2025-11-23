@@ -1,189 +1,92 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
 import SearchOverlay from '@/features/search/components/SearchOverlay';
-import SlideModal from '@/shared/components/modal/SlideModal';
-import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
-import SearchBar from '@/features/search/components/SearchBar';
 import MyLocationButton from '@/features/location/components/MyLocationButton';
-import StationDetailModal from '@/features/station/components/StationDetailModal';
-import NearbyStationModal from '@/features/station/components/NearbyStationModal';
-import { useMapController } from '@/shared/hooks/useMapController';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '@/app/types';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useRouteStore } from '@/features/routing/stores/routeStore';
 import StationMarkersToggleBtn from '@/features/station/components/StationMarkersToggleBtn';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
+import ReturnToRouteSelectButton from '@/features/map/components/ReturnToRouteSelectButton';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import SelectedRouteDetailBadge from '@/features/routing/components/SelectedRouteDetailBadge';
+import { useSearchStore } from '@/features/search/stores/useSearchStore';
+import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
+import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
+import SearchBar from '@/features/search/components/SearchBar';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { getCategoryText } from '@/shared/utils/formatting';
 
 const MapScreen = () => {
   const {
-    webRef,
-    showSearchOverlay,
-    selectedPlaceForModal,
-    handleSearchbarPress,
-    handleSearchClose,
-    handlePlaceSelect,
-    placeDetailModalRef,
-    stationDetailModalRef,
-    nearbyStationModalRef,
-    myPosition,
-    setMyPosition,
-    stationMetaData,
-    setStationMetaData,
-  } = useMapController();
+    handleOpenNearbyStationModal,
+    handleOpenRouteRecommendModal,
+    handleSelectedRouteDetailModalClose,
+  } = useMapOrchestrator();
 
-  ///////////
+  const { showSelectedRouteDetailModal } = useModalStore();
+  const { selectedRouteData } = useRouteStore();
+  const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
+    useSearchOrchestrator();
 
-  const [isStationButtonPressed, setIsStationButtonPressed] = useState(false);
-
-  // NearbyStationModal 오픈 처리
-  useEffect(() => {
-    if (isStationButtonPressed) {
-      nearbyStationModalRef.current?.present();
-      setIsStationButtonPressed(false);
-    }
-  }, [isStationButtonPressed]);
-
-  //////////
-  const [isRouteRecommendBtnPressed, setIsRouteRecommendBtnPressed] =
-    useState(false);
-  const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-
-  const { distance, setDistance } = useRouteStore();
-
-  // RouteRecommendModal 오픈 처리
-  useEffect(() => {
-    if (isRouteRecommendBtnPressed) {
-      console.log('[MapScreen] 추천경로 탭 클릭, distance:', distance);
-
-      // distance가 null이면 기본값 5로 설정
-      if (distance === null) {
-        console.log('[MapScreen] distance가 null이므로 5로 초기화');
-        setDistance(5);
-      }
-
-      routeRecommendModalRef.current?.present();
-      setIsRouteRecommendBtnPressed(false);
-    }
-  }, [isRouteRecommendBtnPressed, distance, setDistance]);
-
-  //////////
-
-  const lamda = useRef<number>(1.2); // 실제 도로 거리를 고려한 보정 계수
+  const formattedRouteCategory = getCategoryText(
+    selectedRouteData?.routeCategory ?? '',
+  );
 
   return (
     <View style={tw('flex-1 relative w-full')}>
-      <Map
-        webRef={webRef}
-        setStationMetaData={setStationMetaData}
-        stationDetailModalRef={stationDetailModalRef}
-        setMyPosition={setMyPosition}
-      />
+      <Map />
 
-      {/* 검색바 */}
-      {!showSearchOverlay && (
+      {showSelectedRouteDetailModal && selectedRouteData && (
         <View
           style={[
-            tw('absolute top-12 left-4 right-4'),
-            { elevation: 10, zIndex: 10 },
+            tw(
+              'absolute top-12 left-4 flex flex-row justify-start items-center',
+            ),
+            { zIndex: 10, gap: 8 },
           ]}
         >
-          <SearchBar
-            value=""
-            onChangeText={() => {}}
-            placeholder="오늘은 어디로 갈까요?"
-            onPress={handleSearchbarPress}
-            readOnly={true}
+          <ReturnToRouteSelectButton
+            onPress={handleSelectedRouteDetailModalClose}
+          />
+          <SelectedRouteDetailBadge
+            existText={formattedRouteCategory}
+            textColor="#01DA86"
+          />
+          <SelectedRouteDetailBadge
+            value={selectedRouteData.summary.time}
+            textColor={'#414548'}
+            type="time"
+          />
+          <SelectedRouteDetailBadge
+            value={selectedRouteData.summary.distance}
+            textColor={'#414548'}
+            type={'distance'}
           />
         </View>
       )}
 
       {/* 검색 오버레이 */}
-      <SearchOverlay
-        isVisible={showSearchOverlay}
-        onClose={handleSearchClose}
-        onPlaceSelect={handlePlaceSelect}
-        placeholder="오늘은 어디로 갈까요?"
-        currentLocation={myPosition}
-      />
+      {!showSelectedRouteDetailModal && (
+        <SearchOverlay
+          onPress={handleSearchbarPress}
+          onClose={handleSearchClose}
+          onPlaceSelect={handlePlaceSelectionFlow}
+        />
+      )}
 
       <View style={[tw('absolute right-3'), { bottom: 150 }]}>
-        <MyLocationButton webRef={webRef} />
+        <MyLocationButton />
       </View>
 
       <View style={[tw('absolute right-3'), { bottom: 100 }]}>
-        <StationMarkersToggleBtn webRef={webRef} />
+        <StationMarkersToggleBtn />
       </View>
 
       <Footer
-        setIsStationButtonPressed={setIsStationButtonPressed}
-        setIsRouteRecommendBtnPressed={setIsRouteRecommendBtnPressed}
+        setIsStationButtonPressed={handleOpenNearbyStationModal}
+        setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
       />
-
-      {/* 경로추천 모달 */}
-      <SlideModal
-        ref={routeRecommendModalRef}
-        snapPoints={['45%', '48%']}
-        initialIndex={1}
-        onClose={() => routeRecommendModalRef.current?.dismiss()}
-      >
-        <RouteRecommendModal
-          navigation={navigation}
-          routeRecommendModalRef={routeRecommendModalRef}
-          setIsRouteRecommendBtnPressed={setIsRouteRecommendBtnPressed}
-        />
-      </SlideModal>
-      {/* Nearby 대여소 모달 */}
-      <SlideModal
-        ref={nearbyStationModalRef}
-        snapPoints={['43%', '47%']}
-        initialIndex={1}
-        onClose={() => nearbyStationModalRef.current?.dismiss()}
-      >
-        <NearbyStationModal
-          myPosition={myPosition}
-          stationDetailModalRef={stationDetailModalRef}
-          setStationMetaData={setStationMetaData}
-          nearByModalRef={nearbyStationModalRef}
-          webRef={webRef}
-          lamda={lamda}
-        />
-      </SlideModal>
-
-      {/* 대여소 상세 모달 */}
-      <SlideModal
-        ref={stationDetailModalRef}
-        snapPoints={['43%', '47%']}
-        initialIndex={1}
-        onClose={() => stationDetailModalRef.current?.dismiss()}
-      >
-        <StationDetailModal
-          myPosition={myPosition}
-          stationMetaData={stationMetaData}
-          navigation={navigation}
-          onClose={() => stationDetailModalRef.current?.dismiss()}
-          lamda={lamda}
-        />
-      </SlideModal>
-      {/* 장소 상세 모달 */}
-      <SlideModal
-        ref={placeDetailModalRef}
-        onClose={() => placeDetailModalRef.current?.dismiss()}
-        snapPoints={['35%', '50%']}
-      >
-        {selectedPlaceForModal && (
-          <PlaceDetailModal
-            place={selectedPlaceForModal}
-            navigation={navigation}
-            onClose={() => placeDetailModalRef.current?.dismiss()}
-          />
-        )}
-      </SlideModal>
     </View>
   );
 };

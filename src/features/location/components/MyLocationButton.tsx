@@ -1,14 +1,18 @@
+import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import { useMapStore } from '@/features/map/stores/useMapStore';
 import IconLocation from '@/shared/components/icons/IconLocation';
 import IconLocatorMark from '@/shared/components/icons/IconLocatorMark';
 import { tw } from '@/shared/libs/tw-helper';
+import {
+  CompassModeMessage,
+  MyLocationFollowingMessage,
+} from '@/shared/model/map.webview.types';
 import { RefObject, useRef, useState } from 'react';
 import { Touchable, TouchableOpacity } from 'react-native';
 import WebView from 'react-native-webview';
 
-interface MyLocationButtonProps {
-  webRef: RefObject<WebView | null>;
-}
-const MyLocationButton = ({ webRef }: MyLocationButtonProps) => {
+const MyLocationButton = () => {
+  const { sendMessage } = useMapWebview();
   const [mode, setMode] = useState<'default' | 'following' | 'compass'>(
     'default',
   );
@@ -17,30 +21,27 @@ const MyLocationButton = ({ webRef }: MyLocationButtonProps) => {
     if (mode === 'default') {
       // 단순히 내 위치로 포커싱 이동
       setMode('following');
-      webRef.current?.postMessage(
-        JSON.stringify({
-          type: 'myLocationFollowing',
-        }),
-      );
+      const message: MyLocationFollowingMessage = {
+        type: 'myLocationFollowing',
+      };
+      sendMessage(message);
     }
     if (mode === 'following') {
       // 내 방향대로 지도 회전
       setMode('compass');
-      webRef.current?.postMessage(
-        JSON.stringify({
-          type: 'myLocationCompassOn',
-          isCompassMode: true,
-        }),
-      );
+      const message: CompassModeMessage = {
+        type: 'myLocationCompassOn',
+        isCompassMode: true,
+      };
+      sendMessage(message);
     }
     if (mode === 'compass') {
       setMode('default');
-      webRef.current?.postMessage(
-        JSON.stringify({
-          type: 'myLocationCompassOff',
-          isCompassMode: false,
-        }),
-      );
+      const message: CompassModeMessage = {
+        type: 'myLocationCompassOff',
+        isCompassMode: false,
+      };
+      sendMessage(message);
     }
   };
 

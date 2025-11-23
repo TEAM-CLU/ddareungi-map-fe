@@ -5,13 +5,32 @@ import TreeBadge from '@/shared/components/badge/TreeBadge';
 import WalkTimeBadge from '@/shared/components/badge/WalkTimeBadge';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import type { RouteResponse, Segment } from '../model/routing.types';
+import type { Route, RouteResponse, Segment } from '../model/routing.types';
+import {
+  calculateWalkingTime,
+  formatDistance,
+  formatTime,
+  formatTimeRange,
+  getCategoryText,
+} from '@/shared/utils/formatting';
+import {
+  convertToTrees,
+  measureCaloriesBurned,
+  measureCarbonSaved,
+} from '@/shared/utils/measure';
+import { Gender } from '@/shared/model/index.types';
+import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
   isLoading?: boolean;
   error?: string | null;
   baseTime: Date;
+  onRoutePress: (
+    route: Route,
+    totalCaloriesBurned: number,
+    totalTrees: number,
+  ) => void; // RouteResponse['data'][0]
 }
 
 const RouteSelectContainer = ({
@@ -19,42 +38,8 @@ const RouteSelectContainer = ({
   isLoading,
   error,
   baseTime,
+  onRoutePress,
 }: RouteSelectContainerProps) => {
-  // 시간 포맷팅 함수 (초 → n시간 n분)
-  const formatTime = (seconds: number): string => {
-    const totalMinutes = Math.round(seconds / 60);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return hours > 0 ? `${hours}시간 ${minutes}분` : `${minutes}분`;
-  };
-
-  // 거리 포맷팅 함수 (미터 → km)
-  const formatDistance = (meters: number): string => {
-    return (meters / 1000).toFixed(1);
-  };
-
-  // 도보 시간 계산 함수 (segments에서 walking 구간 찾기)
-  const calculateWalkingTime = (segments: Segment[]): number => {
-    return segments
-      .filter(seg => seg.type === 'walking')
-      .reduce((total, seg) => total + seg.summary.time, 0);
-  };
-
-  // 시간대 포맷팅 함수 (baseTime 기준 ~ 도착 예정 시간)
-  const formatTimeRange = (durationSeconds: number): string => {
-    const arrival = new Date(baseTime.getTime() + durationSeconds * 1000);
-
-    const formatHourMinute = (date: Date): string => {
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
-      const period = hours < 12 ? '오전' : '오후';
-      const displayHours = hours % 12 || 12;
-      return `${period} ${displayHours}:${minutes.toString().padStart(2, '0')}`;
-    };
-
-    return `${formatHourMinute(baseTime)} - ${formatHourMinute(arrival)}`;
-  };
-
   // 로딩 상태
   if (isLoading) {
     return (
@@ -105,7 +90,7 @@ const RouteSelectContainer = ({
         <Text
           style={tw('text-on-surface-placeholder font-primary-500 text-center')}
         >
-          출발지와 도착지를 설정하면{'\n'}경로를 검색해드릴게요
+          출발지와 도착지를 설정하면{'\n'}경로를 검색할 수 있어요
         </Text>
       </View>
     );
@@ -113,24 +98,21 @@ const RouteSelectContainer = ({
 
   // 모든 경로 렌더링
   return (
-    <ScrollView style={tw('w-full')}>
+    <ScrollView
+      style={tw('w-full')}
+      bounces={false}
+      alwaysBounceVertical={false}
+      contentContainerStyle={{ paddingBottom: 150 }}
+    >
       {routes.data.map((route, index) => {
         const { routeCategory, summary, startStation, endStation, segments } =
           route;
 
-        // 시간 포맷팅
+        const formattedRouteCategory = getCategoryText(routeCategory);
         const timeText = formatTime(summary.time);
-
-        // 거리 포맷팅
         const distanceKm = formatDistance(summary.distance);
-
-        // 도보 시간 계산 (분 단위)
         const walkingMinutes = Math.round(calculateWalkingTime(segments) / 60);
-
-        // 시간대 범위 (현재 ~ 도착 예정)
-        const timeRange = formatTimeRange(summary.time);
-
-        // 세그먼트별 시간 계산
+        const timeRange = formatTimeRange(baseTime, summary.time);
         const firstWalkingSegment = segments.find(
           seg => seg.type === 'walking',
         );
@@ -151,14 +133,54 @@ const RouteSelectContainer = ({
             ? Math.round(lastWalkingSegment.summary.time / 60)
             : 0;
 
+        // 활동 데이터 계산
+        const userGender: Gender = useUserInfoQuery().data?.data.gender;
+        const caloriesBurnedWalking = measureCaloriesBurned(
+          'walking',
+          userGender,
+          walkingMinutes,
+        );
+        const caloriesBurendBiking = measureCaloriesBurned(
+          'biking',
+          userGender,
+          bikingMinutes,
+        );
+        const totalCaloriesBurned =
+          caloriesBurnedWalking + caloriesBurendBiking;
+
+        const walkingDistance = segments.reduce((acc, segment) => {
+          if (segment.type === 'walking') {
+            return acc + segment.summary.distance;
+          }
+          return acc;
+        }, 0);
+
+        const bikingDistance = segments.reduce((acc, segment) => {
+          if (segment.type === 'biking') {
+            return acc + segment.summary.distance;
+          }
+          return acc;
+        }, 0);
+
+        const carbonSavedBiking = measureCarbonSaved('biking', bikingDistance);
+
+        const carbonSavedWalking = measureCarbonSaved(
+          'walking',
+          walkingDistance,
+        );
+
+        const totalCarbonSaved = carbonSavedBiking + carbonSavedWalking;
+        const totalTrees = convertToTrees(totalCarbonSaved);
+
         return (
           <TouchableOpacity
             key={route.routeId || `route-${index}`}
+            onPress={() => onRoutePress(route, totalCaloriesBurned, totalTrees)}
             style={[
               tw(
-                'bg-surface-primary w-full px-4 py-5 flex flex-col items-start justify-between border-b',
+                'bg-surface-primary w-full px-4 py-5 flex h-full flex-col items-start justify-between border-b',
               ),
-              { height: 300, borderColor: '#D8D8D8' },
+              { maxHeight: 312, borderColor: '#D8D8D8' },
             ]}
           >
             {/* 상단부 */}
@@ -166,15 +188,15 @@ const RouteSelectContainer = ({
               <Text
                 style={[
                   tw('font-primary-700 text-brand-primary text-left'),
-                  { fontSize: 12 },
+                  { fontSize: 14 },
                 ]}
               >
-                {routeCategory}
+                {formattedRouteCategory}
               </Text>
               <Text
                 style={[
                   tw('font-primary-700 text-on-surface-primary text-left'),
-                  { fontSize: 24 },
+                  { fontSize: 26 },
                 ]}
               >
                 {timeText}
@@ -182,7 +204,7 @@ const RouteSelectContainer = ({
               <Text
                 style={[
                   tw('font-primary-500 text-on-surface-primary text-left'),
-                  { fontSize: 12 },
+                  { fontSize: 14 },
                 ]}
               >
                 {timeRange}
@@ -196,19 +218,20 @@ const RouteSelectContainer = ({
                 <Text
                   style={[
                     tw('font-primary-600 text-on-surface-primary'),
-                    { fontSize: 15 },
+                    { fontSize: 17 },
                   ]}
                 >
-                  {distanceKm}km
+                  {distanceKm}
                 </Text>
                 <View style={[tw('flex flex-row items-center'), { gap: 8 }]}>
-                  <CalorieBadge value={143} />
-                  <TreeBadge value={1} />
+                  <CalorieBadge value={totalCaloriesBurned} />
+                  <TreeBadge value={totalTrees} />
                 </View>
               </View>
             </View>
 
             <RouteProgressStepBar
+              route={route}
               firstWalkingMinutes={firstWalkingMinutes}
               bikingMinutes={bikingMinutes}
               lastWalkingMinutes={lastWalkingMinutes}

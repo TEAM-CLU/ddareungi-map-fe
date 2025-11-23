@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { useRouteStore } from '@/features/routing/stores/routeStore';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import RouteRecommendInputBar from '@/features/routing/components/recommend/RouteRecommendInputBar';
 import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
-import SearchOverlay from '@/features/search/components/SearchOverlay';
 import RouteTimeRefreshBar from '@/features/routing/components/RouteTimeRefreshBar';
 import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
-import { RoutePoint } from '@/features/routing/model/routing.types';
+import { Route, RoutePoint } from '@/features/routing/model/routing.types';
 import {
   useNavigation,
   useRoute,
@@ -15,50 +14,44 @@ import {
   RouteProp,
 } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
-import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import SlideModal from '@/shared/components/modal/SlideModal';
-
-type RouteRecommendScreenRouteProp = RouteProp<
-  RootStackParamList,
-  'RouteRecommend'
->;
-type RouteRecommendScreenNavigationProp = NavigationProp<RootStackParamList>;
+import { useAppRoute } from '@/shared/hooks/useAppRoute';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import RoundButton from '@/shared/components/button/RoundButton';
 
 const RouteRecommendScreen = () => {
-  const route = useRoute<RouteRecommendScreenRouteProp>();
-  const navigation = useNavigation<RouteRecommendScreenNavigationProp>();
+  const route = useAppRoute<'RouteSelect'>();
+  const { navigation } = useAppNavigation<'Map'>();
 
-  const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
+  const { setShowRouteRecommendModal, setShowSelectedRouteDetailModal } =
+    useModalStore();
 
   const {
+    setTotalCaloriesBurned,
+    setTotalTrees,
+
     start,
     distance,
     setStart,
-
-    showSearchOverlay,
-    setShowSearchOverlay,
-
-    setCurrentSelectedPoint,
-    currentFieldType,
-    setCurrentFieldType,
+    setSelectedRouteData,
 
     routes,
     isLoadingRoutes,
     routeSearchError,
     searchCircularRoutes,
-    resetRouteInputData,
+    resetAllData,
   } = useRouteStore();
 
   // 경로 시간 계산 기준 시간 (리프레시 가능)
   const [baseTime, setBaseTime] = React.useState<Date>(new Date());
 
-  // Map에서 장소 선택 후 돌아온 경우 반영
+  // ---------- Map → RouteRecommend ----------
+
   useEffect(() => {
     if (route.params?.selectedPlace && route.params?.placeType) {
       const { selectedPlace, placeType } = route.params;
 
-      // 출발지만 처리
+      // 출발지 설정
       if (placeType === 'start') {
         setStart(selectedPlace);
       }
@@ -67,132 +60,104 @@ const RouteRecommendScreen = () => {
       navigation.setParams({
         selectedPlace: undefined,
         placeType: undefined,
-      } as any);
+      } as Partial<RootStackParamList['RouteRecommend']>);
     }
   }, [route.params?.selectedPlace, route.params?.placeType]);
 
-  // 출발지와 거리가 설정되면 API 호출
-  useEffect(() => {
-    if (
-      start &&
-      start.latitude &&
-      start.longitude &&
-      distance !== null &&
-      distance > 0
-    ) {
-      console.log('[RouteRecommendScreen] 원형 경로 검색 실행:', {
-        start: start.name,
-        distance,
-      });
-      searchCircularRoutes();
-    }
-  }, [start, distance, searchCircularRoutes]);
+  // ---------- Event handlers ----------
 
-  // 출발지 인풋 클릭 시 Map으로 이동
+  // 출발지 입력창 터치
   const handleRoutePointPress = useCallback(
-    (point: RoutePoint) => {
-      setCurrentSelectedPoint(point);
-      setCurrentFieldType('start');
-
+    (field: RoutePoint) => {
       navigation.navigate('Map', {
         openSearchOverlay: true,
-        placeType: point.id, // 'start'
+        placeType: field.fieldKey,
         returnTo: 'RouteRecommend',
       });
     },
-    [navigation, setCurrentSelectedPoint, setCurrentFieldType],
+    [navigation],
   );
 
-  // 이동거리 인풋 클릭 시 RouteRecommendModal 오픈
+  // 이동거리 입력창 터치
   const handleDistancePress = useCallback(() => {
-    routeRecommendModalRef.current?.present();
+    setShowRouteRecommendModal(true);
   }, []);
 
-  // SearchOverlay에서 장소 선택 시
-  const handlePlaceSelect = useCallback(
-    (place: AutocompleteResult) => {
-      if (currentFieldType === 'start') {
-        setStart(place);
-      }
+  // RouteInputBar 닫기 버튼
+  const handleRouteInputBarClose = useCallback(() => {
+    resetAllData();
+    navigation.goBack();
+  }, [resetAllData, navigation]);
 
-      setShowSearchOverlay(false);
-      setCurrentSelectedPoint(null);
-      setCurrentFieldType(null);
+  // 경로 검색 버튼
+  const handleRouteSearchConfirm = useCallback(() => {
+    if (!(start && start.latitude && start.longitude && distance !== null)) {
+      Alert.alert('경로 검색', '출발지, 이동거리를 모두 설정해주세요.');
+      return;
+    }
+    searchCircularRoutes();
+  }, [start, distance, searchCircularRoutes]);
+
+  // 검색된 경로 클릭 핸들러
+  const handleRouteItemPress = useCallback(
+    (
+      selectedRouteData: Route,
+      totalCaloriesBurned: number,
+      totalTrees: number,
+    ) => {
+      setSelectedRouteData(selectedRouteData);
+      navigation.navigate('Map');
+      setShowSelectedRouteDetailModal(true);
+      setTotalCaloriesBurned(totalCaloriesBurned);
+      setTotalTrees(totalTrees);
     },
     [
-      currentFieldType,
-      setStart,
-      setShowSearchOverlay,
-      setCurrentSelectedPoint,
-      setCurrentFieldType,
+      navigation,
+      setSelectedRouteData,
+      setShowSelectedRouteDetailModal,
+      setTotalCaloriesBurned,
+      setTotalTrees,
     ],
   );
 
-  // SearchOverlay 닫기
-  const handleSearchClose = useCallback(() => {
-    setShowSearchOverlay(false);
-    setCurrentSelectedPoint(null);
-    setCurrentFieldType(null);
-  }, [setShowSearchOverlay, setCurrentSelectedPoint, setCurrentFieldType]);
-
-  // RouteRecommendInputBar 닫기 및 초기화 처리
-  const handleRouteRecommendInputBarClose = useCallback(() => {
-    console.log('[RouteRecommendScreen] X 버튼 클릭 - 초기화 및 Map으로 이동');
-    resetRouteInputData();
-    navigation.navigate('Map');
-  }, [resetRouteInputData, navigation]);
-
   return (
-    <View style={tw('flex-1 bg-white')}>
-      {/* 상단 RouteRecommendInputBar */}
-      {!showSearchOverlay && (
-        <View style={tw('bg-brand-primary w-full pt-16 pb-4')}>
-          <View style={tw('mx-2')}>
-            <RouteRecommendInputBar
-              onRoutePointPress={handleRoutePointPress}
-              onDistancePress={handleDistancePress}
-              onClose={handleRouteRecommendInputBarClose}
-            />
-          </View>
+    <View style={tw('flex-1 bg-surface-primary')}>
+      {/* RouteRecommendInputBar */}
+      <View style={tw('bg-brand-primary w-full pt-16 pb-4')}>
+        <View style={tw('mx-2')}>
+          <RouteRecommendInputBar
+            onRoutePointPress={handleRoutePointPress}
+            onDistancePress={handleDistancePress}
+            onClose={handleRouteInputBarClose}
+          />
         </View>
-      )}
+      </View>
 
-      {/* SearchOverlay */}
-      <SearchOverlay
-        isVisible={showSearchOverlay}
-        onClose={handleSearchClose}
-        onPlaceSelect={handlePlaceSelect}
-        placeholder="출발지를 검색하세요"
-      />
-
-      {!showSearchOverlay && (
-        <>
-          <RouteTimeRefreshBar
-            baseTime={baseTime}
-            onRefresh={() => setBaseTime(new Date())}
-          />
-          <RouteSelectContainer
-            routes={routes}
-            isLoading={isLoadingRoutes}
-            error={routeSearchError}
-            baseTime={baseTime}
-          />
-        </>
-      )}
-
-      {/* 경로추천 모달 */}
-      <SlideModal
-        ref={routeRecommendModalRef}
-        snapPoints={['45%', '48%']}
-        initialIndex={1}
-        onClose={() => routeRecommendModalRef.current?.dismiss()}
+      <View
+        style={[
+          tw(
+            'bg-surface-primary flex flex-row w-full items-center justify-between px-4 py-1',
+          ),
+          { borderColor: '#D8D8D8', borderBottomWidth: 1 },
+        ]}
       >
-        <RouteRecommendModal
-          navigation={navigation}
-          routeRecommendModalRef={routeRecommendModalRef}
-          setIsRouteRecommendBtnPressed={() => {}}
+        <RouteTimeRefreshBar
+          baseTime={baseTime}
+          onRefresh={() => setBaseTime(new Date())}
         />
-      </SlideModal>
+        <RoundButton
+          title={'경로 검색하기'}
+          onPress={handleRouteSearchConfirm}
+          preset={'sm'}
+        />
+      </View>
+      <RouteSelectContainer
+        routes={routes}
+        isLoading={isLoadingRoutes}
+        error={routeSearchError}
+        baseTime={baseTime}
+        onRoutePress={handleRouteItemPress}
+      />
     </View>
   );
 };

@@ -5,38 +5,42 @@ import {
   IconClose,
   IconSearch,
 } from '@/shared/components/icons';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchStore } from '@/features/search/stores/useSearchStore';
 
 interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   onSubmit?: () => void;
-  placeholder?: string;
   onPressSearch?: () => void;
   onPressBack?: () => void;
   onPressClose?: () => void;
   onPress?: () => void;
-  readOnly?: boolean;
+  onFocus?: () => void;
   showBackButton?: boolean;
   showCloseButton?: boolean;
-  autoFocus?: boolean;
 }
 
 const SearchBar = ({
   value,
   onChangeText,
   onSubmit,
-  placeholder = '오늘은 어디로 갈까요?',
   onPressSearch,
   onPressBack,
   onPressClose,
   onPress,
-  readOnly = false,
+  onFocus,
   showBackButton = false,
   showCloseButton = false,
-  autoFocus = false,
 }: SearchBarProps) => {
-  const [isFocused, setIsFocused] = useState(false);
+  const { isFocused, setIsFocused, setSearchInputRef } = useSearchStore();
+  const searchInputRef = useRef<TextInput | null>(null);
+
+  const { showSearchOverlay, selectedPlaceInfoForModal } = useSearchStore();
+
+  useEffect(() => {
+    setSearchInputRef(searchInputRef);
+  }, [searchInputRef]);
 
   // 텍스트가 있으면 X 버튼, 없으면 검색 버튼
   const showXButton = showCloseButton && value.length > 0;
@@ -44,10 +48,9 @@ const SearchBar = ({
 
   return (
     <TouchableOpacity
-      activeOpacity={readOnly ? 0.8 : 1}
       onPress={onPress}
-      disabled={!onPress}
-      style={tw('w-full')}
+      disabled={showSearchOverlay}
+      style={[tw('w-full'), { maxWidth: 330 }]}
     >
       <View
         style={[
@@ -66,41 +69,28 @@ const SearchBar = ({
 
         {/* 검색 입력 필드 */}
         <View style={tw('flex-1 flex-row items-center justify-center h-12')}>
-          {readOnly ? (
-            <View style={tw('flex-1 justify-center items-start ml-4')}>
-              <Text
-                style={[
-                  tw('font-primary-600 text-base text-on-surface-placeholder'),
-                  {
-                    includeFontPadding: false,
-                  },
-                ]}
-              >
-                {value || placeholder}
-              </Text>
-            </View>
-          ) : (
-            <TextInput
-              value={value}
-              onChangeText={onChangeText}
-              placeholder={placeholder}
-              placeholderTextColor="#414548"
-              style={[
-                tw(
-                  'flex-1 font-primary-600 text-base text-on-surface-primary h-full m-0 p-0 leading-5 ml-4',
-                ),
-                {
-                  textAlignVertical: 'center',
-                  includeFontPadding: false,
-                },
-              ]}
-              onSubmitEditing={onSubmit}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              autoFocus={autoFocus}
-              returnKeyType="search"
-            />
-          )}
+          <TextInput
+            ref={searchInputRef}
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={
+              selectedPlaceInfoForModal?.name ?? '오늘은 어디로 갈까요?'
+            }
+            placeholderTextColor="#A7A7A7"
+            style={[
+              tw(
+                'flex-1 font-primary-600 text-base text-on-surface-primary h-full m-0 p-0 leading-5 ml-4',
+              ),
+              {
+                textAlignVertical: 'center',
+                includeFontPadding: false,
+              },
+            ]}
+            onSubmitEditing={onSubmit}
+            onFocus={onFocus}
+            onBlur={() => setIsFocused(false)}
+            returnKeyType="search"
+          />
 
           {/* 오른쪽 버튼 (X 버튼과 검색 버튼 토글) */}
           <View style={tw('w-8 h-8 items-center justify-center')}>
@@ -109,7 +99,11 @@ const SearchBar = ({
                 <IconClose color="#77838F" />
               </TouchableOpacity>
             ) : showSearchButton ? (
-              <TouchableOpacity onPress={onPressSearch} style={tw('p-1')}>
+              <TouchableOpacity
+                onPress={onPressSearch}
+                style={tw('p-1')}
+                disabled={showSearchOverlay}
+              >
                 <IconSearch color="#77838F" />
               </TouchableOpacity>
             ) : null}

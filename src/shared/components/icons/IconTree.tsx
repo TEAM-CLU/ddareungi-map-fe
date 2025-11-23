@@ -9,8 +9,8 @@ interface IconTreeProps {
 
 const IconTree = ({
   color = '#FFFFFF',
-  width = 12,
-  height = 16,
+  width = 14,
+  height = 18,
 }: IconTreeProps) => {
   return (
     <Svg width={width} height={height} viewBox="0 0 8 12" fill="none">

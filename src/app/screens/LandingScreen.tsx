@@ -1,15 +1,11 @@
 import { tw } from '@/shared/libs/tw-helper';
-import { useNavigation } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { View, Text, Image, ImageStyle } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-type LandingNavProp = StackNavigationProp<RootStackParamList, 'Landing'>;
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 const LandingScreen = () => {
-  const navigation = useNavigation<LandingNavProp>();
+  const { navigation } = useAppNavigation();
 
   useEffect(() => {
     const timer = setTimeout(() => {

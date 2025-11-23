@@ -1,157 +1,118 @@
-import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
-import { RoutePoint, RouteType } from '../model/routing.types';
-import { useCallback, useEffect, useState } from 'react';
-import {
-  createDefaultWaypoint,
-  createInitialWaypoints,
-} from '../model/routing.data';
-import { ROUTE_CONSTANTS } from '../model/routing.constants';
-import { canAddWaypoint, canRemoveWaypoint } from '../utils/validateWaypoint';
-import { generateNextWaypointId } from '../utils/generateWaypointId';
-import { Alert } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
+import { DragEndParams } from 'react-native-draggable-flatlist';
+import { useRouteStore } from '../stores/useRouteStore';
+import { RouteItem, RouteType, Waypoint } from '../model/routing.types';
 
-interface UseRouteInputProps {
-  routeType: RouteType;
-  routeData?: Record<string, AutocompleteResult>;
-  onRouteDataComplete?: (isComplete: boolean) => void;
-  setRouteData?: React.Dispatch<
-    React.SetStateAction<{ [key: string]: AutocompleteResult }>
-  >; // 외부 상태 업데이트를 위한 callback
-}
+export const useRouteInput = () => {
+  const {
+    routeType,
+    start,
+    end,
+    waypoints,
+    setStart,
+    setEnd,
+    removeWaypoint,
+    updateRouteFromDrag,
+  } = useRouteStore();
 
-export const useRouteInput = ({
-  routeType,
-  routeData = {},
-  onRouteDataComplete,
-  setRouteData,
-}: UseRouteInputProps) => {
-  const [internalRouteData, setInternalRouteData] = useState(routeData);
-  const [waypoints, setWaypoints] = useState<RoutePoint[]>(
-    createInitialWaypoints(routeType, routeData),
-  );
+  const [items, setItems] = useState<RouteItem[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // 외부 routeData 동기화 및 waypoints 업데이트
+  // 1. Store -> 로컬 리스트 동기화
   useEffect(() => {
-    if (routeData) {
-      setInternalRouteData(prev => ({
-        ...prev,
-        ...routeData,
-      }));
+    if (isProcessing) return;
 
-      // routeData에서 경유지 키들을 찾아서 waypoints 업데이트
-      const waypointKeys = Object.keys(routeData).filter(key =>
-        key.startsWith('waypoint-'),
-      );
+    const newItems: RouteItem[] = [];
 
-      if (waypointKeys.length > 0) {
-        const newWaypoints = waypointKeys.map(key => ({
-          id: key,
-          placeholder: ROUTE_CONSTANTS.DEFAULT_PLACEHOLDERS.WAYPOINT,
-          value: routeData[key]?.name || '',
-          type: 'waypoint' as const,
-        }));
-        setWaypoints(newWaypoints);
-      } else if (routeType === RouteType.LOOP && waypoints.length === 0) {
-        // LOOP 모드에서 경유지가 없으면 기본 경유지 생성
-        setWaypoints([createDefaultWaypoint('waypoint-1')]);
-      }
-    }
-  }, [routeData]);
+    // 출발지
+    newItems.push({
+      key: 'fixed-start',
+      place: start,
+    });
 
-  // 모든 라우트 필드 채워져 있는지 확인 - 채우기 전이면 searchOverlay, 다 채우면 라우팅 결과 보여줌
-  useEffect(() => {
-    const isStartSet =
-      !!internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.START];
-    const isEndSet =
-      !!internalRouteData[ROUTE_CONSTANTS.DEFAULT_ROUTE_POINT_IDS.END];
-
-    const activeWaypointIds = waypoints.map(w => w.id);
-    const filledWaypointCount = activeWaypointIds.filter(
-      id => !!internalRouteData[id],
-    ).length;
-    const allWaypointsFilled =
-      filledWaypointCount === activeWaypointIds.length &&
-      activeWaypointIds.length > 0;
-
-    let isComplete = false;
-    if (routeType === RouteType.CONSTANT) {
-      isComplete =
-        isStartSet &&
-        isEndSet &&
-        (activeWaypointIds.length === 0 || allWaypointsFilled);
-    } else if (routeType === RouteType.LOOP) {
-      isComplete =
-        isStartSet && activeWaypointIds.length >= 1 && allWaypointsFilled;
-    }
-
-    onRouteDataComplete?.(isComplete);
-  }, [internalRouteData, routeType, waypoints]);
-
-  // 핸들러 함수
-  const handleAddWaypointPress = useCallback(() => {
-    if (canAddWaypoint(waypoints.length)) {
-      const newWaypointId = generateNextWaypointId(waypoints);
-      const newWaypoint = createDefaultWaypoint(newWaypointId);
-
-      setWaypoints(prev => {
-        const newWaypoints = [...prev, newWaypoint];
-        return newWaypoints;
+    // 경유지
+    waypoints.forEach(wp => {
+      newItems.push({
+        key: wp.waypointKey,
+        place: wp.place,
       });
-    } else {
-      Alert.alert('경유지는 최대 3개까지 추가할 수 있습니다.');
-    }
-  }, [waypoints]);
+    });
 
-  const handleRemoveWaypointPress = useCallback(
-    (waypointId: string) => {
-      if (!canRemoveWaypoint(routeType, waypoints.length)) return;
+    // 도착지
+    newItems.push({
+      key: 'fixed-end',
+      place: end,
+    });
 
-      // waypoints 배열에서 제거
-      setWaypoints(prev => prev.filter(w => w.id !== waypointId));
+    const uniqueItems = newItems.map((item, index) => ({
+      ...item,
+      key: item.key.startsWith('fixed') ? `${item.key}-${index}` : item.key,
+    }));
 
-      // internalRouteData에서도 해당 경유지 데이터 제거
-      setInternalRouteData(prev => {
-        const newData = { ...prev };
-        delete newData[waypointId];
-        return newData;
-      });
+    setItems(uniqueItems);
+  }, [start, end, waypoints, isProcessing]);
+
+  // 2. 드래그 종료 핸들러
+  const handleDragEnd = useCallback(
+    ({ data }: DragEndParams<RouteItem>) => {
+      if (data.length < 2) return;
+
+      setIsProcessing(true);
+      setItems(data);
+
+      setTimeout(() => {
+        const newStart = data[0].place;
+        const newEnd = data[data.length - 1].place;
+        const middleItems = data.slice(1, -1);
+
+        const newWaypoints: Waypoint[] = middleItems
+          .filter(item => item.place !== null)
+          .map((item, index) => ({
+            waypointKey: item.key.includes('waypoint')
+              ? item.key
+              : `waypoint-new-${Date.now()}-${index}`,
+            place: item.place!,
+          }));
+
+        updateRouteFromDrag(newStart, newEnd, newWaypoints);
+
+        requestAnimationFrame(() => {
+          setIsProcessing(false);
+        });
+      }, 300);
     },
-    [routeType, waypoints.length],
+    [updateRouteFromDrag],
   );
 
-  const resetWaypoints = useCallback(() => {
-    setWaypoints(createInitialWaypoints(routeType));
-  }, [routeType]);
+  // 3️. 단순 스왑
+  const handleSwap = useCallback(() => {
+    if (routeType === RouteType.LOOP) return;
 
-  // LOOP 모드에서 출발지/도착지 동기화 함수
-  const syncStartEndInLoopMode = useCallback(
-    (newData: Record<string, AutocompleteResult>) => {
-      if (routeType === RouteType.LOOP) {
-        const updatedData = { ...newData };
+    const temp = start;
+    setStart(end);
+    setEnd(temp);
+  }, [routeType, start, end, setStart, setEnd]);
 
-        // 출발지가 변경되면 도착지도 같이 변경
-        if (newData.start) {
-          updatedData.end = newData.start;
-        }
-        // 도착지가 변경되면 출발지도 같이 변경
-        else if (newData.end) {
-          updatedData.start = newData.end;
-        }
-        return updatedData;
-      }
-      return newData;
+  // 4️. 경유지 삭제
+  const handleRemove = useCallback(
+    (key: string) => {
+      if (routeType === RouteType.LOOP && waypoints.length <= 1) return;
+      removeWaypoint(key);
     },
-    [routeType],
+    [routeType, waypoints.length, removeWaypoint],
   );
+
+  const hasWaypoints = waypoints.length > 0;
 
   return {
-    internalRouteData,
-    setInternalRouteData,
-    waypoints,
-    setWaypoints,
-    handleAddWaypointPress,
-    handleRemoveWaypointPress,
-    resetWaypoints,
-    syncStartEndInLoopMode,
+    items,
+    isProcessing,
+    routeType,
+    start,
+    end,
+    hasWaypoints,
+    handleDragEnd,
+    handleSwap,
+    handleRemove,
   };
 };

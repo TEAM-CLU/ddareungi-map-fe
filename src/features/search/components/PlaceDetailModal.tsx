@@ -1,53 +1,103 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Animated } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  ActivityIndicator,
+} from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { AutocompleteResult } from '../hooks/useAutocomplete';
 import { IconBicycle } from '@/shared/components/icons';
 import { RouteType } from '@/features/routing/model/routing.types';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '@/app/types';
-import { useRouteStore } from '@/features/routing/stores/routeStore';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
+import { useNearbyStationsMutation } from '@/features/station/services/station.queries';
+import {
+  NearbyStationData,
+  NearbyStationListPayload,
+} from '@/features/station/model/station.types';
+import { getDistanceBetweenCoords } from '@/features/location/utils/location';
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
+import { useMapStore } from '@/features/map/stores/useMapStore';
+import { AutocompleteResult } from '../model/search.types';
 
 export interface PlaceDetailModalProps {
-  place: AutocompleteResult;
-  currentLocation?: {
-    latitude: number;
-    longitude: number;
-  };
-  navigation: StackNavigationProp<RootStackParamList>;
+  place: AutocompleteResult | null;
   onClose?: () => void;
 }
 
-const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
-  place,
-  currentLocation,
-  navigation,
-  onClose,
-}) => {
-  // Zustand store에서 상태와 액션 가져오기
+const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
+  if (!place) {
+    return (
+      <View style={tw('flex justify-center w-full flex-1 items-center')}>
+        <ActivityIndicator size="large" color="#C4C4C4" />
+      </View>
+    );
+  }
   const {
     routeType,
     setRouteType,
     setStart,
     setEnd,
     addWaypoint,
-    waypoints,
     syncStartEndInLoopMode,
   } = useRouteStore();
 
-  // RouteType 토글 함수
-  const toggleRouteType = () => {
+  const { globalNavigation } = useMapStore();
+  const { myPosition } = useMyPositionStore();
+
+  const { mutateAsync: fetchNearbyStationDataList } =
+    useNearbyStationsMutation();
+  const [statoinFullName, setStationFullName] =
+    useState<string>('가져오는 중...');
+  const [stationDistance, setStationDistance] = useState<number | null>(null);
+  const [placeDistance, setPlaceDistance] = useState<number | null>(null);
+
+  // --------------- 대여소 정보 적용 -----------------
+
+  useEffect(() => {
+    const applyStationNameAndDistance = async () => {
+      if (!place.latitude || !place.latitude) return;
+      try {
+        const payload: NearbyStationListPayload = {
+          latitude: place.latitude,
+          longitude: place.longitude!,
+        };
+        const response: NearbyStationData[] = await fetchNearbyStationDataList(
+          payload,
+        );
+        setStationFullName(`${response[0].number}. ${response[0].name}까지`);
+        setStationDistance(response[0].distance);
+      } catch (error) {
+        console.error('Error fetching nearby stations:', error);
+      }
+    };
+
+    applyStationNameAndDistance();
+  }, [place]);
+
+  useEffect(() => {
+    if (!myPosition || !place.latitude || !place.longitude) return;
+    const distance = getDistanceBetweenCoords(
+      { lat: myPosition.lat, lon: myPosition.lon },
+      { lat: place.latitude, lon: place.longitude },
+    );
+    setPlaceDistance(Math.round(distance));
+  }, [myPosition, place]);
+
+  // --------------- 토글 관련 -----------------
+  // LOOP <-> CONSTANT 토글
+  const handleTogglePress = () => {
     const newRouteType =
       routeType === RouteType.CONSTANT ? RouteType.LOOP : RouteType.CONSTANT;
     setRouteType(newRouteType);
   };
 
-  // 토글 애니메이션을 위한 Animated Value
+  // 토글 애니메이션
   const toggleAnimation = useRef(
     new Animated.Value(routeType === RouteType.LOOP ? 1 : 0),
   ).current;
 
-  // routeType이 변경될 때 애니메이션 실행
+  // 토글 애니메이션 실행
   useEffect(() => {
     Animated.timing(toggleAnimation, {
       toValue: routeType === RouteType.LOOP ? 1 : 0,
@@ -56,54 +106,54 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
     }).start();
   }, [routeType, toggleAnimation]);
 
-  // 토글 버튼 핸들러
-  const handleTogglePress = () => toggleRouteType();
-
-  // 첫 번째 버튼 (출발/원점) 핸들러
+  // --------------- 버튼 핸들러 -----------------
+  /* 
+    첫 번째 버튼 (출발/원점) 핸들러
+  */
   const handleFirstButtonPress = () => {
     onClose?.(); // 모달 닫기
 
     const placeData: AutocompleteResult = {
-      id: `start-${Date.now()}`, // 출발지는 고유 ID
+      placeKey: `start-${Date.now()}`, // 출발지는 고유 ID
       name: place.name,
       address: place.address,
-      latitude: place.latitude!,
-      longitude: place.longitude!,
+      latitude: place.latitude,
+      longitude: place.longitude,
     };
 
-    // LOOP 모드면 출발-도착 동기화
+    // LOOP 모드: 출발-도착 동기화
     if (routeType === RouteType.LOOP) {
       syncStartEndInLoopMode(placeData, 'start');
     } else {
       setStart(placeData);
     }
-    // RouteSelect 화면으로 이동
-    navigation.navigate('RouteSelect');
+    globalNavigation.navigate('RouteSelect');
   };
 
-  // 두 번째 버튼 (반환점/도착) 핸들러
+  /*
+    두 번째 버튼 (반환점/도착) 핸들러 
+  */
   const handleSecondButtonPress = () => {
     onClose?.(); // 모달 닫기
 
     const placeData: AutocompleteResult = {
-      id: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
+      placeKey: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
       name: place.name,
       address: place.address,
-      latitude: place.latitude!,
-      longitude: place.longitude!,
+      latitude: place.latitude,
+      longitude: place.longitude,
     };
 
     if (routeType === RouteType.LOOP) {
-      // 루프 모드: 반환점(경유지) 추가 - ID는 addWaypoint에서 자동 생성
+      // LOOP 모드: 반환점(경유지) 추가
       addWaypoint(placeData);
     } else {
-      // 일반 모드: 도착지 설정
+      // CONSTANT 모드: 도착지 설정
       setEnd(placeData);
     }
-
-    // RouteSelect 화면으로 이동
-    navigation.navigate('RouteSelect');
+    globalNavigation.navigate('RouteSelect');
   };
+
   return (
     <View style={tw('flex-1')}>
       <View style={tw('flex-row justify-between items-start mb-1')}>
@@ -137,7 +187,13 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
                 'text-base font-primary-600 text-on-surface-primary mr-3',
               )}
             >
-              15.2km
+              {`${
+                placeDistance
+                  ? placeDistance >= 1000
+                    ? `${(placeDistance / 1000).toFixed(1)}km`
+                    : `${Math.round(placeDistance)}m`
+                  : '거리 측정 중...'
+              }`}
             </Text>
             {place.address && (
               <Text
@@ -157,7 +213,14 @@ const PlaceDetailModal: React.FC<PlaceDetailModalProps> = ({
         <IconBicycle width={30} height={30} color="#414548" />
         {/* 대여소 API 연결되면 변경 */}
         <Text style={tw('text-md font-primary-600 text-on-surface-primary')}>
-          1600. 과기대 입구까지 700m
+          {statoinFullName}{' '}
+          {`${
+            stationDistance
+              ? stationDistance >= 1000
+                ? `${(stationDistance / 1000).toFixed(1)}km`
+                : `${Math.round(stationDistance)}m`
+              : '거리 측정 중...'
+          }`}
         </Text>
       </View>
 

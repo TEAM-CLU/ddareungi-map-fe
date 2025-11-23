@@ -10,8 +10,8 @@ interface IconRunProps {
 
 const IconRun = ({
   color = 'white',
-  width = 8,
-  height = 8,
+  width = 10,
+  height = 10,
   strokeWidth = 0.7,
 }: IconRunProps) => {
   return (

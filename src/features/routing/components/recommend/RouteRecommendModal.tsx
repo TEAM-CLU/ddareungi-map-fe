@@ -6,31 +6,24 @@ import React from 'react';
 import { NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '@/app/types';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useRouteStore } from '../../stores/routeStore';
+import { useRouteStore } from '../../stores/useRouteStore';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import { useMapStore } from '@/features/map/stores/useMapStore';
 
-interface RouteRecommendModalProps {
-  navigation: NavigationProp<RootStackParamList>;
-  routeRecommendModalRef: React.RefObject<BottomSheetModal | null>;
-  setIsRouteRecommendBtnPressed: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const RouteRecommendModal = ({
-  navigation,
-  routeRecommendModalRef,
-  setIsRouteRecommendBtnPressed,
-}: RouteRecommendModalProps) => {
+const RouteRecommendModal = () => {
   const { distance, setDistance } = useRouteStore();
+
+  const { setShowRouteRecommendModal } = useModalStore();
+  const { globalNavigation } = useMapStore();
 
   const handleOkBtnPress = () => {
     // 현재 화면이 RouteRecommend가 아닐 때만 navigate
     const currentRoute =
-      navigation.getState().routes[navigation.getState().index];
+      globalNavigation.getState().routes[globalNavigation.getState().index];
     if (currentRoute.name !== 'RouteRecommend') {
-      navigation.navigate('RouteRecommend');
+      globalNavigation.navigate('RouteRecommend');
     }
-
-    routeRecommendModalRef?.current?.dismiss();
-    setIsRouteRecommendBtnPressed && setIsRouteRecommendBtnPressed(false);
+    setShowRouteRecommendModal(false);
   };
 
   const handleDecreaseDistanceBtnPress = () => {
@@ -114,11 +107,7 @@ const RouteRecommendModal = ({
           최소 거리 0.25km ~ 최대 거리 22.5km 입니다.
         </Text>
       </View>
-      <SquareButton
-        title="확인"
-        onPress={handleOkBtnPress}
-        disabled={false}
-      />
+      <SquareButton title="확인" onPress={handleOkBtnPress} disabled={false} />
     </View>
   );
 };

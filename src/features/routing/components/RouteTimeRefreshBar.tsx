@@ -34,12 +34,9 @@ const RouteTimeRefreshBar = ({
   return (
     <View
       style={[
-        tw('w-full bg-surface-primary flex-row items-center px-4'),
+        tw('flex-row items-center'),
         {
           height: 43,
-          borderTopWidth: 1,
-          borderBottomWidth: 1,
-          borderColor: '#D8D8D8',
         },
       ]}
     >
@@ -52,7 +49,6 @@ const RouteTimeRefreshBar = ({
         {`${currentTime}에 출발`}
       </Text>
       <TouchableOpacity
-        activeOpacity={0.8}
         onPress={handleRefreshTime}
         style={tw('px-1 pb-1 rounded-full')}
       >

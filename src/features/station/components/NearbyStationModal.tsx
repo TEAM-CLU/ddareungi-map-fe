@@ -1,5 +1,4 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
-import { Coordinates } from '@/features/map/model/map.types';
 import {
   MapAreaStationData,
   NearbyStationListPayload,
@@ -8,52 +7,42 @@ import {
 import { useNearbyStationsMutation } from '@/features/station/services/station.queries';
 import { tw } from '@/shared/libs/tw-helper';
 import { FocusOnTargetedNearbyStationMessage } from '@/shared/model/map.webview.types';
-import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { RefObject, use, useEffect, useRef, useState } from 'react';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import WebView from 'react-native-webview';
+import { useStationStore } from '../stores/useStationStore';
+import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 
-interface NearbyStationModalProps {
-  myPosition: Coordinates | undefined;
-  stationDetailModalRef: RefObject<BottomSheetModal | null>;
-  setStationMetaData: React.Dispatch<
-    React.SetStateAction<MapAreaStationData | null>
-  >;
-  nearByModalRef: RefObject<BottomSheetModal | null>;
-  webRef: RefObject<WebView | null>;
-  lamda: RefObject<number>;
-}
-const NearbyStationModal = ({
-  myPosition,
-  stationDetailModalRef,
-  setStationMetaData,
-  nearByModalRef,
-  webRef,
-  lamda,
-}: NearbyStationModalProps) => {
+const NearbyStationModal = () => {
   const { mutateAsync: getNearbyStations } = useNearbyStationsMutation();
-  const [nearbyStationsDataList, setNearbyStationsDataList] = useState<
-    NearbyStationData[] | null
-  >(null);
   const [distances, setDistances] = useState<number[]>([]); // 거리 3개 배열
+  const { setShowStationDetailModal, setShowNearByStationModal } =
+    useModalStore();
+  const {
+    setStationMetaData,
+    nearbyStationDataList,
+    setNearbyStationDataList,
+    lamda,
+  } = useStationStore();
+  const { myPosition } = useMyPositionStore();
+  const { sendMessage } = useMapWebview();
 
   // 리스트 클릭시 상세대여소 모달로 이동
-  const handleStationItemBtnPress = async (
-    stationMetaData: MapAreaStationData,
-  ) => {
-    await setStationMetaData(stationMetaData);
+  const handleStationItemBtnPress = (stationMetaData: MapAreaStationData) => {
+    setStationMetaData(stationMetaData);
     try {
-      const targetedNearbyStationData: FocusOnTargetedNearbyStationMessage = {
+      const message: FocusOnTargetedNearbyStationMessage = {
         type: 'focusOnTargetedNearbyStation',
         targetedStationData: stationMetaData,
       };
-      webRef.current?.postMessage(JSON.stringify(targetedNearbyStationData));
+      sendMessage(message);
     } catch (error) {
       console.error('Invalid JSON from WebView:', error);
     }
 
-    await stationDetailModalRef.current?.present();
-    await nearByModalRef.current?.dismiss();
+    setShowNearByStationModal(false);
+    setShowStationDetailModal(true);
   };
 
   // 내 위치 기반으로 주변 대여소 데이터 불러오는 로직
@@ -67,7 +56,7 @@ const NearbyStationModal = ({
         };
 
         const response: NearbyStationData[] = await getNearbyStations(payload);
-        setNearbyStationsDataList(response);
+        setNearbyStationDataList(response);
       } catch (error) {
         console.error('Error fetching nearby stations:', error);
       }
@@ -77,20 +66,20 @@ const NearbyStationModal = ({
   }, [myPosition]);
 
   useEffect(() => {
-    if (!myPosition || !nearbyStationsDataList) return;
-    const newDistances = nearbyStationsDataList.map(station =>
+    if (!myPosition || !nearbyStationDataList) return;
+    const newDistances = nearbyStationDataList.map(station =>
       getDistanceBetweenCoords(
         { lat: myPosition.lat, lon: myPosition.lon },
         { lat: station.latitude, lon: station.longitude },
       ),
     );
     setDistances(newDistances.map(distance => Math.round(distance)));
-  }, [myPosition, nearbyStationsDataList]);
+  }, [myPosition, nearbyStationDataList]);
 
-  if (!nearbyStationsDataList)
+  if (!nearbyStationDataList)
     return (
       <View style={tw('flex justify-center w-full flex-1 items-center')}>
-        <ActivityIndicator size="large" color="#01DA86" />
+        <ActivityIndicator size="large" color="#C4C4C4" />
       </View>
     );
 
@@ -109,7 +98,7 @@ const NearbyStationModal = ({
       >
         내 주변에 있는 따릉이
       </Text>
-      {nearbyStationsDataList.map((nearbyStationData, idx) => {
+      {nearbyStationDataList.map((nearbyStationData, idx) => {
         return (
           <TouchableOpacity
             onPress={() => handleStationItemBtnPress(nearbyStationData)}
@@ -164,12 +153,10 @@ const NearbyStationModal = ({
                 {`${
                   distances[idx]
                     ? distances[idx] >= 1000
-                      ? `${(
-                          Math.round(distances[idx] * lamda.current) / 1000
-                        ).toFixed(1)}km`
-                      : `${Math.round(distances[idx] * lamda.current).toFixed(
-                          0,
-                        )}m`
+                      ? `${(Math.round(distances[idx] * lamda) / 1000).toFixed(
+                          1,
+                        )}km`
+                      : `${Math.round(distances[idx] * lamda).toFixed(0)}m`
                     : '거리 측정 중...'
                 }`}
               </Text>

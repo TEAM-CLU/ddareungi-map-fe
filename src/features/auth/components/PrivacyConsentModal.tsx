@@ -1,9 +1,8 @@
-import { RootStackParamList } from '@/app/types';
 import RoundButton from '@/shared/components/button/RoundButton';
 import { IconClose } from '@/shared/components/icons';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { tw } from '@/shared/libs/tw-helper';
 import CheckBox from '@react-native-community/checkbox';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
@@ -30,7 +29,7 @@ const PrivacyConsentModal = ({
 }: PrivacyConsentModalProps) => {
   const [canProceed, setCanProceed] = useState(false);
 
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
 
   const handleAgreeBtnPress = () => {
     if (!isConsentRequiredAgreed) {

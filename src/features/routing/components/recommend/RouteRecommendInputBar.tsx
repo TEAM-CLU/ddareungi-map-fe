@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { RoutePoint } from '../../model/routing.types';
-import { createStartPoint } from '../../model/routing.data';
-import { useRouteStore } from '../../stores/routeStore';
+import { useRouteStore } from '../../stores/useRouteStore';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconClose, IconOval } from '@/shared/components/icons';
+import { createStartPoint } from '@/features/routing/utils/creatPoint';
 
 interface RouteRecommendInputBarProps {
   onClose: () => void;
@@ -16,12 +16,11 @@ const RouteRecommendInputBar = ({
   onRoutePointPress,
   onDistancePress,
 }: RouteRecommendInputBarProps) => {
-  const { start, distance, resetRouteInputData } = useRouteStore();
+  const { start, distance } = useRouteStore();
 
   const handleClosePress = useCallback(() => {
-    resetRouteInputData();
     onClose();
-  }, [onClose, resetRouteInputData]);
+  }, [onClose]);
 
   const startPoint = useMemo(
     () => createStartPoint(start?.name || ''),
@@ -50,7 +49,7 @@ const RouteRecommendInputBar = ({
             <IconClose color="#A7A7A7" />
           </TouchableOpacity>
         </View>
-        
+
         {/* 인풋 필드 */}
         <View style={tw('pl-12 pr-12 py-2')}>
           {/* 출발지 */}

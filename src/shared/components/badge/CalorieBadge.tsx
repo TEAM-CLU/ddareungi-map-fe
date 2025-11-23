@@ -10,20 +10,20 @@ interface CalorieBadgeProps {
 const CalorieBadge = ({ value }: CalorieBadgeProps) => (
   <View
     style={[
-      tw('h-5 w-full flex-row justify-center items-center bg-brand-primary'),
+      tw('h-7 flex-row justify-center items-center bg-brand-primary'),
       {
-        maxWidth: 70,
+        maxWidth: '70%',
         borderRadius: 20,
         paddingHorizontal: 13,
-        paddingVertical: 4,
+        paddingVertical: 6,
       },
     ]}
   >
     <IconKcal />
     <Text
       style={[
-        tw('text-on-surface-secondary font-primary-500'),
-        { fontSize: 10 },
+        tw('text-on-surface-secondary font-primary-600'),
+        { fontSize: 13 },
       ]}
     >
       {value}kcal

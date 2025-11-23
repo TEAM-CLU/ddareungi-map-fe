@@ -11,8 +11,6 @@ import IconGoogle from '@/shared/components/icons/IconGoogle';
 import IconKakao from '@/shared/components/icons/IconKakao';
 import IconNaver from '@/shared/components/icons/IconNaver';
 import { useAuth } from '@/app/providers';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '@/app/types';
 import { useEffect, useRef, useState } from 'react';
 import {
   SocialAuthExchangeTokenResponse,
@@ -26,6 +24,7 @@ import {
 } from '@/features/auth/services/auth.queries';
 import { useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 interface SocialLoginLinksProps {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
@@ -42,7 +41,7 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
 
   const queryClient = useQueryClient();
 
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
 
   const handleSocialLoginButtonPress = async (socialType: SocialType) => {
     setIsLoading(true);

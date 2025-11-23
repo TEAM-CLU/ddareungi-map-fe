@@ -1,7 +1,16 @@
-import React, { useCallback, useMemo } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useCallback } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Vibration,
+  ActivityIndicator,
+} from 'react-native';
+import DraggableFlatList, {
+  RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
 import { tw } from '@/shared/libs/tw-helper';
-import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
 import {
   IconOval,
   IconSwitch,
@@ -9,11 +18,9 @@ import {
   IconPlus,
   IconMinus,
 } from '@/shared/components/icons';
-import { RoutePoint, RouteType } from '../model/routing.types';
-import { createStartPoint, createEndPoint } from '../model/routing.data';
-import { canRemoveWaypoint } from '../utils/validateWaypoint';
+import { RouteItem, RoutePoint, RouteType } from '../model/routing.types';
 import IconArrowsUpDown from '@/shared/components/icons/IconArrowsUpDown';
-import { useRouteStore } from '../stores/routeStore';
+import { useRouteInput } from '../hooks/useRouteInput';
 
 interface RouteInputBarProps {
   onClose: () => void;
@@ -26,303 +33,204 @@ const RouteInputBar = ({
   onRoutePointPress,
   onAddWaypointAndEdit,
 }: RouteInputBarProps) => {
-
   const {
+    items,
+    isProcessing,
     routeType,
     start,
     end,
-    waypoints,
-    setStart,
-    setEnd,
-    addWaypoint,
-    removeWaypoint,
-    resetRouteInputData,
-  } = useRouteStore();
+    hasWaypoints,
+    handleDragEnd,
+    handleSwap,
+    handleRemove,
+  } = useRouteInput();
 
-  // 출발지, 도착지 포인트 생성
-  const startPoint = useMemo(
-    () => createStartPoint(start?.name || ''),
-    [start],
-  );
-  const endPoint = useMemo(() => createEndPoint(end?.name || ''), [end]);
+  const renderItem = useCallback(
+    ({ item, drag, isActive, getIndex }: RenderItemParams<RouteItem>) => {
+      const index = getIndex() ?? 0;
+      const isStart = index === 0;
+      const isEnd = index === items.length - 1;
+      const isWaypoint = !isStart && !isEnd;
 
-  // 경유지를 UI에 맞게 변환
-  const waypointPoints = useMemo(() => {
-    return waypoints.map((wp, index) => ({
-      id: wp.id,
-      type: 'waypoint' as const,
-      placeholder: `경유지 ${index + 1}`,
-      value: wp.place?.name || '',
-    }));
-  }, [waypoints]);
+      const waypointCount = items.length - 2;
 
-  // 출발지와 도착지 교환 함수 (LOOP에서는 비활성)
-  const handleSwapPress = useCallback(() => {
-    if (routeType === RouteType.LOOP) return;
-    if (start && end) {
-      const tempStart = start;
-      setStart(end);
-      setEnd(tempStart);
-    }
-  }, [routeType, start, end, setStart, setEnd]);
+      const iconColor = isStart
+        ? waypointCount > 0
+          ? 'gray'
+          : 'brand'
+        : isEnd
+        ? 'gray'
+        : 'brand';
 
-  // 닫기 버튼 핸들러
-  const handleClosePress = useCallback(() => {
-    onClose();
-    resetRouteInputData();
-  }, [onClose]);
+      const showPlus = isEnd && waypointCount < 3;
+      const showMinus =
+        isWaypoint && !(routeType === RouteType.LOOP && waypointCount <= 1);
 
-  // 경유지 추가
-  const handleAddWaypointPress = useCallback(() => {
-    if (waypoints.length >= 3) {
-      console.warn('경유지는 최대 3개까지 추가 가능합니다.');
-      return;
-    }
-    onAddWaypointAndEdit();
-  }, [onAddWaypointAndEdit, waypoints]);
+      const routePoint: RoutePoint = {
+        fieldKey: isStart ? 'start' : isEnd ? 'end' : item.key,
+        type: isStart ? 'start' : isEnd ? 'end' : 'waypoint',
+        value: item.place?.name || '',
+        placeholder: isStart
+          ? '출발지를 입력하세요'
+          : isEnd
+          ? '도착지를 입력하세요'
+          : '경유지를 입력하세요',
+      };
 
-  // 경유지 삭제
-  const handleRemoveWaypointPress = useCallback(
-    (id: string) => {
-      if (canRemoveWaypoint(routeType, waypoints.length)) {
-        removeWaypoint(id);
-      }
+      return (
+        <ScaleDecorator>
+          <View
+            style={[
+              tw('flex-row items-center h-12 px-0'),
+              !isEnd && tw('border-b border-line-default'),
+              isActive && {
+                backgroundColor: '#F5F5F5',
+                borderRadius: 8,
+                zIndex: 999,
+              },
+            ]}
+          >
+            {waypointCount > 0 ? (
+              <TouchableOpacity
+                onLongPress={() => {
+                  Vibration.vibrate(30);
+                  drag();
+                }}
+                disabled={isActive || isProcessing}
+                style={tw('w-8 h-12 items-center justify-center')}
+              >
+                <IconArrowsUpDown width={16} height={16} />
+              </TouchableOpacity>
+            ) : (
+              <View style={tw('w-8 h-12 items-center justify-center')} />
+            )}
+
+            <View style={tw('w-8 items-center justify-center')}>
+              <IconOval width={20} height={20} color={iconColor} />
+            </View>
+
+            <TouchableOpacity
+              style={tw('flex-1 justify-center h-full')}
+              onPress={() => !isProcessing && onRoutePointPress(routePoint)}
+              disabled={isProcessing}
+            >
+              <Text
+                numberOfLines={1}
+                style={[
+                  tw(
+                    item.place?.name
+                      ? 'text-on-surface-primary text-base font-medium'
+                      : 'text-on-surface-placeholder text-base',
+                  ),
+                ]}
+              >
+                {item.place?.name || routePoint.placeholder}
+              </Text>
+            </TouchableOpacity>
+
+            {showMinus && (
+              <TouchableOpacity
+                style={tw(
+                  'w-8 h-8 items-center justify-center mr-1 bg-neutral-300 rounded-full',
+                )}
+                onPress={() => !isProcessing && handleRemove(item.key)}
+                disabled={isProcessing}
+              >
+                <IconMinus width={16} color="white" />
+              </TouchableOpacity>
+            )}
+
+            {showPlus && (
+              <TouchableOpacity
+                style={tw(
+                  'w-8 h-8 items-center justify-center mr-1 bg-brand-primary rounded-full',
+                )}
+                onPress={onAddWaypointAndEdit}
+                disabled={isProcessing}
+              >
+                <IconPlus width={16} color="white" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScaleDecorator>
+      );
     },
-    [routeType, waypoints, removeWaypoint],
+    [
+      items.length,
+      routeType,
+      onRoutePointPress,
+      onAddWaypointAndEdit,
+      handleRemove,
+      isProcessing,
+    ],
   );
 
   return (
     <View
       style={tw(
-        'bg-surface-primary rounded-xl overflow-hidden border border-line-default',
+        'relative bg-surface-primary rounded-xl overflow-hidden border border-line-default',
       )}
     >
-      {/* 메인 입력 영역 */}
-      <View style={tw('relative')}>
-        {/* 좌측 스위치 버튼 - 경유지가 없을 때만 */}
-        {waypoints.length === 0 && (
-          <View
-            style={tw('absolute left-2 top-0 bottom-0 justify-center z-10')}
-          >
-            <TouchableOpacity
-              onPress={handleSwapPress}
-              style={tw('w-8 h-8 items-center justify-center')}
-            >
-              <IconSwitch />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* 우측 닫기 버튼 - 경유지가 있을 때만 컨테이너 중앙에 위치 */}
-        {waypoints.length > 0 && (
-          <View
-            style={tw('absolute right-2 top-0 bottom-0 justify-center z-20')}
-          >
-            <TouchableOpacity
-              onPress={handleClosePress}
-              style={tw('w-8 h-8 items-center justify-center')}
-            >
-              <IconClose color="#A7A7A7" />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* 경유지가 없을 때 우측 버튼들 - + 버튼과 x 버튼 */}
-        {waypoints.length === 0 && (
-          <>
-            {/* + 버튼 */}
-            <View
-              style={tw('absolute right-12 top-0 bottom-0 justify-center z-10')}
-            >
-              <TouchableOpacity
-                style={tw(
-                  'w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
-                )}
-                onPress={handleAddWaypointPress}
-              >
-                <IconPlus />
-              </TouchableOpacity>
-            </View>
-
-            {/* x 버튼 */}
-            <View
-              style={tw('absolute right-2 top-0 bottom-0 justify-center z-10')}
-            >
-              <TouchableOpacity
-                onPress={handleClosePress}
-                style={tw('w-8 h-8 items-center justify-center')}
-              >
-                <IconClose color="#A7A7A7" />
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
-
-        {/* 인풋 필드들 */}
+      {/* 스왑 버튼 (경유지 없을 때만) */}
+      {!hasWaypoints && (
         <View
-          style={tw(`${waypoints.length > 0 ? 'pl-2' : 'pl-12'} pr-12 py-2`)}
+          style={[
+            tw('absolute left-2 top-0 bottom-0 justify-center'),
+            { zIndex: 10 },
+          ]}
         >
-          {/* 출발지 */}
-          <View
+          <TouchableOpacity
+            onPress={handleSwap}
             style={tw(
-              'relative flex-row items-center py-1 border-b border-line-default',
+              'w-8 h-8 items-center justify-center bg-surface-primary rounded-full',
             )}
+            disabled={
+              routeType === RouteType.LOOP || (!start && !end) || isProcessing
+            }
           >
-            {/* 좌측 드래그 핸들 (경유지가 있을 때만) */}
-            {waypoints.length > 0 && (
-              <View style={tw('w-8 mr-1 items-center justify-center')}>
-                <TouchableOpacity
-                  style={tw('w-6 h-6 items-center justify-center')}
-                >
-                  <IconArrowsUpDown width={13} height={13} />
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* 좌측 아이콘 */}
-            <View style={tw('w-6 mr-1 items-center')}>
-              <IconOval
-                width={20}
-                height={20}
-                color={waypoints.length > 0 ? 'gray' : 'brand'}
-              />
-            </View>
-
-            {/* 입력 필드 */}
-            <TouchableOpacity
-              style={tw('flex-1')}
-              onPress={() => onRoutePointPress(startPoint)}
-            >
-              <Text
-                style={tw(
-                  start?.name || startPoint.value
-                    ? 'text-on-surface-primary font-primary-500 text-base'
-                    : 'text-on-surface-placeholder font-primary-500 text-base',
-                )}
-              >
-                {start?.name || startPoint.value || startPoint.placeholder}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* 경유지들 */}
-          {waypointPoints.map((waypoint, index) => (
-            <View
-              key={waypoint.id}
-              style={tw(
-                'flex-row items-center py-1 border-b border-line-default',
-              )}
-            >
-              {/* 좌측 드래그 핸들 */}
-              <View style={tw('w-8 mr-1 items-center justify-center')}>
-                <TouchableOpacity
-                  style={tw('w-6 h-6 items-center justify-center')}
-                >
-                  <IconArrowsUpDown width={13} height={13} />
-                </TouchableOpacity>
-              </View>
-
-              {/* 좌측 아이콘 */}
-              <View style={tw('w-6 mr-1 items-center')}>
-                <IconOval width={20} height={20} color="brand" />
-              </View>
-
-              {/* 입력 필드 */}
-              <TouchableOpacity
-                style={tw('flex-1')}
-                onPress={() => onRoutePointPress(waypoint)}
-              >
-                <Text
-                  style={tw(
-                    waypoint.value
-                      ? 'text-on-surface-primary font-primary-500 text-base'
-                      : 'text-on-surface-placeholder font-primary-500 text-base',
-                  )}
-                >
-                  {waypoint.value || waypoint.placeholder}
-                </Text>
-              </TouchableOpacity>
-
-              {/* 우측 삭제 버튼 - loop 모드에서 경유지가 1개일 때는 숨김 */}
-              {canRemoveWaypoint(routeType, waypoints.length) && (
-                <TouchableOpacity
-                  style={[
-                    tw('ml-2 w-6 h-6 items-center justify-center rounded-full'),
-                    { backgroundColor: '#D1D1D1' },
-                  ]}
-                  onPress={() => handleRemoveWaypointPress(waypoint.id)}
-                >
-                  <IconMinus width={20} color="white" />
-                </TouchableOpacity>
-              )}
-
-              {/* + 버튼 - loop 모드에서 경유지가 1개일 때만 첫 번째 경유지 옆에 표시 */}
-              {routeType === RouteType.LOOP &&
-                waypoints.length === 1 &&
-                index === 0 &&
-                waypoints.length < 3 && (
-                  <TouchableOpacity
-                    style={tw(
-                      'ml-2 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
-                    )}
-                    onPress={handleAddWaypointPress}
-                  >
-                    <IconPlus />
-                  </TouchableOpacity>
-                )}
-            </View>
-          ))}
-
-          {/* 도착지 */}
-          <View style={tw('flex-row items-center py-1')}>
-            {/* 좌측 드래그 핸들 (경유지가 있을 때만) */}
-            {waypoints.length > 0 && (
-              <View style={tw('w-8 mr-1 items-center justify-center')}>
-                <TouchableOpacity
-                  style={tw('w-6 h-6 items-center justify-center')}
-                >
-                  <IconArrowsUpDown width={13} height={13} />
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* 좌측 아이콘 */}
-            <View style={tw('w-6 mr-1 items-center')}>
-              <IconOval width={20} height={20} color="gray" />
-            </View>
-
-            {/* 입력 필드 */}
-            <TouchableOpacity
-              style={tw('flex-1')}
-              onPress={() => onRoutePointPress(endPoint)}
-            >
-              <Text
-                style={tw(
-                  end?.name || endPoint.value
-                    ? 'text-on-surface-primary font-primary-500 text-base'
-                    : 'text-on-surface-placeholder font-primary-500 text-base',
-                )}
-              >
-                {end?.name || endPoint.value || endPoint.placeholder}
-              </Text>
-            </TouchableOpacity>
-
-            {/* + 버튼 - 경유지가 2개 이상이거나 constant 모드일 때 도착지 우측에 표시 */}
-            {((routeType === RouteType.LOOP && waypoints.length >= 2) ||
-              (routeType === RouteType.CONSTANT && waypoints.length > 0)) &&
-              waypoints.length < 3 && (
-                <TouchableOpacity
-                  style={tw(
-                    'ml-2 w-6 h-6 items-center justify-center bg-brand-primary rounded-full',
-                  )}
-                  onPress={handleAddWaypointPress}
-                >
-                  <IconPlus />
-                </TouchableOpacity>
-              )}
-          </View>
+            <IconSwitch color={!start && !end ? '#D1D1D1' : undefined} />
+          </TouchableOpacity>
         </View>
+      )}
+
+      {/* 닫기 버튼 */}
+      <View style={tw('absolute right-2 top-2 z-20')}>
+        <TouchableOpacity
+          onPress={onClose}
+          style={tw('w-8 h-8 items-center justify-center')}
+          disabled={isProcessing}
+        >
+          <IconClose color="#A7A7A7" />
+        </TouchableOpacity>
       </View>
+
+      {/* 리스트 영역 */}
+      <View style={tw('pl-2 pr-12')}>
+        <DraggableFlatList
+          data={items}
+          onDragEnd={handleDragEnd}
+          keyExtractor={item => item.key}
+          renderItem={renderItem}
+          scrollEnabled={false}
+          activationDistance={5}
+          containerStyle={{ paddingVertical: 0 }}
+          dragItemOverflow={true}
+        />
+      </View>
+
+      {/* 로딩 오버레이 */}
+      {isProcessing && (
+        <View
+          style={[
+            tw(
+              'absolute inset-0 flex items-center justify-center bg-surface-primary opacity-80',
+            ),
+            { zIndex: 50, width: '100%', height: '100%' },
+          ]}
+        >
+          <ActivityIndicator size="large" color="#C4C4C4" />
+        </View>
+      )}
     </View>
   );
 };

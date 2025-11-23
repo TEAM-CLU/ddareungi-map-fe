@@ -10,8 +10,8 @@ interface IconBicycleProps {
 
 const IconBicycle = ({
   color = 'white',
-  width = 21,
-  height = 12,
+  width = 23,
+  height = 15,
 }: IconBicycleProps) => {
   return (
     <Svg width={width} height={height} viewBox="0 0 33 20" fill="none">

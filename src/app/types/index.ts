@@ -1,5 +1,5 @@
-import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
 import { RouteType } from '@/features/routing/model/routing.types';
+import { AutocompleteResult } from '@/features/search/model/search.types';
 
 export type RootStackParamList = {
   DevHub: undefined;

@@ -33,3 +33,7 @@ export interface UserContextType {
 }
 
 export type FooterRoutes = keyof RootStackParamList;
+
+// measure.ts
+export type TransportationType = 'walking' | 'biking';
+export type Gender = 'M' | 'F' | undefined;

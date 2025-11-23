@@ -11,9 +11,8 @@ import {
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import SearchBar from './SearchBar';
-import { useAutocomplete, AutocompleteResult } from '../hooks/useAutocomplete';
+import { useAutocomplete } from '../hooks/useAutocomplete';
 import { useRecentSearches } from '../hooks/useRecentSearches';
-import { SEARCH_CONSTANTS } from '../model/search.constants';
 import {
   IconPlace,
   IconSearch,
@@ -21,29 +20,27 @@ import {
   IconLocatorMark,
 } from '@/shared/components/icons';
 import { reverseGeocode } from '../services/search.api';
-import { Coordinates } from '@/features/map/model/map.types';
 import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
+import { AutocompleteResult } from '../model/search.types';
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSearchStore } from '@/features/search/stores/useSearchStore';
 
 interface SearchOverlayProps {
-  isVisible: boolean;
   onClose: () => void;
+  onPress: () => void;
   onPlaceSelect: (place: AutocompleteResult) => void;
-  placeholder?: string;
-  currentLocation?: Coordinates; // 현재 위치 추가
 }
 
 const SearchOverlay = ({
-  isVisible,
   onClose,
   onPlaceSelect,
-  placeholder = '오늘은 어디로 갈까요?',
-  currentLocation,
+  onPress,
 }: SearchOverlayProps) => {
   const [searchText, setSearchText] = useState('');
   const [isLoadingCurrentLocation, setIsLoadingCurrentLocation] =
     useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const {
     query,
@@ -62,23 +59,9 @@ const SearchOverlay = ({
     clearRecentSearches,
   } = useRecentSearches();
 
-  // 오버레이 표시/숨김 애니메이션
-  useEffect(() => {
-    if (isVisible) {
-      fadeAnim.setValue(0);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: SEARCH_CONSTANTS.ANIMATION_DURATION,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: SEARCH_CONSTANTS.ANIMATION_DURATION,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [isVisible, fadeAnim]);
+  const { showSearchOverlay } = useSearchStore();
+
+  const { myPosition } = useMyPositionStore();
 
   // 검색어가 변경될 때 useAutocomplete에 반영
   const handleSearchTextChange = useCallback(
@@ -89,7 +72,7 @@ const SearchOverlay = ({
     [setQuery],
   );
 
-  const handlePlaceSelect = useCallback(
+  const handleSearchResultSelect = useCallback(
     (place: AutocompleteResult) => {
       addRecentSearch(place);
       onPlaceSelect(place);
@@ -114,7 +97,7 @@ const SearchOverlay = ({
   const handleRecentSelect = useCallback(
     (recent: AutocompleteResult) => {
       const autocompleteResult: AutocompleteResult = {
-        id: recent.id,
+        placeKey: recent.placeKey,
         name: recent.name,
         address: recent.address,
         latitude: recent.latitude,
@@ -122,9 +105,9 @@ const SearchOverlay = ({
         distance: recent.distance || '',
         category: recent.category || '',
       };
-      handlePlaceSelect(autocompleteResult);
+      handleSearchResultSelect(autocompleteResult);
     },
-    [handlePlaceSelect],
+    [handleSearchResultSelect],
   );
 
   // 검색 결과
@@ -135,7 +118,7 @@ const SearchOverlay = ({
           tw('flex-row items-center px-4 py-3 border-b'),
           { borderBottomColor: '#D8D8D8' },
         ]}
-        onPress={() => handlePlaceSelect(item)}
+        onPress={() => handleSearchResultSelect(item)}
       >
         <View style={tw('mr-3 items-center')}>
           <IconPlace width={15} height={18} />
@@ -173,7 +156,7 @@ const SearchOverlay = ({
         </View>
       </TouchableOpacity>
     ),
-    [handlePlaceSelect],
+    [handleSearchResultSelect],
   );
 
   // 최근 검색 결과
@@ -207,7 +190,7 @@ const SearchOverlay = ({
         </View>
         <TouchableOpacity
           style={tw('p-2')}
-          onPress={() => removeRecentSearch(item.id)}
+          onPress={() => removeRecentSearch(item.placeKey)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <IconClose width={12} height={12} color="#999" />
@@ -219,267 +202,182 @@ const SearchOverlay = ({
 
   // 현위치 버튼 핸들러
   const handleCurrentLocationPress = useCallback(async () => {
-    console.log('[SearchOverlay] 현위치 버튼 클릭');
     setIsLoadingCurrentLocation(true);
 
     try {
-      // currentLocation이 있으면 사용, 없으면 Geolocation으로 가져오기
-      if (currentLocation) {
-        console.log('[SearchOverlay] currentLocation 사용:', currentLocation);
-        const place = await reverseGeocode(
-          currentLocation.lat,
-          currentLocation.lon,
-        );
+      if (!myPosition) return;
+      const place = await reverseGeocode(myPosition.lat, myPosition.lon);
+      if (!place) return;
 
-        console.log('[SearchOverlay] 역지오코딩 결과:', place);
-
-        if (place) {
-          const autocompleteResult: AutocompleteResult = {
-            id: place.id,
-            name: place.name,
-            address: place.address,
-            latitude: place.latitude,
-            longitude: place.longitude,
-            distance: '',
-            category: place.category || '',
-          };
-          handlePlaceSelect(autocompleteResult);
-        } else {
-          Alert.alert(
-            '주소 변환 실패',
-            '현재 위치의 주소를 가져올 수 없습니다.',
-          );
-        }
-      } else {
-        console.log('[SearchOverlay] Geolocation으로 위치 가져오기 시작');
-        // currentLocation이 없으면 직접 위치 가져오기
-        const hasPermission = await requestLocationPermission();
-        console.log('[SearchOverlay] 위치 권한:', hasPermission);
-
-        if (!hasPermission) {
-          Alert.alert('권한 필요', '위치 권한이 필요합니다.');
-          setIsLoadingCurrentLocation(false);
-          return;
-        }
-
-        Geolocation.getCurrentPosition(
-          async position => {
-            console.log('[SearchOverlay] 위치 가져오기 성공:', position.coords);
-            const { latitude, longitude } = position.coords;
-
-            try {
-              const place = await reverseGeocode(latitude, longitude);
-              console.log('[SearchOverlay] 역지오코딩 결과:', place);
-
-              if (place) {
-                const autocompleteResult: AutocompleteResult = {
-                  id: place.id,
-                  name: place.name,
-                  address: place.address,
-                  latitude: place.latitude,
-                  longitude: place.longitude,
-                  distance: '',
-                  category: place.category || '',
-                };
-                handlePlaceSelect(autocompleteResult);
-              } else {
-                Alert.alert(
-                  '주소 변환 실패',
-                  '현재 위치의 주소를 가져올 수 없습니다.',
-                );
-              }
-            } catch (geocodeError) {
-              console.error('[SearchOverlay] 역지오코딩 오류:', geocodeError);
-            } finally {
-              setIsLoadingCurrentLocation(false);
-            }
-          },
-          error => {
-            console.error('[SearchOverlay] 위치 가져오기 오류:', error);
-            Alert.alert(
-              '오류',
-              `현재 위치를 가져올 수 없습니다. (${error.message})`,
-            );
-            setIsLoadingCurrentLocation(false);
-          },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
-        );
-        return; // Geolocation 콜백에서 setIsLoadingCurrentLocation 처리
-      }
+      const autocompleteResult: AutocompleteResult = {
+        placeKey: place.id,
+        name: place.name,
+        address: place.address,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        distance: '',
+        category: place.category || '',
+      };
+      handleSearchResultSelect(autocompleteResult);
     } catch (error) {
-      console.error('[SearchOverlay] 현위치 주소 변환 오류:', error);
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      Alert.alert(
-        '오류',
-        `현재 위치의 주소를 가져오는 중 오류가 발생했습니다.\n상세: ${errorMessage}`,
-      );
+      console.error('현위치 검색 실패:', error);
+      Alert.alert('오류', '현위치 검색에 실패했습니다. 다시 시도해주세요.');
     } finally {
-      if (currentLocation) {
-        // currentLocation 경로에서만 여기서 처리
-        setIsLoadingCurrentLocation(false);
-      }
+      setIsLoadingCurrentLocation(false);
     }
-  }, [currentLocation, handlePlaceSelect]);
-
-  if (!isVisible) {
-    return null;
-  }
+  }, [handleSearchResultSelect, myPosition]);
 
   return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 50,
-          backgroundColor: '#FFFFFF',
-          opacity: fadeAnim,
-        },
-      ]}
-    >
-      {/* 검색바 헤더 */}
-      <View style={tw('px-4 pt-12 pb-2 text-on-surface-primary')}>
+    <>
+      <SafeAreaView
+        edges={['top']}
+        style={[
+          tw('absolute top-0 left-0 w-full flex justify-center items-center'),
+          { zIndex: 10 },
+        ]}
+      >
         <SearchBar
           value={searchText}
           onChangeText={handleSearchTextChange}
-          placeholder={placeholder}
-          showBackButton={true}
+          showBackButton={showSearchOverlay}
           showCloseButton={searchText.length > 0}
+          onPress={onPress}
           onPressBack={handleBackPress}
           onPressClose={handleClearSearchPress}
-          autoFocus={true}
+          onPressSearch={onPress}
+          onFocus={onPress}
         />
+      </SafeAreaView>
 
-        {/* 빠른 액세스 태그 버튼 */}
-        <View style={[tw('flex-row mt-3'), { gap: 2 }]}>
-          <TouchableOpacity
-            style={tw(
-              'bg-brand-primary rounded-full px-3 py-2 flex-row items-center',
-            )}
-            onPress={handleCurrentLocationPress}
-            disabled={isLoadingCurrentLocation}
+      {showSearchOverlay && (
+        <View
+          style={[
+            tw('bg-surface-primary absolute top-0 left-0 w-full'),
+            { zIndex: 9, height: '100%' },
+          ]}
+        >
+          {/* 검색바 헤더 */}
+          <SafeAreaView
+            edges={['top']}
+            style={[tw('px-4 pb-2 text-on-surface-primary'), { marginTop: 56 }]}
           >
-            {isLoadingCurrentLocation ? (
-              <ActivityIndicator size="small" color="#FFF" />
-            ) : (
-              <>
-                <View style={tw('w-4 h-4 mr-1 items-center justify-center')}>
-                  <IconLocatorMark width={25} height={25} />
-                </View>
-                <Text
-                  style={tw(
-                    'text-on-surface-secondary font-primary-700 text-xs',
-                  )}
-                >
-                  현위치
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={tw(
-              'bg-icon-container-primary rounded-full px-4 py-2 flex-row items-center',
-            )}
-            onPress={() => {
-              // 즐겨찾기 기능 구현 예정
-              console.log('즐겨찾기 선택');
-            }}
-          >
-            <View style={tw('w-4 h-4 mr-1 items-center justify-center')}>
-              <Text style={tw('text-white text-xs')}>⭐</Text>
-            </View>
-            <Text
-              style={tw('text-on-surface-secondary font-primary-700 text-xs')}
-            >
-              즐겨찾기
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* 검색 결과 영역 */}
-      <View style={tw('flex-1')}>
-        {query.length === 0 ? (
-          // 최근 검색 표시
-          <View style={tw('flex-1')}>
-            <View
-              style={[
-                tw('px-5 py-4 border-t flex-row justify-between items-center'),
-                { borderTopColor: '#D8D8D8' },
-              ]}
-            >
-              <Text
-                style={tw('text-base font-primary-700 text-on-surface-primary')}
+            {/* 빠른 액세스 태그 버튼 */}
+            <View style={[tw('flex-row justify-end'), { gap: 2 }]}>
+              <TouchableOpacity
+                style={tw(
+                  'bg-brand-primary rounded-full px-3 py-2 flex-row items-center',
+                )}
+                onPress={handleCurrentLocationPress}
+                disabled={isLoadingCurrentLocation}
               >
-                최근 검색
-              </Text>
-              {recentSearches.length > 0 && (
-                <TouchableOpacity onPress={clearRecentSearches}>
+                {isLoadingCurrentLocation ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <>
+                    <View
+                      style={tw('w-4 h-4 mr-1 items-center justify-center')}
+                    >
+                      <IconLocatorMark width={25} height={25} />
+                    </View>
+                    <Text
+                      style={tw(
+                        'text-on-surface-secondary font-primary-700 text-xs',
+                      )}
+                    >
+                      현위치
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+
+          {/* 검색 결과 영역 */}
+          <View style={tw('flex-1')}>
+            {query.length === 0 ? (
+              // 최근 검색 표시
+              <View style={tw('flex-1')}>
+                <View
+                  style={[
+                    tw(
+                      'px-5 py-4 border-t flex-row justify-between items-center',
+                    ),
+                    { borderTopColor: '#D8D8D8' },
+                  ]}
+                >
                   <Text
                     style={tw(
-                      'font-primary-600text-sm text-on-surface-tertiary',
+                      'text-base font-primary-700 text-on-surface-primary',
                     )}
                   >
-                    전체삭제
+                    최근 검색
                   </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            {/* 최근 검색어 목록 */}
-            <FlatList
-              data={recentSearches}
-              renderItem={renderRecentResult}
-              keyExtractor={item => item.id}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              onScrollBeginDrag={() => Keyboard.dismiss()}
-              ListEmptyComponent={
-                <View style={tw('flex-1 justify-center items-center py-8')}>
-                  <Text style={tw('text-on-surface-tertiary text-center')}>
-                    최근 검색 기록이 없습니다
-                  </Text>
+                  {recentSearches.length > 0 && (
+                    <TouchableOpacity onPress={clearRecentSearches}>
+                      <Text
+                        style={tw(
+                          'font-primary-600text-sm text-on-surface-tertiary',
+                        )}
+                      >
+                        전체삭제
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
-              }
-            />
-          </View>
-        ) : (
-          // 검색 결과 표시
-          <View style={tw('flex-1 mb-8')}>
-            {isLoading ? (
-              <View style={tw('flex-1 justify-center items-center')}>
-                <Text style={tw('text-on-surface-tertiary')}>검색중...</Text>
-              </View>
-            ) : hasResults ? (
-              <FlatList
-                data={results}
-                renderItem={renderSearchResult}
-                keyExtractor={item => item.id}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                onScrollBeginDrag={() => Keyboard.dismiss()}
-              />
-            ) : error ? (
-              <View style={tw('flex-1 justify-center items-center')}>
-                <Text style={tw('text-on-surface-tertiary')}>
-                  검색 중 오류가 발생했습니다.
-                </Text>
+                {/* 최근 검색어 목록 */}
+                <FlatList
+                  data={recentSearches}
+                  renderItem={renderRecentResult}
+                  keyExtractor={item => item.placeKey}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  onScrollBeginDrag={() => Keyboard.dismiss()}
+                  ListEmptyComponent={
+                    <View style={tw('flex-1 justify-center items-center py-8')}>
+                      <Text style={tw('text-on-surface-tertiary text-center')}>
+                        최근 검색 기록이 없습니다
+                      </Text>
+                    </View>
+                  }
+                />
               </View>
             ) : (
-              <View style={tw('flex-1 justify-center items-center')}>
-                <Text style={tw('text-on-surface-tertiary')}>
-                  검색 결과가 없습니다.
-                </Text>
+              // 검색 결과 표시
+              <View style={tw('flex-1 mb-8')}>
+                {isLoading ? (
+                  <View style={tw('flex-1 justify-center items-center')}>
+                    <Text style={tw('text-on-surface-tertiary')}>
+                      검색중...
+                    </Text>
+                  </View>
+                ) : hasResults ? (
+                  <FlatList
+                    data={results}
+                    renderItem={renderSearchResult}
+                    keyExtractor={item => item.placeKey}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    onScrollBeginDrag={() => Keyboard.dismiss()}
+                  />
+                ) : error ? (
+                  <View style={tw('flex-1 justify-center items-center')}>
+                    <Text style={tw('text-on-surface-tertiary')}>
+                      검색 중 오류가 발생했습니다.
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={tw('flex-1 justify-center items-center')}>
+                    <Text style={tw('text-on-surface-tertiary')}>
+                      검색 결과가 없습니다.
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
           </View>
-        )}
-      </View>
-    </Animated.View>
+        </View>
+      )}
+    </>
   );
 };
 

@@ -1,6 +1,6 @@
 import { tw } from '@/shared/libs/tw-helper';
 import { Text, View } from 'react-native';
-import { formatUsageData } from '../../utils/formatUsage';
+import { formatCalories, formatDistance, formatTime } from '@/shared/utils/formatting';
 
 interface UsageCardProps {
   totalTime: number;
@@ -9,11 +9,10 @@ interface UsageCardProps {
 }
 
 const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
-  const { time, distance, calorie } = formatUsageData({
-    totalDistance,
-    totalTime,
-    calories,
-  });
+  const time = formatTime(totalTime);
+  const distance = formatDistance(totalDistance);
+  const calorie = formatCalories(calories);
+
   return (
     <View
       style={tw(

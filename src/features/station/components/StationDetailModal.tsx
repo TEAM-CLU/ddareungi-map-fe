@@ -1,12 +1,14 @@
 import { RootStackParamList } from '@/app/types';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
+import { useMapStore } from '@/features/map/stores/useMapStore';
 import { RouteType } from '@/features/routing/model/routing.types';
-import { useRouteStore } from '@/features/routing/stores/routeStore';
-import { AutocompleteResult } from '@/features/search/hooks/useAutocomplete';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { MapAreaStationData } from '@/features/station/model/station.types';
 import { removeOverlappingPart } from '@/features/station/utils/string';
 import { tw } from '@/shared/libs/tw-helper';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RefObject, useEffect, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
@@ -17,30 +19,24 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
+import { useStationStore } from '../stores/useStationStore';
+import { AutocompleteResult } from '@/features/search/model/search.types';
 
 interface StationDetailModalProps {
-  myPosition: Coordinates | undefined;
-  stationMetaData: MapAreaStationData | null;
-  navigation: StackNavigationProp<RootStackParamList>;
   onClose?: () => void;
-  lamda: RefObject<number>;
 }
-const StationDetailModal = ({
-  myPosition,
-  stationMetaData,
-  navigation,
-  onClose,
-  lamda,
-}: StationDetailModalProps) => {
+const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
   const {
     routeType,
     setRouteType,
     setStart,
     setEnd,
     addWaypoint,
-    waypoints,
     syncStartEndInLoopMode,
   } = useRouteStore();
+  const { globalNavigation } = useMapStore();
+  const { stationMetaData, lamda } = useStationStore();
+  const { myPosition } = useMyPositionStore();
 
   // RouteType 토글 함수
   const toggleRouteType = () => {
@@ -71,7 +67,7 @@ const StationDetailModal = ({
     onClose?.(); // 모달 닫기
 
     const placeData: AutocompleteResult = {
-      id: `start-${Date.now()}`,
+      placeKey: `start-${Date.now()}`,
       name: stationMetaData!.name,
       address: stationMetaData!.address,
       latitude: stationMetaData!.latitude!,
@@ -85,7 +81,7 @@ const StationDetailModal = ({
       setStart(placeData);
     }
     // RouteSelect 화면으로 이동
-    navigation.navigate('RouteSelect');
+    globalNavigation.navigate('RouteSelect');
   };
 
   // 두 번째 버튼 (반환점/도착) 핸들러
@@ -93,7 +89,7 @@ const StationDetailModal = ({
     onClose?.(); // 모달 닫기
 
     const placeData: AutocompleteResult = {
-      id: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
+      placeKey: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
       name: stationMetaData!.name,
       address: stationMetaData!.address,
       latitude: stationMetaData!.latitude!,
@@ -109,7 +105,7 @@ const StationDetailModal = ({
     }
 
     // RouteSelect 화면으로 이동
-    navigation.navigate('RouteSelect');
+    globalNavigation.navigate('RouteSelect');
   };
 
   // 내 위치와 대여소 간 거리 계산
@@ -129,8 +125,8 @@ const StationDetailModal = ({
 
   if (!stationMetaData) {
     return (
-      <View style={tw('flex justify-center w-full items-center')}>
-        <ActivityIndicator size="large" color="#01DA86" />
+      <View style={tw('flex justify-center w-full flex-1 items-center')}>
+        <ActivityIndicator size="large" color="#C4C4C4" />
       </View>
     );
   }
@@ -190,10 +186,8 @@ const StationDetailModal = ({
           {`${
             distance
               ? distance >= 1000
-                ? `${(Math.round(distance * lamda.current) / 1000).toFixed(
-                    1,
-                  )}km`
-                : `${Math.round(distance * lamda.current).toFixed(0)}m`
+                ? `${(Math.round(distance * lamda) / 1000).toFixed(1)}km`
+                : `${Math.round(distance * lamda).toFixed(0)}m`
               : '거리 측정 중...'
           }`}
         </Text>

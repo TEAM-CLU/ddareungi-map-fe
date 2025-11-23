@@ -6,11 +6,6 @@ import {
   StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
 
-export interface MapWebviewMessage {
-  type: string;
-  [key: string]: any;
-}
-
 // === 위치 관련 메시지 ===
 export interface MyLocationMessage {
   type: 'myLocation';
@@ -42,29 +37,8 @@ export interface ShowPlaceMarkerMessage {
   placeInfo?: any;
 }
 
-export interface MoveToLocationMessage {
-  type: 'moveToLocation';
-  lat: number;
-  lng: number;
-  placeName: string;
-}
-
-export interface ShowSearchResultsMessage {
-  type: 'showSearchResults';
-  places: Array<{
-    lat: number;
-    lng: number;
-    name: string;
-    address?: string;
-    category?: string;
-  }>;
-}
-
-export interface ClearSearchMessage {
-  type:
-    | 'clearCurrentPlaceMarker'
-    | 'clearSearchMarkers'
-    | 'clearAllSearchElements';
+export interface ClearCurrentPlaceMarkerMessage {
+  type: 'clearCurrentPlaceMarker';
 }
 
 // === 라우팅 관련 메시지 ===
@@ -76,6 +50,10 @@ export interface UpdateRouteMessage {
     lat: number;
     lng: number;
     name: string;
+  }>;
+  path?: Array<{
+    lat: number;
+    lng: number;
   }>;
 }
 
@@ -97,42 +75,6 @@ export interface MoveToRoutePointMessage {
 export interface MapReadyMessage {
   type: 'mapReady';
   isReady: boolean;
-}
-
-export interface ShowPlaceDetailModalMessage {
-  type: 'showPlaceDetailModal';
-  place: {
-    name: string;
-    address: string;
-    category: string;
-    lat: number;
-    lng: number;
-    id: string;
-  };
-}
-
-export interface PlaceMarkerShownMessage {
-  type: 'placeMarkerShown';
-  lat: number;
-  lng: number;
-  placeName: string;
-}
-
-export interface MapMovedToLocationMessage {
-  type: 'mapMovedToLocation';
-  lat: number;
-  lng: number;
-  placeName: string;
-}
-
-export interface RouteTypeUpdatedMessage {
-  type: 'routeTypeUpdated';
-  routeType: 'CONSTANT' | 'LOOP';
-  pointsCount: number;
-}
-
-export interface RouteClearedMessage {
-  type: 'routeCleared';
 }
 
 // === 대여소 관련 메시지 ===
@@ -157,24 +99,19 @@ export interface FocusOnTargetedNearbyStationMessage {
 }
 
 // 모든 메시지 타입 유니온
-export type WebViewMessageFromRN =
-  | MyLocationMessage
-  | MyHeadingMessage
-  | MyLocationFollowingMessage
-  | CompassModeMessage
+export type WebViewMessageToRN =
+  | MapReadyMessage
+  | FocusOnTargetedNearbyStationMessage
   | ShowPlaceMarkerMessage
-  | MoveToLocationMessage
-  | ShowSearchResultsMessage
-  | ClearSearchMessage
+  | ClearCurrentPlaceMarkerMessage
   | UpdateRouteMessage
   | ClearRouteMessage
   | SetRouteTypeMessage
-  | MoveToRoutePointMessage;
-
-export type WebViewMessageToRN =
-  | MapReadyMessage
-  | ShowPlaceDetailModalMessage
-  | PlaceMarkerShownMessage
-  | MapMovedToLocationMessage
-  | RouteTypeUpdatedMessage
-  | RouteClearedMessage;
+  | MoveToRoutePointMessage
+  | ToggleStationMarkersMessage
+  | MyLocationFollowingMessage
+  | CompassModeMessage
+  | MyLocationMessage
+  | MyHeadingMessage
+  | UpdateTargetedStationBikeCountListMessage
+  | UpdateStationDataListMessage;

@@ -5,18 +5,21 @@ import {
   PlaceInfo,
   SearchOptions,
 } from '../model/search.types';
-import { SEARCH_CONSTANTS } from '../model/search.constants';
+import {
+  DEFAULT_PAGE_SIZE,
+  ERROR_MESSAGES,
+  KAKAO_BASE_URL,
+} from '../model/search.constants';
 import { Alert } from 'react-native';
 
 // Kakao API 헬퍼 객체
 const kakaoApiHelper = {
-  baseURL: SEARCH_CONSTANTS.KAKAO_BASE_URL,
+  baseURL: KAKAO_BASE_URL,
   apiKey: KAKAO_REST_API_KEY || 'KAKAO_REST_API_KEY',
 
   // API 키 검증
   validateApiKey(): boolean {
     if (!this.apiKey || this.apiKey.startsWith('KAKAO_')) {
-      Alert.alert(SEARCH_CONSTANTS.ERROR_MESSAGES.API_KEY_NOT_SET);
       return false;
     }
     return true;
@@ -34,7 +37,7 @@ const kakaoApiHelper = {
 
     if (!response.ok) {
       throw new Error(
-        `${SEARCH_CONSTANTS.ERROR_MESSAGES.API_REQUEST_FAILED}: ${response.status}`,
+        `${ERROR_MESSAGES.API_REQUEST_FAILED}: ${response.status}`,
       );
     }
 
@@ -62,7 +65,7 @@ export const searchPlacesByKeyword = async (
   options: SearchOptions = {},
 ): Promise<PlaceInfo[]> => {
   if (!kakaoApiHelper.validateApiKey()) {
-    throw new Error(SEARCH_CONSTANTS.ERROR_MESSAGES.API_KEY_NOT_SET);
+    throw new Error(ERROR_MESSAGES.API_KEY_NOT_SET);
   }
 
   if (!query.trim()) {
@@ -73,7 +76,7 @@ export const searchPlacesByKeyword = async (
     const params = new URLSearchParams({
       query: query.trim(),
       page: (options.page || 1).toString(),
-      size: (options.size || SEARCH_CONSTANTS.DEFAULT_PAGE_SIZE).toString(),
+      size: (options.size || DEFAULT_PAGE_SIZE).toString(),
       sort: options.sort || 'accuracy',
     });
 
@@ -106,7 +109,7 @@ export const searchAddressCoordinates = async (
   address: string,
 ): Promise<PlaceInfo | null> => {
   if (!kakaoApiHelper.validateApiKey()) {
-    throw new Error(SEARCH_CONSTANTS.ERROR_MESSAGES.API_KEY_NOT_SET);
+    throw new Error(ERROR_MESSAGES.API_KEY_NOT_SET);
   }
 
   try {
@@ -138,7 +141,7 @@ export const reverseGeocode = async (
   longitude: number,
 ): Promise<PlaceInfo | null> => {
   if (!kakaoApiHelper.validateApiKey()) {
-    throw new Error(SEARCH_CONSTANTS.ERROR_MESSAGES.API_KEY_NOT_SET);
+    throw new Error(ERROR_MESSAGES.API_KEY_NOT_SET);
   }
 
   try {

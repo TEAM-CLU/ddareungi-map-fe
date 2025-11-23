@@ -9,8 +9,8 @@ interface IconKcalProps {
 
 const IconKcal = ({
   color = 'white',
-  width = 15,
-  height = 15,
+  width = 17,
+  height = 17,
 }: IconKcalProps) => {
   return (
     <Svg width={width} height={height} viewBox="0 0 15 15" fill="none">

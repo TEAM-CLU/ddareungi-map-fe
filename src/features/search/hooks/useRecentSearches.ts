@@ -1,18 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AutocompleteResult } from './useAutocomplete';
-
-const RECENT_SEARCH_KEY = '@ddareungi_recent_searches';
-const MAX_RECENT_SEARCHES = 10;
-
-export interface RecentSearchItem {
-  id: string;
-  name: string;
-  address: string;
-  timestamp: number;
-  latitude?: number;
-  longitude?: number;
-}
+import { AutocompleteResult, RecentSearchItem } from '../model/search.types';
+import {
+  RECENT_SEARCH_KEY,
+  MAX_RECENT_SEARCHES,
+} from '../model/search.constants';
 
 export const useRecentSearches = () => {
   const [recentSearches, setRecentSearches] = useState<RecentSearchItem[]>([]);
@@ -43,7 +35,7 @@ export const useRecentSearches = () => {
   const addRecentSearch = useCallback(async (place: AutocompleteResult) => {
     try {
       const newItem: RecentSearchItem = {
-        id: place.id,
+        placeKey: place.placeKey,
         name: place.name,
         address: place.address,
         latitude: place.latitude,
@@ -53,7 +45,7 @@ export const useRecentSearches = () => {
 
       setRecentSearches(prev => {
         // 중복 제거 (같은 장소는 최신 검색으로 업데이트)
-        const filtered = prev.filter(item => item.id !== place.id);
+        const filtered = prev.filter(item => item.placeKey !== place.placeKey);
 
         // 새 항목 추가하고 최대 개수 제한
         const updated = [newItem, ...filtered].slice(0, MAX_RECENT_SEARCHES);
@@ -72,7 +64,7 @@ export const useRecentSearches = () => {
   const removeRecentSearch = useCallback(async (id: string) => {
     try {
       setRecentSearches(prev => {
-        const updated = prev.filter(item => item.id !== id);
+        const updated = prev.filter(item => item.placeKey !== id);
         AsyncStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(updated));
         return updated;
       });

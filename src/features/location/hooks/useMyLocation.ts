@@ -12,11 +12,14 @@ import {
   WebViewMessageToRN,
 } from '@/shared/model/map.webview.types';
 import { UseMyLocationProps } from '@/features/location/model/location.types';
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
+import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 
-export const useMyLocation = ({
-  webRef,
-  setMyPosition,
-}: UseMyLocationProps) => {
+export const useMyLocation = () => {
+  const { sendMessage } = useMapWebview();
+  const { webRef } = useMapStore();
+  const { setMyPosition } = useMyPositionStore();
   const [isMapReady, setIsMapReady] = useState(false);
   const watchIdRef = useRef<number | null>(null);
   const lastPos = useRef<{ lat: number; lon: number } | null>(null);
@@ -54,14 +57,14 @@ export const useMyLocation = ({
     if (!opts?.bypassAccuracyOnce && accuracy > 30) return;
 
     const { lat, lon } = smoothPosition(latitude, longitude);
-    const myLocation: MyLocationMessage = {
+    const message: MyLocationMessage = {
       type: 'myLocation',
       lat,
       lon,
       accuracy: accuracy ?? 0,
     };
 
-    webRef.current?.postMessage(JSON.stringify(myLocation));
+    sendMessage(message);
   };
 
   // 위치 추적 시작
@@ -140,12 +143,12 @@ export const useMyLocation = ({
   // 방향은 위치와 무관하게 실시간으로 송신
   useEffect(() => {
     if (!isMapReady) return;
-    const myHeading: MyHeadingMessage = {
+    const message: MyHeadingMessage = {
       type: 'myHeading',
       heading: heading ?? 0,
     };
-    webRef.current?.postMessage(JSON.stringify(myHeading));
-  }, [heading, isMapReady, webRef]);
+    sendMessage(message);
+  }, [heading, isMapReady, sendMessage, webRef]);
 
   // 앱이 foreground로 복귀 시 추적 재시작
   useEffect(() => {

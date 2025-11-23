@@ -15,13 +15,10 @@ import {
   postLoginUser,
   updateUserInfo,
 } from '@/features/auth/services/user.api';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  CommonActions,
-  NavigationProp,
-  useNavigation,
-} from '@react-navigation/native';
+import { CommonActions } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
@@ -64,10 +61,10 @@ export const useUpdateUserInfoMutation = () => {
 // 유저 삭제
 export const useDeleteUserMutation = () => {
   const queryClient = useQueryClient();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
   const mutation = useMutation({
     mutationFn: () => deleteUser(),
-    onSuccess: async (res) => {
+    onSuccess: async res => {
       await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
       queryClient.clear();
       navigation.dispatch(

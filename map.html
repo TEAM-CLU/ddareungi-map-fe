@@ -169,70 +169,50 @@
           );
         }
 
-        // 7. 특정 위치로 이동
-        if (data.type === 'moveToLocation') {
-          Search.moveToLocation(data.lat, data.lng, data.placeName);
-        }
-
-        // 8. 검색 결과 여러 마커 표시
-        if (data.type === 'showSearchResults') {
-          Search.showSearchResults(data.places);
-        }
-
-        // 9. 현재 장소 마커 제거
+        // 7. 현재 장소 마커 제거
         if (data.type === 'clearCurrentPlaceMarker') {
           Search.clearCurrentPlaceMarker();
         }
 
-        // 10. 검색 마커들 제거
-        if (data.type === 'clearSearchMarkers') {
-          Search.clearSearchMarkers();
-        }
-
-        // 11. 모든 검색 요소 제거
-        if (data.type === 'clearAllSearchElements') {
-          Search.clearAll();
-        }
-
         // === 새로운 라우팅 관련 메시지 처리 ===
 
-        // 12. 경로 업데이트
+        // 8. 경로 업데이트
         if (data.type === 'updateRoute') {
-          Route.updateRoute(data.routeType, data.points);
+          Route.updateRoute(data.routeType, data.points, data.path);
         }
 
-        // 13. 경로 클리어
+        // 9. 경로 클리어
         if (data.type === 'clearRoute') {
           Route.clearRoute();
         }
 
-        // 14. 경로 타입 변경
+        // 10. 경로 타입 변경
         if (data.type === 'setRouteType') {
           Route.setRouteType(data.routeType);
         }
 
-        // 15. 특정 경로 포인트로 이동
+        // 11. 특정 경로 포인트로 이동
         if (data.type === 'moveToRoutePoint') {
           Route.moveToRoutePoint(data.pointId);
         }
 
         // === 대여소 기능 ===
 
-        // 16. 대여소 마커 표시
+        // 12. 대여소 마커 표시
         if (data.type === 'updateStationDataList') {
           Station.createStationMarkers(data.stations);
         }
-        // 17. 대여소 재고정보 업데이트
+        // 13. 대여소 재고정보 업데이트
         if (data.type === 'updateTargetedStationBikeCountList') {
           Station.updateStationBikeCountList(data.stationBikeCountList);
         }
 
-        // 18. 대여소 마커 표시 on/off
+        // 14. 대여소 마커 표시 on/off
         if (data.type === 'toggleStationMarkers') {
           Station.toggleStationMarkers(data.isVisible);
         }
 
-        // 19. Nearby 클릭 대여소 포커싱
+        // 15. Nearby 클릭 대여소 포커싱
         if (data.type === 'focusOnTargetedNearbyStation') {
           Station.focusOnTargetedNearbyStation(data.targetedStationData);
         }

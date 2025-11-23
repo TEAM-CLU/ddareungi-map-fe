@@ -1,6 +1,6 @@
 import { RootStackParamList } from '@/app/types';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { tw } from '@/shared/libs/tw-helper';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { View, TouchableOpacity, Text } from 'react-native';
 
 interface AccountLinksProps {
@@ -10,7 +10,7 @@ interface AccountLinksProps {
 }
 
 const AccountLinks = ({ setAccountFeatures }: AccountLinksProps) => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { navigation } = useAppNavigation();
   const handleSignUpbuttonPress = () => navigation.navigate('Register');
   const handleFindAccountButtonPress = () => setAccountFeatures('findAccount');
   const handleFindPwdButtonPress = () => setAccountFeatures('resetPwd');

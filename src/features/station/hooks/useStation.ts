@@ -9,19 +9,24 @@ import {
 import {
   MapAreaQueryPayload,
   StationLatestBikeCountData,
-  UseStationsProps,
+  UseStationsOptions,
 } from '@/features/station/model/station.types';
 import {
   UpdateStationDataListMessage,
   UpdateTargetedStationBikeCountListMessage,
 } from '@/shared/model/map.webview.types';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useStationStore } from '../stores/useStationStore';
+import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 
-export const useStation = ({
-  webRef,
-  isMapReady,
-  setStationMetaData,
-  stationDetailModalRef,
-}: UseStationsProps) => {
+export const useStation = ({ isMapReady }: UseStationsOptions) => {
+  const { sendMessage } = useMapWebview();
+  const { setShowStationDetailModal, showSelectedRouteDetailModal } =
+    useModalStore();
+  const { webRef } = useMapStore();
+  const { setStationMetaData } = useStationStore();
+
   const [mapCenterCoord, setMapCenterCoord] = useState<Coordinates | null>(
     null,
   );
@@ -80,11 +85,11 @@ export const useStation = ({
           stationNumbers: targetedStationNumberList,
         });
 
-      const targetedStationList: UpdateTargetedStationBikeCountListMessage = {
+      const message: UpdateTargetedStationBikeCountListMessage = {
         type: 'updateTargetedStationBikeCountList',
         stationBikeCountList: response,
       };
-      webRef.current?.postMessage(JSON.stringify(targetedStationList));
+      sendMessage(message);
     } catch (error) {
       console.error('Invalid JSON from WebView:', error);
     }
@@ -96,8 +101,7 @@ export const useStation = ({
       const data = JSON.parse(event.nativeEvent.data);
       if (data.type !== 'clickStationMarker') return;
       // 스테이션 상세정보 모달 오픈
-      if (!stationDetailModalRef?.current) return;
-      stationDetailModalRef.current?.present();
+      setShowStationDetailModal(true);
 
       // 모달에 필요한 상세정보 상태에 저장
       if (!setStationMetaData) return;
@@ -110,13 +114,14 @@ export const useStation = ({
 
   // 스테이션 데이터가 갱신되면 웹뷰에 전달
   useEffect(() => {
+    if (showSelectedRouteDetailModal) return;
     if (!isMapReady || !stationDataList) return;
-    const updatedStationDataList: UpdateStationDataListMessage = {
+    const message: UpdateStationDataListMessage = {
       type: 'updateStationDataList',
       stations: stationDataList,
     };
-    webRef.current?.postMessage(JSON.stringify(updatedStationDataList));
-  }, [stationDataList, isMapReady, webRef]);
+    sendMessage(message);
+  }, [stationDataList, isMapReady, sendMessage, webRef]);
 
   // set함수의 비동기 반영 문제 해결을 위한 조치(센터좌표가 한발자국씩 늦게 따라오는 점 해소)
   useEffect(() => {
