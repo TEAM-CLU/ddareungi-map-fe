@@ -3,7 +3,7 @@ import { tw } from '@/shared/libs/tw-helper';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 
-const NaviFinishModal = () => {
+const NavigationFinishModal = () => {
   return (
     <Modal
       isVisible={true}
@@ -102,4 +102,4 @@ const NaviFinishModal = () => {
     </Modal>
   );
 };
-export default NaviFinishModal;
+export default NavigationFinishModal;
