@@ -1,3 +1,4 @@
+import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
 import RoundButton from '@/shared/components/button/RoundButton';
 import {
   IconChevronDown,
@@ -6,27 +7,14 @@ import {
 } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import Slider from '@react-native-community/slider';
-import { Audio } from 'expo-av';
 import { useEffect } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { VolumeManager } from 'react-native-volume-manager';
 
-interface NavigationDetailModalProps {
-  soundRef: React.RefObject<Audio.Sound | null>;
-  systemVolume: number;
-  setSystemVolume: React.Dispatch<React.SetStateAction<number>>;
-  navVolume: number;
-  setNavVolume: React.Dispatch<React.SetStateAction<number>>;
-}
-const NavigationDetailModal = ({
-  soundRef,
-  systemVolume,
-  setSystemVolume,
-  navVolume,
-  setNavVolume,
-}: NavigationDetailModalProps) => {
+const NavigationDetailModal = () => {
+  const { soundRef, systemVolume, setSystemVolume, navVolume, setNavVolume } =
+    useNavDetailModalStore();
   const { setShowNavigationDetailModal } = useModalStore();
   // 시스템 볼륨 초기값 설정 및 리스너 등록
   useEffect(() => {
@@ -51,9 +39,8 @@ const NavigationDetailModal = ({
   // 네비게이션 음성 볼륨 변경 핸들러
   const handleNavVolumeSliderChange = async (volume: number) => {
     setNavVolume(volume);
-    if (soundRef.current) {
-      await soundRef.current.setVolumeAsync(volume);
-    }
+    if (!soundRef?.current) return;
+    await soundRef.current.setVolumeAsync(volume);
     if (volume === 0) {
       await soundRef.current?.setIsMutedAsync(true);
     }

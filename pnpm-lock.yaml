@@ -24,8 +24,8 @@ importers:
         specifier: ^11.4.1
         version: 11.4.1(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0))
       '@react-native-community/slider':
-        specifier: ^5.1.1
-        version: 5.1.1
+        specifier: ^3.0.3
+        version: 3.0.3(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0))(react@19.1.0)
       '@react-native-picker/picker':
         specifier: ^2.11.2
         version: 2.11.4(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0))(react@19.1.0)
@@ -1141,8 +1141,11 @@ packages:
     peerDependencies:
       react-native: '>=0.59'
 
-  '@react-native-community/slider@5.1.1':
-    resolution: {integrity: sha512-W98If/LnTaziU3/0h5+G1LvJaRhMc6iLQBte6UWa4WBIHDMaDPglNBIFKcCXc9Dxp83W+f+5Wv22Olq9M2HJYA==}
+  '@react-native-community/slider@3.0.3':
+    resolution: {integrity: sha512-8IeHfDwJ9/CTUwFs6x90VlobV3BfuPgNLjTgC6dRZovfCWigaZwVNIFFJnHBakK3pW2xErAPwhdvNR4JeNoYbw==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   '@react-native-picker/picker@2.11.4':
     resolution: {integrity: sha512-Kf8h1AMnBo54b1fdiVylP2P/iFcZqzpMYcglC28EEFB1DEnOjsNr6Ucqc+3R9e91vHxEDnhZFbYDmAe79P2gjA==}
@@ -6765,7 +6768,10 @@ snapshots:
     dependencies:
       react-native: 0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0)
 
-  '@react-native-community/slider@5.1.1': {}
+  '@react-native-community/slider@3.0.3(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
+      react-native: 0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0)
 
   '@react-native-picker/picker@2.11.4(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0))(react@19.1.0)':
     dependencies:

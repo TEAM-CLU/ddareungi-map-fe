@@ -1,12 +1,7 @@
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { useMyLocation } from '@/features/location/hooks/useMyLocation';
 import { useStation } from '@/features/station/hooks/useStation';
-import { RefObject } from 'react';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { MapAreaStationData } from '@/features/station/model/station.types';
-import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '../stores/useMapStore';
-import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
 
 const Map = () => {
   const { webRef } = useMapStore();

@@ -8,9 +8,8 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
-import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
 import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
-import { SetStateAction } from 'react';
+import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore();
@@ -29,9 +28,6 @@ const GlobalModals = () => {
   } = useModalStore();
 
   const { selectedPlaceInfoForModal } = useSearchStore();
-
-  const { soundRef, systemVolume, setSystemVolume, navVolume, setNavVolume } =
-    useNavDetailModalStore();
 
   useNavDetailModal();
 
@@ -98,13 +94,7 @@ const GlobalModals = () => {
         initialIndex={1}
         onDismiss={() => setShowNavigationDetailModal(false)}
       >
-        <NavigationDetailModal
-          soundRef={soundRef}
-          systemVolume={systemVolume}
-          setSystemVolume={setSystemVolume}
-          navVolume={navVolume}
-          setNavVolume={setNavVolume}
-        />
+        <NavigationDetailModal />
       </SlideModal>
     </>
   );

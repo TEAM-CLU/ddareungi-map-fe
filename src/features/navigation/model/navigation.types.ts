@@ -1,11 +1,10 @@
 import { Audio } from 'expo-av';
-
 export interface NavDetailModalState {
-  soundRef: React.RefObject<Audio.Sound | null>;
+  soundRef: React.RefObject<Audio.Sound | null> | null;
   systemVolume: number;
-  setSystemVolume: React.Dispatch<React.SetStateAction<number>>;
+  setSystemVolume: (volume: number) => void;
   navVolume: number;
-  setNavVolume: React.Dispatch<React.SetStateAction<number>>;
+  setNavVolume: (volume: number) => void;
 
   setAllNavDetailModalItems: (
     modalRefs: Partial<

@@ -1,15 +1,7 @@
 import { IconClose } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
-import {
-  Image,
-  ImageStyle,
-  Text,
-  Touchable,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
-import { Icon } from 'react-native-paper';
 
 const NaviFinishModal = () => {
   return (

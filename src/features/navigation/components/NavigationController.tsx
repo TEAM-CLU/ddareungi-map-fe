@@ -1,14 +1,11 @@
 import { IconHamburger, IconPlay } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
+import { useModalStore } from '@/shared/stores/useModalStore';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-interface NavigationControllerProps {
-  naviDetailModalRef: React.RefObject<BottomSheetModal | null>;
-}
-const NavigationController = ({
-  naviDetailModalRef,
-}: NavigationControllerProps) => {
+const NavigationController = () => {
+  const { setShowNavigationDetailModal } = useModalStore();
   return (
     <View
       style={[
@@ -46,9 +43,7 @@ const NavigationController = ({
           >
             예상 도착시간 12:07AM
           </Text>
-          <TouchableOpacity
-            onPress={() => naviDetailModalRef?.current?.present()}
-          >
+          <TouchableOpacity onPress={() => setShowNavigationDetailModal(true)}>
             <IconHamburger />
           </TouchableOpacity>
         </View>

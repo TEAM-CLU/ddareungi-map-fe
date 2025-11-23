@@ -1814,34 +1814,8 @@ PODS:
     - Yoga
   - react-native-safe-area-context (5.6.2):
     - React-Core
-  - react-native-slider (5.1.1):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SocketRocket
-    - Yoga
+  - react-native-slider (3.0.3):
+    - React
   - react-native-volume-manager (2.0.8):
     - Mute
     - React-Core
@@ -2970,7 +2944,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: d5532793dc1770a3e75fd234f34e7cddd04c1882
   react-native-safe-area-context: 6c8805194166a9d6b3e53ba69ca76756c9bfb052
-  react-native-slider: a8d91713f1fa863a23766382e033086b12f7afbb
+  react-native-slider: 5299110eb902bc5169b1dd94192aa28e1bf15ad8
   react-native-volume-manager: cdd3c3857158c1df7b9fbea071a9946395cee06c
   react-native-webview: 9cebbe24b05f426c783a9a81372ae1f21f2adae9
   React-NativeModulesApple: eff2eba56030eb0d107b1642b8f853bc36a833ac
