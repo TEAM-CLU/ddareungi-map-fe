@@ -1,3 +1,4 @@
+import InstructionBanner from '@/features/navigation/components/InstructionBanner';
 import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
 import RouteSelectDetailModal from '@/features/routing/components/RouteSelectedDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
@@ -10,9 +11,12 @@ import { View, Alert, Platform, Text } from 'react-native';
 
 const TestScreenForCho = () => {
   return (
-    <View
-      style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-    ></View>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <InstructionBanner
+        instruction="Turn left at the next intersection"
+        sign={-1}
+      />
+    </View>
   );
 };
 
