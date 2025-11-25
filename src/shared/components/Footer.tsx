@@ -28,6 +28,10 @@ const Footer = ({
           key={item.name}
           style={[tw('flex-1 flex-col items-center justify-center mb-1')]}
           onPress={() => {
+            if (item.name === 'myPage') {
+              navigation.navigate(item.screen);
+            }
+
             if (item.name === 'station') {
               setIsStationButtonPressed(true);
               return;
@@ -38,9 +42,9 @@ const Footer = ({
               return;
             }
 
-            // TODO: 경로추천도 모달 띄우는 조건문 필요
-
-            navigation.navigate(item.screen);
+            if (item.name === 'bookmark') {
+              // setShowBookmarkModal(true);
+            }
           }}
         >
           <View style={[tw('w-6 h-6 justify-center items-center')]}>

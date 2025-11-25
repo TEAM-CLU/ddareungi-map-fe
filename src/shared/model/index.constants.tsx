@@ -1,9 +1,9 @@
 import {
   IconBicycle,
-  IconDirections,
   IconMyPage,
   IconRecommendedPath,
 } from '../components/icons';
+import { IconStar } from '../components/icons';
 import { FooterRoutes } from './index.types';
 
 export const BUTTON_PRESETS = {
@@ -75,12 +75,6 @@ export const FOOTER_MENU: {
     icon: <IconBicycle width={30} height={30} />,
   },
   {
-    name: 'map',
-    screen: 'Map',
-    label: '길찾기',
-    icon: <IconDirections width={26} height={26} />,
-  },
-  {
     name: 'routeRecommend',
     screen: 'RouteRecommend',
     label: '추천 경로',
@@ -91,6 +85,12 @@ export const FOOTER_MENU: {
     screen: 'MyPage',
     label: '마이 페이지',
     icon: <IconMyPage width={30} height={30} />,
+  },
+  {
+    name: 'bookmark',
+    screen: 'Map',
+    label: '북마크',
+    icon: <IconStar width={23} height={23} fillColor='#01DA86' strokeColor='white' strokeWidth={2.2}/>,
   },
 ];
 

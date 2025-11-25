@@ -5,7 +5,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import IconStar from './icons/IconStar';
+import { IconStar } from './icons';
 
 interface StarToggleProps {
   active?: boolean;

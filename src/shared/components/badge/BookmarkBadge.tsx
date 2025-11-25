@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import { tw } from "@/shared/libs/tw-helper";
-import IconStar from "../icons/IconStar";
+import { IconStar } from "../icons";
 import React from "react";
 
 interface BookmarkBadgeProps {
