@@ -41,12 +41,7 @@
 
     const startMarkerSvg = buildMarkerHTML('출발', '#006AFF', '#fff');
     const endMarkerSvg = buildMarkerHTML('도착', '#FF0000', '#fff');
-    const originMarkerSvg = buildMarkerHTML(
-      '원점',
-      '#00C7AE',
-      '#fff',
-      '#FFFFFF',
-    );
+    const originMarkerSvg = buildMarkerHTML('원점', '#000000', '#FFFFFF');
 
     startMarker = new kakaoRef.maps.CustomOverlay({
       position: defaultPos,
