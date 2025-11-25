@@ -11,17 +11,14 @@ import {
   StationLatestBikeCountData,
   UseStationsOptions,
 } from '@/features/station/model/station.types';
-import {
-  UpdateStationDataListMessage,
-  UpdateTargetedStationBikeCountListMessage,
-} from '@/shared/model/map.webview.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useStationStore } from '../stores/useStationStore';
 import { useWebViewRef } from '@/app/providers/webview';
-import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
+import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
-  const { sendMessage } = useProvideWebviewMessenger();
+  const { updateStationDataList, UpdateTargetedStationBikeCountListMessage } =
+    useStationMessenger();
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore();
   const webViewRef = useWebViewRef();
@@ -85,11 +82,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
           stationNumbers: targetedStationNumberList,
         });
 
-      const message: UpdateTargetedStationBikeCountListMessage = {
-        type: 'updateTargetedStationBikeCountList',
-        stationBikeCountList: response,
-      };
-      sendMessage(message);
+      UpdateTargetedStationBikeCountListMessage(response);
     } catch (error) {
       console.error('Invalid JSON from WebView:', error);
     }
@@ -116,12 +109,8 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
   useEffect(() => {
     if (showSelectedRouteDetailModal) return;
     if (!isMapReady || !stationDataList) return;
-    const message: UpdateStationDataListMessage = {
-      type: 'updateStationDataList',
-      stations: stationDataList,
-    };
-    sendMessage(message);
-  }, [stationDataList, isMapReady, sendMessage, webViewRef]);
+    updateStationDataList(stationDataList);
+  }, [stationDataList, isMapReady, updateStationDataList]);
 
   // set함수의 비동기 반영 문제 해결을 위한 조치(센터좌표가 한발자국씩 늦게 따라오는 점 해소)
   useEffect(() => {

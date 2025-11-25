@@ -1,4 +1,4 @@
-import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
+import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 import {
   ClearStaticPathMessage,
   DrawStaticPathMessage,

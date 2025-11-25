@@ -4,7 +4,7 @@ import { useState } from 'react';
 import IconStationMarkerOn from '@/shared/components/icons/IconStationMarkerOn';
 import IconStationMarkerOff from '@/shared/components/icons/IconStationMarkerOff';
 import { ToggleStationMarkersMessage } from '@/shared/model/map.webview.types';
-import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
+import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 
 const StationMarkersToggleBtn = () => {
   const { sendMessage } = useProvideWebviewMessenger();

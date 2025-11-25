@@ -12,7 +12,7 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
-import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
+import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 
 const NearbyStationModal = () => {
   const { mutateAsync: getNearbyStations } = useNearbyStationsMutation();

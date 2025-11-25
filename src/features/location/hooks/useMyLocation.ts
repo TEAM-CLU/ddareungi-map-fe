@@ -9,7 +9,7 @@ import {
 } from '@/shared/model/map.webview.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useWebViewRef } from '@/app/providers/webview';
-import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
+import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 
 export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
   const { sendMessage } = useProvideWebviewMessenger();
