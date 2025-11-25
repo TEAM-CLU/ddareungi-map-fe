@@ -18,6 +18,7 @@ const GlobalModals = () => {
     setShowStationDetailModal,
     setShowRouteRecommendModal,
     setShowPlaceDetailModal,
+    setShowSelectedRouteDetailModal,
     setShowNavigationDetailModal,
     selectedRouteDetailModalRef,
     routeRecommendModalRef,
@@ -36,8 +37,9 @@ const GlobalModals = () => {
       {/* 선택된 경로 상세 모달 */}
       <SlideModal
         ref={selectedRouteDetailModalRef}
-        snapPoints={['50%']}
-        onDismiss={() => setShowRouteRecommendModal(false)}
+        snapPoints={['20%', '50%']}
+        initialIndex={0}
+        onDismiss={() => setShowSelectedRouteDetailModal(false)}
         enablePanDownToClose={false}
       >
         <RouteSelectedDetailModal

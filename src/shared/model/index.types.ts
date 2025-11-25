@@ -1,7 +1,13 @@
 import { RootStackParamList } from '@/app/types';
 import { GetUserInfoResponse } from '@/features/auth/model/auth.types';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { RefObject } from 'react';
 import { ImageStyle, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import WebView from 'react-native-webview';
+
+export interface WebViewRefContextValue {
+  webViewRef: RefObject<WebView | null>;
+}
 
 type RNStyle = StyleProp<ViewStyle | TextStyle | ImageStyle>;
 export type TW = (classNames: string) => RNStyle;

@@ -1,11 +1,13 @@
 // src/shared/hooks/useMapController.ts
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { useCallback, useEffect, useRef } from 'react';
-import WebView from 'react-native-webview';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useModalStore } from '../stores/useModalStore';
 import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
+import { WebViewMessageToRN } from '@/shared/model/map.webview.types';
 
 /**
  * useMapOrchestrator
@@ -24,13 +26,14 @@ export const useMapOrchestrator = () => {
    * 1. Navigation 객체 (화면 이동용)
    * ---------------------------------------- */
   const { navigation } = useAppNavigation();
+  const { clearStaticPath } = useRoutingMessenger();
+  const { setIsMapReady } = useMapStore();
 
   /** ----------------------------------------
    * 2. 화면 내부에서만 생성하는 Ref들
    *    - 실제 useRef() 호출은 여기서만
    *    - store에는 "보관" 용도로만 넘긴다.
    * ---------------------------------------- */
-  const webViewRef = useRef<WebView | null>(null);
 
   // BottomSheetModal refs (실제 인스턴스)
   const placeDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
@@ -69,7 +72,7 @@ export const useMapOrchestrator = () => {
    * 5. 지도 전역 상태 (mapStore)
    *    - WebView ref / navigation 객체를 전역에서 재사용할 수 있도록 등록
    * ---------------------------------------- */
-  const { setWebRef, setGlobalNavigation } = useMapStore();
+  const { setGlobalNavigation } = useMapStore();
 
   /** ----------------------------------------
    * 6. 초기 mount 시: ref & navigation을 전역 store에 한번만 등록
@@ -79,9 +82,6 @@ export const useMapOrchestrator = () => {
    * - navigation: 모달 내부/웹뷰 메시지 핸들러에서도 화면 전환 가능하게 공유
    * ---------------------------------------- */
   useEffect(() => {
-    // WebView Ref (전역에서 지도 조작 가능하게)
-    setWebRef(webViewRef);
-
     // BottomSheetModal Ref 등록 (GlobalModals ↔ Screen 연결)
     setModalRefs({
       placeDetailModalRef: placeDetailModalLocalRef,
@@ -94,7 +94,7 @@ export const useMapOrchestrator = () => {
 
     // 네비게이션 객체 전역 저장 (모달/웹뷰 이벤트에서도 navigate 가능)
     setGlobalNavigation(navigation);
-  }, [navigation, setWebRef, setModalRefs, setGlobalNavigation]);
+  }, [navigation, setModalRefs, setGlobalNavigation]);
 
   /** ----------------------------------------
    * 7. 모달 boolean 상태를 구독하고 → 실제 present/dismiss 실행
@@ -166,9 +166,24 @@ export const useMapOrchestrator = () => {
 
   /** 선택된 경로 상세 모달 닫기 + 경로 선택 화면으로 이동 */
   const handleSelectedRouteDetailModalClose = useCallback(() => {
+    clearStaticPath();
     setShowSelectedRouteDetailModal(false);
     navigation.navigate('RouteSelect');
-  }, [navigation, setShowSelectedRouteDetailModal]);
+  }, [navigation, setShowSelectedRouteDetailModal, clearStaticPath]);
+
+  // mapReady 메시지 전용 핸들러
+  const handleMapReadyMessage = (event: WebViewMessageEvent) => {
+    try {
+      const data: WebViewMessageToRN = JSON.parse(event.nativeEvent.data);
+
+      if (data.type === 'mapReady') {
+        console.log('✅ 지도 준비 완료');
+        setIsMapReady(true);
+      }
+    } catch (error) {
+      console.error('Invalid JSON from WebView:', event.nativeEvent.data);
+    }
+  };
 
   /** ----------------------------------------
    * 9. 외부로 노출할 핸들러 함수
@@ -178,5 +193,6 @@ export const useMapOrchestrator = () => {
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
+    handleMapReadyMessage,
   };
 };

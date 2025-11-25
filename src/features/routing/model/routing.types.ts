@@ -66,7 +66,6 @@ interface WalkingSegment {
   type: 'walking';
   summary: WalkingSegmentSummary;
   bbox: Bbox;
-  geometry: Geometry;
 }
 
 // 자전거 구간 타입
@@ -74,7 +73,6 @@ interface BikingSegment {
   type: 'biking';
   summary: BikingSegmentSummary;
   bbox: Bbox;
-  geometry: Geometry;
   profile: 'safe_bike' | 'fast_bike';
 }
 
@@ -96,12 +94,6 @@ interface BikingSegmentSummary {
   maxGradient: number;
 }
 
-// 구간 경로 좌표
-export interface Geometry {
-  /** [lng, lat, elevation] 배열 */
-  points: [number, number, number][];
-}
-
 /********** 경로 탐색 **********/
 // 통합 경로 탐색 요청 페이로드
 export interface FullJourneyPayload {
@@ -118,6 +110,7 @@ export interface CircularJourneyPayload {
 
 // 통합/원형 경로 탐색 응답 타입
 export interface RouteResponse {
+  statusCode: number;
   message: string;
   data?: Route[];
 }
@@ -130,7 +123,9 @@ export interface Route {
   bbox: Bbox;
   startStation: Station;
   endStation?: Station;
+  waypoints?: Coordinate[]
   segments: Segment[];
+  coordinates: [number, number][];
 }
 
 /**

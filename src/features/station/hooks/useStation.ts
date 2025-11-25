@@ -19,12 +19,13 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useStationStore } from '../stores/useStationStore';
 import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import { useWebViewRef } from '@/app/providers/webview';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
   const { sendMessage } = useMapWebview();
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore();
-  const { webRef } = useMapStore();
+  const webViewRef = useWebViewRef();
   const { setStationMetaData } = useStationStore();
 
   const [mapCenterCoord, setMapCenterCoord] = useState<Coordinates | null>(
@@ -121,7 +122,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
       stations: stationDataList,
     };
     sendMessage(message);
-  }, [stationDataList, isMapReady, sendMessage, webRef]);
+  }, [stationDataList, isMapReady, sendMessage, webViewRef]);
 
   // set함수의 비동기 반영 문제 해결을 위한 조치(센터좌표가 한발자국씩 늦게 따라오는 점 해소)
   useEffect(() => {

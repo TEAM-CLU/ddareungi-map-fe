@@ -1,6 +1,7 @@
 // WebView와 React Native 간 통신을 타입 안정성 있게 관리
 // RN 쪽에서만 import 해서 사용 (useMapWebview, useMapSearch, useMapRouting, Map.tsx)
 
+import { Coordinate, RouteType } from '@/features/routing/model/routing.types';
 import {
   MapAreaStationData,
   StationLatestBikeCountData,
@@ -42,36 +43,31 @@ export interface ClearCurrentPlaceMarkerMessage {
 }
 
 // === 라우팅 관련 메시지 ===
-export interface UpdateRouteMessage {
-  type: 'updateRoute';
-  routeType: 'CONSTANT' | 'LOOP';
-  points: Array<{
-    id: string;
-    lat: number;
-    lng: number;
-    name: string;
-  }>;
-  path?: Array<{
-    lat: number;
-    lng: number;
-  }>;
+
+export interface StaticPathData {
+  routeType: RouteType;
+  startPoint: [number, number];
+  endPoint: [number, number];
+  waypoints: Coordinate[] | null;
+  startStationPoint: Coordinate | null;
+  endStationPoint: Coordinate | null;
+  pathCoordinates: [number, number][];
+}
+export interface DrawStaticPathMessage {
+  type: 'drawStaticPath';
+  staticPathData: StaticPathData;
 }
 
-export interface ClearRouteMessage {
-  type: 'clearRoute';
+export interface ClearStaticPathMessage {
+  type: 'clearStaticPath';
 }
 
-export interface SetRouteTypeMessage {
-  type: 'setRouteType';
-  routeType: 'CONSTANT' | 'LOOP';
+export interface FocusOnStaticPathMessage {
+  type: 'focusOnStaticPath';
 }
 
-export interface MoveToRoutePointMessage {
-  type: 'moveToRoutePoint';
-  pointId: string;
-}
+// === 맵 준비 상태 메시지 ===
 
-// === WebView에서 React Native로 전송하는 메시지 ===
 export interface MapReadyMessage {
   type: 'mapReady';
   isReady: boolean;
@@ -104,10 +100,9 @@ export type WebViewMessageToRN =
   | FocusOnTargetedNearbyStationMessage
   | ShowPlaceMarkerMessage
   | ClearCurrentPlaceMarkerMessage
-  | UpdateRouteMessage
-  | ClearRouteMessage
-  | SetRouteTypeMessage
-  | MoveToRoutePointMessage
+  | DrawStaticPathMessage
+  | ClearStaticPathMessage
+  | FocusOnStaticPathMessage
   | ToggleStationMarkersMessage
   | MyLocationFollowingMessage
   | CompassModeMessage

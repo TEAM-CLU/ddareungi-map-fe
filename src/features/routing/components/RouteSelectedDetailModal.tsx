@@ -14,8 +14,15 @@ import {
   formatTimeRange,
   getCategoryText,
 } from '@/shared/utils/formatting';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
+import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
+import {
+  DrawStaticPathMessage,
+  StaticPathData,
+} from '@/shared/model/map.webview.types';
+import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useLocationStore } from '@/features/location/stores/useLocationStore';
 
 interface RouteSelectedDetailModalProps {
   selectedRouteData: Route | null;
@@ -40,10 +47,19 @@ const RouteSelectedDetailModal = ({
     );
   }
 
-  const { totalCaloriesBurned, totalTrees } = useRouteStore();
-
-  const { summary, segments, startStation, endStation, routeCategory } =
-    selectedRouteData;
+  const { totalCaloriesBurned, totalTrees, routeType } = useRouteStore();
+  const { drawStaticPath, focusOnStaticPath } = useRoutingMessenger();
+  const { setLocationMode } = useLocationStore();
+  const { isMapReady } = useMapStore();
+  const {
+    summary,
+    segments,
+    startStation,
+    endStation,
+    routeCategory,
+    waypoints: wpArr,
+    coordinates,
+  } = selectedRouteData;
 
   const time = formatTime(summary.time);
   const distance = formatDistance(summary.distance);
@@ -67,6 +83,41 @@ const RouteSelectedDetailModal = ({
   );
 
   const waypointsCount = waypoints ? waypoints.length : 0;
+
+  useEffect(() => {
+    if (!isMapReady) return;
+    const handleRoutePress = () => {
+      const message: StaticPathData = {
+        routeType: routeType,
+        startPoint: coordinates[0],
+        endPoint: coordinates[coordinates.length - 1],
+        waypoints: wpArr ? wpArr : null,
+        startStationPoint: startStation
+          ? {
+              lat: startStation.lat,
+              lng: startStation.lng,
+            }
+          : null,
+        endStationPoint: endStation
+          ? {
+              lat: endStation.lat,
+              lng: endStation.lng,
+            }
+          : null,
+        pathCoordinates: coordinates,
+      };
+      drawStaticPath(message);
+    };
+
+    handleRoutePress();
+  }, [
+    drawStaticPath,
+    routeType,
+    coordinates,
+    wpArr,
+    isMapReady,
+    focusOnStaticPath,
+  ]);
 
   return (
     <ScrollView

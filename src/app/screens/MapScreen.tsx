@@ -22,6 +22,8 @@ const MapScreen = () => {
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
+    handleMapReadyMessage,
+    isMapLocalReady,
   } = useMapOrchestrator();
 
   const { showSelectedRouteDetailModal } = useModalStore();
@@ -35,7 +37,10 @@ const MapScreen = () => {
 
   return (
     <View style={tw('flex-1 relative w-full')}>
-      <Map />
+      <Map
+        handleMapReadyMessage={handleMapReadyMessage}
+        isMapLocalReady={isMapLocalReady}
+      />
 
       {showSelectedRouteDetailModal && selectedRouteData && (
         <View
@@ -75,13 +80,20 @@ const MapScreen = () => {
         />
       )}
 
-      <View style={[tw('absolute right-3'), { bottom: 150 }]}>
+      <View
+        style={[
+          tw('absolute right-3'),
+          { bottom: showSelectedRouteDetailModal ? '80%' : '30%' },
+        ]}
+      >
         <MyLocationButton />
       </View>
 
-      <View style={[tw('absolute right-3'), { bottom: 100 }]}>
-        <StationMarkersToggleBtn />
-      </View>
+      {!showSelectedRouteDetailModal && (
+        <View style={[tw('absolute right-3'), { bottom: '24%' }]}>
+          <StationMarkersToggleBtn />
+        </View>
+      )}
 
       <Footer
         setIsStationButtonPressed={handleOpenNearbyStationModal}

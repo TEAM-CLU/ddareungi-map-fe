@@ -2,10 +2,16 @@ import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { useMyLocation } from '@/features/location/hooks/useMyLocation';
 import { useStation } from '@/features/station/hooks/useStation';
 import { useMapStore } from '../stores/useMapStore';
+import { useWebViewRef } from '@/app/providers/webview';
+import { useEffect } from 'react';
+interface MapProps {
+  handleMapReadyMessage: (event: WebViewMessageEvent) => void;
+}
+const Map = ({ handleMapReadyMessage }: MapProps) => {
+  const { isMapReady, setIsMapReady } = useMapStore();
 
-const Map = () => {
-  const { webRef } = useMapStore();
-  const { handleMapReadyMessage, isMapReady } = useMyLocation();
+  const webViewRef = useWebViewRef();
+  useMyLocation({ isMapReady });
 
   const {
     handleMapCenterIdle,
@@ -22,16 +28,21 @@ const Map = () => {
     handleStationMarkerClick(event);
   };
 
+  useEffect(() => {
+    if (!isMapReady) return;
+    setIsMapReady(true);
+  }, [isMapReady]);
+
   return (
     <WebView
-      ref={webRef}
+      ref={webViewRef}
       javaScriptEnabled={true}
       domStorageEnabled={true}
       originWhitelist={['*']}
       onMessage={handleWebViewMessage}
       onError={e => console.log('WebView error', e.nativeEvent)}
       source={{
-        uri: 'https://41ac7baa061b.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://6158f5ca3919.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
     />
   );
