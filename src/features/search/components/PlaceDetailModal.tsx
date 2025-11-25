@@ -19,6 +19,10 @@ import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { AutocompleteResult } from '../model/search.types';
+import { getDistanceText } from '@/shared/utils/formatting';
+import StarToggle from '@/shared/components/StarToggle';
+import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
+import { createPlaceBookmark } from '@/shared/utils/bookmark';
 
 export interface PlaceDetailModalProps {
   place: AutocompleteResult | null;
@@ -44,19 +48,35 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
 
   const { globalNavigation } = useMapStore();
   const { myPosition } = useMyPositionStore();
+  const { toggleBookmark } = useBookmarkStore();
+  const bookmarked = useBookmarkStore(state =>
+    place.placeKey
+      ? state.bookmarks.some(
+          item => item.type === 'place' && item.id === place.placeKey,
+        )
+      : false,
+  );
 
   const { mutateAsync: fetchNearbyStationDataList } =
     useNearbyStationsMutation();
-  const [statoinFullName, setStationFullName] =
-    useState<string>('가져오는 중...');
-  const [stationDistance, setStationDistance] = useState<number | null>(null);
-  const [placeDistance, setPlaceDistance] = useState<number | null>(null);
+  const [stationFullName, setStationFullName] = useState<string>('');
+  const [stationDistance, setStationDistance] = useState<
+    number | null | undefined
+  >(null);
+  const [placeDistance, setPlaceDistance] = useState<number | null | undefined>(
+    null,
+  );
 
   // --------------- 대여소 정보 적용 -----------------
 
   useEffect(() => {
     const applyStationNameAndDistance = async () => {
-      if (!place.latitude || !place.latitude) return;
+      if (!place.latitude || !place.latitude) {
+        setStationDistance(undefined);
+        return;
+      }
+      setStationDistance(null); // 로딩중
+
       try {
         const payload: NearbyStationListPayload = {
           latitude: place.latitude,
@@ -69,6 +89,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
         setStationDistance(response[0].distance);
       } catch (error) {
         console.error('Error fetching nearby stations:', error);
+        setStationDistance(undefined);
       }
     };
 
@@ -76,12 +97,21 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   }, [place]);
 
   useEffect(() => {
-    if (!myPosition || !place.latitude || !place.longitude) return;
-    const distance = getDistanceBetweenCoords(
-      { lat: myPosition.lat, lon: myPosition.lon },
-      { lat: place.latitude, lon: place.longitude },
-    );
-    setPlaceDistance(Math.round(distance));
+    if (!myPosition || !place.latitude || !place.longitude) {
+      setPlaceDistance(undefined);
+      return;
+    }
+    setPlaceDistance(null); // 로딩중
+    try {
+      const distance = getDistanceBetweenCoords(
+        { lat: myPosition.lat, lon: myPosition.lon },
+        { lat: place.latitude, lon: place.longitude },
+      );
+      setPlaceDistance(Math.round(distance));
+    } catch (error) {
+      setPlaceDistance(undefined);
+      console.error('Error calculating distance:', error);
+    }
   }, [myPosition, place]);
 
   // --------------- 토글 관련 -----------------
@@ -154,12 +184,24 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
     globalNavigation.navigate('RouteSelect');
   };
 
+  /*
+    북마크 토글 핸들러
+  */
+  const handleToggleBookmark = () => {
+    try {
+      const bookmarkItem = createPlaceBookmark(place);
+      toggleBookmark(bookmarkItem);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <View style={tw('flex-1')}>
       <View style={tw('flex-row justify-between items-start mb-1')}>
         <View style={tw('flex-1 mr-3')}>
           {/* 장소명과 카테고리 */}
-          <View style={tw('flex-row items-center')}>
+          <View style={tw('flex-1 items-start')}>
             <Text
               style={tw(
                 'text-2xl font-primary-700 text-on-surface-primary mr-3',
@@ -167,15 +209,18 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
             >
               {place.name}
             </Text>
-            {place.category && (
+            {place.category ? (
               <Text
                 style={tw('text-sm font-primary-600 text-on-surface-tertiary')}
               >
                 {place.category}
               </Text>
+            ) : (
+              <View style={{ height: 4 }} />
             )}
           </View>
         </View>
+        <StarToggle active={bookmarked} onToggle={handleToggleBookmark} />
       </View>
 
       {/* 거리/주소 정보 */}
@@ -187,13 +232,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
                 'text-base font-primary-600 text-on-surface-primary mr-3',
               )}
             >
-              {`${
-                placeDistance
-                  ? placeDistance >= 1000
-                    ? `${(placeDistance / 1000).toFixed(1)}km`
-                    : `${Math.round(placeDistance)}m`
-                  : '거리 측정 중...'
-              }`}
+              {getDistanceText(placeDistance)}
             </Text>
             {place.address && (
               <Text
@@ -213,14 +252,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
         <IconBicycle width={30} height={30} color="#414548" />
         {/* 대여소 API 연결되면 변경 */}
         <Text style={tw('text-md font-primary-600 text-on-surface-primary')}>
-          {statoinFullName}{' '}
-          {`${
-            stationDistance
-              ? stationDistance >= 1000
-                ? `${(stationDistance / 1000).toFixed(1)}km`
-                : `${Math.round(stationDistance)}m`
-              : '거리 측정 중...'
-          }`}
+          {stationFullName} {getDistanceText(stationDistance)}
         </Text>
       </View>
 

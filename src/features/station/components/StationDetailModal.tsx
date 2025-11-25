@@ -21,6 +21,10 @@ import {
 } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
 import { AutocompleteResult } from '@/features/search/model/search.types';
+import { getDistanceText } from '@/shared/utils/formatting';
+import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
+import { createStationBookmark } from '@/shared/utils/bookmark';
+import StarToggle from '@/shared/components/StarToggle';
 
 interface StationDetailModalProps {
   onClose?: () => void;
@@ -37,6 +41,14 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
   const { globalNavigation } = useMapStore();
   const { stationMetaData, lamda } = useStationStore();
   const { myPosition } = useMyPositionStore();
+  const { toggleBookmark } = useBookmarkStore();
+  const bookmarked = useBookmarkStore(state =>
+    stationMetaData?.number
+      ? state.bookmarks.some(
+          item => item.type === 'station' && item.id === stationMetaData.number,
+        )
+      : false,
+  );
 
   // RouteType 토글 함수
   const toggleRouteType = () => {
@@ -156,6 +168,18 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
     }
   };
 
+  /*
+    북마크 토글 핸들러
+  */
+  const handleToggleBookmark = () => {
+    try {
+      const bookmarkItem = createStationBookmark(stationMetaData);
+      toggleBookmark(bookmarkItem);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <View
       style={[
@@ -165,7 +189,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
     >
       <View
         style={[
-          tw('w-full flex flex-row items-center justify-start'),
+          tw('w-full flex flex-row items-center justify-between'),
           { gap: 10 },
         ]}
       >
@@ -183,14 +207,9 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
             { fontSize: 15 },
           ]}
         >
-          {`${
-            distance
-              ? distance >= 1000
-                ? `${(Math.round(distance * lamda) / 1000).toFixed(1)}km`
-                : `${Math.round(distance * lamda).toFixed(0)}m`
-              : '거리 측정 중...'
-          }`}
+          {getDistanceText(distance)}
         </Text>
+        <StarToggle active={bookmarked} onToggle={handleToggleBookmark} />
       </View>
       <Text
         style={[

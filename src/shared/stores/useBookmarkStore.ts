@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Bookmark } from '../model/index.types';
+import { BookmarkItem } from '../model/index.types';
 
 interface BookmarkState {
-  bookmarks: Bookmark[];
-  toggleBookmark: (bookmark: Bookmark) => void;
-  isBookmarked: (type: Bookmark['type'], id: string) => boolean;
-  updateAlias: (type: Bookmark['type'], id: string, alias: string) => void;
-  updateColor: (type: Bookmark['type'], id: string, color: string) => void;
-  getByType: (type: Bookmark['type']) => Bookmark[]; // 타입별 리스트 조회
+  bookmarks: BookmarkItem[];
+  toggleBookmark: (bookmark: BookmarkItem) => void;
+  isBookmarked: (type: BookmarkItem['type'], id: string) => boolean;
+  updateAlias: (type: BookmarkItem['type'], id: string, alias: string) => void;
+  updateColor: (type: BookmarkItem['type'], id: string, color: string) => void;
+  getByType: (type: BookmarkItem['type']) => BookmarkItem[]; // 타입별 리스트 조회
 }
 
 export const useBookmarkStore = create<BookmarkState>()(
@@ -16,7 +16,7 @@ export const useBookmarkStore = create<BookmarkState>()(
     (set, get) => ({
       bookmarks: [],
 
-      toggleBookmark: (bookmark: Bookmark) => {
+      toggleBookmark: (bookmark: BookmarkItem) => {
         const list = get().bookmarks;
         const exists = list.find(
           item => item.type === bookmark.type && item.id === bookmark.id,
@@ -27,6 +27,7 @@ export const useBookmarkStore = create<BookmarkState>()(
             item => !(item.type === bookmark.type && item.id === bookmark.id),
           );
           set({ bookmarks: updated });
+          return;
         }
 
         const checkLimit =

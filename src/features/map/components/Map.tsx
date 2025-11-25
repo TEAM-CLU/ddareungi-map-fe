@@ -1,10 +1,6 @@
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { useMyLocation } from '@/features/location/hooks/useMyLocation';
 import { useStation } from '@/features/station/hooks/useStation';
-import { RefObject } from 'react';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { MapAreaStationData } from '@/features/station/model/station.types';
-import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '../stores/useMapStore';
 
 const Map = () => {
@@ -35,7 +31,7 @@ const Map = () => {
       onMessage={handleWebViewMessage}
       onError={e => console.log('WebView error', e.nativeEvent)}
       source={{
-        uri: 'https://41ac7baa061b.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://6158f5ca3919.ngrok-free.app/map.html',
       }}
     />
   );

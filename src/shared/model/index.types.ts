@@ -41,7 +41,7 @@ export type Gender = 'M' | 'F' | undefined;
 // -----------------------------
 // 즐겨찾기 관련 타입
 // -----------------------------
-export interface Bookmark {
+export interface BookmarkItem {
   type: 'place' | 'station';
   id: string; // placeId or stationNumber
   name: string; // 장소명 or 대여소명

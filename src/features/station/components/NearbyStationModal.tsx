@@ -157,7 +157,7 @@ const NearbyStationModal = () => {
                           1,
                         )}km`
                       : `${Math.round(distances[idx] * lamda).toFixed(0)}m`
-                    : '거리 측정 중...'
+                    : '거리를 계산 중이에요'
                 }`}
               </Text>
             </View>
