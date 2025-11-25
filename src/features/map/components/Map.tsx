@@ -29,7 +29,6 @@ const Map = ({ handleMapReadyMessage }: MapProps) => {
   };
 
   useEffect(() => {
-    if (!isMapReady) return;
     setIsMapReady(true);
   }, [isMapReady]);
 

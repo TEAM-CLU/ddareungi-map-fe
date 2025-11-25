@@ -47,7 +47,7 @@ export interface MapAreaStationListResponse {
 
 export interface MapAreaQueryPayload {
   lat: number | null | undefined;
-  lon: number | null | undefined;
+  lng: number | null | undefined;
   radius: number;
   enable?: boolean;
 }

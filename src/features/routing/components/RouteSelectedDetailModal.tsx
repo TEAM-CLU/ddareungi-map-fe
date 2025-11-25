@@ -23,6 +23,7 @@ import {
 } from '@/shared/model/map.webview.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useLocationStore } from '@/features/location/stores/useLocationStore';
+import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 
 interface RouteSelectedDetailModalProps {
   selectedRouteData: Route | null;
@@ -50,6 +51,7 @@ const RouteSelectedDetailModal = ({
   const { totalCaloriesBurned, totalTrees, routeType } = useRouteStore();
   const { drawStaticPath, focusOnStaticPath } = useRoutingMessenger();
   const { setLocationMode } = useLocationStore();
+  const { myLocationCompassOff } = useLocationMessenger();
   const { isMapReady } = useMapStore();
   const {
     summary,
@@ -107,6 +109,8 @@ const RouteSelectedDetailModal = ({
         pathCoordinates: coordinates,
       };
       drawStaticPath(message);
+      myLocationCompassOff();
+      myLocationCompassOff();
     };
 
     handleRoutePress();

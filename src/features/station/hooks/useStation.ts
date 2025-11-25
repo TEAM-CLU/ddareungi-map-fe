@@ -13,7 +13,6 @@ import {
 } from '@/features/station/model/station.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useStationStore } from '../stores/useStationStore';
-import { useWebViewRef } from '@/app/providers/webview';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
 import {
   ChangeMapCenterMessage,
@@ -22,11 +21,10 @@ import {
 } from '@/shared/model/map.webview.types';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
-  const { updateStationDataList, UpdateTargetedStationBikeCountListMessage } =
+  const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore();
-  const webViewRef = useWebViewRef();
   const { setStationMetaData } = useStationStore();
 
   const [mapCenterCoord, setMapCenterCoord] = useState<Coordinates | null>(
@@ -89,7 +87,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
           stationNumbers: targetedStationNumberList,
         });
 
-      UpdateTargetedStationBikeCountListMessage(response);
+      updateTargetedStationBikeCountListMessage(response);
     } catch (error) {
       console.error('Invalid JSON from WebView:', error);
     }
@@ -119,7 +117,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
     if (showSelectedRouteDetailModal) return;
     if (!isMapReady || !stationDataList) return;
     updateStationDataList(stationDataList);
-  }, [stationDataList, isMapReady, updateStationDataList]);
+  }, [stationDataList, isMapReady, updateStationDataList, isIdleEventOccurred]);
 
   // set함수의 비동기 반영 문제 해결을 위한 조치(센터좌표가 한발자국씩 늦게 따라오는 점 해소)
   useEffect(() => {

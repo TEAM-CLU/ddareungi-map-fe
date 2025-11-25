@@ -1,3 +1,4 @@
+import { DataSetForUpdateMyLocation } from '@/features/location/model/location.types';
 import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 import {
   CompassModeMessage,
@@ -7,11 +8,6 @@ import {
 } from '@/shared/model/map.webview.types';
 import { useCallback } from 'react';
 
-interface DataSetForUpdateMyLocation {
-  lat: number;
-  lng: number;
-  accuracy: number;
-}
 export const useLocationMessenger = () => {
   const { sendMessage } = useProvideWebviewMessenger();
 
