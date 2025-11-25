@@ -1,24 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState, Alert } from 'react-native';
-import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
-import { Use } from 'react-native-svg';
-import { Coordinates } from '@/features/map/model/map.types';
 import {
   MyHeadingMessage,
   MyLocationMessage,
-  WebViewMessageToRN,
 } from '@/shared/model/map.webview.types';
-import { UseMyLocationProps } from '@/features/location/model/location.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
-import { useMapStore } from '@/features/map/stores/useMapStore';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import { useWebViewRef } from '@/app/providers/webview';
+import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
 
 export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
-  const { sendMessage } = useMapWebview();
+  const { sendMessage } = useProvideWebviewMessenger();
   const webViewRef = useWebViewRef();
   const { setMyPosition } = useMyPositionStore();
   const watchIdRef = useRef<number | null>(null);

@@ -16,13 +16,12 @@ import {
   UpdateTargetedStationBikeCountListMessage,
 } from '@/shared/model/map.webview.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
-import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useStationStore } from '../stores/useStationStore';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import { useWebViewRef } from '@/app/providers/webview';
+import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
-  const { sendMessage } = useMapWebview();
+  const { sendMessage } = useProvideWebviewMessenger();
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore();
   const webViewRef = useWebViewRef();

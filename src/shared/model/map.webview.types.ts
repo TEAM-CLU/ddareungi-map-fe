@@ -1,5 +1,4 @@
 // WebView와 React Native 간 통신을 타입 안정성 있게 관리
-// RN 쪽에서만 import 해서 사용 (useMapWebview, useMapSearch, useMapRouting, Map.tsx)
 
 import { Coordinate, RouteType } from '@/features/routing/model/routing.types';
 import {

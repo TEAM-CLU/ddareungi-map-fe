@@ -1,5 +1,4 @@
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
-import { Coordinate, RouteType } from '@/features/routing/model/routing.types';
+import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
 import {
   ClearStaticPathMessage,
   DrawStaticPathMessage,
@@ -7,14 +6,13 @@ import {
   StaticPathData,
 } from '@/shared/model/map.webview.types';
 import { useCallback } from 'react';
-import WebView from 'react-native-webview';
 
 /**
  * 경로(Route) 관련 WebView 통신 훅
  */
 
 export const useRoutingMessenger = () => {
-  const { sendMessage } = useMapWebview();
+  const { sendMessage } = useProvideWebviewMessenger();
 
   // 정적 경로 생성 (출발지/도착지/경유지 정보 포함)
   const drawStaticPath = useCallback(

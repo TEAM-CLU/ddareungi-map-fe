@@ -7,7 +7,7 @@ import { useModalStore } from '../stores/useModalStore';
 import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
-import { WebViewMessageToRN } from '@/shared/model/map.webview.types';
+import { WebViewMessageToWeb } from '@/shared/model/map.webview.types';
 
 /**
  * useMapOrchestrator
@@ -174,7 +174,7 @@ export const useMapOrchestrator = () => {
   // mapReady 메시지 전용 핸들러
   const handleMapReadyMessage = (event: WebViewMessageEvent) => {
     try {
-      const data: WebViewMessageToRN = JSON.parse(event.nativeEvent.data);
+      const data = JSON.parse(event.nativeEvent.data);
 
       if (data.type === 'mapReady') {
         console.log('✅ 지도 준비 완료');

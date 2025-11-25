@@ -1,16 +1,11 @@
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { useLocationStore } from '@/features/location/stores/useLocationStore';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import IconLocatorMark from '@/shared/components/icons/IconLocatorMark';
 import { tw } from '@/shared/libs/tw-helper';
-import {
-  CompassModeMessage,
-  MyLocationFollowingMessage,
-} from '@/shared/model/map.webview.types';
+
 import { TouchableOpacity } from 'react-native';
 
 const MyLocationButton = () => {
-  const { sendMessage } = useMapWebview();
   const { locationMode, setLocationMode } = useLocationStore();
   const { myLocationFollowing, myLocationCompassOn, myLocationCompassOff } =
     useLocationMessenger();

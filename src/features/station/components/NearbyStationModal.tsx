@@ -12,7 +12,7 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
 
 const NearbyStationModal = () => {
   const { mutateAsync: getNearbyStations } = useNearbyStationsMutation();
@@ -26,7 +26,7 @@ const NearbyStationModal = () => {
     lamda,
   } = useStationStore();
   const { myPosition } = useMyPositionStore();
-  const { sendMessage } = useMapWebview();
+  const { sendMessage } = useProvideWebviewMessenger();
 
   // 리스트 클릭시 상세대여소 모달로 이동
   const handleStationItemBtnPress = (stationMetaData: MapAreaStationData) => {

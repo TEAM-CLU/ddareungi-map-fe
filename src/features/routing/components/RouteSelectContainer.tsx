@@ -20,7 +20,6 @@ import {
 } from '@/shared/utils/measure';
 import { Gender } from '@/shared/model/index.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;

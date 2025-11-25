@@ -1,4 +1,4 @@
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import { useProvideWebviewMessenger } from '@/features/map/hooks/useProvideWebviewMessenger';
 import {
   CompassModeMessage,
   MyLocationFollowingMessage,
@@ -6,7 +6,7 @@ import {
 import { useCallback } from 'react';
 
 export const useLocationMessenger = () => {
-  const { sendMessage } = useMapWebview();
+  const { sendMessage } = useProvideWebviewMessenger();
 
   const myLocationFollowing = useCallback(() => {
     const message: MyLocationFollowingMessage = {
