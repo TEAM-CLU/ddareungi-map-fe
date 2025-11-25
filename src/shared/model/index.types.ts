@@ -42,13 +42,13 @@ export type Gender = 'M' | 'F' | undefined;
 // 즐겨찾기 관련 타입
 // -----------------------------
 export interface BookmarkItem {
-  type: 'place' | 'station';
-  id: string; // placeId or stationNumber
-  name: string; // 장소명 or 대여소명
+  id: string; // placeId
+  name: string; // 장소명
   alias?: string; // 별칭
-  color?: string; // 색상
+  color?: string; // 마커/뱃지 색상
 
   address?: string;
+  category: string;
   latitude: number;
   longitude: number;
   

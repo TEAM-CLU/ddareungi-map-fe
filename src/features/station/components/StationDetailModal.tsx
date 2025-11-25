@@ -23,7 +23,6 @@ import { useStationStore } from '../stores/useStationStore';
 import { AutocompleteResult } from '@/features/search/model/search.types';
 import { getDistanceText } from '@/shared/utils/formatting';
 import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
-import { createStationBookmark } from '@/shared/utils/bookmark';
 import StarToggle from '@/shared/components/StarToggle';
 
 interface StationDetailModalProps {
@@ -41,14 +40,6 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
   const { globalNavigation } = useMapStore();
   const { stationMetaData, lamda } = useStationStore();
   const { myPosition } = useMyPositionStore();
-  const { toggleBookmark } = useBookmarkStore();
-  const bookmarked = useBookmarkStore(state =>
-    stationMetaData?.number
-      ? state.bookmarks.some(
-          item => item.type === 'station' && item.id === stationMetaData.number,
-        )
-      : false,
-  );
 
   // RouteType 토글 함수
   const toggleRouteType = () => {
@@ -168,17 +159,6 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
     }
   };
 
-  /*
-    북마크 토글 핸들러
-  */
-  const handleToggleBookmark = () => {
-    try {
-      const bookmarkItem = createStationBookmark(stationMetaData);
-      toggleBookmark(bookmarkItem);
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   return (
     <View
@@ -209,7 +189,6 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
         >
           {getDistanceText(distance)}
         </Text>
-        <StarToggle active={bookmarked} onToggle={handleToggleBookmark} />
       </View>
       <Text
         style={[

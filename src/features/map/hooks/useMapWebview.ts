@@ -10,7 +10,7 @@ export const useMapWebview = () => {
   const { webRef } = useMapStore();
   const sendMessage = useCallback(
     (message: WebViewMessageToRN) => {
-      if (!webRef.current) {
+      if (!webRef || !webRef.current) {
         console.warn('⚠️ WebView ref is null — 메시지 전송 불가');
         return;
       }

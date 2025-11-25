@@ -52,7 +52,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   const bookmarked = useBookmarkStore(state =>
     place.placeKey
       ? state.bookmarks.some(
-          item => item.type === 'place' && item.id === place.placeKey,
+          item => item.id === place.placeKey,
         )
       : false,
   );
@@ -71,7 +71,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
 
   useEffect(() => {
     const applyStationNameAndDistance = async () => {
-      if (!place.latitude || !place.latitude) {
+      if (!place.latitude || !place.longitude) {
         setStationDistance(undefined);
         return;
       }

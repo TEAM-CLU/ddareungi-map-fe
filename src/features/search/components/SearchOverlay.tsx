@@ -26,6 +26,12 @@ import { AutocompleteResult } from '../model/search.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
+import { ScaleDecorator } from 'react-native-draggable-flatlist';
+import { ScrollView } from 'react-native-gesture-handler';
+import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
+import BookmarkBadge from '@/shared/components/badge/BookmarkBadge';
+import { BookmarkItem } from '@/shared/model/index.types';
+import { useSearchOrchestrator } from '../hooks/useSearchOrchestrator';
 
 interface SearchOverlayProps {
   onClose: () => void;
@@ -62,6 +68,8 @@ const SearchOverlay = ({
   const { showSearchOverlay } = useSearchStore();
 
   const { myPosition } = useMyPositionStore();
+
+  const { handlePlaceSelectionFlow } = useSearchOrchestrator();
 
   // 검색어가 변경될 때 useAutocomplete에 반영
   const handleSearchTextChange = useCallback(
@@ -227,6 +235,23 @@ const SearchOverlay = ({
     }
   }, [handleSearchResultSelect, myPosition]);
 
+  // 즐겨찾기 뱃지 클릭 핸들러
+  const bookmarks = useBookmarkStore(state => state.bookmarks);
+  const handleBookmarkPress = useCallback(
+    (item: BookmarkItem) => {
+      const place = {
+        placeKey: item.id,
+        name: item.name,
+        address: item.address ?? '',
+        latitude: item.latitude,
+        longitude: item.longitude,
+        category: item.category ?? '',
+      };
+      handlePlaceSelectionFlow(place);
+    },
+    [handlePlaceSelectionFlow],
+  );
+
   return (
     <>
       <SafeAreaView
@@ -261,11 +286,31 @@ const SearchOverlay = ({
             edges={['top']}
             style={[tw('px-4 pb-2 text-on-surface-primary'), { marginTop: 56 }]}
           >
-            {/* 빠른 액세스 태그 버튼 */}
-            <View style={[tw('flex-row justify-end'), { gap: 2 }]}>
+            {/* 즐겨찾기 뱃지 + 현위치 버튼 */}
+            <View style={tw('flex-row items-center justify-between')}>
+              {/* 즐겨찾기 뱃지 */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingRight: 8 }}
+                style={{ flexGrow: 1 }}
+              >
+                {bookmarks.map(item => (
+                  <BookmarkBadge
+                    key={`${item.id}`}
+                    name={item.name}
+                    alias={item.alias}
+                    color={item.color}
+                    onPress={() => handleBookmarkPress(item)}
+                  />
+                ))}
+              </ScrollView>
+
+              {/* 빠른 액세스 태그 버튼 */}
+              {/* <View style={[tw('flex-row justify-end'), { gap: 2 }]}> */}
               <TouchableOpacity
                 style={tw(
-                  'bg-brand-primary rounded-full px-3 py-2 flex-row items-center',
+                  'bg-brand-primary rounded-full px-3 py-2 flex-row items-center ml-2',
                 )}
                 onPress={handleCurrentLocationPress}
                 disabled={isLoadingCurrentLocation}

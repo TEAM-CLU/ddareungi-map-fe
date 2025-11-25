@@ -1,14 +1,15 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { BookmarkItem } from '../model/index.types';
+import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface BookmarkState {
   bookmarks: BookmarkItem[];
   toggleBookmark: (bookmark: BookmarkItem) => void;
-  isBookmarked: (type: BookmarkItem['type'], id: string) => boolean;
-  updateAlias: (type: BookmarkItem['type'], id: string, alias: string) => void;
-  updateColor: (type: BookmarkItem['type'], id: string, color: string) => void;
-  getByType: (type: BookmarkItem['type']) => BookmarkItem[]; // 타입별 리스트 조회
+  isBookmarked: (id: string) => boolean;
+  updateAlias: (id: string, alias: string) => void;
+  updateColor: (id: string, color: string) => void;
 }
 
 export const useBookmarkStore = create<BookmarkState>()(
@@ -19,22 +20,26 @@ export const useBookmarkStore = create<BookmarkState>()(
       toggleBookmark: (bookmark: BookmarkItem) => {
         const list = get().bookmarks;
         const exists = list.find(
-          item => item.type === bookmark.type && item.id === bookmark.id,
+          item => item.id === bookmark.id,
         );
 
         if (exists) {
           const updated = list.filter(
-            item => !(item.type === bookmark.type && item.id === bookmark.id),
+            item => !(item.id === bookmark.id),
           );
           set({ bookmarks: updated });
           return;
         }
 
         const checkLimit =
-          list.filter(item => item.type === bookmark.type).length >= 5;
+          list.length >= 10;
         if (checkLimit) {
           console.warn(
-            `${bookmark.type} 즐겨찾기 최대 개수(5개)를 초과했습니다.`,
+            `즐겨찾기 최대 개수(10개)를 초과했습니다.`,
+          );
+          Alert.alert(
+            '즐겨찾기 최대 개수 초과',
+            '즐겨찾기는 최대 10개까지 등록할 수 있습니다.',
           );
           return;
         }
@@ -49,32 +54,27 @@ export const useBookmarkStore = create<BookmarkState>()(
         set({ bookmarks: updated });
       },
 
-      isBookmarked: (type, id) => {
-        return get().bookmarks.some(b => b.type === type && b.id === id);
+      isBookmarked: (id) => {
+        return get().bookmarks.some(b => b.id === id);
       },
 
-      updateAlias: (type, id, alias) => {
+      updateAlias: (id, alias) => {
         const updated = get().bookmarks.map(b =>
-          b.type === type && b.id === id ? { ...b, alias } : b,
+          b.id === id ? { ...b, alias } : b,
         );
         return set({ bookmarks: updated });
       },
 
-      updateColor: (type, id, color) => {
+      updateColor: (id, color) => {
         const updated = get().bookmarks.map(b =>
-          b.type === type && b.id === id ? { ...b, color } : b,
+          b.id === id ? { ...b, color } : b,
         );
         return set({ bookmarks: updated });
-      },
-
-      getByType: type => {
-        return get()
-          .bookmarks.filter(b => b.type === type)
-          .sort((a, b) => b.createdAt - a.createdAt);
       },
     }),
     {
       name: 'bookmark-storage',
+      storage: createJSONStorage(() => AsyncStorage),
     },
   ),
 );
