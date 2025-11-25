@@ -17,10 +17,7 @@ import {
 import React, { useEffect } from 'react';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
-import {
-  DrawStaticPathMessage,
-  StaticPathData,
-} from '@/shared/model/map.webview.types';
+import { StaticPathData } from '@/shared/model/map.webview.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useLocationStore } from '@/features/location/stores/useLocationStore';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
@@ -110,7 +107,7 @@ const RouteSelectedDetailModal = ({
       };
       drawStaticPath(message);
       myLocationCompassOff();
-      myLocationCompassOff();
+      setLocationMode('default');
     };
 
     handleRoutePress();

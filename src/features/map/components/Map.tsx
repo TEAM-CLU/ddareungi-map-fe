@@ -3,11 +3,12 @@ import { useMyLocation } from '@/features/location/hooks/useMyLocation';
 import { useStation } from '@/features/station/hooks/useStation';
 import { useMapStore } from '../stores/useMapStore';
 import { useWebViewRef } from '@/app/providers/webview';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 interface MapProps {
   handleMapReadyMessage: (event: WebViewMessageEvent) => void;
 }
 const Map = ({ handleMapReadyMessage }: MapProps) => {
+  const [isMounted, setIsMounted] = useState(false);
   const { isMapReady, setIsMapReady } = useMapStore();
 
   const webViewRef = useWebViewRef();
@@ -29,8 +30,10 @@ const Map = ({ handleMapReadyMessage }: MapProps) => {
   };
 
   useEffect(() => {
+    if (isMapReady) return;
+    if (!isMounted) setIsMounted(true);
     setIsMapReady(true);
-  }, [isMapReady]);
+  }, [isMapReady, isMounted, setIsMapReady]);
 
   return (
     <WebView
