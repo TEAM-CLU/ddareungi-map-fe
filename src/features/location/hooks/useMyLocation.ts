@@ -9,13 +9,14 @@ import { useWebViewRef } from '@/app/providers/webview';
 import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { DataSetForUpdateMyLocation } from '@/features/location/model/location.types';
+import { Coordinates } from '@/features/map/model/map.types';
 
 export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
   const { updateMyLocation, rotateMyHeading } = useLocationMessenger();
   const webViewRef = useWebViewRef();
   const { setMyPosition } = useMyPositionStore();
   const watchIdRef = useRef<number | null>(null);
-  const lastPos = useRef<{ lat: number; lng: number } | null>(null);
+  const lastPos = useRef<Coordinates | null>(null);
 
   // 보정된 방향값 추출
   const heading = useUserHeading({
@@ -73,7 +74,7 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
       pos => {
         setMyPosition({
           lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
+          lng: pos.coords.longitude,
         });
         sendLocation(pos, { bypassAccuracyOnce: true });
       },
@@ -86,7 +87,7 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
       pos => {
         setMyPosition({
           lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
+          lng: pos.coords.longitude,
         });
         sendLocation(pos);
       },

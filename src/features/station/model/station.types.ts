@@ -1,7 +1,3 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { RefObject } from 'react';
-import WebView from 'react-native-webview';
-
 // 가장 가까운 대여소 3개 검색
 export interface NearbyStationData {
   name: string;

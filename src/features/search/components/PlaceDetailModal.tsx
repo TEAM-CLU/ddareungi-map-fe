@@ -56,11 +56,11 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
 
   useEffect(() => {
     const applyStationNameAndDistance = async () => {
-      if (!place.latitude || !place.latitude) return;
+      if (!place.latitude || !place.longitude) return;
       try {
         const payload: NearbyStationListPayload = {
           latitude: place.latitude,
-          longitude: place.longitude!,
+          longitude: place.longitude,
         };
         const response: NearbyStationData[] = await fetchNearbyStationDataList(
           payload,

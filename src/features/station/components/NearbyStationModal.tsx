@@ -36,6 +36,7 @@ const NearbyStationModal = () => {
   };
 
   // 내 위치 기반으로 주변 대여소 데이터 불러오는 로직
+  // filepath: /Users/master/dev/ddareungi-map-fe/src/features/station/components/NearbyStationModal.tsx
   useEffect(() => {
     const handleNearbyStations = async () => {
       if (!myPosition) return;
@@ -45,10 +46,20 @@ const NearbyStationModal = () => {
           longitude: myPosition.lng,
         };
 
+        console.log('🔵 [NearbyStation] 요청 전 myPosition:', myPosition);
+        console.log('🔵 [NearbyStation] 요청 전 payload:', payload);
+
         const response: NearbyStationData[] = await getNearbyStations(payload);
         setNearbyStationDataList(response);
-      } catch (error) {
-        console.error('Error fetching nearby stations:', error);
+      } catch (error: any) {
+        console.error('❌ [NearbyStation] 400 에러 상세:');
+        console.error('URL:', error.config?.url);
+        console.error('Full URL:', error.config?.baseURL + error.config?.url);
+        console.error('Method:', error.config?.method);
+        console.error('Params:', error.config?.params);
+        console.error('서버 응답 데이터:', error.response?.data);
+        console.error('서버 응답 상태:', error.response?.status);
+        console.error('서버 응답 헤더:', error.response?.headers);
       }
     };
 
