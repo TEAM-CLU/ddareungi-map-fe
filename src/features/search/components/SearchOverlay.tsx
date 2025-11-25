@@ -206,7 +206,7 @@ const SearchOverlay = ({
 
     try {
       if (!myPosition) return;
-      const place = await reverseGeocode(myPosition.lat, myPosition.lon);
+      const place = await reverseGeocode(myPosition.lat, myPosition.lng);
       if (!place) return;
 
       const autocompleteResult: AutocompleteResult = {

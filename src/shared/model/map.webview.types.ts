@@ -111,3 +111,24 @@ export type WebViewMessageToWeb =
   | UpdateStationDataListMessage;
 
 /* === 웹뷰로부터 받아온 메시지 타입 === */
+
+export interface MapReadyMessage {
+  type: 'mapReady';
+  isReady: boolean;
+}
+
+export interface ClickStationMarkerMessage {
+  type: 'clickStationMarker';
+  stationData: MapAreaStationData;
+}
+
+export interface NeedUpdateStationBikeCountListMessage {
+  type: 'needUpdateStationBikeCountList';
+  stationNumbers: string[];
+}
+
+export interface ChangeMapCenterMessage {
+  type: 'changeMapCenter';
+  lat: number;
+  lng: number;
+}

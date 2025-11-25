@@ -7,7 +7,10 @@ import { useModalStore } from '../stores/useModalStore';
 import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
-import { WebViewMessageToWeb } from '@/shared/model/map.webview.types';
+import {
+  MapReadyMessage,
+  WebViewMessageToWeb,
+} from '@/shared/model/map.webview.types';
 
 /**
  * useMapOrchestrator
@@ -174,11 +177,11 @@ export const useMapOrchestrator = () => {
   // mapReady 메시지 전용 핸들러
   const handleMapReadyMessage = (event: WebViewMessageEvent) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
+      const data: MapReadyMessage = JSON.parse(event.nativeEvent.data);
 
       if (data.type === 'mapReady') {
         console.log('✅ 지도 준비 완료');
-        setIsMapReady(true);
+        setIsMapReady(data.isReady);
       }
     } catch (error) {
       console.error('Invalid JSON from WebView:', event.nativeEvent.data);

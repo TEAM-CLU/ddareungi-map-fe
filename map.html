@@ -31,13 +31,13 @@
     let map;
     window.isCompassMode = false;
     const DEFAULT_LAT = 37.5665;
-    const DEFAULT_LON = 126.978;
+    const DEFAULT_LNG = 126.978;
 
     kakao.maps.load(() => {
       // 맵 생성
       const mapContainer = document.getElementById('map');
       const mapOption = {
-        center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
+        center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG),
         level: 2,
       };
       map = new kakao.maps.Map(mapContainer, mapOption);
@@ -56,9 +56,9 @@
             kakao,
             map,
             DEFAULT_LAT,
-            DEFAULT_LON,
+            DEFAULT_LNG,
           );
-          Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LON);
+          Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LNG);
           Search.initSearchSetting(kakao, map);
           Station.initStationSeting(kakao, map);
 
@@ -76,7 +76,7 @@
               JSON.stringify({
                 type: 'changeMapCenter',
                 lat: centerCoord.getLat(),
-                lon: centerCoord.getLng(),
+                lng: centerCoord.getLng(),
               }),
             );
           })();
@@ -88,7 +88,7 @@
               JSON.stringify({
                 type: 'changeMapCenter',
                 lat: centerCoord.getLat(),
-                lon: centerCoord.getLng(),
+                lng: centerCoord.getLng(),
               }),
             );
           });
@@ -102,17 +102,17 @@
         const data = JSON.parse(event.data);
 
         // 1. 내 위치 업데이트
-        if (data.type === 'myLocation') {
-          MyLocation.updateMyLocation(data.lat, data.lon, data.accuracy ?? 30);
+        if (data.type === 'updateMyLocation') {
+          MyLocation.updateMyLocation(data.lat, data.lng, data.accuracy ?? 30);
         }
 
         // 2. 내 방향 업데이트
-        if (data.type === 'myHeading') {
+        if (data.type === 'rotateMyHeading') {
           MyLocation.rotateMyHeading(data.heading);
         }
 
         // 3. 내 위치로 이동
-        if (data.type === 'myLocationFollowing') {
+        if (data.type === 'setCenterOnMyLocation') {
           map.setCenter(MyLocation.myLocationMarker.getPosition());
         }
 

@@ -15,6 +15,11 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import { useStationStore } from '../stores/useStationStore';
 import { useWebViewRef } from '@/app/providers/webview';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
+import {
+  ChangeMapCenterMessage,
+  ClickStationMarkerMessage,
+  NeedUpdateStationBikeCountListMessage,
+} from '@/shared/model/map.webview.types';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
   const { updateStationDataList, UpdateTargetedStationBikeCountListMessage } =
@@ -33,7 +38,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
   // 범위 내 대여소 데이터 조회 쿼리 파라미터
   const stationDataListQueryPayload: MapAreaQueryPayload = {
     lat: mapCenterCoord?.lat ?? null,
-    lon: mapCenterCoord?.lon ?? null,
+    lng: mapCenterCoord?.lng ?? null,
     radius: 1500,
     enable: isIdleEventOccurred,
   };
@@ -46,11 +51,11 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
 
   const handleMapCenterIdle = (event: WebViewMessageEvent) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
+      const data: ChangeMapCenterMessage = JSON.parse(event.nativeEvent.data);
 
       if (data.type !== 'changeMapCenter') return;
 
-      const next: Coordinates = { lat: data.lat, lon: data.lon };
+      const next: Coordinates = { lat: data.lat, lng: data.lng };
       const prev = prevMapCenterCoord.current;
       const isMovedEnough = prev
         ? getDistanceBetweenCoords(prev, next) >= 1000
@@ -72,7 +77,9 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
     event: WebViewMessageEvent,
   ) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
+      const data: NeedUpdateStationBikeCountListMessage = JSON.parse(
+        event.nativeEvent.data,
+      );
       if (data.type !== 'needUpdateStationBikeCountList') return;
       const targetedStationNumberList = data.stationNumbers;
 
@@ -91,7 +98,9 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
   // 클릭이벤트로 스테이션 상세정보 요청이 오면 모달 오픈
   const handleStationMarkerClick = (event: WebViewMessageEvent) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
+      const data: ClickStationMarkerMessage = JSON.parse(
+        event.nativeEvent.data,
+      );
       if (data.type !== 'clickStationMarker') return;
       // 스테이션 상세정보 모달 오픈
       setShowStationDetailModal(true);

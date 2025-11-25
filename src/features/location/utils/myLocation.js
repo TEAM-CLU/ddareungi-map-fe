@@ -5,10 +5,10 @@
   let hasMoveToMyLocationRun = false;
 
   // 내 위치 관련 오버레이 정의 및 생성
-  const initMyLocationSetting = (kakao, map, DEFAULT_LAT, DEFAULT_LON) => {
+  const initMyLocationSetting = (kakao, map, DEFAULT_LAT, DEFAULT_LNG) => {
     kakaoRef = kakao;
     mapRef = map;
-    const defaultPos = new kakaoRef.maps.LatLng(DEFAULT_LAT, DEFAULT_LON);
+    const defaultPos = new kakaoRef.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG);
 
     //  내 위치 마커 생성 및 초기세팅
     const myLocationSvg = `
@@ -91,8 +91,8 @@
   };
 
   // 내 위치 업데이트
-  const updateMyLocation = (lat, lon, accuracy) => {
-    const updatedPosition = new kakaoRef.maps.LatLng(lat, lon);
+  const updateMyLocation = (lat, lng, accuracy) => {
+    const updatedPosition = new kakaoRef.maps.LatLng(lat, lng);
 
     // 최초 위치로 이동
     if (!hasMoveToMyLocationRun) {

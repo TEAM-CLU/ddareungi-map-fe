@@ -52,7 +52,7 @@ const NearbyStationModal = () => {
       try {
         const payload: NearbyStationListPayload = {
           latitude: myPosition.lat,
-          longitude: myPosition.lon,
+          longitude: myPosition.lng,
         };
 
         const response: NearbyStationData[] = await getNearbyStations(payload);
@@ -69,8 +69,8 @@ const NearbyStationModal = () => {
     if (!myPosition || !nearbyStationDataList) return;
     const newDistances = nearbyStationDataList.map(station =>
       getDistanceBetweenCoords(
-        { lat: myPosition.lat, lon: myPosition.lon },
-        { lat: station.latitude, lon: station.longitude },
+        { lat: myPosition.lat, lng: myPosition.lng },
+        { lat: station.latitude, lng: station.longitude },
       ),
     );
     setDistances(newDistances.map(distance => Math.round(distance)));
