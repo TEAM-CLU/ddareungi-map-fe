@@ -5,10 +5,15 @@ import { useMapStore } from '../stores/useMapStore';
 import { useWebViewRef } from '@/app/providers/webview';
 import { useEffect, useState } from 'react';
 interface MapProps {
+  isLocalMapReady: boolean;
+  setIsLocalMapReady: React.Dispatch<React.SetStateAction<boolean>>;
   handleMapReadyMessage: (event: WebViewMessageEvent) => void;
 }
-const Map = ({ handleMapReadyMessage }: MapProps) => {
-  const [isMounted, setIsMounted] = useState(false);
+const Map = ({
+  isLocalMapReady,
+  setIsLocalMapReady,
+  handleMapReadyMessage,
+}: MapProps) => {
   const { isMapReady, setIsMapReady } = useMapStore();
 
   const webViewRef = useWebViewRef();
@@ -30,10 +35,8 @@ const Map = ({ handleMapReadyMessage }: MapProps) => {
   };
 
   useEffect(() => {
-    if (isMapReady) return;
-    if (!isMounted) setIsMounted(true);
-    setIsMapReady(true);
-  }, [isMapReady, isMounted, setIsMapReady]);
+    setIsMapReady(isLocalMapReady);
+  }, [isMapReady, isLocalMapReady, setIsLocalMapReady]);
 
   return (
     <WebView

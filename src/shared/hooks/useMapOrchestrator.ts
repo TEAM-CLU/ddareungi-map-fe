@@ -7,10 +7,7 @@ import { useModalStore } from '../stores/useModalStore';
 import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
-import {
-  MapReadyMessage,
-  WebViewMessageToWeb,
-} from '@/shared/model/map.webview.types';
+import { MapReadyMessage } from '@/shared/model/map.webview.types';
 
 /**
  * useMapOrchestrator
@@ -25,12 +22,12 @@ import {
  * - 거리 값, 경로 추천 관련 라우팅 핸들러 제공
  */
 export const useMapOrchestrator = () => {
+  const [isLocalMapReady, setIsLocalMapReady] = useState(false);
   /** ----------------------------------------
    * 1. Navigation 객체 (화면 이동용)
    * ---------------------------------------- */
   const { navigation } = useAppNavigation();
   const { clearStaticPath } = useRoutingMessenger();
-  const { setIsMapReady } = useMapStore();
 
   /** ----------------------------------------
    * 2. 화면 내부에서만 생성하는 Ref들
@@ -181,7 +178,7 @@ export const useMapOrchestrator = () => {
 
       if (data.type === 'mapReady') {
         console.log('✅ 지도 준비 완료');
-        setIsMapReady(data.isReady);
+        setIsLocalMapReady(data.isReady);
       }
     } catch (error) {
       console.error('Invalid JSON from WebView:', event.nativeEvent.data);
@@ -197,5 +194,7 @@ export const useMapOrchestrator = () => {
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
     handleMapReadyMessage,
+    isLocalMapReady,
+    setIsLocalMapReady,
   };
 };

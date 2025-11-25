@@ -95,7 +95,7 @@
     const updatedPosition = new kakaoRef.maps.LatLng(lat, lng);
 
     // 최초 위치로 이동
-    if (!hasMoveToMyLocationRun) {
+    if (!hasMoveToMyLocationRun && !window.isSelectedRouteDetailModalOpen) {
       mapRef.setCenter(updatedPosition);
       hasMoveToMyLocationRun = true;
     }

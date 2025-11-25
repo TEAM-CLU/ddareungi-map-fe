@@ -46,7 +46,8 @@ const RouteSelectedDetailModal = ({
   }
 
   const { totalCaloriesBurned, totalTrees, routeType } = useRouteStore();
-  const { drawStaticPath, focusOnStaticPath } = useRoutingMessenger();
+  const { drawStaticPath, focusOnStaticPath, stopFollowingMyLocation } =
+    useRoutingMessenger();
   const { setLocationMode } = useLocationStore();
   const { myLocationCompassOff } = useLocationMessenger();
   const { isMapReady } = useMapStore();
@@ -84,7 +85,6 @@ const RouteSelectedDetailModal = ({
   const waypointsCount = waypoints ? waypoints.length : 0;
 
   useEffect(() => {
-    if (!isMapReady) return;
     const handleRoutePress = () => {
       const message: StaticPathData = {
         routeType: routeType,
@@ -105,6 +105,7 @@ const RouteSelectedDetailModal = ({
           : null,
         pathCoordinates: coordinates,
       };
+      stopFollowingMyLocation();
       drawStaticPath(message);
       myLocationCompassOff();
       setLocationMode('default');

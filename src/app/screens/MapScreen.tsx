@@ -20,6 +20,8 @@ const MapScreen = () => {
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
     handleMapReadyMessage,
+    isLocalMapReady,
+    setIsLocalMapReady,
   } = useMapOrchestrator();
 
   const { showSelectedRouteDetailModal } = useModalStore();
@@ -33,7 +35,11 @@ const MapScreen = () => {
 
   return (
     <View style={tw('flex-1 relative w-full')}>
-      <Map handleMapReadyMessage={handleMapReadyMessage} />
+      <Map
+        isLocalMapReady={isLocalMapReady}
+        setIsLocalMapReady={setIsLocalMapReady}
+        handleMapReadyMessage={handleMapReadyMessage}
+      />
 
       {showSelectedRouteDetailModal && selectedRouteData && (
         <View

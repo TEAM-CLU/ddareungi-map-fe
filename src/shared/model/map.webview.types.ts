@@ -52,6 +52,12 @@ export interface StaticPathData {
   endStationPoint: Coordinate | null;
   pathCoordinates: [number, number][];
 }
+
+export interface StopFollowingMyLocationMessage {
+  type: 'stopFollowingMyLocation';
+  isSelectedRouteDetailModalOpen: boolean;
+}
+
 export interface DrawStaticPathMessage {
   type: 'drawStaticPath';
   staticPathData: StaticPathData;
@@ -108,7 +114,8 @@ export type WebViewMessageToWeb =
   | UpdateMyLocationMessage
   | RotateMyHeadingMessage
   | UpdateTargetedStationBikeCountListMessage
-  | UpdateStationDataListMessage;
+  | UpdateStationDataListMessage
+  | StopFollowingMyLocationMessage;
 
 /* === 웹뷰로부터 받아온 메시지 타입 === */
 

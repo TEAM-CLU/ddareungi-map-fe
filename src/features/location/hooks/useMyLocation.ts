@@ -3,13 +3,12 @@ import { AppState, Alert } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
-import { UpdateMyLocationMessage } from '@/shared/model/map.webview.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useWebViewRef } from '@/app/providers/webview';
-import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { DataSetForUpdateMyLocation } from '@/features/location/model/location.types';
 import { Coordinates } from '@/features/map/model/map.types';
+import { useModalStore } from '@/shared/stores/useModalStore';
 
 export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
   const { updateMyLocation, rotateMyHeading } = useLocationMessenger();

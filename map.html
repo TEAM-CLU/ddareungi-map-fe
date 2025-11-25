@@ -29,6 +29,7 @@
     // 전역 변수 초기 세팅(window.var로 각 피쳐 js에서 접근가능)
 
     let map;
+    window.isSelectedRouteDetailModalOpen = false;
     window.isCompassMode = false;
     const DEFAULT_LAT = 37.5665;
     const DEFAULT_LNG = 126.978;
@@ -100,6 +101,7 @@
     const handleMessage = event => {
       try {
         const data = JSON.parse(event.data);
+        // === 내 위치 관련 메시지 처리 ===
 
         // 1. 내 위치 업데이트
         if (data.type === 'updateMyLocation') {
@@ -150,6 +152,10 @@
         }
 
         // === 라우팅 관련 ===
+
+        if (data.type === 'stopFollowingMyLocation')
+          window.isSelectedRouteDetailModalOpen =
+            data.isSelectedRouteDetailModalOpen;
 
         // 8. 정적 경로 생성
         if (data.type === 'drawStaticPath') {

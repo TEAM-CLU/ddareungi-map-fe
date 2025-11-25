@@ -4,6 +4,7 @@ import {
   DrawStaticPathMessage,
   FocusOnStaticPathMessage,
   StaticPathData,
+  StopFollowingMyLocationMessage,
 } from '@/shared/model/map.webview.types';
 import { useCallback } from 'react';
 
@@ -13,6 +14,15 @@ import { useCallback } from 'react';
 
 export const useRoutingMessenger = () => {
   const { sendMessage } = useProvideWebviewMessenger();
+
+  // 상세 모달 on 일때 내위치로 이동 금지
+  const stopFollowingMyLocation = useCallback(() => {
+    const message: StopFollowingMyLocationMessage = {
+      type: 'stopFollowingMyLocation',
+      isSelectedRouteDetailModalOpen: true,
+    };
+    sendMessage(message);
+  }, [sendMessage]);
 
   // 정적 경로 생성 (출발지/도착지/경유지 정보 포함)
   const drawStaticPath = useCallback(
@@ -45,6 +55,7 @@ export const useRoutingMessenger = () => {
   }, [sendMessage]);
 
   return {
+    stopFollowingMyLocation,
     drawStaticPath,
     clearStaticPath,
     focusOnStaticPath,
