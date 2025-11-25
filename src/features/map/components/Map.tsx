@@ -4,6 +4,8 @@ import { useStation } from '@/features/station/hooks/useStation';
 import { useMapStore } from '../stores/useMapStore';
 import { useWebViewRef } from '@/app/providers/webview';
 import { useEffect, useState } from 'react';
+import { tw } from '@/shared/libs/tw-helper';
+import { View, ActivityIndicator } from 'react-native';
 interface MapProps {
   isLocalMapReady: boolean;
   setIsLocalMapReady: React.Dispatch<React.SetStateAction<boolean>>;
@@ -34,9 +36,10 @@ const Map = ({
     handleStationMarkerClick(event);
   };
 
+  // selectedRouteDetailModal에서 쓰기 위해 zustand용 isMapReady 동기화
   useEffect(() => {
     setIsMapReady(isLocalMapReady);
-  }, [isMapReady, isLocalMapReady, setIsLocalMapReady]);
+  }, [isLocalMapReady]);
 
   return (
     <WebView

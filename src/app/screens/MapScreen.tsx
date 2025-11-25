@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
@@ -13,6 +13,7 @@ import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
 import { getCategoryText } from '@/shared/utils/formatting';
 import ReturnToRouteSelectButton from '@/features/routing/components/ReturnToRouteSelectButton';
+import { useMapStore } from '@/features/map/stores/useMapStore';
 
 const MapScreen = () => {
   const {

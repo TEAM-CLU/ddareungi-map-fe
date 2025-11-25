@@ -6,18 +6,16 @@
     waypointsMarkers = [],
     startStationMarker,
     endStationMarker;
-  // 👉 단일 폴리라인 대신 3중 레이어
   let staticPolylineOutline; // 어두운 외곽선
   let staticPolylineMain; // 메인 컬러 라인
   let staticPolylineDash; // 위에 얇은 점선
   let kakaoPath = [];
-  let kakaoPathForFocus = [];
 
-  const initRouteSetting = (kakao, map, DEFAULT_LAT, DEFAULT_LON) => {
+  const initRouteSetting = (kakao, map, DEFAULT_LAT, DEFAULT_LNG) => {
     kakaoRef = kakao;
     mapRef = map;
 
-    const defaultPos = new kakaoRef.maps.LatLng(DEFAULT_LAT, DEFAULT_LON);
+    const defaultPos = new kakaoRef.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG);
 
     // 출발지 마커 생성 및 초기 세팅
 
@@ -73,14 +71,14 @@
 
     startStationMarker = new kakaoRef.maps.CustomOverlay({
       position: defaultPos,
-      content: getStationMarkerSvg('S'),
+      content: getStationMarkerSvg('대여소'),
       yAnchor: 1,
       zIndex: 9,
     });
 
     endStationMarker = new kakaoRef.maps.CustomOverlay({
       position: defaultPos,
-      content: getStationMarkerSvg('E'),
+      content: getStationMarkerSvg('대여소'),
       yAnchor: 1,
       zIndex: 9,
     });
@@ -128,7 +126,7 @@
       dy=".35em"
       fill="#414548"
       font-family="Pretendard, 'Noto Sans KR', Arial, sans-serif"
-      font-size="15"
+      font-size="10"
       font-weight="600"
       line-height="24"
     >
@@ -183,7 +181,7 @@
 
     // 새 waypoints 배열을 순회하며 새 마커 생성
     waypoints.forEach((waypoint, idx) => {
-      const waypointPos = new kakaoRef.maps.LatLng(waypoint.lat, waypoint.lon);
+      const waypointPos = new kakaoRef.maps.LatLng(waypoint.lat, waypoint.lng);
       const waypointMarker = new kakaoRef.maps.CustomOverlay({
         position: waypointPos,
         content: getWaypointMarkerSvg(`경유${idx + 1}`), // label 자동 생성
@@ -322,6 +320,7 @@
     focusOnStaticPath();
   };
 
+  // 바운드 맞추기
   const focusOnStaticPath = () => {
     const bounds = new kakaoRef.maps.LatLngBounds();
     kakaoPath.forEach(latlng => bounds.extend(latlng));

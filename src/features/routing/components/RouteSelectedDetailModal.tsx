@@ -85,6 +85,7 @@ const RouteSelectedDetailModal = ({
   const waypointsCount = waypoints ? waypoints.length : 0;
 
   useEffect(() => {
+    if (!isMapReady) return;
     const handleRoutePress = () => {
       const message: StaticPathData = {
         routeType: routeType,
