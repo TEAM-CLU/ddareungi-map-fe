@@ -37,3 +37,20 @@ export type FooterRoutes = keyof RootStackParamList;
 // measure.ts
 export type TransportationType = 'walking' | 'biking';
 export type Gender = 'M' | 'F' | undefined;
+
+// -----------------------------
+// 즐겨찾기 관련 타입
+// -----------------------------
+export interface Bookmark {
+  type: 'place' | 'station';
+  id: string; // placeId or stationNumber
+  name: string; // 장소명 or 대여소명
+  alias?: string; // 별칭
+  color?: string; // 색상
+
+  address?: string;
+  latitude: number;
+  longitude: number;
+  
+  createdAt: number; // 정렬용
+}
