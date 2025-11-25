@@ -5,3 +5,9 @@ import WebView from 'react-native-webview';
 export interface UseMyLocationProps {
   webViewRef: React.RefObject<WebView | null>;
 }
+
+export interface DataSetForUpdateMyLocation {
+  lat: number;
+  lng: number;
+  accuracy: number;
+}

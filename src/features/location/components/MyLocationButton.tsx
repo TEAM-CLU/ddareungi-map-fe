@@ -7,14 +7,14 @@ import { TouchableOpacity } from 'react-native';
 
 const MyLocationButton = () => {
   const { locationMode, setLocationMode } = useLocationStore();
-  const { myLocationFollowing, myLocationCompassOn, myLocationCompassOff } =
+  const { setCenterOnMyLocation, myLocationCompassOn, myLocationCompassOff } =
     useLocationMessenger();
 
   const handleMyLocationButtonPress = () => {
     if (locationMode === 'default') {
       // 단순히 내 위치로 포커싱 이동
       setLocationMode('following');
-      myLocationFollowing();
+      setCenterOnMyLocation();
       return;
     }
     if (locationMode === 'following') {

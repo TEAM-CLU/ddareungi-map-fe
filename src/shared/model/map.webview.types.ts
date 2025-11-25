@@ -7,20 +7,20 @@ import {
 } from '@/features/station/model/station.types';
 
 // === 위치 관련 메시지 ===
-export interface MyLocationMessage {
-  type: 'myLocation';
+export interface UpdateMyLocationMessage {
+  type: 'updateMyLocation';
   lat: number;
-  lon: number;
+  lng: number;
   accuracy?: number;
 }
 
-export interface MyHeadingMessage {
-  type: 'myHeading';
+export interface RotateMyHeadingMessage {
+  type: 'rotateMyHeading';
   heading: number;
 }
 
-export interface MyLocationFollowingMessage {
-  type: 'myLocationFollowing';
+export interface SetCenterOnMyLocationMessage {
+  type: 'setCenterOnMyLocation';
 }
 
 export interface CompassModeMessage {
@@ -94,7 +94,7 @@ export interface FocusOnTargetedNearbyStationMessage {
 }
 
 // 모든 메시지 타입 유니온
-export type WebViewMessageToRN =
+export type WebViewMessageToWeb =
   | MapReadyMessage
   | FocusOnTargetedNearbyStationMessage
   | ShowPlaceMarkerMessage
@@ -103,9 +103,11 @@ export type WebViewMessageToRN =
   | ClearStaticPathMessage
   | FocusOnStaticPathMessage
   | ToggleStationMarkersMessage
-  | MyLocationFollowingMessage
+  | SetCenterOnMyLocationMessage
   | CompassModeMessage
-  | MyLocationMessage
-  | MyHeadingMessage
+  | UpdateMyLocationMessage
+  | RotateMyHeadingMessage
   | UpdateTargetedStationBikeCountListMessage
   | UpdateStationDataListMessage;
+
+/* === 웹뷰로부터 받아온 메시지 타입 === */
