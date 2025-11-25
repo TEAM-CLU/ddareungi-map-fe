@@ -6,10 +6,14 @@
     waypointsMarkers = [],
     startStationMarker,
     endStationMarker;
-  let staticPolylineOutline; // 어두운 외곽선
-  let staticPolylineMain; // 메인 컬러 라인
-  let staticPolylineDash; // 위에 얇은 점선
-  let kakaoPath = [];
+  let bikeRouteOutline; // 어두운 외곽선
+  let bikeRouteMain; // 메인 컬러 라인
+  let bikeRouteDash; // 위에 얇은 점선
+
+  let walkingToStartDot; // 출발지 -> 출발 대여소
+  let walkingToEndDot; // 도착 대여소 -> 도착지
+  let walkingToOriginDot; // 원점 -> 대여소 -> 원점
+  let kakaoPathForFocusOnBound = [];
 
   const initRouteSetting = (kakao, map, DEFAULT_LAT, DEFAULT_LNG) => {
     kakaoRef = kakao;
@@ -78,7 +82,7 @@
       zIndex: 9,
     });
     // 정적경로 폴리라인 초기화 (3중 레이어)
-    staticPolylineOutline = new kakaoRef.maps.Polyline({
+    bikeRouteOutline = new kakaoRef.maps.Polyline({
       path: [],
       strokeColor: '#006633', // 짙은 녹색 아웃라인
       strokeWeight: 10,
@@ -87,7 +91,7 @@
       zIndex: 3,
     });
 
-    staticPolylineMain = new kakaoRef.maps.Polyline({
+    bikeRouteMain = new kakaoRef.maps.Polyline({
       path: [],
       strokeColor: '#00C267', // 메인 밝은 네비 그린
       strokeWeight: 8,
@@ -96,13 +100,40 @@
       zIndex: 4,
     });
 
-    staticPolylineDash = new kakaoRef.maps.Polyline({
+    bikeRouteDash = new kakaoRef.maps.Polyline({
       path: [],
       strokeColor: '#C8FFF1', // 밝은 민트 점선
       strokeWeight: 3,
       strokeOpacity: 0.9,
       strokeStyle: 'shortdash',
       zIndex: 5,
+    });
+
+    walkingToStartDot = new kakaoRef.maps.Polyline({
+      path: [],
+      strokeColor: '#006AFF',
+      strokeWeight: 5,
+      strokeOpacity: 1,
+      strokeStyle: 'shortdot',
+      zIndex: 6,
+    });
+
+    walkingToEndDot = new kakaoRef.maps.Polyline({
+      path: [],
+      strokeColor: '#FF0000',
+      strokeWeight: 5,
+      strokeOpacity: 1,
+      strokeStyle: 'shortdot',
+      zIndex: 6,
+    });
+
+    walkingToOriginDot = new kakaoRef.maps.Polyline({
+      path: [],
+      strokeColor: '#000000',
+      strokeWeight: 5,
+      strokeOpacity: 1,
+      strokeStyle: 'shortdot',
+      zIndex: 6,
     });
   };
 
@@ -196,28 +227,103 @@
     });
   };
 
+  // 대여소와 가장 가까운 좌표 추출
+  const findNearestIndexOnPath = (coords, targetLat, targetLng) => {
+    if (!Array.isArray(coords) || coords.length === 0) return -1;
+
+    let bestIdx = 0;
+    let bestScore = Number.POSITIVE_INFINITY;
+
+    coords.forEach(([lng, lat], idx) => {
+      const dLng = lng - targetLng;
+      const dLat = lat - targetLat;
+      // 거리 대신 abs diff 합으로 간단히
+      const score = Math.abs(dLng) + Math.abs(dLat);
+      if (score < bestScore) {
+        bestScore = score;
+        bestIdx = idx;
+      }
+    });
+
+    return bestIdx;
+  };
+
+  // startStation / endStation 기준으로 pathCoordinates를 세 구간으로 나누기
+  const splitPathByStations = (coords, startStationPoint, endStationPoint) => {
+    // 출발대여소는 항상 존재한다고 가정
+    const startIdx = findNearestIndexOnPath(
+      coords,
+      startStationPoint.lat,
+      startStationPoint.lng,
+    );
+
+    // 도착대여소와 출발대여소가 같을 때 (즉, 대여소가 하나일 때 === 출발대여소만 존재)
+    if (
+      endStationPoint.lat === startStationPoint.lat &&
+      endStationPoint.lng === startStationPoint.lng
+    ) {
+      return {
+        walkingToOriginCoords: coords.slice(0, startIdx + 1),
+        bikeRouteCoords: coords.slice(startIdx),
+      };
+    }
+
+    // 도착대여소가 있을 때
+    const endIdx = findNearestIndexOnPath(
+      coords,
+      endStationPoint.lat,
+      endStationPoint.lng,
+    );
+
+    const sliceStart = Math.min(startIdx, endIdx);
+    const sliceEnd = Math.max(startIdx, endIdx);
+
+    return {
+      walkingToStartCoords: coords.slice(0, sliceStart + 1),
+      bikeRouteCoords: coords.slice(sliceStart, sliceEnd + 1),
+      walkingToEndCoords: coords.slice(sliceEnd),
+    };
+  };
+
+  // 내 위치 마커 및 오버레이 초기화
   const clearStaticPath = () => {
     if (startMarker) startMarker.setMap(null);
     if (endMarker) endMarker.setMap(null);
     if (originMarker) originMarker.setMap(null);
     if (startStationMarker) startStationMarker.setMap(null);
     if (endStationMarker) endStationMarker.setMap(null);
-    if (kakaoPath.length > 0) kakaoPath = [];
+    if (kakaoPathForFocusOnBound.length > 0) kakaoPathForFocusOnBound = [];
 
     clearWaypointsMarkers();
 
     // 3중 폴리라인 전부 제거
-    if (staticPolylineOutline) {
-      staticPolylineOutline.setMap(null);
-      staticPolylineOutline.setPath([]);
+    if (bikeRouteOutline) {
+      bikeRouteOutline.setMap(null);
+      bikeRouteOutline.setPath([]);
     }
-    if (staticPolylineMain) {
-      staticPolylineMain.setMap(null);
-      staticPolylineMain.setPath([]);
+    if (bikeRouteMain) {
+      bikeRouteMain.setMap(null);
+      bikeRouteMain.setPath([]);
     }
-    if (staticPolylineDash) {
-      staticPolylineDash.setMap(null);
-      staticPolylineDash.setPath([]);
+    if (bikeRouteDash) {
+      bikeRouteDash.setMap(null);
+      bikeRouteDash.setPath([]);
+    }
+
+    // 도보 경로 삭제
+    if (walkingToStartDot) {
+      walkingToStartDot.setMap(null);
+      walkingToStartDot.setPath([]);
+    }
+
+    if (walkingToEndDot) {
+      walkingToEndDot.setMap(null);
+      walkingToEndDot.setPath([]);
+    }
+
+    if (walkingToOriginDot) {
+      walkingToOriginDot.setMap(null);
+      walkingToOriginDot.setPath([]);
     }
   };
 
@@ -294,31 +400,68 @@
         createWaypointsMarkers(waypoints);
       }
     }
-    // 3. 경로 그리기
-    kakaoPath = convertToKakaoLatLngArray(pathCoordinates);
-    kakaoPathForFocus = kakaoPath.slice();
 
-    // 3중 레이어 모두 동일한 path로 세팅
-    if (staticPolylineOutline) {
-      staticPolylineOutline.setPath(kakaoPath);
-      staticPolylineOutline.setMap(mapRef);
-    }
-    if (staticPolylineMain) {
-      staticPolylineMain.setPath(kakaoPath);
-      staticPolylineMain.setMap(mapRef);
-    }
-    if (staticPolylineDash) {
-      staticPolylineDash.setPath(kakaoPath);
-      staticPolylineDash.setMap(mapRef);
+    kakaoPathForFocusOnBound = convertToKakaoLatLngArray(pathCoordinates);
+
+    const {
+      walkingToStartCoords,
+      bikeRouteCoords,
+      walkingToEndCoords,
+      walkingToOriginCoords,
+    } = splitPathByStations(
+      pathCoordinates,
+      startStationPoint,
+      endStationPoint,
+    );
+
+    if (walkingToStartCoords && walkingToStartCoords.length > 0) {
+      const wallkingToStartKaKaoPath =
+        convertToKakaoLatLngArray(walkingToStartCoords);
+      walkingToStartDot.setPath(wallkingToStartKaKaoPath);
+      walkingToStartDot.setMap(mapRef);
     }
 
-    focusOnStaticPath();
+    if (walkingToEndCoords && walkingToEndCoords.length > 0) {
+      const walkingToEndKaKaoPath =
+        convertToKakaoLatLngArray(walkingToEndCoords);
+      walkingToEndDot.setPath(walkingToEndKaKaoPath);
+      walkingToEndDot.setMap(mapRef);
+    }
+
+    if (walkingToOriginCoords && walkingToOriginCoords.length > 0) {
+      const walkingToOriginKaKaoPath = convertToKakaoLatLngArray(
+        walkingToOriginCoords,
+      );
+      walkingToOriginDot.setPath(walkingToOriginKaKaoPath);
+      walkingToOriginDot.setMap(mapRef);
+    }
+
+    if (bikeRouteCoords && bikeRouteCoords.length > 0) {
+      const bikeRouteKaKaoPath = convertToKakaoLatLngArray(bikeRouteCoords);
+      if (bikeRouteOutline) {
+        bikeRouteOutline.setPath(bikeRouteKaKaoPath);
+        bikeRouteOutline.setMap(mapRef);
+      }
+
+      if (bikeRouteMain) {
+        bikeRouteMain.setPath(bikeRouteKaKaoPath);
+        bikeRouteMain.setMap(mapRef);
+      }
+
+      if (bikeRouteDash) {
+        bikeRouteDash.setPath(bikeRouteKaKaoPath);
+        bikeRouteDash.setMap(mapRef);
+      }
+
+      focusOnStaticPath();
+      return;
+    }
   };
 
   // 바운드 맞추기
   const focusOnStaticPath = () => {
     const bounds = new kakaoRef.maps.LatLngBounds();
-    kakaoPath.forEach(latlng => bounds.extend(latlng));
+    kakaoPathForFocusOnBound.forEach(latlng => bounds.extend(latlng));
     mapRef.setBounds(bounds, 100);
   };
 

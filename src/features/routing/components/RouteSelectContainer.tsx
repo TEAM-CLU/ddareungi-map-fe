@@ -71,7 +71,7 @@ const RouteSelectContainer = ({
           { height: 300 },
         ]}
       >
-        <Text style={tw('text-red-500 font-primary-500 text-center')}>
+        <Text style={tw('text-error font-primary-500 text-center')}>
           {error}
         </Text>
       </View>

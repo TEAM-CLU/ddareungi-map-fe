@@ -87,27 +87,28 @@ const RouteSelectedDetailModal = ({
   useEffect(() => {
     if (!isMapReady) return;
     const handleRoutePress = () => {
-      const message: StaticPathData = {
+      const staticPathData: StaticPathData = {
         routeType: routeType,
         startPoint: coordinates[0],
         endPoint: coordinates[coordinates.length - 1],
         waypoints: wpArr ? wpArr : null,
-        startStationPoint: startStation
-          ? {
-              lat: startStation.lat,
-              lng: startStation.lng,
-            }
-          : null,
+        startStationPoint: {
+          lat: startStation.lat,
+          lng: startStation.lng,
+        },
         endStationPoint: endStation
           ? {
               lat: endStation.lat,
               lng: endStation.lng,
             }
-          : null,
+          : {
+              lat: startStation.lat,
+              lng: startStation.lng,
+            },
         pathCoordinates: coordinates,
       };
       stopFollowingMyLocation();
-      drawStaticPath(message);
+      drawStaticPath(staticPathData);
       myLocationCompassOff();
       setLocationMode('default');
     };

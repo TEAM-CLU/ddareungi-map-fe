@@ -8,7 +8,6 @@ import { useWebViewRef } from '@/app/providers/webview';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { DataSetForUpdateMyLocation } from '@/features/location/model/location.types';
 import { Coordinates } from '@/features/map/model/map.types';
-import { useModalStore } from '@/shared/stores/useModalStore';
 
 export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
   const { updateMyLocation, rotateMyHeading } = useLocationMessenger();

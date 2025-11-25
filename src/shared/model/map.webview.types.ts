@@ -48,8 +48,8 @@ export interface StaticPathData {
   startPoint: [number, number];
   endPoint: [number, number];
   waypoints: Coordinate[] | null;
-  startStationPoint: Coordinate | null;
-  endStationPoint: Coordinate | null;
+  startStationPoint: Coordinate;
+  endStationPoint: Coordinate;
   pathCoordinates: [number, number][];
 }
 

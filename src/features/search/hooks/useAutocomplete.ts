@@ -44,7 +44,7 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
         // 현재 위치 있으면 거리순, 없으면 정확도순
         const searchOptions: SearchOptions = myPosition
           ? {
-              x: myPosition.lon,
+              x: myPosition.lng,
               y: myPosition.lat,
               radius: DEFAULT_SEARCH_RADIUS,
               sort: 'distance',

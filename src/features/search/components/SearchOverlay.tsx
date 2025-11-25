@@ -361,7 +361,7 @@ const SearchOverlay = ({
                   />
                 ) : error ? (
                   <View style={tw('flex-1 justify-center items-center')}>
-                    <Text style={tw('text-on-surface-tertiary')}>
+                    <Text style={tw('text-error')}>
                       검색 중 오류가 발생했습니다.
                     </Text>
                   </View>
