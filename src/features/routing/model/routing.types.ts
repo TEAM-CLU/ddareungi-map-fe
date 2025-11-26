@@ -152,6 +152,7 @@ export interface RouteState {
   end: AutocompleteResult | null; // 도착지
   waypoints: Waypoint[]; // 경유지 목록
   distance: number | null; // 목표 거리 (왕복 모드용)
+  getItems: () => RouteItem[];
 
   // --- [Acitivity Data State] 활동 관련 데이터 ---
   totalCaloriesBurned: number | null; // 예상 소모 칼로리

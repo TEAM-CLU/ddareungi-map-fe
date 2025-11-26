@@ -13,7 +13,6 @@ import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
 import { getCategoryText } from '@/shared/utils/formatting';
 import ReturnToRouteSelectButton from '@/features/routing/components/ReturnToRouteSelectButton';
-import { useMapStore } from '@/features/map/stores/useMapStore';
 
 const MapScreen = () => {
   const {

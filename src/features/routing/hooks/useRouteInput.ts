@@ -14,44 +14,12 @@ export const useRouteInput = () => {
     setEnd,
     removeWaypoint,
     updateRouteFromDrag,
+    getItems,
   } = useRouteStore();
 
-  const [items, setItems] = useState<RouteItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // 1. Store -> 로컬 리스트 동기화
-  useEffect(() => {
-    if (isProcessing) return;
-
-    const newItems: RouteItem[] = [];
-
-    // 출발지
-    newItems.push({
-      key: 'fixed-start',
-      place: start,
-    });
-
-    // 경유지
-    waypoints.forEach(wp => {
-      newItems.push({
-        key: wp.waypointKey,
-        place: wp.place,
-      });
-    });
-
-    // 도착지
-    newItems.push({
-      key: 'fixed-end',
-      place: end,
-    });
-
-    const uniqueItems = newItems.map((item, index) => ({
-      ...item,
-      key: item.key.startsWith('fixed') ? `${item.key}-${index}` : item.key,
-    }));
-
-    setItems(uniqueItems);
-  }, [start, end, waypoints, isProcessing]);
+  const items = getItems();
 
   // 2. 드래그 종료 핸들러
   const handleDragEnd = useCallback(
@@ -59,7 +27,6 @@ export const useRouteInput = () => {
       if (data.length < 2) return;
 
       setIsProcessing(true);
-      setItems(data);
 
       setTimeout(() => {
         const newStart = data[0].place;
