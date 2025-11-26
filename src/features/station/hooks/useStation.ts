@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { Coordinates } from '@/features/map/model/map.types';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
@@ -19,10 +19,12 @@ import {
   ClickStationMarkerMessage,
   NeedUpdateStationBikeCountListMessage,
 } from '@/shared/model/map.webview.types';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
+  const { canStartNavigation } = useNavigationStore();
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore();
   const { setStationMetaData } = useStationStore();
@@ -114,7 +116,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
 
   // 스테이션 데이터가 갱신되면 웹뷰에 전달
   useEffect(() => {
-    if (showSelectedRouteDetailModal) return;
+    if (showSelectedRouteDetailModal || canStartNavigation) return;
     if (!isMapReady || !stationDataList) return;
     updateStationDataList(stationDataList);
   }, [stationDataList, isMapReady, updateStationDataList, isIdleEventOccurred]);
