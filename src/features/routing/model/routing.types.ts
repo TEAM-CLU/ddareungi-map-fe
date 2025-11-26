@@ -123,7 +123,7 @@ export interface Route {
   bbox: Bbox;
   startStation: Station;
   endStation?: Station;
-  waypoints?: Coordinate[]
+  waypoints?: Coordinate[];
   segments: Segment[];
   coordinates: [number, number][];
 }

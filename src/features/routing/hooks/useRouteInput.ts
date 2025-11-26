@@ -6,6 +6,7 @@ import { RouteItem, RouteType, Waypoint } from '../model/routing.types';
 export const useRouteInput = () => {
   const {
     routeType,
+    setRouteType,
     start,
     end,
     waypoints,
@@ -103,6 +104,13 @@ export const useRouteInput = () => {
   );
 
   const hasWaypoints = waypoints.length > 0;
+
+  useEffect(() => {
+    if (!start || !end) return;
+    if (start?.address === end?.address && routeType !== RouteType.LOOP) {
+      setRouteType(RouteType.LOOP);
+    }
+  }, [start, end, routeType, setRouteType]);
 
   return {
     items,

@@ -21,8 +21,6 @@
 
     const defaultPos = new kakaoRef.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG);
 
-    // 출발지 마커 생성 및 초기 세팅
-
     // 출발/도착/원점 마커 SVG 생성 함수
     const buildMarkerHTML = (
       label,
@@ -81,10 +79,11 @@
       yAnchor: 1,
       zIndex: 9,
     });
-    // 정적경로 폴리라인 초기화 (3중 레이어)
+
+    // 자전거 경로 3중 레이어
     bikeRouteOutline = new kakaoRef.maps.Polyline({
       path: [],
-      strokeColor: '#006633', // 짙은 녹색 아웃라인
+      strokeColor: '#006633',
       strokeWeight: 10,
       strokeOpacity: 0.45,
       strokeStyle: 'solid',
@@ -93,7 +92,7 @@
 
     bikeRouteMain = new kakaoRef.maps.Polyline({
       path: [],
-      strokeColor: '#00C267', // 메인 밝은 네비 그린
+      strokeColor: '#00C267',
       strokeWeight: 8,
       strokeOpacity: 1,
       strokeStyle: 'solid',
@@ -102,19 +101,20 @@
 
     bikeRouteDash = new kakaoRef.maps.Polyline({
       path: [],
-      strokeColor: '#C8FFF1', // 밝은 민트 점선
+      strokeColor: '#C8FFF1',
       strokeWeight: 3,
       strokeOpacity: 0.9,
       strokeStyle: 'shortdash',
       zIndex: 5,
     });
 
+    // 도보 경로들 (점선)
     walkingToStartDot = new kakaoRef.maps.Polyline({
       path: [],
       strokeColor: '#006AFF',
       strokeWeight: 5,
       strokeOpacity: 1,
-      strokeStyle: 'shortdot',
+      strokeStyle: 'dot',
       zIndex: 6,
     });
 
@@ -123,7 +123,7 @@
       strokeColor: '#FF0000',
       strokeWeight: 5,
       strokeOpacity: 1,
-      strokeStyle: 'shortdot',
+      strokeStyle: 'dot',
       zIndex: 6,
     });
 
@@ -132,7 +132,7 @@
       strokeColor: '#000000',
       strokeWeight: 5,
       strokeOpacity: 1,
-      strokeStyle: 'shortdot',
+      strokeStyle: 'dot',
       zIndex: 6,
     });
   };
@@ -202,15 +202,12 @@
   };
 
   const createWaypointsMarkers = waypoints => {
-    // 기존 경유지 마커 제거
     clearWaypointsMarkers();
-
-    // 새 waypoints 배열을 순회하며 새 마커 생성
     waypoints.forEach((waypoint, idx) => {
       const waypointPos = new kakaoRef.maps.LatLng(waypoint.lat, waypoint.lng);
       const waypointMarker = new kakaoRef.maps.CustomOverlay({
         position: waypointPos,
-        content: getWaypointMarkerSvg(`경유${idx + 1}`), // label 자동 생성
+        content: getWaypointMarkerSvg(`경유${idx + 1}`),
         yAnchor: 1,
         zIndex: 11,
       });
@@ -227,6 +224,17 @@
     });
   };
 
+  // 👉 LatLng[] 경로를 화면 좌표 기준으로 offset 시키는 헬퍼
+  const offsetLatLngPath = (latLngPath, offsetX, offsetY) => {
+    if (!mapRef || !kakaoRef || !Array.isArray(latLngPath)) return latLngPath;
+    const projection = mapRef.getProjection();
+    return latLngPath.map(latlng => {
+      const pt = projection.pointFromCoords(latlng);
+      const moved = new kakaoRef.maps.Point(pt.x + offsetX, pt.y + offsetY);
+      return projection.coordsFromPoint(moved);
+    });
+  };
+
   // 대여소와 가장 가까운 좌표 추출
   const findNearestIndexOnPath = (coords, targetLat, targetLng) => {
     if (!Array.isArray(coords) || coords.length === 0) return -1;
@@ -237,7 +245,6 @@
     coords.forEach(([lng, lat], idx) => {
       const dLng = lng - targetLng;
       const dLat = lat - targetLat;
-      // 거리 대신 abs diff 합으로 간단히
       const score = Math.abs(dLng) + Math.abs(dLat);
       if (score < bestScore) {
         bestScore = score;
@@ -251,24 +258,44 @@
   // startStation / endStation 기준으로 pathCoordinates를 세 구간으로 나누기
   const splitPathByStations = (coords, startStationPoint, endStationPoint) => {
     // 출발대여소는 항상 존재한다고 가정
-    const startIdx = findNearestIndexOnPath(
+    const firstIdx = findNearestIndexOnPath(
       coords,
       startStationPoint.lat,
       startStationPoint.lng,
     );
 
-    // 도착대여소와 출발대여소가 같을 때 (즉, 대여소가 하나일 때 === 출발대여소만 존재)
+    // endStation이 startStation과 같은 경우 = 대여소 1개 (원점 ↔ 대여소 ↔ 원점 루프)
     if (
       endStationPoint.lat === startStationPoint.lat &&
       endStationPoint.lng === startStationPoint.lng
     ) {
+      // 뒤에서부터 같은 대여소에 가장 가까운 인덱스 찾기 (마지막 대여소 지점)
+      const reversedIdx = findNearestIndexOnPath(
+        [...coords].reverse(),
+        startStationPoint.lat,
+        startStationPoint.lng,
+      );
+      const lastIdx = coords.length - 1 - reversedIdx;
+
+      // 원점 → 대여소 + 대여소 → 원점 (도보)
+      const walkingToOriginCoords = [
+        ...coords.slice(0, firstIdx + 1),
+        ...coords.slice(lastIdx),
+      ];
+
+      // 대여소 ↔ 대여소 구간만 자전거
+      const bikeRouteCoords = coords.slice(firstIdx, lastIdx + 1);
+
       return {
-        walkingToOriginCoords: coords.slice(0, startIdx + 1),
-        bikeRouteCoords: coords.slice(startIdx),
+        walkingToOriginCoords,
+        bikeRouteCoords,
+        walkingToStartCoords: [],
+        walkingToEndCoords: [],
       };
     }
 
-    // 도착대여소가 있을 때
+    // 출발/도착 대여소가 서로 다른 일반 케이스
+    const startIdx = firstIdx;
     const endIdx = findNearestIndexOnPath(
       coords,
       endStationPoint.lat,
@@ -282,7 +309,33 @@
       walkingToStartCoords: coords.slice(0, sliceStart + 1),
       bikeRouteCoords: coords.slice(sliceStart, sliceEnd + 1),
       walkingToEndCoords: coords.slice(sliceEnd),
+      walkingToOriginCoords: [],
     };
+  };
+
+  const applyRoundTripOffsetForLoop = (
+    latLngPath,
+    outwardOffsetX = 8, // 가는 길: 화면 기준 오른쪽으로
+    inwardOffsetX = -8, // 오는 길: 화면 기준 왼쪽으로
+  ) => {
+    if (!Array.isArray(latLngPath) || latLngPath.length < 4) {
+      // 너무 짧으면 그냥 원본 사용
+      return latLngPath;
+    }
+
+    const len = latLngPath.length;
+    const midIdx = Math.floor(len / 2);
+
+    // 앞쪽: 원점 → 턴포인트 (가는 길)
+    const outwardPath = latLngPath.slice(0, midIdx + 1);
+    // 뒤쪽: 턴포인트 → 원점 (오는 길)
+    const inwardPath = latLngPath.slice(midIdx);
+
+    const outwardOffsetPath = offsetLatLngPath(outwardPath, outwardOffsetX, 0);
+    const inwardOffsetPath = offsetLatLngPath(inwardPath, inwardOffsetX, 0);
+
+    // 두 경로를 이어 붙여서 하나의 폴리라인처럼 보이게
+    return [...outwardOffsetPath, ...inwardOffsetPath];
   };
 
   // 내 위치 마커 및 오버레이 초기화
@@ -296,7 +349,6 @@
 
     clearWaypointsMarkers();
 
-    // 3중 폴리라인 전부 제거
     if (bikeRouteOutline) {
       bikeRouteOutline.setMap(null);
       bikeRouteOutline.setPath([]);
@@ -310,7 +362,6 @@
       bikeRouteDash.setPath([]);
     }
 
-    // 도보 경로 삭제
     if (walkingToStartDot) {
       walkingToStartDot.setMap(null);
       walkingToStartDot.setPath([]);
@@ -328,7 +379,6 @@
   };
 
   const drawStaticPath = staticPathData => {
-    // 옵션 세팅
     const {
       routeType,
       startPoint,
@@ -339,10 +389,9 @@
       endStationPoint,
     } = staticPathData;
 
-    // 1. 기존 마커/폴리라인 제거
     clearStaticPath();
 
-    // 2. 마커 찍기
+    // 마커 찍기
     if (routeType === 'constant') {
       const [startLng, startLat] = startPoint;
       const [endLng, endLat] = endPoint;
@@ -354,6 +403,7 @@
       const endPos = new kakaoRef.maps.LatLng(endLat, endLng);
       endMarker.setPosition(endPos);
       endMarker.setMap(mapRef);
+
       if (startStationPoint) {
         const startStationPos = new kakaoRef.maps.LatLng(
           startStationPoint.lat,
@@ -380,6 +430,7 @@
       const originPos = new kakaoRef.maps.LatLng(originLat, originLng);
       originMarker.setPosition(originPos);
       originMarker.setMap(mapRef);
+
       if (startStationPoint) {
         const startStationPos = new kakaoRef.maps.LatLng(
           startStationPoint.lat,
@@ -414,30 +465,64 @@
       endStationPoint,
     );
 
+    // --- 도보 구간: 항상 약간 offset해서, 자전거 라인과 겹쳐도 평행하게 보이도록 ---
+
     if (walkingToStartCoords && walkingToStartCoords.length > 0) {
-      const wallkingToStartKaKaoPath =
+      const walkingToStartPath =
         convertToKakaoLatLngArray(walkingToStartCoords);
-      walkingToStartDot.setPath(wallkingToStartKaKaoPath);
+      walkingToStartDot.setPath(walkingToStartPath);
       walkingToStartDot.setMap(mapRef);
     }
 
     if (walkingToEndCoords && walkingToEndCoords.length > 0) {
-      const walkingToEndKaKaoPath =
-        convertToKakaoLatLngArray(walkingToEndCoords);
-      walkingToEndDot.setPath(walkingToEndKaKaoPath);
+      const walkingToEndPath = convertToKakaoLatLngArray(walkingToEndCoords);
+      walkingToEndDot.setPath(walkingToEndPath);
       walkingToEndDot.setMap(mapRef);
     }
 
     if (walkingToOriginCoords && walkingToOriginCoords.length > 0) {
-      const walkingToOriginKaKaoPath = convertToKakaoLatLngArray(
+      let walkingToOriginPath = convertToKakaoLatLngArray(
         walkingToOriginCoords,
       );
-      walkingToOriginDot.setPath(walkingToOriginKaKaoPath);
+
+      //   원점→대여소 / 대여소→원점 을 나눠서 각각 좌우로 벌려줌
+      if (routeType === 'loop' && waypoints && waypoints.length === 1) {
+        const len = walkingToOriginPath.length;
+        const midIdx = Math.floor(len / 2);
+
+        // 앞: 원점 → 대여소
+        const outward = walkingToOriginPath.slice(0, midIdx + 1);
+        // 뒤: 대여소 → 원점
+        const inward = walkingToOriginPath.slice(midIdx);
+
+        // 화면 기준: 위쪽으로 올리면서, 갈 때는 오른쪽 / 올 때는 왼쪽
+        const outwardOffset = offsetLatLngPath(outward, 6, -10);
+        const inwardOffset = offsetLatLngPath(inward, -6, -10);
+
+        walkingToOriginPath = [...outwardOffset, ...inwardOffset];
+      } else {
+        // 일반 케이스는 기존처럼 그냥 위로만 살짝 올림
+        walkingToOriginPath = offsetLatLngPath(walkingToOriginPath, 0, -10);
+      }
+
+      walkingToOriginDot.setPath(walkingToOriginPath);
       walkingToOriginDot.setMap(mapRef);
     }
 
+    // --- 자전거 구간 ---
     if (bikeRouteCoords && bikeRouteCoords.length > 0) {
-      const bikeRouteKaKaoPath = convertToKakaoLatLngArray(bikeRouteCoords);
+      let bikeRouteKaKaoPath = convertToKakaoLatLngArray(bikeRouteCoords);
+
+      // ✅ 왕복 루프 + 경유지가 1개일 때:
+      //    → 가는 길은 도로 우측, 오는 길은 도로 좌측으로 살짝 벌려서 표시
+      if (routeType === 'loop' && waypoints && waypoints.length === 1) {
+        bikeRouteKaKaoPath = applyRoundTripOffsetForLoop(
+          bikeRouteKaKaoPath,
+          8, // outward: 오른쪽으로 8px 정도
+          -8, // inward: 왼쪽으로 8px 정도
+        );
+      }
+
       if (bikeRouteOutline) {
         bikeRouteOutline.setPath(bikeRouteKaKaoPath);
         bikeRouteOutline.setMap(mapRef);
