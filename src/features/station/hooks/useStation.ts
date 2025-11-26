@@ -24,7 +24,7 @@ import { useNavigationStore } from '@/features/navigation/stores/useNavigationSt
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
-  const { canStartNavigation } = useNavigationStore();
+  const { isNavigationMode } = useNavigationStore();
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore();
   const { setStationMetaData } = useStationStore();
@@ -116,10 +116,17 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
 
   // 스테이션 데이터가 갱신되면 웹뷰에 전달
   useEffect(() => {
-    if (showSelectedRouteDetailModal || canStartNavigation) return;
+    if (showSelectedRouteDetailModal || isNavigationMode) return;
     if (!isMapReady || !stationDataList) return;
     updateStationDataList(stationDataList);
-  }, [stationDataList, isMapReady, updateStationDataList, isIdleEventOccurred]);
+  }, [
+    stationDataList,
+    isMapReady,
+    updateStationDataList,
+    isIdleEventOccurred,
+    isNavigationMode,
+    showSelectedRouteDetailModal,
+  ]);
 
   // set함수의 비동기 반영 문제 해결을 위한 조치(센터좌표가 한발자국씩 늦게 따라오는 점 해소)
   useEffect(() => {
