@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
@@ -28,7 +28,7 @@ const MapScreen = () => {
     setIsLocalMapReady,
   } = useMapOrchestrator();
 
-  const { canStartNavigation, routeId } = useNavigationStore();
+  const { isNavigationMode, routeId } = useNavigationStore();
   const { showSelectedRouteDetailModal } = useModalStore();
   const { selectedRouteData } = useRouteStore();
   const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
@@ -47,7 +47,7 @@ const MapScreen = () => {
       />
 
       {/* 네비게이션 모드 */}
-      {canStartNavigation && !!routeId && (
+      {isNavigationMode && !!routeId && (
         <SafeAreaView
           edges={['top']}
           style={[
@@ -60,7 +60,7 @@ const MapScreen = () => {
         </SafeAreaView>
       )}
 
-      {canStartNavigation && !!routeId && (
+      {isNavigationMode && !!routeId && (
         <SafeAreaView
           edges={['bottom']}
           style={tw(
@@ -74,7 +74,7 @@ const MapScreen = () => {
       {/* 경로 선택 모드 */}
       {showSelectedRouteDetailModal &&
         selectedRouteData &&
-        !canStartNavigation && (
+        !isNavigationMode && (
           <View
             style={[
               tw(
@@ -104,7 +104,7 @@ const MapScreen = () => {
         )}
 
       {/* 기본 모드 */}
-      {!showSelectedRouteDetailModal && !canStartNavigation && (
+      {!showSelectedRouteDetailModal && !isNavigationMode && (
         <SearchOverlay
           onPress={handleSearchbarPress}
           onClose={handleSearchClose}
@@ -112,7 +112,7 @@ const MapScreen = () => {
         />
       )}
 
-      {!canStartNavigation && (
+      {!isNavigationMode && (
         <Footer
           setIsStationButtonPressed={handleOpenNearbyStationModal}
           setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
@@ -129,7 +129,7 @@ const MapScreen = () => {
         <MyLocationButton />
       </View>
 
-      {!showSelectedRouteDetailModal && !canStartNavigation && (
+      {!showSelectedRouteDetailModal && !isNavigationMode && (
         <View style={[tw('absolute right-3'), { bottom: '24%' }]}>
           <StationMarkersToggleBtn />
         </View>

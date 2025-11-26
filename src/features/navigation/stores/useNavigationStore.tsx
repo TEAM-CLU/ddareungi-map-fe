@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 interface NavigationState {
-  canStartNavigation: boolean;
-  setCanStartNavigation: (canStart: boolean) => void;
+  isNavigationMode: boolean;
+  setIsNavigationMode: (isNavigationMode: boolean) => void;
 
   routeId: string | null;
   setRouteId: (routeId: string) => void;
@@ -12,17 +12,13 @@ interface NavigationState {
 export const useNavigationStore = create<NavigationState>()(
   devtools(
     set => ({
-      canStartNavigation: false,
+      isNavigationMode: false,
       routeId: null,
 
       setRouteId: (routeId: string | null) =>
         set({ routeId }, false, 'navigation/setRouteId'),
-      setCanStartNavigation: (canStart: boolean) =>
-        set(
-          { canStartNavigation: canStart },
-          false,
-          'navigation/setCanStartNavigation',
-        ),
+      setIsNavigationMode: (isNavigationMode: boolean) =>
+        set({ isNavigationMode }, false, 'navigation/setIsNavigationMode'),
     }),
     { name: 'navigation' },
   ),

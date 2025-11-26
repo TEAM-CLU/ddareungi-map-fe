@@ -47,7 +47,7 @@ const SelectedRouteDetailModal = ({
     );
   }
 
-  const { canStartNavigation, routeId, setCanStartNavigation, setRouteId } =
+  const { isNavigationMode, routeId, setIsNavigationMode, setRouteId } =
     useNavigationStore();
   const { setShowSelectedRouteDetailModal } = useModalStore();
   const { totalCaloriesBurned, totalTrees, routeType, prevScreen } =
@@ -130,13 +130,13 @@ const SelectedRouteDetailModal = ({
   ]);
 
   useEffect(() => {
-    if (!canStartNavigation || !routeId) return;
+    if (!isNavigationMode || !routeId) return;
     setShowSelectedRouteDetailModal(false);
-  }, [canStartNavigation, routeId]);
+  }, [isNavigationMode, routeId]);
 
   const handleNavigationStartBtnPress = () => {
     setRouteId(selectedRouteData.routeId);
-    setCanStartNavigation(true);
+    setIsNavigationMode(true);
   };
 
   return (
