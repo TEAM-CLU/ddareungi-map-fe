@@ -26,8 +26,7 @@ const InstructionBanner = ({ instruction, sign }: InstructionBannerProps) => {
   }, [instruction, sign]);
 
   return (
-    <SafeAreaView
-      edges={['top']}
+    <View
       style={[
         tw('w-full flex flex-row items-center px-5 py-4 bg-brand-primary'),
         { borderRadius: 20, maxWidth: 348, height: 70, gap: 15 },
@@ -53,7 +52,7 @@ const InstructionBanner = ({ instruction, sign }: InstructionBannerProps) => {
           );
         })}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 export default InstructionBanner;
