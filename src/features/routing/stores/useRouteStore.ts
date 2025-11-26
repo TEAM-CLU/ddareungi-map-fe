@@ -29,6 +29,8 @@ export const useRouteStore = create<RouteState>()(
       waypoints: [],
       distance: null,
 
+      prevScreen: null,
+
       totalCaloriesBurned: null,
       totalTrees: null,
 
@@ -43,6 +45,9 @@ export const useRouteStore = create<RouteState>()(
       routeSearchError: null,
 
       // ----------- 액션 -----------
+
+      setPrevScreen: screen =>
+        set({ prevScreen: screen }, false, 'setPrevScreen'),
 
       getItems: () => {
         const { start, end, waypoints } = get();

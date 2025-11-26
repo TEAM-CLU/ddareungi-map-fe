@@ -161,6 +161,7 @@ export interface RouteState {
   // --- [UI State] 화면 제어 상태 ---
   currentSelectedPoint: RoutePoint | null; // 현재 선택된 포인트 정보
   currentFieldType: 'start' | 'end' | 'waypoint' | null; // 현재 활성화된 입력 필드 타입
+  prevScreen: 'RouteSelect' | 'RouteRecommend' | null; // 이전 화면 정보 판정을 통한 뒤로가기 버튼 누를시 돌아갈 화면 지정
 
   // --- [API State] 비동기 통신 상태 ---
   routes: RouteResponse | null; // 서버로부터 받은 검색된 경로 결과
@@ -174,6 +175,7 @@ export interface RouteState {
   setEnd: (place: AutocompleteResult | null) => void;
   setDistance: (distance: number) => void;
   setSelectedRouteData: (route: Route | null) => void;
+  setPrevScreen: (screen: 'RouteSelect' | 'RouteRecommend' | null) => void;
 
   // --- [Acitivity Data Actions] 활동 관련 데이터 액션 ---
   setTotalCaloriesBurned: (calories: number | null) => void;

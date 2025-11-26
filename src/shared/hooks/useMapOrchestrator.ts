@@ -48,7 +48,7 @@ export const useMapOrchestrator = () => {
   /** ----------------------------------------
    * 3. 경로/거리 관련 상태 (routeStore)
    * ---------------------------------------- */
-  const { distance, setDistance } = useRouteStore();
+  const { distance, setDistance, prevScreen } = useRouteStore();
 
   /** ----------------------------------------
    * 4. 모달 show/hide 및 모달 ref 보관용 상태 (modalStore)
@@ -168,7 +168,7 @@ export const useMapOrchestrator = () => {
   const handleSelectedRouteDetailModalClose = useCallback(() => {
     clearStaticPath();
     setShowSelectedRouteDetailModal(false);
-    navigation.navigate('RouteSelect');
+    navigation.navigate(prevScreen ?? 'RouteSelect');
   }, [navigation, setShowSelectedRouteDetailModal, clearStaticPath]);
 
   // mapReady 메시지 전용 핸들러

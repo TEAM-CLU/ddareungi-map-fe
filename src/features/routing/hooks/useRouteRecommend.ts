@@ -18,6 +18,8 @@ export const useRouteRecommend = () => {
     setTotalCaloriesBurned,
     setTotalTrees,
 
+    setPrevScreen,
+
     start,
     distance,
     setStart,
@@ -94,6 +96,8 @@ export const useRouteRecommend = () => {
       totalTrees: number,
     ) => {
       setSelectedRouteData(selectedRouteData);
+      setPrevScreen('RouteRecommend');
+
       navigation.navigate('Map');
       setShowSelectedRouteDetailModal(true);
       setTotalCaloriesBurned(totalCaloriesBurned);

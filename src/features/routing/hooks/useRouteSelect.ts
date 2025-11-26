@@ -23,6 +23,8 @@ export const useRouteSelect = () => {
     end,
     waypoints,
 
+    setPrevScreen,
+
     setTotalCaloriesBurned,
     setTotalTrees,
 
@@ -190,6 +192,7 @@ export const useRouteSelect = () => {
     ) => {
       setSelectedRouteData(selectedRouteData);
       setShowSelectedRouteDetailModal(true);
+      setPrevScreen('RouteSelect');
       navigation.navigate('Map');
 
       setTotalCaloriesBurned(totalCaloriesBurned);
