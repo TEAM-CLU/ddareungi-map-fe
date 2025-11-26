@@ -22,7 +22,7 @@ import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useLocationStore } from '@/features/location/stores/useLocationStore';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 
-interface RouteSelectedDetailModalProps {
+interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
   startAddress: string | undefined;
   endAddress: string | undefined;
@@ -30,13 +30,13 @@ interface RouteSelectedDetailModalProps {
   baseTime?: Date;
 }
 
-const RouteSelectedDetailModal = ({
+const SelectedRouteDetailModal = ({
   selectedRouteData,
   startAddress,
   endAddress,
   waypoints,
   baseTime = new Date(),
-}: RouteSelectedDetailModalProps) => {
+}: SelectedRouteDetailModalProps) => {
   if (!selectedRouteData) {
     return (
       <View style={tw('flex justify-center w-full flex-1 items-center')}>
@@ -346,4 +346,4 @@ const RouteSelectedDetailModal = ({
     </ScrollView>
   );
 };
-export default RouteSelectedDetailModal;
+export default SelectedRouteDetailModal;

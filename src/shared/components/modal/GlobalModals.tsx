@@ -1,5 +1,4 @@
 import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
-import RouteSelectedDetailModal from '@/features/routing/components/RouteSelectedDetailModal';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
 import NearbyStationModal from '@/features/station/components/NearbyStationModal';
@@ -8,8 +7,8 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
-import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
 import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
+import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore();
@@ -42,7 +41,7 @@ const GlobalModals = () => {
         onDismiss={() => setShowSelectedRouteDetailModal(false)}
         enablePanDownToClose={false}
       >
-        <RouteSelectedDetailModal
+        <SelectedRouteDetailModal
           selectedRouteData={selectedRouteData}
           startAddress={start?.address || start?.name}
           endAddress={end?.address || end?.name}
