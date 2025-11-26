@@ -10,7 +10,7 @@ const MyLocationButton = () => {
   const { setCenterOnMyLocation, myLocationCompassOn, myLocationCompassOff } =
     useLocationMessenger();
 
-  const handleMyLocationButtonPress = () => {
+  const handleMyLocationBtnPress = () => {
     if (locationMode === 'default') {
       // 단순히 내 위치로 포커싱 이동
       setLocationMode('following');
@@ -32,7 +32,7 @@ const MyLocationButton = () => {
 
   return (
     <TouchableOpacity
-      onPress={handleMyLocationButtonPress}
+      onPress={handleMyLocationBtnPress}
       style={[
         tw(
           'bg-icon-container-secondary rounded-full w-10 h-10 flex justify-center items-center shadow-md',
