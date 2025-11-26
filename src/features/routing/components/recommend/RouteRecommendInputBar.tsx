@@ -11,6 +11,7 @@ interface RouteRecommendInputBarProps {
   onRoutePointPress: (point: RoutePoint) => void;
   onDistancePress: () => void;
 }
+
 const RouteRecommendInputBar = ({
   onClose,
   onRoutePointPress,

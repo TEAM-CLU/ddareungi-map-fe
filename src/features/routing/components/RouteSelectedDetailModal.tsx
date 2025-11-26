@@ -6,7 +6,7 @@ import { IconSpotMarker } from '@/shared/components/icons';
 import { ScrollView } from 'react-native-gesture-handler';
 import RouteProgressStepVerticalBar from '@/features/routing/components/RoutePrgressStepVerticalBar';
 import RoundButton from '@/shared/components/button/RoundButton';
-import { Route, Waypoint } from '../model/routing.types';
+import { Route, RouteType, Waypoint } from '../model/routing.types';
 import {
   formatDistance,
   formatMinutes,
@@ -45,7 +45,8 @@ const RouteSelectedDetailModal = ({
     );
   }
 
-  const { totalCaloriesBurned, totalTrees, routeType } = useRouteStore();
+  const { totalCaloriesBurned, totalTrees, routeType, prevScreen } =
+    useRouteStore();
   const { drawStaticPath, focusOnStaticPath, stopFollowingMyLocation } =
     useRoutingMessenger();
   const { setLocationMode } = useLocationStore();
@@ -88,7 +89,7 @@ const RouteSelectedDetailModal = ({
     if (!isMapReady) return;
     const handleRoutePress = () => {
       const staticPathData: StaticPathData = {
-        routeType: routeType,
+        routeType: prevScreen === 'RouteRecommend' ? RouteType.LOOP : routeType,
         startPoint: coordinates[0],
         endPoint: coordinates[coordinates.length - 1],
         waypoints: wpArr ? wpArr : null,
