@@ -1,3 +1,5 @@
+import { Coordinates } from '@/features/map/model/map.types';
+import { Bbox, Segment, Summary } from '@/features/routing/model/routing.types';
 import { Audio } from 'expo-av';
 export interface NavDetailModalState {
   soundRef: React.RefObject<Audio.Sound | null> | null;
@@ -18,4 +20,101 @@ export interface NavDetailModalState {
       >
     >,
   ) => void;
+}
+
+// API 관련 타입
+
+interface NavigationInstruction {
+  distance: number; // in meters
+  time: number; // in seconds
+  text: string;
+  sign: number;
+  interval: [number, number]; // [startIndex, endIndex] in coordinates array
+  nextTurnCoordinate: Coordinates;
+}
+export interface StartNavigationSessionPayload {
+  routeId: string;
+}
+
+export interface StartNavigationSessionResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    sessionId: string;
+    coordinates: [number, number][];
+  };
+  instructions: NavigationInstruction[];
+  segments: Segment[];
+}
+
+// 내비게이션 세션 유지
+
+export interface keepNavigationSessionAlivePayload {
+  sessionId: string;
+}
+
+export interface keepNavigationSessionAliveResponse {
+  statusCode: number;
+  message: string;
+}
+
+// 내비게이션 세션 종료
+export interface TerminateNavigationSessionPayload {
+  sessionId: string;
+}
+
+export interface TerminateNavigationSessionResponse {
+  statusCode: number;
+  message: string;
+}
+
+// 기존 경로 복귀
+
+interface StationDataForNav {
+  stationId: string;
+  stationName: string;
+  location: Coordinates;
+}
+export interface ReturnToExistingRoutePayload {
+  sessionId: string;
+  currentLocation: Coordinates;
+  remainingWaypoints?: Coordinates[];
+}
+export interface ReturnToExistingRouteResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    routeCategory: string;
+    summary: Summary;
+    bbox: Bbox;
+    startStation: StationDataForNav;
+    endStation: StationDataForNav;
+    waypoints?: Coordinates[];
+    coordinates: [number, number][];
+    instructions: NavigationInstruction[];
+    segments: Segment[];
+  };
+}
+
+// 완전 재탐색
+export interface ReRoutePayload {
+  sessionId: string;
+  currentLocation: Coordinates;
+  remainingWaypoints?: Coordinates[];
+}
+
+export interface ReRouteResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    routeCategory: string;
+    summary: Summary;
+    bbox: Bbox;
+    startStation: StationDataForNav;
+    endStation: StationDataForNav;
+    waypoints?: Coordinates[];
+    coordinates: [number, number][];
+    instructions: NavigationInstruction[];
+    segments: Segment[];
+  };
 }
