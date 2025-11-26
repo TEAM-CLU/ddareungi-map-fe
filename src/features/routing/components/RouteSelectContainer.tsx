@@ -5,7 +5,7 @@ import TreeBadge from '@/shared/components/badge/TreeBadge';
 import WalkTimeBadge from '@/shared/components/badge/WalkTimeBadge';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import type { Route, RouteResponse, Segment } from '../model/routing.types';
+import type { Route, RouteResponse } from '../model/routing.types';
 import {
   calculateWalkingTime,
   formatDistance,
@@ -40,6 +40,8 @@ const RouteSelectContainer = ({
   baseTime,
   onRoutePress,
 }: RouteSelectContainerProps) => {
+  const userGender: Gender = useUserInfoQuery().data?.data.gender;
+
   // 로딩 상태
   if (isLoading) {
     return (
@@ -69,7 +71,7 @@ const RouteSelectContainer = ({
           { height: 300 },
         ]}
       >
-        <Text style={tw('text-red-500 font-primary-500 text-center')}>
+        <Text style={tw('text-error font-primary-500 text-center')}>
           {error}
         </Text>
       </View>
@@ -134,7 +136,6 @@ const RouteSelectContainer = ({
             : 0;
 
         // 활동 데이터 계산
-        const userGender: Gender = useUserInfoQuery().data?.data.gender;
         const caloriesBurnedWalking = measureCaloriesBurned(
           'walking',
           userGender,

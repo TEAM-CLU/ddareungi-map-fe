@@ -1,36 +1,26 @@
 import { TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { RefObject, use, useEffect, useState } from 'react';
-import WebView from 'react-native-webview';
+import { useState } from 'react';
 import IconStationMarkerOn from '@/shared/components/icons/IconStationMarkerOn';
 import IconStationMarkerOff from '@/shared/components/icons/IconStationMarkerOff';
 import { ToggleStationMarkersMessage } from '@/shared/model/map.webview.types';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
-import { useModalStore } from '@/shared/stores/useModalStore';
-import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
+import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
 
 const StationMarkersToggleBtn = () => {
-  const { sendMessage } = useMapWebview();
+  const { turnOnStationMarkers, turnOffStationMarkers } = useStationMessenger();
   const [mode, setMode] = useState<'on' | 'off'>('on');
 
   const handleToggleBtnPress = () => {
     if (mode === 'on') {
       setMode('off');
-      const message: ToggleStationMarkersMessage = {
-        type: 'toggleStationMarkers',
-        isVisible: false,
-      };
-      sendMessage(message);
+      turnOffStationMarkers();
       return;
     }
 
     if (mode === 'off') {
       setMode('on');
-      const message: ToggleStationMarkersMessage = {
-        type: 'toggleStationMarkers',
-        isVisible: true,
-      };
-      sendMessage(message);
+      turnOnStationMarkers();
       return;
     }
   };

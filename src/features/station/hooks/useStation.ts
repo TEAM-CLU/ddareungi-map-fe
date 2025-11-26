@@ -11,20 +11,20 @@ import {
   StationLatestBikeCountData,
   UseStationsOptions,
 } from '@/features/station/model/station.types';
-import {
-  UpdateStationDataListMessage,
-  UpdateTargetedStationBikeCountListMessage,
-} from '@/shared/model/map.webview.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
-import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useStationStore } from '../stores/useStationStore';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
+import {
+  ChangeMapCenterMessage,
+  ClickStationMarkerMessage,
+  NeedUpdateStationBikeCountListMessage,
+} from '@/shared/model/map.webview.types';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
-  const { sendMessage } = useMapWebview();
+  const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
+    useStationMessenger();
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore();
-  const { webRef } = useMapStore();
   const { setStationMetaData } = useStationStore();
 
   const [mapCenterCoord, setMapCenterCoord] = useState<Coordinates | null>(
@@ -36,7 +36,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
   // 범위 내 대여소 데이터 조회 쿼리 파라미터
   const stationDataListQueryPayload: MapAreaQueryPayload = {
     lat: mapCenterCoord?.lat ?? null,
-    lon: mapCenterCoord?.lon ?? null,
+    lng: mapCenterCoord?.lng ?? null,
     radius: 1500,
     enable: isIdleEventOccurred,
   };
@@ -49,11 +49,11 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
 
   const handleMapCenterIdle = (event: WebViewMessageEvent) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
+      const data: ChangeMapCenterMessage = JSON.parse(event.nativeEvent.data);
 
       if (data.type !== 'changeMapCenter') return;
 
-      const next: Coordinates = { lat: data.lat, lon: data.lon };
+      const next: Coordinates = { lat: data.lat, lng: data.lng };
       const prev = prevMapCenterCoord.current;
       const isMovedEnough = prev
         ? getDistanceBetweenCoords(prev, next) >= 1000
@@ -75,7 +75,9 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
     event: WebViewMessageEvent,
   ) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
+      const data: NeedUpdateStationBikeCountListMessage = JSON.parse(
+        event.nativeEvent.data,
+      );
       if (data.type !== 'needUpdateStationBikeCountList') return;
       const targetedStationNumberList = data.stationNumbers;
 
@@ -85,11 +87,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
           stationNumbers: targetedStationNumberList,
         });
 
-      const message: UpdateTargetedStationBikeCountListMessage = {
-        type: 'updateTargetedStationBikeCountList',
-        stationBikeCountList: response,
-      };
-      sendMessage(message);
+      updateTargetedStationBikeCountListMessage(response);
     } catch (error) {
       console.error('Invalid JSON from WebView:', error);
     }
@@ -98,7 +96,9 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
   // 클릭이벤트로 스테이션 상세정보 요청이 오면 모달 오픈
   const handleStationMarkerClick = (event: WebViewMessageEvent) => {
     try {
-      const data = JSON.parse(event.nativeEvent.data);
+      const data: ClickStationMarkerMessage = JSON.parse(
+        event.nativeEvent.data,
+      );
       if (data.type !== 'clickStationMarker') return;
       // 스테이션 상세정보 모달 오픈
       setShowStationDetailModal(true);
@@ -116,12 +116,8 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
   useEffect(() => {
     if (showSelectedRouteDetailModal) return;
     if (!isMapReady || !stationDataList) return;
-    const message: UpdateStationDataListMessage = {
-      type: 'updateStationDataList',
-      stations: stationDataList,
-    };
-    sendMessage(message);
-  }, [stationDataList, isMapReady, sendMessage, webRef]);
+    updateStationDataList(stationDataList);
+  }, [stationDataList, isMapReady, updateStationDataList, isIdleEventOccurred]);
 
   // set함수의 비동기 반영 문제 해결을 위한 조치(센터좌표가 한발자국씩 늦게 따라오는 점 해소)
   useEffect(() => {

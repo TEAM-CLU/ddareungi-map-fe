@@ -8,6 +8,7 @@ import {
   Route,
   RouteState,
   Waypoint,
+  RouteItem,
 } from '../model/routing.types';
 import { postFullJourney, postCircularJourney } from '../services/routing.api';
 import { Alert } from 'react-native';
@@ -28,6 +29,8 @@ export const useRouteStore = create<RouteState>()(
       waypoints: [],
       distance: null,
 
+      prevScreen: null,
+
       totalCaloriesBurned: null,
       totalTrees: null,
 
@@ -42,6 +45,37 @@ export const useRouteStore = create<RouteState>()(
       routeSearchError: null,
 
       // ----------- 액션 -----------
+
+      setPrevScreen: screen =>
+        set({ prevScreen: screen }, false, 'setPrevScreen'),
+
+      getItems: () => {
+        const { start, end, waypoints } = get();
+
+        const items: RouteItem[] = [];
+
+        items.push({
+          key: 'fixed-start',
+          place: start,
+        });
+
+        waypoints.forEach(wp => {
+          items.push({
+            key: wp.waypointKey,
+            place: wp.place,
+          });
+        });
+
+        items.push({
+          key: 'fixed-end',
+          place: end,
+        });
+
+        return items.map((item, index) => ({
+          ...item,
+          key: item.key.startsWith('fixed') ? `${item.key}-${index}` : item.key,
+        }));
+      },
 
       /*
         경로 타입 설정 (LOOP / CONSTANT)
