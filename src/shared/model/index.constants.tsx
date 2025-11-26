@@ -89,7 +89,7 @@ export const FOOTER_MENU: {
   {
     name: 'bookmark',
     screen: 'Map',
-    label: '북마크',
+    label: '즐겨찾기',
     icon: <IconStar width={23} height={23} fillColor='#01DA86' strokeColor='white' strokeWidth={2.2}/>,
   },
 ];
@@ -105,3 +105,5 @@ export const MEAN_CYCLING_MET = 6;
 export const EMISSION_CAR_PER_KM = 0.21;
 export const EMISSION_WALKING_PER_KM = 0.05;
 export const EMISSION_CYCLING_PER_KM = 0.02;
+
+export const BOOKMARK_COLOR_PRESETS = ['#04C75B', '#FF3B30', '#FF9500', '#007AFF', '#5856D6', '#8E8E93'];

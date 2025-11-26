@@ -40,6 +40,7 @@ export const useMapOrchestrator = () => {
   const nearbyStationModalLocalRef = useRef<BottomSheetModal | null>(null);
   const stationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
   const routeRecommendModalLocalRef = useRef<BottomSheetModal | null>(null);
+  const bookmarkModalLocalRef = useRef<BottomSheetModal | null>(null);
 
   /** ----------------------------------------
    * 3. 경로/거리 관련 상태 (routeStore)
@@ -60,6 +61,8 @@ export const useMapOrchestrator = () => {
     showStationDetailModal,
     showRouteRecommendModal,
     setShowRouteRecommendModal,
+    showBookmarkModal,
+    setShowBookmarkModal,
     setModalRefs,
   } = useModalStore();
 
@@ -87,6 +90,7 @@ export const useMapOrchestrator = () => {
       nearbyStationModalRef: nearbyStationModalLocalRef,
       stationDetailModalRef: stationDetailModalLocalRef,
       routeRecommendModalRef: routeRecommendModalLocalRef,
+      bookmarkModalRef: bookmarkModalLocalRef,
     });
 
     // 네비게이션 객체 전역 저장 (모달/웹뷰 이벤트에서도 navigate 가능)
@@ -135,6 +139,13 @@ export const useMapOrchestrator = () => {
     showPlaceDetailModal ? modal.present() : modal.dismiss();
   }, [showPlaceDetailModal]);
 
+  // 즐겨찾기 모달
+  useEffect(() => {
+    const modal = bookmarkModalLocalRef.current;
+    if (!modal) return;
+    showBookmarkModal ? modal.present() : modal.dismiss();
+  }, [showBookmarkModal]);
+
   /** ----------------------------------------
    * 8. 외부에서 사용할 이벤트 핸들러들
    *    - Screen/Component 쪽에서 이 함수들만 호출하면
@@ -159,6 +170,11 @@ export const useMapOrchestrator = () => {
     navigation.navigate('RouteSelect');
   }, [navigation, setShowSelectedRouteDetailModal]);
 
+  /* 즐겨찾기 모달 열기 */
+  const handleOpenBookmarkModal = useCallback(() => {
+    setShowBookmarkModal(true);
+  }, [setShowBookmarkModal]);
+
   /** ----------------------------------------
    * 9. 외부로 노출할 핸들러 함수
    * ---------------------------------------- */
@@ -167,5 +183,6 @@ export const useMapOrchestrator = () => {
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
+    handleOpenBookmarkModal,
   };
 };

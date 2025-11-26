@@ -42,7 +42,7 @@ const BookmarkBadge = ({
           },
         ]}
       >
-        <IconStar width={14} height={14} fillColor="white" strokeColor="#01DA86" />
+        <IconStar width={14} height={14} fillColor="white" strokeColor="none" />
       </View>
 
       <Text

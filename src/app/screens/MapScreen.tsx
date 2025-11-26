@@ -22,6 +22,7 @@ const MapScreen = () => {
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
+    handleOpenBookmarkModal,
   } = useMapOrchestrator();
 
   const { showSelectedRouteDetailModal } = useModalStore();
@@ -84,8 +85,9 @@ const MapScreen = () => {
       </View>
 
       <Footer
-        setIsStationButtonPressed={handleOpenNearbyStationModal}
+        setIsStationBtnPressed={handleOpenNearbyStationModal}
         setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
+        setIsBookmarkBtnPressed={handleOpenBookmarkModal}
       />
     </View>
   );

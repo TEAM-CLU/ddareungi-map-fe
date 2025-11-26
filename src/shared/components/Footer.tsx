@@ -6,12 +6,14 @@ import { FOOTER_MENU } from '../model/index.constants';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 
 interface FooterProps {
-  setIsStationButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsStationBtnPressed: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRouteRecommendBtnPressed: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsBookmarkBtnPressed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const Footer = ({
-  setIsStationButtonPressed,
+  setIsStationBtnPressed,
   setIsRouteRecommendBtnPressed,
+  setIsBookmarkBtnPressed,
 }: FooterProps) => {
   const insets = useSafeAreaInsets();
   const { navigation } = useAppNavigation();
@@ -33,7 +35,7 @@ const Footer = ({
             }
 
             if (item.name === 'station') {
-              setIsStationButtonPressed(true);
+              setIsStationBtnPressed(true);
               return;
             }
 
@@ -43,7 +45,7 @@ const Footer = ({
             }
 
             if (item.name === 'bookmark') {
-              // setShowBookmarkModal(true);
+              setIsBookmarkBtnPressed(true);
             }
           }}
         >

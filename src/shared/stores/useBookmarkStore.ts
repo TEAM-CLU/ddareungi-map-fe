@@ -7,9 +7,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface BookmarkState {
   bookmarks: BookmarkItem[];
   toggleBookmark: (bookmark: BookmarkItem) => void;
+  removeBookmark: (id: string) => void;
   isBookmarked: (id: string) => boolean;
-  updateAlias: (id: string, alias: string) => void;
-  updateColor: (id: string, color: string) => void;
+  updateBookmarkAlias: (id: string, alias: string) => void;
+  updateBookmarkColor: (id: string, color: string) => void;
 }
 
 export const useBookmarkStore = create<BookmarkState>()(
@@ -48,9 +49,18 @@ export const useBookmarkStore = create<BookmarkState>()(
           ...list,
           {
             ...bookmark,
+            alias: bookmark.alias || bookmark.name,
+            color: bookmark.color || '#04C75B',
             createdAt: Date.now(),
           },
         ];
+        set({ bookmarks: updated });
+      },
+
+      removeBookmark: (id: string) => {
+        const updated = get().bookmarks.filter(
+          item => item.id !== id,
+        );
         set({ bookmarks: updated });
       },
 
@@ -58,14 +68,14 @@ export const useBookmarkStore = create<BookmarkState>()(
         return get().bookmarks.some(b => b.id === id);
       },
 
-      updateAlias: (id, alias) => {
+      updateBookmarkAlias: (id, alias) => {
         const updated = get().bookmarks.map(b =>
           b.id === id ? { ...b, alias } : b,
         );
         return set({ bookmarks: updated });
       },
 
-      updateColor: (id, color) => {
+      updateBookmarkColor: (id, color) => {
         const updated = get().bookmarks.map(b =>
           b.id === id ? { ...b, color } : b,
         );

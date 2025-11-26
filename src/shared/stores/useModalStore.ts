@@ -22,6 +22,7 @@ interface ModalState {
   nearbyStationModalRef: React.RefObject<BottomSheetModal | null> | null;
   stationDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
   routeRecommendModalRef: React.RefObject<BottomSheetModal | null> | null;
+  bookmarkModalRef: React.RefObject<BottomSheetModal | null> | null;
   /* -----------------------------
           모달 오픈 / 닫힘 상태
   ------------------------------ */
@@ -30,6 +31,7 @@ interface ModalState {
   showNearByStationModal: boolean;
   showStationDetailModal: boolean;
   showRouteRecommendModal: boolean;
+  showBookmarkModal: boolean;
 
   /* -----------------------------
                 Actions
@@ -48,6 +50,7 @@ interface ModalState {
         | 'nearbyStationModalRef'
         | 'stationDetailModalRef'
         | 'routeRecommendModalRef'
+        | 'bookmarkModalRef'
       >
     >,
   ) => void;
@@ -58,6 +61,7 @@ interface ModalState {
   setShowNearByStationModal: (isVisible: boolean) => void;
   setShowStationDetailModal: (isVisible: boolean) => void;
   setShowRouteRecommendModal: (isVisible: boolean) => void;
+  setShowBookmarkModal: (isVisible: boolean) => void;
 }
 
 export const useModalStore = create<ModalState>()(
@@ -69,6 +73,7 @@ export const useModalStore = create<ModalState>()(
       nearbyStationModalRef: null,
       stationDetailModalRef: null,
       routeRecommendModalRef: null,
+      bookmarkModalRef: null,
 
       /* 모달 오픈 여부 초기값 */
       showPlaceDetailModal: false,
@@ -76,6 +81,7 @@ export const useModalStore = create<ModalState>()(
       showNearByStationModal: false,
       showStationDetailModal: false,
       showRouteRecommendModal: false,
+      showBookmarkModal: false,
 
       /* -----------------------------
                 ACTION 구현부
@@ -121,6 +127,12 @@ export const useModalStore = create<ModalState>()(
           { showRouteRecommendModal: isVisible },
           false,
           'modal/setShowRouteRecommendModal',
+        ),
+      setShowBookmarkModal: isVisible =>
+        set(
+          { showBookmarkModal: isVisible },
+          false,
+          'modal/setShowBookmarkModal',
         ),
     }),
     { name: 'ModalStore' },

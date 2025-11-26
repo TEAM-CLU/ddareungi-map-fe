@@ -7,6 +7,7 @@ import StationDetailModal from '@/features/station/components/StationDetailModal
 import { useModalStore } from '@/shared/stores/useModalStore';
 import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
+import BookmarkModal from '@/shared/components/BookmarkEditModal';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore();
@@ -20,6 +21,8 @@ const GlobalModals = () => {
     nearbyStationModalRef,
     stationDetailModalRef,
     placeDetailModalRef,
+    bookmarkModalRef,
+    setShowBookmarkModal,
   } = useModalStore();
 
   const { selectedPlaceInfoForModal, setSelectedPlaceInfoForModal } =
@@ -80,6 +83,15 @@ const GlobalModals = () => {
           place={selectedPlaceInfoForModal}
           onClose={() => setShowPlaceDetailModal(false)}
         />
+      </SlideModal>
+      {/* 즐겨찾기 모달 */}
+      <SlideModal
+        ref={bookmarkModalRef}
+        snapPoints={['60%', '90%']}
+        onDismiss={() => setShowBookmarkModal(false)}
+        enablePanDownToClose={true}
+      >
+        <BookmarkModal />
       </SlideModal>
     </>
   );
