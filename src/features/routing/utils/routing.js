@@ -114,7 +114,7 @@
       strokeColor: '#006AFF',
       strokeWeight: 5,
       strokeOpacity: 1,
-      strokeStyle: 'dot',
+      strokeStyle: 'shortdot',
       zIndex: 6,
     });
 
@@ -123,7 +123,7 @@
       strokeColor: '#FF0000',
       strokeWeight: 5,
       strokeOpacity: 1,
-      strokeStyle: 'dot',
+      strokeStyle: 'shortdot',
       zIndex: 6,
     });
 
@@ -132,7 +132,7 @@
       strokeColor: '#000000',
       strokeWeight: 5,
       strokeOpacity: 1,
-      strokeStyle: 'dot',
+      strokeStyle: 'shortdot',
       zIndex: 6,
     });
   };
@@ -187,7 +187,7 @@
     <text x="16" y="16" text-anchor="middle"
       alignment-baseline="central" dy=".35em"
       font-family="Pretendard, 'Noto Sans KR', Arial, sans-serif"
-      font-size="12" font-weight="bold"
+      font-size="10" font-weight="bold"
       fill="#111">
       ${label}
     </text>
