@@ -3,11 +3,13 @@ import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const NavigationController = () => {
   const { setShowNavigationDetailModal } = useModalStore();
   return (
-    <View
+    <SafeAreaView
+      edges={['bottom']}
       style={[
         tw('flex flex-row items-center w-full bg-surface-primary shadow-md'),
         {
@@ -64,7 +66,7 @@ const NavigationController = () => {
           소요거리 1.8km
         </Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
