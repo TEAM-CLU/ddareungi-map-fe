@@ -57,6 +57,7 @@
     "react-native-screens": "^4.15.4",
     "react-native-sensors": "^7.3.6",
     "react-native-svg": "^15.13.0",
+    "react-native-toast-message": "^2.3.3",
     "react-native-tts": "^4.1.1",
     "react-native-vector-icons": "^10.3.0",
     "react-native-webview": "^13.16.0",

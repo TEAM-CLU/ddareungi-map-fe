@@ -1,158 +1,95 @@
-import { useCallback, useEffect, useState } from 'react';
-import { searchPlacesByKeyword } from '../services/search.api';
-import {
-  AutocompleteResult,
-  SearchOptions,
-  UseAutocompleteOptions,
-} from '../model/search.types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { PlaceInfo, SearchOptions } from '../model/search.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
-import {
-  DEFAULT_DEBOUNCE_DELAY,
-  DEFAULT_SEARCH_RADIUS,
-  ERROR_MESSAGES,
-  MIN_SEARCH_LENGTH,
-} from '../model/search.constants';
+import { useInfinitePlaceSearch } from '../services/search.queries';
 
-export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
-  const { autoSearchDelay = DEFAULT_DEBOUNCE_DELAY } = options;
-  // ------------ 로컬 상태 -------------
-  const [query, setQuery] = useState(''); // 현재 입력된 검색어
-  const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<AutocompleteResult[]>([]); // 검색 결과 리스트
-  const [error, setError] = useState<string | null>(null);
-  const [debounceTimer, setDebounceTimer] = useState<number | null>(null); // 디바운스 타이머
+export const useAutocomplete = () => {
+  // 1. 입력값 상태 (UI 표시용 - 즉시 반응)
+  const [query, setQuery] = useState('');
+
+  // 2. 디바운스된 검색어 (API 요청용 - 0.3초 뒤 반응)
+  const [debouncedQuery, setDebouncedQuery] = useState('');
 
   const { myPosition } = useMyPositionStore();
 
-  // ------------- API 호출 -------------
-  // 자동완성 검색 실행
-  const performAutocompleteSearch = useCallback(
-    async (searchQuery: string) => {
-      const trimmedQuery = searchQuery.trim();
+  // ----------------------------------------------------
+  // [디바운싱 로직]
+  // 사용자가 타자를 칠 때는 query만 바뀌고,
+  // 입력이 멈추면 일정 시간 뒤에 debouncedQuery가 바뀜
+  // ----------------------------------------------------
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
 
-      // 1. 최소 길이 검증
-      if (!trimmedQuery || trimmedQuery.length < MIN_SEARCH_LENGTH) {
-        setResults([]);
-        setIsLoading(false);
-        return;
-      }
+    return () => clearTimeout(timer);
+  }, [query]);
 
-      try {
-        setIsLoading(true);
-        setError(null);
+  // ----------------------------------------------------
+  // [쿼리 옵션 계산]
+  // 위치가 있으면 거리순, 없으면 정확도순
+  // ----------------------------------------------------
+  const searchOptions: SearchOptions = useMemo(() => {
+    // 검색어가 너무 짧으면 API 요청 안 함
+    if (debouncedQuery.trim().length < 1) {
+      return {}; 
+    }
 
-        // 현재 위치 있으면 거리순, 없으면 정확도순
-        const searchOptions: SearchOptions = myPosition
-          ? {
-              x: myPosition.lon,
-              y: myPosition.lat,
-              radius: DEFAULT_SEARCH_RADIUS,
-              sort: 'distance',
-            }
-          : {
-              sort: 'accuracy',
-            };
+    return myPosition
+      ? {
+          x: myPosition.lon,
+          y: myPosition.lat,
+          radius: 10000, // 10km
+          sort: 'distance',
+          size: 15, // 자동완성 15개
+        }
+      : {
+          sort: 'accuracy',
+          size: 15,
+        };
+  }, [debouncedQuery, myPosition]);
 
-        // 3. API 호출
-        const searchResults = await searchPlacesByKeyword(
-          searchQuery,
-          searchOptions,
-        );
+  // ----------------------------------------------------
+  // [React Query 연동]
+  // debouncedQuery가 바뀔 때만 실제로 API가 호출됨
+  // ----------------------------------------------------
+  const {
+    data,
+    isLoading: isQueryLoading, // 로딩 상태
+    isError,
+    error: queryError,         // 에러 객체 (메시지 포함)
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfinitePlaceSearch(debouncedQuery, searchOptions);
+  
+// ----------------------------------------------------
+  // [결과 데이터 가공]
+  // 쿼리 데이터(pages)를 하나의 배열로 평탄화
+  // ----------------------------------------------------
+  const results: PlaceInfo[] = useMemo(() => {
+    if (!data) return [];
+    return data.pages.flat();
+  }, [data]);
 
-        // 4. 데이터 정규화
-        // API 응답을 UI 컴포넌트가 쓰기 좋은 형태(AutocompleteResult)로 변환
-        const autocompleteResults: AutocompleteResult[] = searchResults.map(
-          place => ({
-            placeKey: place.id,
-            name: place.name,
-            address: place.address,
-            latitude: place.latitude,
-            longitude: place.longitude,
-            distance: place.distance,
-            category: place.category,
-          }),
-        );
+  // ----------------------------------------------------
+  // [액션 핸들러]
+  // ----------------------------------------------------
+  const handleQueryChange = useCallback((text: string) => {
+    setQuery(text);
+  }, []);
 
-        setResults(autocompleteResults);
-      } catch (err) {
-        console.error('Autocomplete search failed:', err);
-        setError(ERROR_MESSAGES.SEARCH_FAILED);
-        setResults([]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [myPosition],
-  );
-
-  // ------------- 이벤트 핸들러 -------------
-
-  /*
-    검색어 변경 처리 - 사용자 입력마다 API 호출 방지
-  */
-  const handleQueryChange = useCallback(
-    (newQuery: string) => {
-      setQuery(newQuery); // 1. 화면의 글자는 즉시 업데이트
-      setError(null); // 2. 에러 초기화
-
-      // 3. 기존 타이머 정리 (이전 검색 요청 취소)
-      // 사용자가 타자 치는 중이라면 이전 예약된 API 호출 막음
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-      }
-
-      // 4. 검색어가 다 지워졌으면 결과 초기화
-      if (!newQuery.trim()) {
-        setResults([]);
-        setIsLoading(false);
-        return;
-      }
-
-      // 5. 타이핑이 시작되면 즉시 로딩 상태로 변경
-      setIsLoading(true);
-
-      // 6. 새 타이머 설정
-      // "autoSearchDelay(예: 200ms) 동안 더 이상 입력이 없으면 검색해라"
-      const timer = setTimeout(() => {
-        performAutocompleteSearch(newQuery);
-      }, autoSearchDelay);
-
-      setDebounceTimer(timer);
-    },
-    [debounceTimer, autoSearchDelay, performAutocompleteSearch],
-  );
-
-  /*
-    검색 및 결과 초기화 - x 버튼 클릭, 검색창 닫기
-  */
   const clearSearch = useCallback(() => {
     setQuery('');
-    setResults([]);
-    setError(null);
-    setIsLoading(false);
-
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-  }, [debounceTimer]);
-
-  /* 
-    컴포넌트 언마운트 시 타이머 정리
-  */
-  useEffect(() => {
-    return () => {
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-      }
-    };
-  }, [debounceTimer]);
+    setDebouncedQuery('');
+  }, []);
 
   return {
     // 상태
     query,
-    isLoading,
-    error,
     results,
+    isLoading: isQueryLoading,
+    error: isError ? queryError?.message: null,
 
     // 액션
     setQuery: handleQueryChange,
@@ -161,5 +98,8 @@ export const useAutocomplete = (options: UseAutocompleteOptions = {}) => {
     // 유틸리티
     hasQuery: query.trim().length > 0,
     hasResults: results.length > 0,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   };
 };
