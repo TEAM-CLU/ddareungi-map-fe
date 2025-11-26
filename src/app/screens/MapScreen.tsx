@@ -46,6 +46,7 @@ const MapScreen = () => {
         handleMapReadyMessage={handleMapReadyMessage}
       />
 
+      {/* 네비게이션 모드 */}
       {canStartNavigation && !!routeId && (
         <SafeAreaView
           edges={['top']}
@@ -59,6 +60,18 @@ const MapScreen = () => {
         </SafeAreaView>
       )}
 
+      {canStartNavigation && !!routeId && (
+        <SafeAreaView
+          edges={['bottom']}
+          style={tw(
+            'absolute bottom-0 left-0 right-0 flex justify-center items-center w-full',
+          )}
+        >
+          <NavigationController />
+        </SafeAreaView>
+      )}
+
+      {/* 경로 선택 모드 */}
       {showSelectedRouteDetailModal &&
         selectedRouteData &&
         !canStartNavigation && (
@@ -90,7 +103,7 @@ const MapScreen = () => {
           </View>
         )}
 
-      {/* 검색 오버레이 */}
+      {/* 기본 모드 */}
       {!showSelectedRouteDetailModal && !canStartNavigation && (
         <SearchOverlay
           onPress={handleSearchbarPress}
@@ -99,6 +112,14 @@ const MapScreen = () => {
         />
       )}
 
+      {!canStartNavigation && (
+        <Footer
+          setIsStationButtonPressed={handleOpenNearbyStationModal}
+          setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
+        />
+      )}
+
+      {/* 공용 */}
       <View
         style={[
           tw('absolute right-3'),
@@ -108,28 +129,10 @@ const MapScreen = () => {
         <MyLocationButton />
       </View>
 
-      {!showSelectedRouteDetailModal && (
+      {!showSelectedRouteDetailModal && !canStartNavigation && (
         <View style={[tw('absolute right-3'), { bottom: '24%' }]}>
           <StationMarkersToggleBtn />
         </View>
-      )}
-
-      {canStartNavigation && !!routeId && (
-        <SafeAreaView
-          edges={['bottom']}
-          style={tw(
-            'absolute bottom-0 left-0 right-0 flex justify-center items-center w-full',
-          )}
-        >
-          <NavigationController />
-        </SafeAreaView>
-      )}
-
-      {!canStartNavigation && (
-        <Footer
-          setIsStationButtonPressed={handleOpenNearbyStationModal}
-          setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
-        />
       )}
     </View>
   );
