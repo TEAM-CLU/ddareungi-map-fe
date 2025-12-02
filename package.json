@@ -27,6 +27,7 @@
     "@react-native-community/checkbox": "^0.5.20",
     "@react-native-community/datetimepicker": "^8.4.5",
     "@react-native-community/netinfo": "^11.4.1",
+    "@react-native-community/slider": "^4.4.2",
     "@react-native-picker/picker": "^2.11.2",
     "@react-native/new-app-screen": "0.81.0",
     "@react-navigation/bottom-tabs": "^7.4.7",
@@ -36,6 +37,7 @@
     "@tanstack/react-query": "^5.90.2",
     "axios": "^1.12.2",
     "classnames": "^2.5.1",
+    "expo-av": "^16.0.7",
     "react": "19.1.0",
     "react-native": "0.81.1",
     "react-native-compass-heading": "^2.0.2",
@@ -60,6 +62,7 @@
     "react-native-toast-message": "^2.3.3",
     "react-native-tts": "^4.1.1",
     "react-native-vector-icons": "^10.3.0",
+    "react-native-volume-manager": "^2.0.8",
     "react-native-webview": "^13.16.0",
     "tailwind-rn": "^4.2.0",
     "zustand": "^5.0.8"

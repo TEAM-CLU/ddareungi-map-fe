@@ -9,7 +9,7 @@ export const getDistanceBetweenCoords = (
   const φ1 = (prev.lat * Math.PI) / 180; // 위도1 (라디안)
   const φ2 = (next.lat * Math.PI) / 180; // 위도2 (라디안)
   const Δφ = ((next.lat - prev.lat) * Math.PI) / 180; // 위도 차
-  const Δλ = ((next.lon - prev.lon) * Math.PI) / 180; // 경도 차
+  const Δλ = ((next.lng - prev.lng) * Math.PI) / 180; // 경도 차
 
   const a =
     Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;

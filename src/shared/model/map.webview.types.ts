@@ -1,26 +1,26 @@
 // WebView와 React Native 간 통신을 타입 안정성 있게 관리
-// RN 쪽에서만 import 해서 사용 (useMapWebview, useMapSearch, useMapRouting, Map.tsx)
 
+import { Coordinate, RouteType } from '@/features/routing/model/routing.types';
 import {
   MapAreaStationData,
   StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
 
 // === 위치 관련 메시지 ===
-export interface MyLocationMessage {
-  type: 'myLocation';
+export interface UpdateMyLocationMessage {
+  type: 'updateMyLocation';
   lat: number;
   lng: number;
   accuracy?: number;
 }
 
-export interface MyHeadingMessage {
-  type: 'myHeading';
+export interface RotateMyHeadingMessage {
+  type: 'rotateMyHeading';
   heading: number;
 }
 
-export interface MyLocationFollowingMessage {
-  type: 'myLocationFollowing';
+export interface SetCenterOnMyLocationMessage {
+  type: 'setCenterOnMyLocation';
 }
 
 export interface CompassModeMessage {
@@ -42,36 +42,37 @@ export interface ClearCurrentPlaceMarkerMessage {
 }
 
 // === 라우팅 관련 메시지 ===
-export interface UpdateRouteMessage {
-  type: 'updateRoute';
-  routeType: 'CONSTANT' | 'LOOP';
-  points: Array<{
-    id: string;
-    lat: number;
-    lng: number;
-    name: string;
-  }>;
-  path?: Array<{
-    lat: number;
-    lng: number;
-  }>;
+
+export interface StaticPathData {
+  routeType: RouteType;
+  startPoint: [number, number];
+  endPoint: [number, number];
+  waypoints: Coordinate[] | null;
+  startStationPoint: Coordinate;
+  endStationPoint: Coordinate;
+  pathCoordinates: [number, number][];
 }
 
-export interface ClearRouteMessage {
-  type: 'clearRoute';
+export interface StopFollowingMyLocationMessage {
+  type: 'stopFollowingMyLocation';
+  isSelectedRouteDetailModalOpen: boolean;
 }
 
-export interface SetRouteTypeMessage {
-  type: 'setRouteType';
-  routeType: 'CONSTANT' | 'LOOP';
+export interface DrawStaticPathMessage {
+  type: 'drawStaticPath';
+  staticPathData: StaticPathData;
 }
 
-export interface MoveToRoutePointMessage {
-  type: 'moveToRoutePoint';
-  pointId: string;
+export interface ClearStaticPathMessage {
+  type: 'clearStaticPath';
 }
 
-// === WebView에서 React Native로 전송하는 메시지 ===
+export interface FocusOnStaticPathMessage {
+  type: 'focusOnStaticPath';
+}
+
+// === 맵 준비 상태 메시지 ===
+
 export interface MapReadyMessage {
   type: 'mapReady';
   isReady: boolean;
@@ -99,19 +100,42 @@ export interface FocusOnTargetedNearbyStationMessage {
 }
 
 // 모든 메시지 타입 유니온
-export type WebViewMessageToRN =
+export type WebViewMessageToWeb =
   | MapReadyMessage
   | FocusOnTargetedNearbyStationMessage
   | ShowPlaceMarkerMessage
   | ClearCurrentPlaceMarkerMessage
-  | UpdateRouteMessage
-  | ClearRouteMessage
-  | SetRouteTypeMessage
-  | MoveToRoutePointMessage
+  | DrawStaticPathMessage
+  | ClearStaticPathMessage
+  | FocusOnStaticPathMessage
   | ToggleStationMarkersMessage
-  | MyLocationFollowingMessage
+  | SetCenterOnMyLocationMessage
   | CompassModeMessage
-  | MyLocationMessage
-  | MyHeadingMessage
+  | UpdateMyLocationMessage
+  | RotateMyHeadingMessage
   | UpdateTargetedStationBikeCountListMessage
-  | UpdateStationDataListMessage;
+  | UpdateStationDataListMessage
+  | StopFollowingMyLocationMessage;
+
+/* === 웹뷰로부터 받아온 메시지 타입 === */
+
+export interface MapReadyMessage {
+  type: 'mapReady';
+  isReady: boolean;
+}
+
+export interface ClickStationMarkerMessage {
+  type: 'clickStationMarker';
+  stationData: MapAreaStationData;
+}
+
+export interface NeedUpdateStationBikeCountListMessage {
+  type: 'needUpdateStationBikeCountList';
+  stationNumbers: string[];
+}
+
+export interface ChangeMapCenterMessage {
+  type: 'changeMapCenter';
+  lat: number;
+  lng: number;
+}

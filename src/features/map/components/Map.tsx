@@ -1,15 +1,25 @@
 import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { useMyLocation } from '@/features/location/hooks/useMyLocation';
 import { useStation } from '@/features/station/hooks/useStation';
-import { RefObject } from 'react';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { MapAreaStationData } from '@/features/station/model/station.types';
-import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '../stores/useMapStore';
+import { useWebViewRef } from '@/app/providers/webview';
+import { useEffect, useState } from 'react';
+import { tw } from '@/shared/libs/tw-helper';
+import { View, ActivityIndicator } from 'react-native';
+interface MapProps {
+  isLocalMapReady: boolean;
+  setIsLocalMapReady: React.Dispatch<React.SetStateAction<boolean>>;
+  handleMapReadyMessage: (event: WebViewMessageEvent) => void;
+}
+const Map = ({
+  isLocalMapReady,
+  setIsLocalMapReady,
+  handleMapReadyMessage,
+}: MapProps) => {
+  const { isMapReady, setIsMapReady } = useMapStore();
 
-const Map = () => {
-  const { webRef } = useMapStore();
-  const { handleMapReadyMessage, isMapReady } = useMyLocation();
+  const webViewRef = useWebViewRef();
+  useMyLocation({ isMapReady });
 
   const {
     handleMapCenterIdle,
@@ -26,16 +36,21 @@ const Map = () => {
     handleStationMarkerClick(event);
   };
 
+  // selectedRouteDetailModal에서 쓰기 위해 zustand용 isMapReady 동기화
+  useEffect(() => {
+    setIsMapReady(isLocalMapReady);
+  }, [isLocalMapReady]);
+
   return (
     <WebView
-      ref={webRef}
+      ref={webViewRef}
       javaScriptEnabled={true}
       domStorageEnabled={true}
       originWhitelist={['*']}
       onMessage={handleWebViewMessage}
       onError={e => console.log('WebView error', e.nativeEvent)}
       source={{
-        uri: 'https://41ac7baa061b.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://607434ac80a7.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
     />
   );

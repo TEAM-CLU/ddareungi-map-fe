@@ -11,6 +11,7 @@ PODS:
   - hermes-engine (0.81.1):
     - hermes-engine/Pre-built (= 0.81.1)
   - hermes-engine/Pre-built (0.81.1)
+  - Mute (0.6.1)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -1813,6 +1814,11 @@ PODS:
     - Yoga
   - react-native-safe-area-context (5.6.2):
     - React-Core
+  - react-native-slider (4.4.2):
+    - React-Core
+  - react-native-volume-manager (2.0.8):
+    - Mute
+    - React-Core
   - react-native-webview (13.16.0):
     - boost
     - DoubleConversion
@@ -2648,6 +2654,8 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
+  - react-native-volume-manager (from `../node_modules/react-native-volume-manager`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
@@ -2697,6 +2705,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - BEMCheckBox
+    - Mute
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -2793,6 +2802,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-pager-view"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-slider:
+    :path: "../node_modules/@react-native-community/slider"
+  react-native-volume-manager:
+    :path: "../node_modules/react-native-volume-manager"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-NativeModulesApple:

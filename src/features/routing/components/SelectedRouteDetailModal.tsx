@@ -6,7 +6,7 @@ import { IconSpotMarker } from '@/shared/components/icons';
 import { ScrollView } from 'react-native-gesture-handler';
 import RouteProgressStepVerticalBar from '@/features/routing/components/RoutePrgressStepVerticalBar';
 import RoundButton from '@/shared/components/button/RoundButton';
-import { Route, Waypoint } from '../model/routing.types';
+import { Route, RouteType, Waypoint } from '../model/routing.types';
 import {
   formatDistance,
   formatMinutes,
@@ -14,10 +14,15 @@ import {
   formatTimeRange,
   getCategoryText,
 } from '@/shared/utils/formatting';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
+import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
+import { StaticPathData } from '@/shared/model/map.webview.types';
+import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useLocationStore } from '@/features/location/stores/useLocationStore';
+import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 
-interface RouteSelectedDetailModalProps {
+interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
   startAddress: string | undefined;
   endAddress: string | undefined;
@@ -25,13 +30,13 @@ interface RouteSelectedDetailModalProps {
   baseTime?: Date;
 }
 
-const RouteSelectedDetailModal = ({
+const SelectedRouteDetailModal = ({
   selectedRouteData,
   startAddress,
   endAddress,
   waypoints,
   baseTime = new Date(),
-}: RouteSelectedDetailModalProps) => {
+}: SelectedRouteDetailModalProps) => {
   if (!selectedRouteData) {
     return (
       <View style={tw('flex justify-center w-full flex-1 items-center')}>
@@ -40,10 +45,22 @@ const RouteSelectedDetailModal = ({
     );
   }
 
-  const { totalCaloriesBurned, totalTrees } = useRouteStore();
-
-  const { summary, segments, startStation, endStation, routeCategory } =
-    selectedRouteData;
+  const { totalCaloriesBurned, totalTrees, routeType, prevScreen } =
+    useRouteStore();
+  const { drawStaticPath, focusOnStaticPath, stopFollowingMyLocation } =
+    useRoutingMessenger();
+  const { setLocationMode } = useLocationStore();
+  const { myLocationCompassOff } = useLocationMessenger();
+  const { isMapReady } = useMapStore();
+  const {
+    summary,
+    segments,
+    startStation,
+    endStation,
+    routeCategory,
+    waypoints: wpArr,
+    coordinates,
+  } = selectedRouteData;
 
   const time = formatTime(summary.time);
   const distance = formatDistance(summary.distance);
@@ -67,6 +84,45 @@ const RouteSelectedDetailModal = ({
   );
 
   const waypointsCount = waypoints ? waypoints.length : 0;
+
+  useEffect(() => {
+    if (!isMapReady) return;
+    const handleRoutePress = () => {
+      const staticPathData: StaticPathData = {
+        routeType: prevScreen === 'RouteRecommend' ? RouteType.LOOP : routeType,
+        startPoint: coordinates[0],
+        endPoint: coordinates[coordinates.length - 1],
+        waypoints: wpArr ? wpArr : null,
+        startStationPoint: {
+          lat: startStation.lat,
+          lng: startStation.lng,
+        },
+        endStationPoint: endStation
+          ? {
+              lat: endStation.lat,
+              lng: endStation.lng,
+            }
+          : {
+              lat: startStation.lat,
+              lng: startStation.lng,
+            },
+        pathCoordinates: coordinates,
+      };
+      stopFollowingMyLocation();
+      drawStaticPath(staticPathData);
+      myLocationCompassOff();
+      setLocationMode('default');
+    };
+
+    handleRoutePress();
+  }, [
+    drawStaticPath,
+    routeType,
+    coordinates,
+    wpArr,
+    isMapReady,
+    focusOnStaticPath,
+  ]);
 
   return (
     <ScrollView
@@ -290,4 +346,4 @@ const RouteSelectedDetailModal = ({
     </ScrollView>
   );
 };
-export default RouteSelectedDetailModal;
+export default SelectedRouteDetailModal;

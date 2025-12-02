@@ -1,25 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { AppState, Alert } from 'react-native';
-import { WebViewMessageEvent } from 'react-native-webview';
 import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
-import {
-  MyHeadingMessage,
-  MyLocationMessage,
-  WebViewMessageToRN,
-} from '@/shared/model/map.webview.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
-import { useMapStore } from '@/features/map/stores/useMapStore';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import { useWebViewRef } from '@/app/providers/webview';
+import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
+import { DataSetForUpdateMyLocation } from '@/features/location/model/location.types';
+import { Coordinates } from '@/features/map/model/map.types';
 
-export const useMyLocation = () => {
-  const { sendMessage } = useMapWebview();
-  const { webRef } = useMapStore();
+export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
+  const { updateMyLocation, rotateMyHeading } = useLocationMessenger();
+  const webViewRef = useWebViewRef();
   const { setMyPosition } = useMyPositionStore();
-  const [isMapReady, setIsMapReady] = useState(false);
   const watchIdRef = useRef<number | null>(null);
-  const lastPos = useRef<{ lat: number; lng: number } | null>(null);
+  const lastPos = useRef<Coordinates | null>(null);
 
   // 보정된 방향값 추출
   const heading = useUserHeading({
@@ -54,14 +49,13 @@ export const useMyLocation = () => {
     if (!opts?.bypassAccuracyOnce && accuracy > 30) return;
 
     const { lat, lng } = smoothPosition(latitude, longitude);
-    const message: MyLocationMessage = {
-      type: 'myLocation',
+    const myLocationData: DataSetForUpdateMyLocation = {
       lat,
       lng,
       accuracy: accuracy ?? 0,
     };
 
-    sendMessage(message);
+    updateMyLocation(myLocationData);
   };
 
   // 위치 추적 시작
@@ -115,20 +109,6 @@ export const useMyLocation = () => {
     }
   };
 
-  // mapReady 메시지 전용 핸들러
-  const handleMapReadyMessage = (event: WebViewMessageEvent) => {
-    try {
-      const data: WebViewMessageToRN = JSON.parse(event.nativeEvent.data);
-
-      if (data.type === 'mapReady') {
-        console.log('✅ 지도 준비 완료');
-        setIsMapReady(true);
-      }
-    } catch (error) {
-      console.error('Invalid JSON from WebView:', event.nativeEvent.data);
-    }
-  };
-
   // 지도 준비되면 위치 추적 시작, 언마운트시 중지
   useEffect(() => {
     if (!isMapReady) return;
@@ -140,12 +120,8 @@ export const useMyLocation = () => {
   // 방향은 위치와 무관하게 실시간으로 송신
   useEffect(() => {
     if (!isMapReady) return;
-    const message: MyHeadingMessage = {
-      type: 'myHeading',
-      heading: heading ?? 0,
-    };
-    sendMessage(message);
-  }, [heading, isMapReady, sendMessage, webRef]);
+    rotateMyHeading(heading);
+  }, [heading, isMapReady, rotateMyHeading, webViewRef]);
 
   // 앱이 foreground로 복귀 시 추적 재시작
   useEffect(() => {
@@ -155,9 +131,4 @@ export const useMyLocation = () => {
     return () => sub.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMapReady]);
-
-  return {
-    isMapReady,
-    handleMapReadyMessage,
-  };
 };

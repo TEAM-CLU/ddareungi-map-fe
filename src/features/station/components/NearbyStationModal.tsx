@@ -6,13 +6,12 @@ import {
 } from '@/features/station/model/station.types';
 import { useNearbyStationsMutation } from '@/features/station/services/station.queries';
 import { tw } from '@/shared/libs/tw-helper';
-import { FocusOnTargetedNearbyStationMessage } from '@/shared/model/map.webview.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
 
 const NearbyStationModal = () => {
   const { mutateAsync: getNearbyStations } = useNearbyStationsMutation();
@@ -26,21 +25,12 @@ const NearbyStationModal = () => {
     lamda,
   } = useStationStore();
   const { myPosition } = useMyPositionStore();
-  const { sendMessage } = useMapWebview();
+  const { focusOnTargetedNearbyStation } = useStationMessenger();
 
   // 리스트 클릭시 상세대여소 모달로 이동
   const handleStationItemBtnPress = (stationMetaData: MapAreaStationData) => {
     setStationMetaData(stationMetaData);
-    try {
-      const message: FocusOnTargetedNearbyStationMessage = {
-        type: 'focusOnTargetedNearbyStation',
-        targetedStationData: stationMetaData,
-      };
-      sendMessage(message);
-    } catch (error) {
-      console.error('Invalid JSON from WebView:', error);
-    }
-
+    focusOnTargetedNearbyStation(stationMetaData);
     setShowNearByStationModal(false);
     setShowStationDetailModal(true);
   };

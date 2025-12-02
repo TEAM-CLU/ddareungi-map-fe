@@ -1,7 +1,3 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { RefObject } from 'react';
-import WebView from 'react-native-webview';
-
 // 가장 가까운 대여소 3개 검색
 export interface NearbyStationData {
   name: string;
@@ -47,7 +43,7 @@ export interface MapAreaStationListResponse {
 
 export interface MapAreaQueryPayload {
   lat: number | null | undefined;
-  lon: number | null | undefined;
+  lng: number | null | undefined;
   radius: number;
   enable?: boolean;
 }
