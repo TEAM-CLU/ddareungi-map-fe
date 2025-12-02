@@ -61,11 +61,6 @@ export interface AutocompleteResult {
   category?: string; // 장소 카테고리 (카페, 음식점 등)
 }
 
-export interface UseAutocompleteOptions {
-  // 디바운싱 지연 시간
-  autoSearchDelay?: number;
-}
-
 export interface RecentSearchItem {
   placeKey: string;
   name: string;
