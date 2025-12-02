@@ -16,6 +16,7 @@ import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestr
 import SearchBar from '@/features/search/components/SearchBar';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { getCategoryText } from '@/shared/utils/formatting';
+import BookmarkMarkersToggleBtn from '@/shared/components/bookmark/BookmarkMarkersToggleBtn';
 
 const MapScreen = () => {
   const {
@@ -75,6 +76,10 @@ const MapScreen = () => {
           onPlaceSelect={handlePlaceSelectionFlow}
         />
       )}
+
+      <View style={[tw('absolute right-3'), { bottom: 200 }]}>
+        <BookmarkMarkersToggleBtn />
+      </View>
 
       <View style={[tw('absolute right-3'), { bottom: 150 }]}>
         <MyLocationButton />

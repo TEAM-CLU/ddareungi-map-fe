@@ -98,6 +98,12 @@ export interface FocusOnTargetedNearbyStationMessage {
   targetedStationData: MapAreaStationData;
 }
 
+// === 즐겨찾기 관련 메시지 ===
+export interface ToggleBookmarkMarkersMessage {
+  type: 'toggleBookmarkMarkers';
+  isVisible: boolean;
+}
+
 // 모든 메시지 타입 유니온
 export type WebViewMessageToRN =
   | MapReadyMessage
@@ -109,6 +115,7 @@ export type WebViewMessageToRN =
   | SetRouteTypeMessage
   | MoveToRoutePointMessage
   | ToggleStationMarkersMessage
+  | ToggleBookmarkMarkersMessage
   | MyLocationFollowingMessage
   | CompassModeMessage
   | MyLocationMessage

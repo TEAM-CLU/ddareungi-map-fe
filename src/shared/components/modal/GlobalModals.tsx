@@ -7,7 +7,7 @@ import StationDetailModal from '@/features/station/components/StationDetailModal
 import { useModalStore } from '@/shared/stores/useModalStore';
 import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import BookmarkModal from '@/shared/components/BookmarkEditModal';
+import BookmarkModal from '@/shared/components/bookmark/BookmarkEditModal';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore();

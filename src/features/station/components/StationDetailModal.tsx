@@ -22,8 +22,6 @@ import {
 import { useStationStore } from '../stores/useStationStore';
 import { AutocompleteResult } from '@/features/search/model/search.types';
 import { getDistanceText } from '@/shared/utils/formatting';
-import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
-import StarToggle from '@/shared/components/StarToggle';
 
 interface StationDetailModalProps {
   onClose?: () => void;

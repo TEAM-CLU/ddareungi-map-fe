@@ -20,7 +20,7 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { AutocompleteResult } from '../model/search.types';
 import { getDistanceText } from '@/shared/utils/formatting';
-import StarToggle from '@/shared/components/StarToggle';
+import StarToggle from '@/shared/components/bookmark/StarToggle';
 import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 import { createPlaceBookmark } from '@/shared/utils/bookmark';
 

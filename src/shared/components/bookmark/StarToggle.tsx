@@ -5,7 +5,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { IconStar } from './icons';
+import { IconStar } from '../icons';
 
 interface StarToggleProps {
   active?: boolean;
@@ -34,8 +34,8 @@ const StarToggle = ({ active = false, onToggle }: StarToggleProps) => {
           width={24}
           height={23}
           strokeWidth={1.5}
-          strokeColor={active ? '#01DA86' : '#A7A7A7'}
-          fillColor={active ? '#01DA86' : 'white'}
+          strokeColor={active ? 'transparent' : '#A7A7A7'}
+          fillColor={active ? '#01DA86' : 'transparent'}
         />
       </Animated.View>
     </Pressable>
