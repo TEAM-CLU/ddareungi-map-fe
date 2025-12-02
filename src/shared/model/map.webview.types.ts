@@ -10,7 +10,7 @@ import {
 export interface MyLocationMessage {
   type: 'myLocation';
   lat: number;
-  lon: number;
+  lng: number;
   accuracy?: number;
 }
 

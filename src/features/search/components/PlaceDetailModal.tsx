@@ -78,8 +78,8 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   useEffect(() => {
     if (!myPosition || !place.latitude || !place.longitude) return;
     const distance = getDistanceBetweenCoords(
-      { lat: myPosition.lat, lon: myPosition.lon },
-      { lat: place.latitude, lon: place.longitude },
+      { lat: myPosition.lat, lng: myPosition.lng },
+      { lat: place.latitude, lng: place.longitude },
     );
     setPlaceDistance(Math.round(distance));
   }, [myPosition, place]);

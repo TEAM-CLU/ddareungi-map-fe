@@ -1,17 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { AppState, Alert } from 'react-native';
-import WebView, { WebViewMessageEvent } from 'react-native-webview';
+import { WebViewMessageEvent } from 'react-native-webview';
 import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
-import { Use } from 'react-native-svg';
-import { Coordinates } from '@/features/map/model/map.types';
 import {
   MyHeadingMessage,
   MyLocationMessage,
   WebViewMessageToRN,
 } from '@/shared/model/map.webview.types';
-import { UseMyLocationProps } from '@/features/location/model/location.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useMapWebview } from '@/features/map/hooks/useMapWebview';
@@ -22,7 +19,7 @@ export const useMyLocation = () => {
   const { setMyPosition } = useMyPositionStore();
   const [isMapReady, setIsMapReady] = useState(false);
   const watchIdRef = useRef<number | null>(null);
-  const lastPos = useRef<{ lat: number; lon: number } | null>(null);
+  const lastPos = useRef<{ lat: number; lng: number } | null>(null);
 
   // 보정된 방향값 추출
   const heading = useUserHeading({
@@ -33,15 +30,15 @@ export const useMyLocation = () => {
   });
 
   // 위치 보정 (이전 위치와 절반씩 섞기)
-  const smoothPosition = (lat: number, lon: number) => {
+  const smoothPosition = (lat: number, lng: number) => {
     if (!lastPos.current) {
-      lastPos.current = { lat, lon };
-      return { lat, lon };
+      lastPos.current = { lat, lng };
+      return { lat, lng };
     }
     const prev = lastPos.current;
     const smoothedcoord = {
       lat: prev.lat * 0.5 + lat * 0.5,
-      lon: prev.lon * 0.5 + lon * 0.5,
+      lng: prev.lng * 0.5 + lng * 0.5,
     };
     lastPos.current = smoothedcoord;
     return smoothedcoord;
@@ -56,11 +53,11 @@ export const useMyLocation = () => {
     const { latitude, longitude, accuracy } = currentPosition.coords;
     if (!opts?.bypassAccuracyOnce && accuracy > 30) return;
 
-    const { lat, lon } = smoothPosition(latitude, longitude);
+    const { lat, lng } = smoothPosition(latitude, longitude);
     const message: MyLocationMessage = {
       type: 'myLocation',
       lat,
-      lon,
+      lng,
       accuracy: accuracy ?? 0,
     };
 
@@ -81,7 +78,7 @@ export const useMyLocation = () => {
       pos => {
         setMyPosition({
           lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
+          lng: pos.coords.longitude,
         });
         sendLocation(pos, { bypassAccuracyOnce: true });
       },
@@ -94,7 +91,7 @@ export const useMyLocation = () => {
       pos => {
         setMyPosition({
           lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
+          lng: pos.coords.longitude,
         });
         sendLocation(pos);
       },

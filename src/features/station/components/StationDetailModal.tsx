@@ -117,8 +117,8 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
       return;
     }
     const distance = getDistanceBetweenCoords(
-      { lat: myPosition.lat, lon: myPosition.lon },
-      { lat: stationMetaData.latitude, lon: stationMetaData.longitude },
+      { lat: myPosition.lat, lng: myPosition.lng },
+      { lat: stationMetaData.latitude, lng: stationMetaData.longitude },
     );
     setDistance(Math.round(distance));
   }, [myPosition, stationMetaData]);

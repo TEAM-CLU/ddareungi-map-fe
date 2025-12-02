@@ -37,7 +37,7 @@ export const useAutocomplete = () => {
 
     return myPosition
       ? {
-          x: myPosition.lon,
+          x: myPosition.lng,
           y: myPosition.lat,
           radius: 10000, // 10km
           sort: 'distance',
