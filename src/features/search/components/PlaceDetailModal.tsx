@@ -56,11 +56,11 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
 
   useEffect(() => {
     const applyStationNameAndDistance = async () => {
-      if (!place.latitude || !place.latitude) return;
+      if (!place.latitude || !place.longitude) return;
       try {
         const payload: NearbyStationListPayload = {
           latitude: place.latitude,
-          longitude: place.longitude!,
+          longitude: place.longitude,
         };
         const response: NearbyStationData[] = await fetchNearbyStationDataList(
           payload,
@@ -78,8 +78,8 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   useEffect(() => {
     if (!myPosition || !place.latitude || !place.longitude) return;
     const distance = getDistanceBetweenCoords(
-      { lat: myPosition.lat, lon: myPosition.lon },
-      { lat: place.latitude, lon: place.longitude },
+      { lat: myPosition.lat, lng: myPosition.lng },
+      { lat: place.latitude, lng: place.longitude },
     );
     setPlaceDistance(Math.round(distance));
   }, [myPosition, place]);

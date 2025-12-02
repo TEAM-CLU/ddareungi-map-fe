@@ -227,7 +227,7 @@ const SearchOverlay = ({
       <SafeAreaView
         edges={['top']}
         style={[
-          tw('absolute toåçp-0 left-0 w-full flex justify-center items-center'),
+          tw('absolute top-0 left-0 w-full flex justify-center items-center'),
           { zIndex: 10 },
         ]}
       >
@@ -311,7 +311,7 @@ const SearchOverlay = ({
                     <TouchableOpacity onPress={clearRecentSearches}>
                       <Text
                         style={tw(
-                          'font-primary-600text-sm text-on-surface-tertiary',
+                          'font-primary-600 text-sm text-on-surface-tertiary',
                         )}
                       >
                         전체삭제

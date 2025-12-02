@@ -66,7 +66,6 @@ interface WalkingSegment {
   type: 'walking';
   summary: WalkingSegmentSummary;
   bbox: Bbox;
-  geometry: Geometry;
 }
 
 // 자전거 구간 타입
@@ -74,7 +73,6 @@ interface BikingSegment {
   type: 'biking';
   summary: BikingSegmentSummary;
   bbox: Bbox;
-  geometry: Geometry;
   profile: 'safe_bike' | 'fast_bike';
 }
 
@@ -96,12 +94,6 @@ interface BikingSegmentSummary {
   maxGradient: number;
 }
 
-// 구간 경로 좌표
-export interface Geometry {
-  /** [lng, lat, elevation] 배열 */
-  points: [number, number, number][];
-}
-
 /********** 경로 탐색 **********/
 // 통합 경로 탐색 요청 페이로드
 export interface FullJourneyPayload {
@@ -118,6 +110,7 @@ export interface CircularJourneyPayload {
 
 // 통합/원형 경로 탐색 응답 타입
 export interface RouteResponse {
+  statusCode: number;
   message: string;
   data?: Route[];
 }
@@ -130,7 +123,9 @@ export interface Route {
   bbox: Bbox;
   startStation: Station;
   endStation?: Station;
+  waypoints?: Coordinate[];
   segments: Segment[];
+  coordinates: [number, number][];
 }
 
 /**
@@ -157,6 +152,7 @@ export interface RouteState {
   end: AutocompleteResult | null; // 도착지
   waypoints: Waypoint[]; // 경유지 목록
   distance: number | null; // 목표 거리 (왕복 모드용)
+  getItems: () => RouteItem[];
 
   // --- [Acitivity Data State] 활동 관련 데이터 ---
   totalCaloriesBurned: number | null; // 예상 소모 칼로리
@@ -165,6 +161,7 @@ export interface RouteState {
   // --- [UI State] 화면 제어 상태 ---
   currentSelectedPoint: RoutePoint | null; // 현재 선택된 포인트 정보
   currentFieldType: 'start' | 'end' | 'waypoint' | null; // 현재 활성화된 입력 필드 타입
+  prevScreen: 'RouteSelect' | 'RouteRecommend' | null; // 이전 화면 정보 판정을 통한 뒤로가기 버튼 누를시 돌아갈 화면 지정
 
   // --- [API State] 비동기 통신 상태 ---
   routes: RouteResponse | null; // 서버로부터 받은 검색된 경로 결과
@@ -178,6 +175,7 @@ export interface RouteState {
   setEnd: (place: AutocompleteResult | null) => void;
   setDistance: (distance: number) => void;
   setSelectedRouteData: (route: Route | null) => void;
+  setPrevScreen: (screen: 'RouteSelect' | 'RouteRecommend' | null) => void;
 
   // --- [Acitivity Data Actions] 활동 관련 데이터 액션 ---
   setTotalCaloriesBurned: (calories: number | null) => void;
