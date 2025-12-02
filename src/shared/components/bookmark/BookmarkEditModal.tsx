@@ -5,6 +5,7 @@ import { BOOKMARK_COLOR_PRESETS } from '@/shared/model/index.constants';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useState } from 'react';
 import { BookmarkItem } from '@/shared/model/index.types';
+import { IconClose } from '../icons';
 
 const BookmarkEditModal = () => {
   const {
@@ -34,45 +35,97 @@ const BookmarkEditModal = () => {
   };
 
   return (
-    <View style={tw('flex-1 bg-white pt-5 pb-10')}>
+    <View style={tw('flex-1 bg-white')}>
       {/* 헤더 영역 */}
-      <View style={tw('px-5 mb-4 border-b border-gray-100 pb-4')}>
-        <Text style={tw('text-lg font-bold text-gray-900')}>
-          즐겨찾기 관리 ({bookmarks.length})
+      <View
+        style={[
+          tw('px-6 pt-6 pb-4 mb-4 border-b '),
+          { borderColor: '#E5E7EB' },
+        ]}
+      >
+        <Text style={tw('font-primary-700 text-xl text-on-surface-primary')}>
+          즐겨찾기 관리{' '}
+          <Text style={tw('text-brand-primary')}>{bookmarks.length}</Text>
         </Text>
       </View>
 
       {/* 리스트 영역 */}
-      <BottomSheetScrollView style={tw('flex-1')}>
+      <BottomSheetScrollView
+        style={tw('flex-1')}
+        contentContainerStyle={tw('pb-10')}
+      >
         {bookmarks.length === 0 ? (
-          <View style={tw('items-center mt-10')}>
-            <Text style={tw('text-gray-400')}>저장된 즐겨찾기가 없습니다.</Text>
+          <View style={tw('items-center justify-center py-20')}>
+            <Text
+              style={tw('text-on-surface-tertiary text-base font-primary-500')}
+            >
+              저장된 즐겨찾기가 없습니다.
+            </Text>
           </View>
         ) : (
-          bookmarks.map(item => {
+          bookmarks.map((item, index) => {
             const isEditing = editingId === item.id;
+            const isLast = index === bookmarks.length - 1;
 
             return (
-              <View key={item.id} style={tw('border-b border-gray-100')}>
+              <View
+                key={item.id}
+                style={[
+                  tw('bg-white'),
+                  !isLast && tw('border-b'),
+                  { borderColor: '#E5E7EB' },
+                ]}
+              >
                 {/* 1. 아이템 헤더 (클릭 시 펼치기/접기) */}
                 <TouchableOpacity
-                  style={tw('flex-row justify-between items-center p-5')}
+                  style={tw('flex-row justify-between items-center px-6 py-5')}
                   onPress={() => toggleItem(item)}
-                  activeOpacity={0.7}
+                  activeOpacity={0.6}
                 >
-                  <View style={tw('flex-row items-center flex-1')}>
+                  <View style={tw('flex-row items-center flex-1 pr-4')}>
                     {/* 색상 닷 (Dot) */}
                     <View
                       style={[
-                        tw('w-3 h-3 rounded-full mr-3'),
-                        { backgroundColor: item.color },
+                        tw('w-4 h-4 rounded-full mr-4 border'),
+                        {
+                          backgroundColor: item.color,
+                          borderColor: 'rgba(0, 0, 0, 0.05)',
+                        },
                       ]}
                     />
-                    <View>
-                      <Text style={tw('text-base font-bold text-gray-800')}>
-                        {item.alias || item.name}
-                      </Text>
-                      <Text style={tw('text-xs text-gray-500 mt-1')}>
+                    <View style={tw('flex-1')}>
+                      <View style={tw('flex-row items-center')}>
+                        <Text
+                          style={tw(
+                            'text-base font-primary-700 text-on-surface-primary mr-2',
+                          )}
+                          numberOfLines={1}
+                        >
+                          {item.alias || item.name}
+                        </Text>
+                        {isEditing && (
+                          <View
+                            style={[
+                              tw('bg-brand-primary px-1.5 py-0.5 rounded'),
+                              { backgroundColor: '#01DA861A' },
+                            ]}
+                          >
+                            <Text
+                              style={tw(
+                                'text-xs text-brand-primary font-primary-600',
+                              )}
+                            >
+                              편집 중
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text
+                        style={tw(
+                          'text-sm text-on-surface-tertiary font-primary-400 mt-0.5',
+                        )}
+                        numberOfLines={1}
+                      >
                         {item.address}
                       </Text>
                     </View>
@@ -81,49 +134,67 @@ const BookmarkEditModal = () => {
                   {/* 삭제 버튼 */}
                   <TouchableOpacity
                     onPress={() => removeBookmark(item.id)}
-                    style={tw('bg-gray-100 px-3 py-2 rounded')}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    style={tw('p-1')}
                   >
-                    <Text style={tw('text-xs text-red-500 font-bold')}>
-                      삭제
-                    </Text>
+                    <IconClose width={12} height={12} color="#999" />
                   </TouchableOpacity>
                 </TouchableOpacity>
 
-                {/* 2. 편집 영역 (아코디언 내용) - 선택된 경우에만 렌더링 */}
+                {/* 2. 편집 영역 - 선택된 경우에만 렌더링 */}
                 {isEditing && (
-                  <View style={tw('px-5 pb-6 bg-gray-50')}>
+                  <View style={tw('px-6 pb-6 pt-4 bg-gray-100')}>
                     {/* 별칭 수정 */}
-                    <Text style={tw('text-sm text-gray-500 mt-2 mb-2')}>
-                      별칭 수정
+                    <Text
+                      style={tw(
+                        'text-xs text-on-surface-tertiary font-primary-600 ml-1 mb-2',
+                      )}
+                    >
+                      별칭
                     </Text>
                     <TextInput
                       style={tw(
-                        'bg-white border border-gray-200 rounded-lg p-3 text-base mb-4 placeholder-on-surface-placeholder',
+                        'bg-white border-0 rounded-xl px-4 py-3.5 text-on-surface-primary font-primary-500 mb-5 shadow-sm',
                       )}
                       value={tempAlias}
                       onChangeText={text => setTempAlias(text)}
                       onEndEditing={() => handleEndEditing(item.id)}
-                      placeholder="장소 별칭 입력"
+                      placeholder="장소 별칭을 입력해주세요"
+                      returnKeyType="done"
+                      placeholderTextColor="#A1A1AA"
                     />
 
                     {/* 색상 선택 */}
-                    <Text style={tw('text-sm text-gray-500 mb-2')}>
-                      마커 색상
+                    <Text
+                      style={tw(
+                        'text-xs text-on-surface-tertiary font-primary-600 mb-3 ml-1',
+                      )}
+                    >
+                      색상
                     </Text>
-                    <View style={tw('flex-row flex-wrap')}>
-                      {BOOKMARK_COLOR_PRESETS.map(color => (
-                        <TouchableOpacity
-                          key={color}
-                          style={[
-                            tw('w-8 h-8 rounded-full border-2 mr-3'),
-                            item.color === color
-                              ? tw('border-gray-800')
-                              : tw('border-transparent'),
-                            { backgroundColor: color },
-                          ]}
-                          onPress={() => updateBookmarkColor(item.id, color)}
-                        />
-                      ))}
+                    <View style={[tw('flex-row flex-wrap'), { gap: 8 }]}>
+                      {BOOKMARK_COLOR_PRESETS.map(color => {
+                        const isSelected = item.color === color;
+                        return (
+                          <TouchableOpacity
+                            key={color}
+                            style={[
+                              tw(
+                                'w-9 h-9 rounded-full items-center justify-center mr-3 mb-2',
+                              ),
+                              { backgroundColor: color },
+
+                              isSelected && {
+                                borderColor: '#E5E7EB',
+                                borderWidth: 2,
+                                padding: 3,
+                              },
+                            ]}
+                            onPress={() => updateBookmarkColor(item.id, color)}
+                            activeOpacity={0.8}
+                          />
+                        );
+                      })}
                     </View>
                   </View>
                 )}
