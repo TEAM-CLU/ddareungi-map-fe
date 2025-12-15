@@ -2,7 +2,10 @@ import { tw } from '@/shared/libs/tw-helper';
 import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BOOKMARK_COLOR_PRESETS } from '@/shared/model/index.constants';
-import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import {
+  BottomSheetScrollView,
+  BottomSheetTextInput,
+} from '@gorhom/bottom-sheet';
 import { useState } from 'react';
 import { BookmarkItem } from '@/shared/model/index.types';
 import { IconClose } from '../icons';
@@ -41,6 +44,9 @@ const BookmarkEditModal = () => {
   // 원래 이름으로 초기화
   const handleResetAlias = (originalName: string) => {
     setTempAlias(originalName);
+    if (editingId) {
+      updateBookmarkAlias(editingId, originalName); // 스토어에 즉시 저장
+    }
   };
 
   return (
@@ -154,15 +160,28 @@ const BookmarkEditModal = () => {
                 {/* 2. 편집 영역 - 선택된 경우에만 렌더링 */}
                 {isEditing && (
                   <View style={tw('px-6 pb-6 pt-4 bg-gray-50')}>
-
                     {/* 라벨 + 초기화 버튼 그룹 */}
-                    <View style={tw('flex-row justify-between items-center mb-2 ml-1')}>
-                      <Text style={tw('text-xs text-on-surface-tertiary font-primary-600')}>
+                    <View
+                      style={tw(
+                        'flex-row justify-between items-center mb-2 ml-1',
+                      )}
+                    >
+                      <Text
+                        style={tw(
+                          'text-xs text-on-surface-tertiary font-primary-600',
+                        )}
+                      >
                         별칭
                       </Text>
-                      <TouchableOpacity onPress={() => handleResetAlias(item.name)}>
-                        <Text style={tw('text-xs text-brand-primary font-primary-500')}>
-                          원래 이름으로 초기화
+                      <TouchableOpacity
+                        onPress={() => handleResetAlias(item.name)}
+                      >
+                        <Text
+                          style={tw(
+                            'text-xs text-brand-primary font-primary-500',
+                          )}
+                        >
+                          별칭 초기화
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -230,9 +249,9 @@ const BookmarkEditModal = () => {
                                     padding: 0,
                                   },
                             ]}
-                              //tw(
-                                // 'w-9 h-9 rounded-full items-center justify-center mr-3 mb-2',
-                              //),
+                            //tw(
+                            // 'w-9 h-9 rounded-full items-center justify-center mr-3 mb-2',
+                            //),
                             //   { backgroundColor: color },
 
                             //   isSelected && {
@@ -243,7 +262,7 @@ const BookmarkEditModal = () => {
                             // ]}
                             onPress={() => updateBookmarkColor(item.id, color)}
                             activeOpacity={0.8}
-                          ///>
+                            ///>
                           >
                             <View
                               style={[
