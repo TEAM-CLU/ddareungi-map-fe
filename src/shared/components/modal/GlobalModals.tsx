@@ -90,6 +90,7 @@ const GlobalModals = () => {
         snapPoints={['60%', '90%']}
         onDismiss={() => setShowBookmarkModal(false)}
         enablePanDownToClose={true}
+        useFlexView={true}
       >
         <BookmarkModal />
       </SlideModal>
