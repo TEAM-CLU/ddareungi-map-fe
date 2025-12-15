@@ -10,13 +10,10 @@ import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import ReturnToRouteSelectButton from '@/features/map/components/ReturnToRouteSelectButton';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import SelectedRouteDetailBadge from '@/features/routing/components/SelectedRouteDetailBadge';
-import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
-import SearchBar from '@/features/search/components/SearchBar';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { getCategoryText } from '@/shared/utils/formatting';
-import BookmarkMarkersToggleBtn from '@/shared/components/bookmark/BookmarkMarkersToggleBtn';
+import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
 
 const MapScreen = () => {
   const {
@@ -78,7 +75,7 @@ const MapScreen = () => {
       )}
 
       <View style={[tw('absolute right-3'), { bottom: 200 }]}>
-        <BookmarkMarkersToggleBtn />
+        <BookmarkMarkersToggleButton />
       </View>
 
       <View style={[tw('absolute right-3'), { bottom: 150 }]}>

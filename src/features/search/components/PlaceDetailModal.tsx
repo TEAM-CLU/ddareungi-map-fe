@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Animated,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconBicycle } from '@/shared/components/icons';
@@ -20,14 +21,34 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { AutocompleteResult } from '../model/search.types';
 import { getDistanceText } from '@/shared/utils/formatting';
-import StarToggle from '@/shared/components/bookmark/StarToggle';
 import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
-import { createPlaceBookmark } from '@/shared/utils/bookmark';
+import StarToggle from '@/shared/components/bookmark/StarToggle';
+import { BookmarkItem } from '@/shared/model/index.types';
 
 export interface PlaceDetailModalProps {
   place: AutocompleteResult | null;
   onClose?: () => void;
 }
+
+const createPlaceBookmark = (
+  place: AutocompleteResult,
+): BookmarkItem => {
+  if (place.latitude == null || place.longitude == null) {
+    throw new Error('장소의 좌표 정보가 없습니다.');
+  }
+
+  return {
+    id: place.placeKey,
+    name: place.name,
+    alias: place.name, // 별칭 기본값
+    color: '#04C75B', // 색상 기본값
+    latitude: place.latitude,
+    longitude: place.longitude,
+    address: place.address,
+    category: place.category || '기타',
+    createdAt: Date.now(),
+  };
+};
 
 const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   if (!place) {
@@ -48,12 +69,10 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
 
   const { globalNavigation } = useMapStore();
   const { myPosition } = useMyPositionStore();
-  const { toggleBookmark } = useBookmarkStore();
+  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
   const bookmarked = useBookmarkStore(state =>
     place.placeKey
-      ? state.bookmarks.some(
-          item => item.id === place.placeKey,
-        )
+      ? state.bookmarks.some(item => item.id === place.placeKey)
       : false,
   );
 
@@ -220,7 +239,10 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
             )}
           </View>
         </View>
-        <StarToggle active={bookmarked} onToggle={handleToggleBookmark} />
+        <StarToggle
+          active={bookmarked}
+          onToggle={handleToggleBookmark}
+        />
       </View>
 
       {/* 거리/주소 정보 */}

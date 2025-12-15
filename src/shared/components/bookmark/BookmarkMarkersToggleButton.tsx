@@ -2,10 +2,10 @@ import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import { ToggleBookmarkMarkersMessage } from '@/shared/model/map.webview.types';
 import { tw } from '@/shared/libs/tw-helper';
 import { useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Alert, TouchableOpacity } from 'react-native';
 import { IconStar } from '../icons';
 
-const BookmarkMarkersBtn = () => {
+const BookmarkMarkersToggleButton = () => {
   const { sendMessage } = useMapWebview();
   const [mode, setMode] = useState<'on' | 'off'>('on');
 
@@ -41,9 +41,9 @@ const BookmarkMarkersBtn = () => {
         { zIndex: 10 },
       ]}
     >
-      {mode === 'on' ? <IconStar fillColor='white' strokeColor='#77838f'/> : <IconStar fillColor='#01da86' strokeColor='#01da86'/>}
+      {mode === 'on' ? <IconStar fillColor='#01da86' strokeColor='#01da86'/> : <IconStar fillColor='white' strokeColor='#77838f'/>}
     </TouchableOpacity>
   );
 };
 
-export default BookmarkMarkersBtn;
+export default BookmarkMarkersToggleButton;

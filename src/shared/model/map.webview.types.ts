@@ -5,6 +5,7 @@ import {
   MapAreaStationData,
   StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
+import { BookmarkItem } from './index.types';
 
 // === 위치 관련 메시지 ===
 export interface MyLocationMessage {
@@ -99,6 +100,21 @@ export interface FocusOnTargetedNearbyStationMessage {
 }
 
 // === 즐겨찾기 관련 메시지 ===
+
+export interface UpdateBookmarksMessage {
+  type: 'updateBookmarks';
+  bookmarks: BookmarkItem[];
+}
+
+export interface ClearBookmarksMessage {
+  type: 'clearBookmarks';
+}
+
+export interface FocusOnBookmarkMessage {
+  type: 'focusOnBookmark';
+  bookmarkId: string;
+}
+
 export interface ToggleBookmarkMarkersMessage {
   type: 'toggleBookmarkMarkers';
   isVisible: boolean;
@@ -115,10 +131,13 @@ export type WebViewMessageToRN =
   | SetRouteTypeMessage
   | MoveToRoutePointMessage
   | ToggleStationMarkersMessage
-  | ToggleBookmarkMarkersMessage
   | MyLocationFollowingMessage
   | CompassModeMessage
   | MyLocationMessage
   | MyHeadingMessage
   | UpdateTargetedStationBikeCountListMessage
-  | UpdateStationDataListMessage;
+  | UpdateStationDataListMessage
+  | UpdateBookmarksMessage
+  | ToggleBookmarkMarkersMessage
+  | FocusOnBookmarkMessage
+  | ClearBookmarksMessage;

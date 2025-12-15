@@ -26,6 +26,193 @@
     <main id="map" style="height: 100vh; width: 100%"></main>
   </body>
   <script>
+    alert('파일 로딩 성공!');
+    (function () {
+      let kakaoRef, mapRef;
+      let bookmarkMarkers = [];
+
+      const initBookmarkSetting = (kakao, map) => {
+        kakaoRef = kakao;
+        mapRef = map;
+        ensureNoTapHighlightCSS();
+      };
+
+      // 모바일 브라우저에서 탭 하이라이트, 텍스트 선택, 포커스 아웃라인 제거
+      const ensureNoTapHighlightCSS = () => {
+        if (document.getElementById('no-tap-style')) return;
+        const s = document.createElement('style');
+        s.id = 'no-tap-style';
+        s.textContent = `
+    .station-marker, .station-marker * {
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      -webkit-touch-callout: none;
+      user-select: none;
+      -webkit-user-select: none;
+      outline: none;
+    }
+    .station-marker:active { background: transparent !important; }
+    .station-marker svg text {
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  `;
+        document.head.appendChild(s);
+      };
+
+      /**
+       * [가독성 업그레이드 버전]
+       * 둥근 원형 마커 안에 별 아이콘이 들어간 스타일
+       * 구조: [그림자] -> [흰색 테두리 원] -> [색상 원] -> [흰색 별 아이콘]
+       */
+      const getBookmarkMarkerSvg = (color = '#FFC107', uniqueId) => `
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g filter="url(#filter_badge_shadow_${uniqueId})">
+        <circle cx="22" cy="20" r="16" fill="white"/>
+        
+        <circle cx="22" cy="20" r="14" fill="${color}"/>
+        
+        <path d="M22 13L24.5 17.8L29.8 18.3L25.8 21.9L27 27.1L22 24.2L17 27.1L18.2 21.9L14.2 18.3L19.5 17.8L22 13Z" 
+          fill="white"
+        />
+      </g>
+      <defs>
+        <filter id="filter_badge_shadow_${uniqueId}" x="0" y="0" width="44" height="44" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+          <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset dy="3"/>
+          <feGaussianBlur stdDeviation="2"/>
+          <feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+        </filter>
+      </defs>
+    </svg>
+  `;
+
+      // DOM 엘리먼트 생성
+      const buildBookmarkContentElement = (bookmark, index) => {
+        const wrap = document.createElement('div');
+        const color = bookmark.color || '#FFC107';
+
+        // SVG 필터 ID 충돌 방지를 위한 고유 ID 생성
+        const uniqueId = `bm_${index}_${Math.floor(Math.random() * 1000)}`;
+        wrap.innerHTML = getBookmarkMarkerSvg(color, uniqueId);
+
+        wrap.className = 'bookmark-marker';
+        wrap.style.width = '44px';
+        wrap.style.height = '44px';
+        wrap.style.display = 'flex';
+        wrap.style.alignItems = 'center';
+        wrap.style.justifyContent = 'center';
+        wrap.style.cursor = 'pointer';
+        wrap.style.zIndex = '20';
+        wrap.style.transform = 'translateZ(0)';
+        wrap.style.background = 'transparent';
+        return wrap;
+      };
+
+      // 클릭 이벤트 바인딩
+      const bindOverlayClick = (marker, bookmarkData) => {
+        const content = marker.getContent();
+        if (!content) return;
+
+        content.onclick = null;
+        content.onclick = () => {
+          mapRef.setCenter(marker.getPosition());
+
+          const currentLevel = mapRef.getLevel();
+          if (currentLevel > 3) {
+            mapRef.setLevel(3, { animate: true });
+          }
+
+          window.ReactNativeWebView?.postMessage(
+            JSON.stringify({
+              type: 'clickBookmarkMarker',
+              bookmarkData: bookmarkData,
+            }),
+          );
+        };
+      };
+
+      const clearBookmarkMarkers = () => {
+        if (bookmarkMarkers.length > 0) {
+          bookmarkMarkers.forEach(({ marker }) => marker.setMap(null));
+          bookmarkMarkers = [];
+        }
+      };
+
+      const createBookmarkMarkers = bookmarksList => {
+        clearBookmarkMarkers();
+
+        if (!bookmarksList || bookmarksList.length === 0) return;
+
+        bookmarksList.forEach((bookmark, index) => {
+          if (!bookmark.latitude || !bookmark.longitude) return;
+
+          const position = new kakaoRef.maps.LatLng(
+            bookmark.latitude,
+            bookmark.longitude,
+          );
+
+          const contentElement = buildBookmarkContentElement(bookmark, index);
+
+          const marker = new kakaoRef.maps.CustomOverlay({
+            position: position,
+            content: contentElement,
+            xAnchor: 0.5,
+            yAnchor: 0.45,
+            zIndex: 20,
+            clickable: true,
+          });
+
+          marker.setMap(mapRef);
+
+          bookmarkMarkers.push({
+            id: bookmark.id,
+            marker: marker,
+            metaData: bookmark,
+          });
+
+          bindOverlayClick(marker, bookmark);
+        });
+      };
+
+      const toggleBookmarkMarkers = isVisible => {
+        alert(
+          `토글 신호 받음! 상태: ${isVisible}, 마커개수: ${bookmarkMarkers.length}`,
+        );
+        if (bookmarkMarkers.length === 0) return;
+        bookmarkMarkers.forEach(({ marker }) => {
+          marker.setMap(isVisible ? mapRef : null);
+        });
+      };
+
+      const focusOnBookmark = bookmarkId => {
+        const target = bookmarkMarkers.find(
+          bookmark => bookmark.id === bookmarkId,
+        );
+        if (target) {
+          mapRef.setCenter(target.marker.getPosition());
+          mapRef.setLevel(3, { animate: true });
+        }
+      };
+
+      const destroyBookmark = () => {
+        clearBookmarkMarkers();
+      };
+
+      window.Bookmark = {
+        initBookmarkSetting,
+        createBookmarkMarkers,
+        toggleBookmarkMarkers,
+        focusOnBookmark,
+        destroyBookmark,
+      };
+    })();
+  </script>
+  <script>
     // 전역 변수 초기 세팅(window.var로 각 피쳐 js에서 접근가능)
     let map;
     window.isCompassMode = false;
@@ -41,16 +228,20 @@
       };
       map = new kakao.maps.Map(mapContainer, mapOption);
 
+      // 다른 JS 파일(모듈)들이 로드될 때까지 대기
       const waitForOtherScripts = setInterval(() => {
         if (
           window.MyLocation &&
           window.Route &&
           window.Search &&
           window.Station &&
+          window.Bookmark &&
           window.kakao &&
           window.kakao.maps
         ) {
           clearInterval(waitForOtherScripts);
+
+          // 각 모듈 초기화
           MyLocation.initMyLocationSetting(
             kakao,
             map,
@@ -60,7 +251,9 @@
           Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LON);
           Search.initSearchSetting(kakao, map);
           Station.initStationSeting(kakao, map);
-          // 실시간 맵 센터 좌표 RN에 최조 전송(대여소 조회용)
+          Bookmark.initBookmarkSetting(kakao, map);
+
+          // 실시간 맵 초기 센터 좌표 RN에 최초 전송
           (function sendInitialCenter() {
             const centerCoord = map.getCenter();
             window.ReactNativeWebView?.postMessage(
@@ -72,7 +265,7 @@
             );
           })();
 
-          // 2) 이후엔 idle 때마다 전송
+          // 이후엔 idle 때마다 전송
           kakao.maps.event.addListener(map, 'idle', () => {
             const centerCoord = map.getCenter();
             window.ReactNativeWebView?.postMessage(
@@ -84,47 +277,29 @@
             );
           });
 
-          // const mockRoute = {
-          //   mode: 'full',
-          //   start: { lat: 37.63149, lon: 127.07733 }, // 서울과학기술대학교
-          //   waypoints: [
-          //     { lat: 37.6364, lon: 127.0675 }, // 하계역
-          //     { lat: 37.6232, lon: 127.0605 }, // 월계역
-          //   ],
-          //   end: { lat: 37.6177, lon: 127.0758 }, // 태릉입구역
-          //   path: [
-          //     // start → waypoint1
-          //     { lat: 37.63149, lon: 127.07733 },
-          //     { lat: 37.6343, lon: 127.0729 },
-          //     { lat: 37.6364, lon: 127.0675 }, // 하계역
-
-          //     // waypoint1 → waypoint2
-          //     { lat: 37.6328, lon: 127.0652 },
-          //     { lat: 37.6285, lon: 127.0621 },
-          //     { lat: 37.6232, lon: 127.0605 }, // 월계역
-
-          //     // waypoint2 → end
-          //     { lat: 37.621, lon: 127.0668 },
-          //     { lat: 37.619, lon: 127.0714 },
-          //     { lat: 37.6177, lon: 127.0758 }, // 태릉입구역
-          //   ],
-          // };
-          // Route.drawStaticRoute(mockRoute);
+          // 모든 모듈 초기화가 끝난 후 RN에 맵 로딩 완료 알림 전송(중요)
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(
+              JSON.stringify({ type: 'mapReady', isReady: true }),
+            );
+          } else {
+            // 혹시 브릿지가 늦게 붙을 경우를 대비한 안전장치
+            setTimeout(() => {
+              window.ReactNativeWebView?.postMessage(
+                JSON.stringify({ type: 'mapReady', isReady: true }),
+              );
+            }, 500);
+          }
         }
       }, 100);
-
-      // RN에 맵 로딩 완료 알림(중요)
-      if (window.ReactNativeWebView) {
-        window.ReactNativeWebView.postMessage(
-          JSON.stringify({ type: 'mapReady', isReady: true }),
-        );
-      }
     });
 
     // RN 메시지 타입별 처리(중요)
     const handleMessage = event => {
       try {
         const data = JSON.parse(event.data);
+
+        // === 내 위치 관련 메시지 처리 ===
 
         // 1. 내 위치 업데이트
         if (data.type === 'myLocation') {
@@ -157,7 +332,7 @@
           MyLocation.setMyHeadingOverlayVisible(false);
         }
 
-        // === 새로운 검색 관련 메시지 처리 ===
+        // === 검색 관련 메시지 처리 ===
 
         // 6. 장소 마커 표시
         if (data.type === 'showPlaceMarker') {
@@ -174,7 +349,7 @@
           Search.clearCurrentPlaceMarker();
         }
 
-        // === 새로운 라우팅 관련 메시지 처리 ===
+        // === 라우팅(경로) 관련 메시지 처리 ===
 
         // 8. 경로 업데이트
         if (data.type === 'updateRoute') {
@@ -196,7 +371,7 @@
           Route.moveToRoutePoint(data.pointId);
         }
 
-        // === 대여소 기능 ===
+        // === 대여소 관련 메시지 처리 ===
 
         // 12. 대여소 마커 표시
         if (data.type === 'updateStationDataList') {
@@ -216,6 +391,28 @@
         if (data.type === 'focusOnTargetedNearbyStation') {
           Station.focusOnTargetedNearbyStation(data.targetedStationData);
         }
+
+        // === 즐겨찾기 관련 메시지 처리 ===
+
+        // 16. 즐겨찾기 마커 업데이트 (생성 및 갱신)
+        if (data.type === 'updateBookmarks') {
+          Bookmark.createBookmarkMarkers(data.bookmarks);
+        }
+
+        // 17. 즐겨찾기 마커 지우기
+        if (data.type === 'clearBookmarks') {
+          Bookmark.clearBookmarkMarkers();
+        }
+
+        // 18. 특정 즐겨찾기로 이동
+        if (data.type === 'focusOnBookmark') {
+          Bookmark.focusOnBookmark(data.bookmarkId);
+        }
+
+        // 19. 즐겨찾기 마커 표시 on/off
+        if (data.type === 'toggleBookmarkMarkers') {
+          Bookmark.toggleBookmarkMarkers(data.isVisible);
+        }
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }
@@ -228,4 +425,5 @@
   <script src="./src/features/routing/utils/routing.js" defer></script>
   <script src="./src/features/search/utils/search.js" defer></script>
   <script src="./src/features/station/utils/station.js" defer></script>
+  <!-- <script src="./src/shared/utils/bookmark.js" defer></script> -->
 </html>

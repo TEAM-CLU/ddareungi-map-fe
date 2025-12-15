@@ -9,7 +9,7 @@ import { IconStar } from '../icons';
 
 interface StarToggleProps {
   active?: boolean;
-  onToggle?: () => void;
+  onToggle: () => void;
 }
 
 const StarToggle = ({ active = false, onToggle }: StarToggleProps) => {
@@ -24,7 +24,7 @@ const StarToggle = ({ active = false, onToggle }: StarToggleProps) => {
       scale.value = withSpring(1);
     });
 
-    onToggle?.();
+    onToggle();
   };
 
   return (

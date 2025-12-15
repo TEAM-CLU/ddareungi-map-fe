@@ -47,10 +47,14 @@ export interface BookmarkItem {
   alias?: string; // 별칭
   color?: string; // 마커/뱃지 색상
 
-  address?: string;
+  address: string;
   category: string;
   latitude: number;
   longitude: number;
   
   createdAt: number; // 정렬용
+}
+
+export interface UseBookmarkOptions {
+  isMapReady: boolean;
 }

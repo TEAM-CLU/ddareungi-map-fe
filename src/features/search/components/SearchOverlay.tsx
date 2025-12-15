@@ -237,7 +237,7 @@ const SearchOverlay = ({
 
   // 즐겨찾기 뱃지 클릭 핸들러
   const bookmarks = useBookmarkStore(state => state.bookmarks);
-  const handleBookmarkPress = useCallback(
+  const handleBookmarkBadgePress = useCallback(
     (item: BookmarkItem) => {
       const place = {
         placeKey: item.id,
@@ -301,7 +301,7 @@ const SearchOverlay = ({
                     name={item.name}
                     alias={item.alias}
                     color={item.color}
-                    onPress={() => handleBookmarkPress(item)}
+                    onPress={() => handleBookmarkBadgePress(item)}
                   />
                 ))}
               </ScrollView>
