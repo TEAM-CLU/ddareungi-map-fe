@@ -31,11 +31,7 @@
     document.head.appendChild(s);
   };
 
-  /**
-   * [가독성 업그레이드 버전]
-   * 둥근 원형 마커 안에 별 아이콘이 들어간 스타일
-   * 구조: [그림자] -> [흰색 테두리 원] -> [색상 원] -> [흰색 별 아이콘]
-   */
+  // 즐겨찾기 마커 SVG 생성 함수
   const getBookmarkMarkerSvg = (color = '#FFC107', uniqueId) => `
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g filter="url(#filter_badge_shadow_${uniqueId})">
@@ -67,9 +63,39 @@
     const wrap = document.createElement('div');
     const color = bookmark.color || '#FFC107';
 
+    // 1. 라벨 텍스트 결정 (별칭 우선 -> 없으면 장소명 -> 없으면 공백)
+    const labelText = bookmark.alias || bookmark.name || '';
+
     // SVG 필터 ID 충돌 방지를 위한 고유 ID 생성
     const uniqueId = `bm_${index}_${Math.floor(Math.random() * 1000)}`;
-    wrap.innerHTML = getBookmarkMarkerSvg(color, uniqueId);
+
+    // 2. 마커 아이콘 SVG
+    const iconSvg = getBookmarkMarkerSvg(color, uniqueId);
+
+    // 3. 라벨 HTML (마커 아래쪽에 위치)
+    const labelHtml = `
+      <div style="
+        position: absolute;
+        top: 40px; 
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        font-weight: bold;
+        color: #374151; 
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; 
+        white-space: nowrap;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        z-index: 30;
+      ">
+        ${labelText}
+      </div>
+    `;
+
+    // 아이콘 + 라벨 합치기
+    wrap.innerHTML = iconSvg + labelHtml;
 
     wrap.className = 'bookmark-marker';
     wrap.style.width = '44px';
@@ -81,6 +107,7 @@
     wrap.style.zIndex = '20';
     wrap.style.transform = 'translateZ(0)';
     wrap.style.background = 'transparent';
+    wrap.style.overflow = 'visible';
     return wrap;
   };
 
