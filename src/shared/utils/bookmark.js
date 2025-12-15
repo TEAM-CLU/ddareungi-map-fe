@@ -178,9 +178,6 @@
   };
 
   const toggleBookmarkMarkers = isVisible => {
-    alert(
-      `토글 신호 받음! 상태: ${isVisible}, 마커개수: ${bookmarkMarkers.length}`,
-    );
     if (bookmarkMarkers.length === 0) return;
     bookmarkMarkers.forEach(({ marker }) => {
       marker.setMap(isVisible ? mapRef : null);

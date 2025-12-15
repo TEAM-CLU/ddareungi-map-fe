@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Animated,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconBicycle } from '@/shared/components/icons';
