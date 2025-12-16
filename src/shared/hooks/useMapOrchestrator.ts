@@ -1,11 +1,13 @@
 // src/shared/hooks/useMapController.ts
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { useCallback, useEffect, useRef } from 'react';
-import WebView from 'react-native-webview';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useModalStore } from '../stores/useModalStore';
 import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
+import { MapReadyMessage } from '@/shared/model/map.webview.types';
 
 /**
  * useMapOrchestrator
@@ -20,17 +22,18 @@ import { useMapStore } from '@/features/map/stores/useMapStore';
  * - 거리 값, 경로 추천 관련 라우팅 핸들러 제공
  */
 export const useMapOrchestrator = () => {
+  const [isLocalMapReady, setIsLocalMapReady] = useState(false);
   /** ----------------------------------------
    * 1. Navigation 객체 (화면 이동용)
    * ---------------------------------------- */
   const { navigation } = useAppNavigation();
+  const { clearStaticPath } = useRoutingMessenger();
 
   /** ----------------------------------------
    * 2. 화면 내부에서만 생성하는 Ref들
    *    - 실제 useRef() 호출은 여기서만
    *    - store에는 "보관" 용도로만 넘긴다.
    * ---------------------------------------- */
-  const webViewRef = useRef<WebView | null>(null);
 
   // BottomSheetModal refs (실제 인스턴스)
   const placeDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
@@ -41,11 +44,12 @@ export const useMapOrchestrator = () => {
   const stationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
   const routeRecommendModalLocalRef = useRef<BottomSheetModal | null>(null);
   const bookmarkModalLocalRef = useRef<BottomSheetModal | null>(null);
+  const navigationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
 
   /** ----------------------------------------
    * 3. 경로/거리 관련 상태 (routeStore)
    * ---------------------------------------- */
-  const { distance, setDistance } = useRouteStore();
+  const { distance, setDistance, prevScreen } = useRouteStore();
 
   /** ----------------------------------------
    * 4. 모달 show/hide 및 모달 ref 보관용 상태 (modalStore)
@@ -64,13 +68,14 @@ export const useMapOrchestrator = () => {
     showBookmarkModal,
     setShowBookmarkModal,
     setModalRefs,
+    showNavigationDetailModal,
   } = useModalStore();
 
   /** ----------------------------------------
    * 5. 지도 전역 상태 (mapStore)
    *    - WebView ref / navigation 객체를 전역에서 재사용할 수 있도록 등록
    * ---------------------------------------- */
-  const { setWebRef, setGlobalNavigation } = useMapStore();
+  const { setGlobalNavigation } = useMapStore();
 
   /** ----------------------------------------
    * 6. 초기 mount 시: ref & navigation을 전역 store에 한번만 등록
@@ -80,9 +85,6 @@ export const useMapOrchestrator = () => {
    * - navigation: 모달 내부/웹뷰 메시지 핸들러에서도 화면 전환 가능하게 공유
    * ---------------------------------------- */
   useEffect(() => {
-    // WebView Ref (전역에서 지도 조작 가능하게)
-    setWebRef(webViewRef);
-
     // BottomSheetModal Ref 등록 (GlobalModals ↔ Screen 연결)
     setModalRefs({
       placeDetailModalRef: placeDetailModalLocalRef,
@@ -91,11 +93,12 @@ export const useMapOrchestrator = () => {
       stationDetailModalRef: stationDetailModalLocalRef,
       routeRecommendModalRef: routeRecommendModalLocalRef,
       bookmarkModalRef: bookmarkModalLocalRef,
+      navigationDetailModalRef: navigationDetailModalLocalRef,
     });
 
     // 네비게이션 객체 전역 저장 (모달/웹뷰 이벤트에서도 navigate 가능)
     setGlobalNavigation(navigation);
-  }, [navigation, setWebRef, setModalRefs, setGlobalNavigation]);
+  }, [navigation, setModalRefs, setGlobalNavigation]);
 
   /** ----------------------------------------
    * 7. 모달 boolean 상태를 구독하고 → 실제 present/dismiss 실행
@@ -145,6 +148,14 @@ export const useMapOrchestrator = () => {
     if (!modal) return;
     showBookmarkModal ? modal.present() : modal.dismiss();
   }, [showBookmarkModal]);
+  
+  // 네비게이션 상세 모달
+  useEffect(() => {
+    const modal = navigationDetailModalLocalRef.current;
+    if (!modal) return;
+    // 네비게이션 상세 모달은 show 상태가 없으므로 항상 present/dismiss 하지 않음
+    showNavigationDetailModal ? modal.present() : modal.dismiss();
+  }, [showNavigationDetailModal]);
 
   /** ----------------------------------------
    * 8. 외부에서 사용할 이벤트 핸들러들
@@ -166,9 +177,24 @@ export const useMapOrchestrator = () => {
 
   /** 선택된 경로 상세 모달 닫기 + 경로 선택 화면으로 이동 */
   const handleSelectedRouteDetailModalClose = useCallback(() => {
+    clearStaticPath();
     setShowSelectedRouteDetailModal(false);
-    navigation.navigate('RouteSelect');
-  }, [navigation, setShowSelectedRouteDetailModal]);
+    navigation.navigate(prevScreen ?? 'RouteSelect');
+  }, [navigation, setShowSelectedRouteDetailModal, clearStaticPath]);
+
+  // mapReady 메시지 전용 핸들러
+  const handleMapReadyMessage = (event: WebViewMessageEvent) => {
+    try {
+      const data: MapReadyMessage = JSON.parse(event.nativeEvent.data);
+
+      if (data.type === 'mapReady') {
+        console.log('✅ 지도 준비 완료');
+        setIsLocalMapReady(data.isReady);
+      }
+    } catch (error) {
+      console.error('Invalid JSON from WebView:', event.nativeEvent.data);
+    }
+  };
 
   /* 즐겨찾기 모달 열기 */
   const handleOpenBookmarkModal = useCallback(() => {
@@ -184,5 +210,8 @@ export const useMapOrchestrator = () => {
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
     handleOpenBookmarkModal,
+    handleMapReadyMessage,
+    isLocalMapReady,
+    setIsLocalMapReady,
   };
 };

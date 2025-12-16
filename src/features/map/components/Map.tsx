@@ -3,11 +3,24 @@ import { useMyLocation } from '@/features/location/hooks/useMyLocation';
 import { useStation } from '@/features/station/hooks/useStation';
 import { useMapStore } from '../stores/useMapStore';
 import { useBookmark } from '@/shared/hooks/useBookmark';
-import { useState } from 'react';
+import { useWebViewRef } from '@/app/providers/webview';
+import { useEffect, useState } from 'react';
+import { tw } from '@/shared/libs/tw-helper';
+import { View, ActivityIndicator } from 'react-native';
+interface MapProps {
+  isLocalMapReady: boolean;
+  setIsLocalMapReady: React.Dispatch<React.SetStateAction<boolean>>;
+  handleMapReadyMessage: (event: WebViewMessageEvent) => void;
+}
+const Map = ({
+  isLocalMapReady,
+  setIsLocalMapReady,
+  handleMapReadyMessage,
+}: MapProps) => {
+  const { isMapReady, setIsMapReady } = useMapStore();
 
-const Map = () => {
-  const { webRef } = useMapStore();
-  const { handleMapReadyMessage, isMapReady } = useMyLocation();
+  const webViewRef = useWebViewRef();
+  useMyLocation({ isMapReady });
 
   const {
     handleMapCenterIdle,
@@ -35,10 +48,15 @@ const Map = () => {
     const baseUrl = 'https://3f3d893368a5.ngrok-free.app/map.html';
     return `${baseUrl}?t=${timestamp}`;
   });
+  
+  // selectedRouteDetailModal에서 쓰기 위해 zustand용 isMapReady 동기화
+  useEffect(() => {
+    setIsMapReady(isLocalMapReady);
+  }, [isLocalMapReady]);
 
   return (
     <WebView
-      ref={webRef}
+      ref={webViewRef}
       javaScriptEnabled={true}
       domStorageEnabled={true}
       originWhitelist={['*']}

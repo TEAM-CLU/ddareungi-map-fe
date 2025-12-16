@@ -44,11 +44,11 @@ export const useStationDataListQuery = (payload: MapAreaQueryPayload) => {
   return useQuery({
     queryKey: stationKeys.mapArea(),
     queryFn: async ({ signal }) => {
-      if (!!payload.lat && !!payload.lon && !!payload.radius) {
+      if (!!payload.lat && !!payload.lng && !!payload.radius) {
         const response = await getMapAreaStationList(
           {
             latitude: payload.lat,
-            longitude: payload.lon,
+            longitude: payload.lng,
             radius: payload.radius,
           },
           signal,

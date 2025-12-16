@@ -33,10 +33,8 @@ const SearchBar = ({
   showBackButton = false,
   showCloseButton = false,
 }: SearchBarProps) => {
-  const { isFocused, setIsFocused, setSearchInputRef } = useSearchStore();
+  const { isFocused, setIsFocused, setSearchInputRef, showSearchOverlay, selectedPlaceInfoForModal } = useSearchStore();
   const searchInputRef = useRef<TextInput | null>(null);
-
-  const { showSearchOverlay, selectedPlaceInfoForModal } = useSearchStore();
 
   useEffect(() => {
     setSearchInputRef(searchInputRef);

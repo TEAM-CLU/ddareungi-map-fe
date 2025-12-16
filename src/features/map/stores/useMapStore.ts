@@ -5,23 +5,26 @@ import { devtools } from 'zustand/middleware';
 import WebView from 'react-native-webview';
 
 interface MapState {
-  webRef: React.RefObject<WebView | null>;
   globalNavigation: any;
-
-  setWebRef: (ref: React.RefObject<WebView | null>) => void;
   setGlobalNavigation: (navigation: any) => void;
+
+  isMapReady: boolean;
+  setIsMapReady: (isReady: boolean) => void;
 }
 
 export const useMapStore = create<MapState>()(
   devtools(
     set => ({
-      webRef: createRef<WebView | null>(),
-      navigation: null,
+      // webRef: createRef<WebView | null>(),
+      // navigation: null,
+      globalNavigation: null,
+      isMapReady: false,
 
-      setWebRef: ref => set({ webRef: ref }, false, 'map/setWebRef'),
+      setIsMapReady: isReady =>
+        set({ isMapReady: isReady }, false, 'map/setIsMapReady'),
 
-      setGlobalNavigation: navigation =>
-        set({ globalNavigation: navigation }, false, 'map/setGlobalNavigation'),
+      setGlobalNavigation: globalNavigation =>
+        set({ globalNavigation }, false, 'map/setGlobalNavigation'),
     }),
     { name: 'MapStore' },
   ),

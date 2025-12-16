@@ -1,16 +1,11 @@
-import { RootStackParamList } from '@/app/types';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
-import { Coordinates } from '@/features/map/model/map.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { MapAreaStationData } from '@/features/station/model/station.types';
 import { removeOverlappingPart } from '@/features/station/utils/string';
 import { tw } from '@/shared/libs/tw-helper';
-import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RefObject, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
 import {
   View,
@@ -118,8 +113,8 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
       return;
     }
     const distance = getDistanceBetweenCoords(
-      { lat: myPosition.lat, lon: myPosition.lon },
-      { lat: stationMetaData.latitude, lon: stationMetaData.longitude },
+      { lat: myPosition.lat, lng: myPosition.lng },
+      { lat: stationMetaData.latitude, lng: stationMetaData.longitude },
     );
     setDistance(Math.round(distance));
   }, [myPosition, stationMetaData]);

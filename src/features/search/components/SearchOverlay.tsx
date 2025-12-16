@@ -20,9 +20,7 @@ import {
   IconLocatorMark,
 } from '@/shared/components/icons';
 import { reverseGeocode } from '../services/search.api';
-import Geolocation from 'react-native-geolocation-service';
-import { requestLocationPermission } from '@/features/map/utils/location';
-import { AutocompleteResult } from '../model/search.types';
+import { AutocompleteResult, PlaceInfo } from '../model/search.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
@@ -56,6 +54,9 @@ const SearchOverlay = ({
     setQuery,
     clearSearch,
     hasResults,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   } = useAutocomplete();
 
   const {
@@ -81,9 +82,20 @@ const SearchOverlay = ({
   );
 
   const handleSearchResultSelect = useCallback(
-    (place: AutocompleteResult) => {
-      addRecentSearch(place);
-      onPlaceSelect(place);
+    (place: PlaceInfo | AutocompleteResult) => {
+      const uniqueId = 'placeKey' in place ? place.placeKey : place.id;
+
+      const selectedPlace: AutocompleteResult = {
+        placeKey: uniqueId,
+        name: place.name,
+        address: place.address,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        distance: place.distance || '',
+        category: place.category || '',
+      };
+      addRecentSearch(selectedPlace);
+      onPlaceSelect(selectedPlace);
       setSearchText('');
       clearSearch();
       onClose();
@@ -104,23 +116,14 @@ const SearchOverlay = ({
 
   const handleRecentSelect = useCallback(
     (recent: AutocompleteResult) => {
-      const autocompleteResult: AutocompleteResult = {
-        placeKey: recent.placeKey,
-        name: recent.name,
-        address: recent.address,
-        latitude: recent.latitude,
-        longitude: recent.longitude,
-        distance: recent.distance || '',
-        category: recent.category || '',
-      };
-      handleSearchResultSelect(autocompleteResult);
+      handleSearchResultSelect(recent);
     },
     [handleSearchResultSelect],
   );
 
   // 검색 결과
   const renderSearchResult = useCallback(
-    ({ item }: { item: AutocompleteResult }) => (
+    ({ item }: { item: PlaceInfo }) => (
       <TouchableOpacity
         style={[
           tw('flex-row items-center px-4 py-3 border-b'),
@@ -214,22 +217,12 @@ const SearchOverlay = ({
 
     try {
       if (!myPosition) return;
-      const place = await reverseGeocode(myPosition.lat, myPosition.lon);
+      const place = await reverseGeocode(myPosition.lat, myPosition.lng);
       if (!place) return;
 
-      const autocompleteResult: AutocompleteResult = {
-        placeKey: place.id,
-        name: place.name,
-        address: place.address,
-        latitude: place.latitude,
-        longitude: place.longitude,
-        distance: '',
-        category: place.category || '',
-      };
-      handleSearchResultSelect(autocompleteResult);
-    } catch (error) {
-      console.error('현위치 검색 실패:', error);
-      Alert.alert('오류', '현위치 검색에 실패했습니다. 다시 시도해주세요.');
+      handleSearchResultSelect(place);
+    } catch (error: any) {
+      console.log('현위치 검색 실패:', error.message);
     } finally {
       setIsLoadingCurrentLocation(false);
     }
@@ -361,7 +354,7 @@ const SearchOverlay = ({
                     <TouchableOpacity onPress={clearRecentSearches}>
                       <Text
                         style={tw(
-                          'font-primary-600text-sm text-on-surface-tertiary',
+                          'font-primary-600 text-sm text-on-surface-tertiary',
                         )}
                       >
                         전체삭제
@@ -399,15 +392,34 @@ const SearchOverlay = ({
                   <FlatList
                     data={results}
                     renderItem={renderSearchResult}
-                    keyExtractor={item => item.placeKey}
+                    keyExtractor={(item, index) => `${item.id}-${index}`}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
                     onScrollBeginDrag={() => Keyboard.dismiss()}
+                    // 스크롤이 바닥에 닿으면 다음 페이지 호출
+                    onEndReached={() => {
+                      if (hasNextPage) {
+                        fetchNextPage();
+                      }
+                    }}
+                    // 바닥에서 50% 정도 남았을 때 미리 호출
+                    onEndReachedThreshold={0.5}
+                    // 바닥에서 로딩 중일 때 스피너 보여주기
+                    ListFooterComponent={
+                      isFetchingNextPage ? (
+                        <View style={tw('py-4')}>
+                          <ActivityIndicator size="small" color="#888" />
+                        </View>
+                      ) : null
+                    }
                   />
                 ) : error ? (
-                  <View style={tw('flex-1 justify-center items-center')}>
-                    <Text style={tw('text-on-surface-tertiary')}>
-                      검색 중 오류가 발생했습니다.
+                  <View style={tw('flex-1 justify-center items-center px-4')}>
+                    <Text style={tw('text-red-500 text-center mb-1')}>
+                      오류 발생
+                    </Text>
+                    <Text style={tw('text-on-surface-tertiary text-center')}>
+                      {error}
                     </Text>
                   </View>
                 ) : (

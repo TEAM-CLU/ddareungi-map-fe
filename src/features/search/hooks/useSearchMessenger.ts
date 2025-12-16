@@ -1,4 +1,4 @@
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
+import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 import {
   ShowPlaceMarkerMessage,
   ClearCurrentPlaceMarkerMessage,
@@ -9,7 +9,7 @@ import { useCallback } from 'react';
  * 검색 관련 WebView 통신 훅
  */
 export const useSearchMessenger = () => {
-  const { sendMessage } = useMapWebview();
+  const { sendMessage } = useProvideWebviewMessenger();
 
   const showPlaceMarker = useCallback(
     (lat: number, lng: number, placeName: string, placeInfo?: any) => {

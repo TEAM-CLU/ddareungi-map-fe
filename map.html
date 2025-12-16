@@ -27,16 +27,18 @@
   </body>
   <script>
     // 전역 변수 초기 세팅(window.var로 각 피쳐 js에서 접근가능)
+
     let map;
+    window.isSelectedRouteDetailModalOpen = false;
     window.isCompassMode = false;
     const DEFAULT_LAT = 37.5665;
-    const DEFAULT_LON = 126.978;
+    const DEFAULT_LNG = 126.978;
 
     kakao.maps.load(() => {
       // 맵 생성
       const mapContainer = document.getElementById('map');
       const mapOption = {
-        center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LON),
+        center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG),
         level: 2,
       };
       map = new kakao.maps.Map(mapContainer, mapOption);
@@ -59,9 +61,9 @@
             kakao,
             map,
             DEFAULT_LAT,
-            DEFAULT_LON,
+            DEFAULT_LNG,
           );
-          Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LON);
+          Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LNG);
           Search.initSearchSetting(kakao, map);
           Station.initStationSeting(kakao, map);
           Bookmark.initBookmarkSetting(kakao, map);
@@ -73,7 +75,7 @@
               JSON.stringify({
                 type: 'changeMapCenter',
                 lat: centerCoord.getLat(),
-                lon: centerCoord.getLng(),
+                lng: centerCoord.getLng(),
               }),
             );
           })();
@@ -85,7 +87,7 @@
               JSON.stringify({
                 type: 'changeMapCenter',
                 lat: centerCoord.getLat(),
-                lon: centerCoord.getLng(),
+                lng: centerCoord.getLng(),
               }),
             );
           });
@@ -111,21 +113,22 @@
     const handleMessage = event => {
       try {
         const data = JSON.parse(event.data);
+        // === 내 위치 관련 메시지 처리 ===
 
         // === 내 위치 관련 메시지 처리 ===
 
         // 1. 내 위치 업데이트
-        if (data.type === 'myLocation') {
-          MyLocation.updateMyLocation(data.lat, data.lon, data.accuracy ?? 30);
+        if (data.type === 'updateMyLocation') {
+          MyLocation.updateMyLocation(data.lat, data.lng, data.accuracy ?? 30);
         }
 
         // 2. 내 방향 업데이트
-        if (data.type === 'myHeading') {
+        if (data.type === 'rotateMyHeading') {
           MyLocation.rotateMyHeading(data.heading);
         }
 
         // 3. 내 위치로 이동
-        if (data.type === 'myLocationFollowing') {
+        if (data.type === 'setCenterOnMyLocation') {
           map.setCenter(MyLocation.myLocationMarker.getPosition());
         }
 
@@ -164,24 +167,23 @@
 
         // === 라우팅(경로) 관련 메시지 처리 ===
 
-        // 8. 경로 업데이트
-        if (data.type === 'updateRoute') {
-          Route.updateRoute(data.routeType, data.points, data.path);
+        if (data.type === 'stopFollowingMyLocation')
+          window.isSelectedRouteDetailModalOpen =
+            data.isSelectedRouteDetailModalOpen;
+
+        // 8. 정적 경로 생성
+        if (data.type === 'drawStaticPath') {
+          Route.drawStaticPath(data.staticPathData);
         }
 
-        // 9. 경로 클리어
-        if (data.type === 'clearRoute') {
-          Route.clearRoute();
+        // 9. 정적 경로 삭제
+        if (data.type === 'clearStaticPath') {
+          Route.clearStaticPath();
         }
 
-        // 10. 경로 타입 변경
-        if (data.type === 'setRouteType') {
-          Route.setRouteType(data.routeType);
-        }
-
-        // 11. 특정 경로 포인트로 이동
-        if (data.type === 'moveToRoutePoint') {
-          Route.moveToRoutePoint(data.pointId);
+        // 10. 정적 경로에 맞게 지도 bounds 조정
+        if (data.type === 'focusOnStaticPath') {
+          Route.focusOnStaticPath();
         }
 
         // === 대여소 관련 메시지 처리 ===

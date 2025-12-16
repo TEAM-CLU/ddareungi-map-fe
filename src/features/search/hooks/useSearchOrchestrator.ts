@@ -9,7 +9,7 @@ import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
-import { useBookmarkMessenger } from './useBookmarkMessenger';
+import { useBookmarkMessenger } from '../../../shared/hooks/useBookmarkMessenger';
 
 /**
  * useSearchOrchestrator
