@@ -6,12 +6,14 @@ import { FOOTER_MENU } from '../model/index.constants';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 
 interface FooterProps {
-  setIsStationButtonPressed: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsStationBtnPressed: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRouteRecommendBtnPressed: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsBookmarkBtnPressed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const Footer = ({
-  setIsStationButtonPressed,
+  setIsStationBtnPressed,
   setIsRouteRecommendBtnPressed,
+  setIsBookmarkBtnPressed,
 }: FooterProps) => {
   const insets = useSafeAreaInsets();
   const { navigation } = useAppNavigation();
@@ -28,8 +30,12 @@ const Footer = ({
           key={item.name}
           style={[tw('flex-1 flex-col items-center justify-center mb-1')]}
           onPress={() => {
+            if (item.name === 'myPage') {
+              navigation.navigate(item.screen);
+            }
+
             if (item.name === 'station') {
-              setIsStationButtonPressed(true);
+              setIsStationBtnPressed(true);
               return;
             }
 
@@ -38,9 +44,9 @@ const Footer = ({
               return;
             }
 
-            // TODO: 경로추천도 모달 띄우는 조건문 필요
-
-            navigation.navigate(item.screen);
+            if (item.name === 'bookmark') {
+              setIsBookmarkBtnPressed(true);
+            }
           }}
         >
           <View style={[tw('w-6 h-6 justify-center items-center')]}>

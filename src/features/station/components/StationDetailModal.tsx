@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
 import { AutocompleteResult } from '@/features/search/model/search.types';
+import { getDistanceText } from '@/shared/utils/formatting';
 
 interface StationDetailModalProps {
   onClose?: () => void;
@@ -151,6 +152,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
     }
   };
 
+
   return (
     <View
       style={[
@@ -160,7 +162,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
     >
       <View
         style={[
-          tw('w-full flex flex-row items-center justify-start'),
+          tw('w-full flex flex-row items-center justify-between'),
           { gap: 10 },
         ]}
       >
@@ -178,13 +180,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
             { fontSize: 15 },
           ]}
         >
-          {`${
-            distance
-              ? distance >= 1000
-                ? `${(Math.round(distance * lamda) / 1000).toFixed(1)}km`
-                : `${Math.round(distance * lamda).toFixed(0)}m`
-              : '거리 측정 중...'
-          }`}
+          {getDistanceText(distance)}
         </Text>
       </View>
       <Text

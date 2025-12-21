@@ -12,6 +12,7 @@ export const useModalStore = create<ModalState>()(
       nearbyStationModalRef: null,
       stationDetailModalRef: null,
       routeRecommendModalRef: null,
+      bookmarkModalRef: null,
       navigationDetailModalRef: null,
 
       /* 모달 오픈 여부 초기값 */
@@ -20,6 +21,7 @@ export const useModalStore = create<ModalState>()(
       showNearByStationModal: false,
       showStationDetailModal: false,
       showRouteRecommendModal: false,
+      showBookmarkModal: false,
       showNavigationDetailModal: false,
 
       /* -----------------------------
@@ -66,6 +68,12 @@ export const useModalStore = create<ModalState>()(
           { showRouteRecommendModal: isVisible },
           false,
           'modal/setShowRouteRecommendModal',
+        ),
+      setShowBookmarkModal: isVisible =>
+        set(
+          { showBookmarkModal: isVisible },
+          false,
+          'modal/setShowBookmarkModal',
         ),
       setShowNavigationDetailModal: isVisible =>
         set(

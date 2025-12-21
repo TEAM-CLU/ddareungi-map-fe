@@ -12,6 +12,7 @@ import SelectedRouteDetailBadge from '@/features/routing/components/SelectedRout
 import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
 import { getCategoryText } from '@/shared/utils/formatting';
+import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
 import ReturnToRouteSelectButton from '@/features/routing/components/ReturnToRouteSelectButton';
 
 const MapScreen = () => {
@@ -19,6 +20,7 @@ const MapScreen = () => {
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
+    handleOpenBookmarkModal,
     handleMapReadyMessage,
     isLocalMapReady,
     setIsLocalMapReady,
@@ -79,14 +81,20 @@ const MapScreen = () => {
         />
       )}
 
-      <View
-        style={[
-          tw('absolute right-3'),
-          { bottom: showSelectedRouteDetailModal ? '80%' : '30%' },
-        ]}
-      >
-        <MyLocationButton />
+      <View style={[tw('absolute right-3'), 
+        { bottom: showSelectedRouteDetailModal ? '86%' : '36%' }
+        ]}>
+        <BookmarkMarkersToggleButton />
       </View>
+
+        <View
+          style={[
+            tw('absolute right-3'),
+            { bottom: showSelectedRouteDetailModal ? '80%' : '30%' },
+          ]}
+        >
+          <MyLocationButton />
+        </View>
 
       {!showSelectedRouteDetailModal && (
         <View style={[tw('absolute right-3'), { bottom: '24%' }]}>
@@ -95,8 +103,9 @@ const MapScreen = () => {
       )}
 
       <Footer
-        setIsStationButtonPressed={handleOpenNearbyStationModal}
+        setIsStationBtnPressed={handleOpenNearbyStationModal}
         setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
+        setIsBookmarkBtnPressed={handleOpenBookmarkModal}
       />
     </View>
   );

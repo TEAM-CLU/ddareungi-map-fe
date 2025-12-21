@@ -6,6 +6,7 @@ import StationDetailModal from '@/features/station/components/StationDetailModal
 import { useModalStore } from '@/shared/stores/useModalStore';
 import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
+import BookmarkModal from '@/shared/components/bookmark/BookmarkEditModal';
 import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
 import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
 import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
@@ -24,6 +25,8 @@ const GlobalModals = () => {
     nearbyStationModalRef,
     stationDetailModalRef,
     placeDetailModalRef,
+    bookmarkModalRef,
+    setShowBookmarkModal,
     navigationDetailModalRef,
   } = useModalStore();
 
@@ -48,6 +51,7 @@ const GlobalModals = () => {
           waypoints={waypoints}
         />
       </SlideModal>
+
       {/* 경로추천 모달 */}
       <SlideModal
         ref={routeRecommendModalRef}
@@ -57,6 +61,7 @@ const GlobalModals = () => {
       >
         <RouteRecommendModal />
       </SlideModal>
+
       {/* Nearby 대여소 모달 */}
       <SlideModal
         ref={nearbyStationModalRef}
@@ -66,6 +71,7 @@ const GlobalModals = () => {
       >
         <NearbyStationModal />
       </SlideModal>
+
       {/* 대여소 상세 모달 */}
       <SlideModal
         ref={stationDetailModalRef}
@@ -75,6 +81,7 @@ const GlobalModals = () => {
       >
         <StationDetailModal onClose={() => setShowStationDetailModal(false)} />
       </SlideModal>
+
       {/* 장소 상세 모달 */}
       <SlideModal
         ref={placeDetailModalRef}
@@ -88,6 +95,18 @@ const GlobalModals = () => {
           onClose={() => setShowPlaceDetailModal(false)}
         />
       </SlideModal>
+
+      {/* 즐겨찾기 모달 */}
+      <SlideModal
+        ref={bookmarkModalRef}
+        snapPoints={['60%', '90%']}
+        onDismiss={() => setShowBookmarkModal(false)}
+        enablePanDownToClose={true}
+        useFlexView={true}
+      >
+        <BookmarkModal />
+      </SlideModal>
+      
       {/* 네비게이션 디테일 모달 */}
       <SlideModal
         ref={navigationDetailModalRef}

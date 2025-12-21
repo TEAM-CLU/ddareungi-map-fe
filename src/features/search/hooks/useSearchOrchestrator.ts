@@ -5,9 +5,11 @@ import { useSearchMessenger } from '@/features/search/hooks/useSearchMessenger';
 import { AutocompleteResult } from '@/features/search/model/search.types';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
+import { useBookmarkMessenger } from '../../../shared/hooks/useBookmarkMessenger';
 
 /**
  * useSearchOrchestrator
@@ -67,6 +69,13 @@ export const useSearchOrchestrator = () => {
   const { setShowSearchOverlay } = useSearchStore();
 
   /**
+   * 북마크 데이터
+   */
+  const { bookmarks } = useBookmarkStore();
+
+  const { showSingleBookmarkMarker } = useBookmarkMessenger();
+
+  /**
    * 검색바 클릭
    * - 기존 경로정보 초기화
    * - 검색 오버레이 표시
@@ -123,14 +132,24 @@ export const useSearchOrchestrator = () => {
       setIsFocused(false);
       searchInputRef?.current?.blur();
 
-      // 1) 지도에 마커 표시
-      if (selectedPlace.latitude && selectedPlace.longitude) {
-        showPlaceMarker(
-          selectedPlace.latitude,
-          selectedPlace.longitude,
-          selectedPlace.name,
-          selectedPlace,
-        );
+      // 0) 해당 장소가 즐겨찾기인지 확인
+      const foundBookmark = bookmarks.find(
+        bookmark => bookmark.id === selectedPlace.placeKey,
+      );
+
+      // 1) 즐겨찾기인 경우 즐겨찾기 마커 표시, 아닌 경우 일반 장소 마커 표시
+      if (foundBookmark) {
+        clearCurrentPlaceMarker();
+        showSingleBookmarkMarker(foundBookmark);
+      } else {
+        if (selectedPlace.latitude && selectedPlace.longitude) {
+          showPlaceMarker(
+            selectedPlace.latitude,
+            selectedPlace.longitude,
+            selectedPlace.name,
+            selectedPlace,
+          );
+        }
       }
 
       // 2) Map → RouteSelect/Recommend로 복귀해야 하는 경우
@@ -175,6 +194,11 @@ export const useSearchOrchestrator = () => {
       setSelectedPlaceInfoForModal,
       setShowPlaceDetailModal,
       showPlaceMarker,
+      bookmarks,
+      clearCurrentPlaceMarker,
+      showSingleBookmarkMarker,
+      setIsFocused,
+      searchInputRef,
     ],
   );
 

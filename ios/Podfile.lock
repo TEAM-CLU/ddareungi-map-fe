@@ -2905,6 +2905,7 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: 4f8246b1f6d79f625e0d99472d1f3a71da4d28ca
+  Mute: 20135a96076f140cc82bfc8b810e2d6150d8ec7e
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: c4b9e2fd0ab200e3af72b013ed6113187c607077
   RCTRequired: e97dd5dafc1db8094e63bc5031e0371f092ae92a
@@ -2943,6 +2944,8 @@ SPEC CHECKSUMS:
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-pager-view: b4e217732fa31c068149a30cada1a0afbeac1807
   react-native-safe-area-context: e48706fb09fde89f82e12bfb49b140cfdcb761f7
+  react-native-slider: 33b8d190b59d4f67a541061bb91775d53d617d9d
+  react-native-volume-manager: 25d400a8fdb7b0e93a50cad33b745fb9e6577a30
   react-native-webview: a742b11276a0443e856cc5dc3e21a3fdf3351cdf
   React-NativeModulesApple: 9ec9240159974c94886ebbe4caec18e3395f6aef
   React-oscompat: b12c633e9c00f1f99467b1e0e0b8038895dae436

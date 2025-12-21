@@ -31,6 +31,7 @@ export { default as IconRouteMarker } from './IconRouteMarker';
 export { default as IconRun } from './IconRun';
 export { default as IconSearch } from './IconSearch';
 export { default as IconSpotMarker } from './IconSpotMarker';
+export { default as IconStar } from './IconStar';
 export { default as IconSwitch } from './IconSwitch';
 export { default as IconTree } from './IconTree';
 export { default as IconUserDirection } from './IconUserDirection';

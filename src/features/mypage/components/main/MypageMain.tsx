@@ -41,9 +41,11 @@ const MypageMain = ({
         showsVerticalScrollIndicator={false}
       >
         <View style={tw('flex-row items-center px-5 pb-8')}>
-          <BackButton type="previous" iconColor="brand" />
+          <View style={tw('w-6')}>
+            <BackButton type="previous" iconColor="brand" />
+          </View>
           <Text
-            style={tw('text-xl font-primary-700 text-on-surface-primary ml-4')}
+            style={tw('text-xl font-primary-700 text-on-surface-primary')}
           >
             마이페이지
           </Text>

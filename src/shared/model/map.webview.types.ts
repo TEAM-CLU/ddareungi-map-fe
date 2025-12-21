@@ -5,6 +5,7 @@ import {
   MapAreaStationData,
   StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
+import { BookmarkItem } from './index.types';
 
 // === 위치 관련 메시지 ===
 export interface UpdateMyLocationMessage {
@@ -99,6 +100,32 @@ export interface FocusOnTargetedNearbyStationMessage {
   targetedStationData: MapAreaStationData;
 }
 
+// === 즐겨찾기 관련 메시지 ===
+
+export interface UpdateBookmarksMessage {
+  type: 'updateBookmarks';
+  bookmarks: BookmarkItem[];
+}
+
+export interface ClearBookmarksMessage {
+  type: 'clearBookmarks';
+}
+
+export interface FocusOnBookmarkMessage {
+  type: 'focusOnBookmark';
+  bookmarkId: string;
+}
+
+export interface ToggleBookmarkMarkersMessage {
+  type: 'toggleBookmarkMarkers';
+  isVisible: boolean;
+}
+
+export interface ShowSingleBookmarkMarkerMessage {
+  type: 'showSingleBookmarkMarker';
+  bookmarkData: BookmarkItem;
+}
+
 // 모든 메시지 타입 유니온
 export type WebViewMessageToWeb =
   | MapReadyMessage
@@ -115,6 +142,11 @@ export type WebViewMessageToWeb =
   | RotateMyHeadingMessage
   | UpdateTargetedStationBikeCountListMessage
   | UpdateStationDataListMessage
+  | UpdateBookmarksMessage
+  | ToggleBookmarkMarkersMessage
+  | FocusOnBookmarkMessage
+  | ShowSingleBookmarkMarkerMessage
+  | ClearBookmarksMessage
   | StopFollowingMyLocationMessage;
 
 /* === 웹뷰로부터 받아온 메시지 타입 === */
