@@ -68,7 +68,7 @@
   // DOM 엘리먼트 생성
   const buildBookmarkContentElement = (bookmark, index) => {
     const wrap = document.createElement('div');
-    const color = bookmark.color || '#FFC107';
+    const color = bookmark.color || '#01DA86';
 
     // 1. 라벨 텍스트 결정 (별칭 우선 -> 없으면 장소명 -> 없으면 공백)
     const labelText = escapeHtml(bookmark.alias || bookmark.name || '');
