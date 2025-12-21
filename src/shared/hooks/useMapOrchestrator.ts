@@ -43,6 +43,7 @@ export const useMapOrchestrator = () => {
   const nearbyStationModalLocalRef = useRef<BottomSheetModal | null>(null);
   const stationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
   const routeRecommendModalLocalRef = useRef<BottomSheetModal | null>(null);
+  const bookmarkModalLocalRef = useRef<BottomSheetModal | null>(null);
   const navigationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
 
   /** ----------------------------------------
@@ -64,6 +65,8 @@ export const useMapOrchestrator = () => {
     showStationDetailModal,
     showRouteRecommendModal,
     setShowRouteRecommendModal,
+    showBookmarkModal,
+    setShowBookmarkModal,
     setModalRefs,
     showNavigationDetailModal,
   } = useModalStore();
@@ -89,6 +92,7 @@ export const useMapOrchestrator = () => {
       nearbyStationModalRef: nearbyStationModalLocalRef,
       stationDetailModalRef: stationDetailModalLocalRef,
       routeRecommendModalRef: routeRecommendModalLocalRef,
+      bookmarkModalRef: bookmarkModalLocalRef,
       navigationDetailModalRef: navigationDetailModalLocalRef,
     });
 
@@ -138,6 +142,13 @@ export const useMapOrchestrator = () => {
     showPlaceDetailModal ? modal.present() : modal.dismiss();
   }, [showPlaceDetailModal]);
 
+  // 즐겨찾기 모달
+  useEffect(() => {
+    const modal = bookmarkModalLocalRef.current;
+    if (!modal) return;
+    showBookmarkModal ? modal.present() : modal.dismiss();
+  }, [showBookmarkModal]);
+  
   // 네비게이션 상세 모달
   useEffect(() => {
     const modal = navigationDetailModalLocalRef.current;
@@ -185,6 +196,11 @@ export const useMapOrchestrator = () => {
     }
   };
 
+  /* 즐겨찾기 모달 열기 */
+  const handleOpenBookmarkModal = useCallback(() => {
+    setShowBookmarkModal(true);
+  }, [setShowBookmarkModal]);
+
   /** ----------------------------------------
    * 9. 외부로 노출할 핸들러 함수
    * ---------------------------------------- */
@@ -193,6 +209,7 @@ export const useMapOrchestrator = () => {
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
+    handleOpenBookmarkModal,
     handleMapReadyMessage,
     isLocalMapReady,
     setIsLocalMapReady,

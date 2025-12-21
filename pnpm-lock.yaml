@@ -118,7 +118,10 @@ importers:
         version: 7.3.6(prop-types@15.8.1)(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.7)(react@19.1.0))
       react-native-svg:
         specifier: ^15.13.0
-        version: 15.15.0(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.7)(react@19.1.0))(react@19.1.0)
+        version: 15.15.0(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0))(react@19.1.0)
+      react-native-toast-message:
+        specifier: ^2.3.3
+        version: 2.3.3(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0))(react@19.1.0)
       react-native-tts:
         specifier: ^4.1.1
         version: 4.1.1
@@ -4475,6 +4478,12 @@ packages:
 
   react-native-svg@15.15.0:
     resolution: {integrity: sha512-/Wx6F/IZ88B/GcF88bK8K7ZseJDYt+7WGaiggyzLvTowChQ8BM5idmcd4pK+6QJP6a6DmzL2sfOMukFUn/NArg==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+
+  react-native-toast-message@2.3.3:
+    resolution: {integrity: sha512-4IIUHwUPvKHu4gjD0Vj2aGQzqPATiblL1ey8tOqsxOWRPGGu52iIbL8M/mCz4uyqecvPdIcMY38AfwRuUADfQQ==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -11053,6 +11062,11 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.7)(react@19.1.0)
       warn-once: 0.1.1
+
+  react-native-toast-message@2.3.3(react-native@0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-native: 0.81.1(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.5))(@types/react@19.2.5)(react@19.1.0)
 
   react-native-tts@4.1.1: {}
 

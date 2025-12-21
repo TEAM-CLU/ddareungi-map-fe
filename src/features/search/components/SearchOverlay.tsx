@@ -20,12 +20,16 @@ import {
   IconLocatorMark,
 } from '@/shared/components/icons';
 import { reverseGeocode } from '../services/search.api';
-import Geolocation from 'react-native-geolocation-service';
-import { requestLocationPermission } from '@/features/map/utils/location';
-import { AutocompleteResult } from '../model/search.types';
+import { AutocompleteResult, PlaceInfo } from '../model/search.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
+import { ScaleDecorator } from 'react-native-draggable-flatlist';
+import { ScrollView } from 'react-native-gesture-handler';
+import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
+import BookmarkBadge from '@/shared/components/badge/BookmarkBadge';
+import { BookmarkItem } from '@/shared/model/index.types';
+import { useSearchOrchestrator } from '../hooks/useSearchOrchestrator';
 
 interface SearchOverlayProps {
   onClose: () => void;
@@ -50,6 +54,9 @@ const SearchOverlay = ({
     setQuery,
     clearSearch,
     hasResults,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   } = useAutocomplete();
 
   const {
@@ -63,6 +70,8 @@ const SearchOverlay = ({
 
   const { myPosition } = useMyPositionStore();
 
+  const { handlePlaceSelectionFlow } = useSearchOrchestrator();
+
   // 검색어가 변경될 때 useAutocomplete에 반영
   const handleSearchTextChange = useCallback(
     (text: string) => {
@@ -73,9 +82,20 @@ const SearchOverlay = ({
   );
 
   const handleSearchResultSelect = useCallback(
-    (place: AutocompleteResult) => {
-      addRecentSearch(place);
-      onPlaceSelect(place);
+    (place: PlaceInfo | AutocompleteResult) => {
+      const uniqueId = 'placeKey' in place ? place.placeKey : place.id;
+
+      const selectedPlace: AutocompleteResult = {
+        placeKey: uniqueId,
+        name: place.name,
+        address: place.address,
+        latitude: place.latitude,
+        longitude: place.longitude,
+        distance: place.distance || '',
+        category: place.category || '',
+      };
+      addRecentSearch(selectedPlace);
+      onPlaceSelect(selectedPlace);
       setSearchText('');
       clearSearch();
       onClose();
@@ -96,23 +116,14 @@ const SearchOverlay = ({
 
   const handleRecentSelect = useCallback(
     (recent: AutocompleteResult) => {
-      const autocompleteResult: AutocompleteResult = {
-        placeKey: recent.placeKey,
-        name: recent.name,
-        address: recent.address,
-        latitude: recent.latitude,
-        longitude: recent.longitude,
-        distance: recent.distance || '',
-        category: recent.category || '',
-      };
-      handleSearchResultSelect(autocompleteResult);
+      handleSearchResultSelect(recent);
     },
     [handleSearchResultSelect],
   );
 
   // 검색 결과
   const renderSearchResult = useCallback(
-    ({ item }: { item: AutocompleteResult }) => (
+    ({ item }: { item: PlaceInfo }) => (
       <TouchableOpacity
         style={[
           tw('flex-row items-center px-4 py-3 border-b'),
@@ -209,23 +220,30 @@ const SearchOverlay = ({
       const place = await reverseGeocode(myPosition.lat, myPosition.lng);
       if (!place) return;
 
-      const autocompleteResult: AutocompleteResult = {
-        placeKey: place.id,
-        name: place.name,
-        address: place.address,
-        latitude: place.latitude,
-        longitude: place.longitude,
-        distance: '',
-        category: place.category || '',
-      };
-      handleSearchResultSelect(autocompleteResult);
-    } catch (error) {
-      console.error('현위치 검색 실패:', error);
-      Alert.alert('오류', '현위치 검색에 실패했습니다. 다시 시도해주세요.');
+      handleSearchResultSelect(place);
+    } catch (error: any) {
+      console.log('현위치 검색 실패:', error.message);
     } finally {
       setIsLoadingCurrentLocation(false);
     }
   }, [handleSearchResultSelect, myPosition]);
+
+  // 즐겨찾기 뱃지 클릭 핸들러
+  const bookmarks = useBookmarkStore(state => state.bookmarks);
+  const handleBookmarkBadgePress = useCallback(
+    (item: BookmarkItem) => {
+      const place = {
+        placeKey: item.id,
+        name: item.name,
+        address: item.address ?? '',
+        latitude: item.latitude,
+        longitude: item.longitude,
+        category: item.category ?? '',
+      };
+      handlePlaceSelectionFlow(place);
+    },
+    [handlePlaceSelectionFlow],
+  );
 
   return (
     <>
@@ -261,11 +279,31 @@ const SearchOverlay = ({
             edges={['top']}
             style={[tw('px-4 pb-2 text-on-surface-primary'), { marginTop: 56 }]}
           >
-            {/* 빠른 액세스 태그 버튼 */}
-            <View style={[tw('flex-row justify-end'), { gap: 2 }]}>
+            {/* 즐겨찾기 뱃지 + 현위치 버튼 */}
+            <View style={tw('flex-row items-center justify-between')}>
+              {/* 즐겨찾기 뱃지 */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingRight: 8 }}
+                style={{ flexGrow: 1 }}
+              >
+                {bookmarks.map(item => (
+                  <BookmarkBadge
+                    key={`${item.id}`}
+                    name={item.name}
+                    alias={item.alias}
+                    color={item.color}
+                    onPress={() => handleBookmarkBadgePress(item)}
+                  />
+                ))}
+              </ScrollView>
+
+              {/* 빠른 액세스 태그 버튼 */}
+              {/* <View style={[tw('flex-row justify-end'), { gap: 2 }]}> */}
               <TouchableOpacity
                 style={tw(
-                  'bg-brand-primary rounded-full px-3 py-2 flex-row items-center',
+                  'bg-brand-primary rounded-full px-3 py-2 flex-row items-center ml-2',
                 )}
                 onPress={handleCurrentLocationPress}
                 disabled={isLoadingCurrentLocation}
@@ -316,7 +354,7 @@ const SearchOverlay = ({
                     <TouchableOpacity onPress={clearRecentSearches}>
                       <Text
                         style={tw(
-                          'font-primary-600text-sm text-on-surface-tertiary',
+                          'font-primary-600 text-sm text-on-surface-tertiary',
                         )}
                       >
                         전체삭제
@@ -354,15 +392,34 @@ const SearchOverlay = ({
                   <FlatList
                     data={results}
                     renderItem={renderSearchResult}
-                    keyExtractor={item => item.placeKey}
+                    keyExtractor={(item, index) => `${item.id}-${index}`}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
                     onScrollBeginDrag={() => Keyboard.dismiss()}
+                    // 스크롤이 바닥에 닿으면 다음 페이지 호출
+                    onEndReached={() => {
+                      if (hasNextPage) {
+                        fetchNextPage();
+                      }
+                    }}
+                    // 바닥에서 50% 정도 남았을 때 미리 호출
+                    onEndReachedThreshold={0.5}
+                    // 바닥에서 로딩 중일 때 스피너 보여주기
+                    ListFooterComponent={
+                      isFetchingNextPage ? (
+                        <View style={tw('py-4')}>
+                          <ActivityIndicator size="small" color="#888" />
+                        </View>
+                      ) : null
+                    }
                   />
                 ) : error ? (
-                  <View style={tw('flex-1 justify-center items-center')}>
-                    <Text style={tw('text-error')}>
-                      검색 중 오류가 발생했습니다.
+                  <View style={tw('flex-1 justify-center items-center px-4')}>
+                    <Text style={tw('text-red-500 text-center mb-1')}>
+                      오류 발생
+                    </Text>
+                    <Text style={tw('text-on-surface-tertiary text-center')}>
+                      {error}
                     </Text>
                   </View>
                 ) : (

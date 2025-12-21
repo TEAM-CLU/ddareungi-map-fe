@@ -34,6 +34,24 @@ export const formatDistance = (meters: number): string => {
     : `${distanceInKm.toFixed(1)}km`;
 };
 
+// 거리 텍스트 계산 함수
+export const getDistanceText = (
+  distance: number | null | undefined,
+  options?: {
+    loadingText?: string;
+    errorText?: string;
+  }
+): string => {
+  const loading = options?.loadingText || '거리를 계산 중이에요';
+  const error = options?.errorText || '거리를 찾을 수 없어요';
+
+  if (distance === null) return loading; // 로딩 중
+  if (distance === undefined) return error; // 계산 실패
+  return distance >= 1000
+    ? `${(distance / 1000).toFixed(1)}km`
+    : `${Math.round(distance)}m`;
+};
+
 // 칼로리 포맷팅 (3자리 콤마)
 export const formatCalories = (calories: number | null): string => {
   return `${(calories ?? 0).toLocaleString()}kcal`;

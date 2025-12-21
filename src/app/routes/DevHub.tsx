@@ -15,6 +15,7 @@ import TestScreenForCho from '@/app/screens/TestScreenForCho';
 import TestScreenForPark from '@/app/screens/TestScreenForPark';
 import { RootStackParamList } from '@/app/types';
 import GlobalModals from '@/shared/components/modal/GlobalModals';
+import Toast from 'react-native-toast-message';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -105,6 +106,7 @@ const DevHub = () => {
         <Stack.Screen name="TestPark" component={TestScreenForPark} />
       </Stack.Navigator>
       <GlobalModals />
+      <Toast />
     </NavigationContainer>
   );
 };

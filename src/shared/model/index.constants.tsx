@@ -1,9 +1,9 @@
 import {
   IconBicycle,
-  IconDirections,
   IconMyPage,
   IconRecommendedPath,
 } from '../components/icons';
+import { IconStar } from '../components/icons';
 import { FooterRoutes } from './index.types';
 
 export const BUTTON_PRESETS = {
@@ -75,12 +75,6 @@ export const FOOTER_MENU: {
     icon: <IconBicycle width={30} height={30} />,
   },
   {
-    name: 'map',
-    screen: 'Map',
-    label: '길찾기',
-    icon: <IconDirections width={26} height={26} />,
-  },
-  {
     name: 'routeRecommend',
     screen: 'RouteRecommend',
     label: '추천 경로',
@@ -91,6 +85,12 @@ export const FOOTER_MENU: {
     screen: 'MyPage',
     label: '마이 페이지',
     icon: <IconMyPage width={30} height={30} />,
+  },
+  {
+    name: 'bookmark',
+    screen: 'Map',
+    label: '즐겨찾기',
+    icon: <IconStar width={23} height={23} fillColor='#01DA86' strokeColor='white' strokeWidth={2.2}/>,
   },
 ];
 
@@ -105,3 +105,5 @@ export const MEAN_CYCLING_MET = 6;
 export const EMISSION_CAR_PER_KM = 0.21;
 export const EMISSION_WALKING_PER_KM = 0.05;
 export const EMISSION_CYCLING_PER_KM = 0.02;
+
+export const BOOKMARK_COLOR_PRESETS = ['#01DA86', '#FF3B30', '#FF9500', '#FFC107','#007AFF', '#5856D6', '#8E8E93'];

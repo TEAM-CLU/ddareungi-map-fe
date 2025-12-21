@@ -12,6 +12,7 @@ import SelectedRouteDetailBadge from '@/features/routing/components/SelectedRout
 import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
 import { getCategoryText } from '@/shared/utils/formatting';
+import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
 import ReturnToRouteSelectButton from '@/features/routing/components/ReturnToRouteSelectButton';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import InstructionBanner from '@/features/navigation/components/InstructionBanner';
@@ -23,6 +24,7 @@ const MapScreen = () => {
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
     handleSelectedRouteDetailModalClose,
+    handleOpenBookmarkModal,
     handleMapReadyMessage,
     isLocalMapReady,
     setIsLocalMapReady,
@@ -114,12 +116,22 @@ const MapScreen = () => {
 
       {!isNavigationMode && (
         <Footer
-          setIsStationButtonPressed={handleOpenNearbyStationModal}
+          setIsStationBtnPressed={handleOpenNearbyStationModal}
           setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
+          setIsBookmarkBtnPressed={handleOpenBookmarkModal}
         />
       )}
 
       {/* 공용 */}
+      <View
+        style={[
+          tw('absolute right-3'),
+          { bottom: showSelectedRouteDetailModal ? '86%' : '36%' },
+        ]}
+      >
+        <BookmarkMarkersToggleButton />
+      </View>
+
       <View
         style={[
           tw('absolute right-3'),
@@ -134,6 +146,7 @@ const MapScreen = () => {
           <StationMarkersToggleBtn />
         </View>
       )}
+      
     </View>
   );
 };

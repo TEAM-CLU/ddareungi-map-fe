@@ -4,7 +4,7 @@
     <meta name="referrer" content="origin" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=fbed190463c333db6e8802fd012b7df3&autoload=false&libraries=services,clusterer,drawing"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=68ef2791dbc8e895c56402c868837fc3&autoload=false&libraries=services,clusterer,drawing"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css"
@@ -27,7 +27,6 @@
   </body>
   <script>
     // 전역 변수 초기 세팅(window.var로 각 피쳐 js에서 접근가능)
-
     let map;
     window.isSelectedRouteDetailModalOpen = false;
     window.isCompassMode = false;
@@ -43,16 +42,20 @@
       };
       map = new kakao.maps.Map(mapContainer, mapOption);
 
+      // 다른 JS 파일(모듈)들이 로드될 때까지 대기
       const waitForOtherScripts = setInterval(() => {
         if (
           window.MyLocation &&
           window.Route &&
           window.Search &&
           window.Station &&
+          window.Bookmark &&
           window.kakao &&
           window.kakao.maps
         ) {
           clearInterval(waitForOtherScripts);
+
+          // 각 모듈 초기화
           MyLocation.initMyLocationSetting(
             kakao,
             map,
@@ -62,15 +65,9 @@
           Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LNG);
           Search.initSearchSetting(kakao, map);
           Station.initStationSeting(kakao, map);
+          Bookmark.initBookmarkSetting(kakao, map);
 
-          // RN에 맵 로딩 완료 알림(중요)
-          if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage(
-              JSON.stringify({ type: 'mapReady', isReady: true }),
-            );
-          }
-
-          // 실시간 맵 센터 좌표 RN에 최조 전송(대여소 조회용)
+          // 실시간 맵 초기 센터 좌표 RN에 최초 전송
           (function sendInitialCenter() {
             const centerCoord = map.getCenter();
             window.ReactNativeWebView?.postMessage(
@@ -82,7 +79,7 @@
             );
           })();
 
-          // 2) 이후엔 idle 때마다 전송
+          // 이후엔 idle 때마다 전송
           kakao.maps.event.addListener(map, 'idle', () => {
             const centerCoord = map.getCenter();
             window.ReactNativeWebView?.postMessage(
@@ -93,6 +90,20 @@
               }),
             );
           });
+
+          // 모든 모듈 초기화가 끝난 후 RN에 맵 로딩 완료 알림 전송(중요)
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(
+              JSON.stringify({ type: 'mapReady', isReady: true }),
+            );
+          } else {
+            // 혹시 브릿지가 늦게 붙을 경우를 대비한 안전장치
+            setTimeout(() => {
+              window.ReactNativeWebView?.postMessage(
+                JSON.stringify({ type: 'mapReady', isReady: true }),
+              );
+            }, 500);
+          }
         }
       }, 100);
     });
@@ -134,7 +145,7 @@
           MyLocation.setMyHeadingOverlayVisible(false);
         }
 
-        // === 새로운 검색 관련 메시지 처리 ===
+        // === 검색 관련 메시지 처리 ===
 
         // 6. 장소 마커 표시
         if (data.type === 'showPlaceMarker') {
@@ -151,7 +162,7 @@
           Search.clearCurrentPlaceMarker();
         }
 
-        // === 라우팅 관련 ===
+        // === 라우팅(경로) 관련 메시지 처리 ===
 
         if (data.type === 'stopFollowingMyLocation')
           window.isSelectedRouteDetailModalOpen =
@@ -172,7 +183,7 @@
           Route.focusOnStaticPath();
         }
 
-        // === 대여소 기능 ===
+        // === 대여소 관련 메시지 처리 ===
 
         // 12. 대여소 마커 표시
         if (data.type === 'updateStationDataList') {
@@ -192,6 +203,33 @@
         if (data.type === 'focusOnTargetedNearbyStation') {
           Station.focusOnTargetedNearbyStation(data.targetedStationData);
         }
+
+        // === 즐겨찾기 관련 메시지 처리 ===
+
+        // 16. 즐겨찾기 마커 업데이트 (생성 및 갱신)
+        if (data.type === 'updateBookmarks') {
+          Bookmark.createBookmarkMarkers(data.bookmarks);
+        }
+
+        // 17. 즐겨찾기 마커 지우기
+        if (data.type === 'clearBookmarks') {
+          Bookmark.clearBookmarkMarkers();
+        }
+
+        // 18. 특정 즐겨찾기로 이동
+        if (data.type === 'focusOnBookmark') {
+          Bookmark.focusOnBookmark(data.bookmarkId);
+        }
+
+        // 19. 즐겨찾기 마커 표시 on/off
+        if (data.type === 'toggleBookmarkMarkers') {
+          Bookmark.toggleBookmarkMarkers(data.isVisible);
+        }
+
+        // 20. 단일 즐겨찾기 마커 표시 (토글 상태와 무관)
+        if (data.type === 'showSingleBookmarkMarker') {
+          Bookmark.showSingleBookmarkMarker(data.bookmarkData);
+        }
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }
@@ -204,4 +242,5 @@
   <script src="./src/features/routing/utils/routing.js" defer></script>
   <script src="./src/features/search/utils/search.js" defer></script>
   <script src="./src/features/station/utils/station.js" defer></script>
+  <script src="./src/shared/utils/bookmark.js" defer></script>
 </html>
