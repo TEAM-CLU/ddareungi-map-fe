@@ -14,15 +14,15 @@
     const s = document.createElement('style');
     s.id = 'no-tap-style';
     s.textContent = `
-    .station-marker, .station-marker * {
+    .bookmark-marker, .bookmark-marker * {
       -webkit-tap-highlight-color: rgba(0,0,0,0);
       -webkit-touch-callout: none;
       user-select: none;
       -webkit-user-select: none;
       outline: none;
     }
-    .station-marker:active { background: transparent !important; }
-    .station-marker svg text {
+    .bookmark-marker:active { background: transparent !important; }
+    .bookmark-marker svg text {
       pointer-events: none;
       user-select: none;
       -webkit-user-select: none;
@@ -58,13 +58,20 @@
     </svg>
   `;
 
+  // 텍스트 이스케이프 처리 (악성 스크립트 별칭 저장 시 XSS 공격 방지)
+  const escapeHtml = str => {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  };
+
   // DOM 엘리먼트 생성
   const buildBookmarkContentElement = (bookmark, index) => {
     const wrap = document.createElement('div');
     const color = bookmark.color || '#FFC107';
 
     // 1. 라벨 텍스트 결정 (별칭 우선 -> 없으면 장소명 -> 없으면 공백)
-    const labelText = bookmark.alias || bookmark.name || '';
+    const labelText = escapeHtml(bookmark.alias || bookmark.name || '');
 
     // SVG 필터 ID 충돌 방지를 위한 고유 ID 생성
     const uniqueId = `bm_${index}_${Math.floor(Math.random() * 1000)}`;
@@ -192,6 +199,56 @@
     }
   };
 
+  // 단일 즐겨찾기 마커 표시 (토글 상태와 무관하게 검색 시 사용)
+  const showSingleBookmarkMarker = bookmarkData => {
+    if (!bookmarkData || !bookmarkData.latitude || !bookmarkData.longitude)
+      return;
+
+    // 기존에 같은 ID의 마커가 있으면 재활용
+    const existing = bookmarkMarkers.find(item => item.id === bookmarkData.id);
+    if (existing) {
+      // 토글 off 상태에서도 보이도록 명시적으로 setMap 호출
+      existing.marker.setMap(mapRef);
+      mapRef.setCenter(existing.marker.getPosition());
+      mapRef.setLevel(3, { animate: true });
+      return;
+    }
+
+    // 새로 생성
+    const position = new kakaoRef.maps.LatLng(
+      bookmarkData.latitude,
+      bookmarkData.longitude,
+    );
+
+    const uniqueId = `single_${bookmarkData.id}_${Math.floor(
+      Math.random() * 1000,
+    )}`;
+    const contentElement = buildBookmarkContentElement(bookmarkData, uniqueId);
+
+    const marker = new kakaoRef.maps.CustomOverlay({
+      position: position,
+      content: contentElement,
+      xAnchor: 0.5,
+      yAnchor: 0.45,
+      zIndex: 20,
+      clickable: true,
+    });
+
+    marker.setMap(mapRef);
+
+    bookmarkMarkers.push({
+      id: bookmarkData.id,
+      marker: marker,
+      metaData: bookmarkData,
+    });
+
+    bindOverlayClick(marker, bookmarkData);
+
+    // 해당 마커로 포커스
+    mapRef.setCenter(position);
+    mapRef.setLevel(3, { animate: true });
+  };
+
   const destroyBookmark = () => {
     clearBookmarkMarkers();
   };
@@ -201,6 +258,7 @@
     createBookmarkMarkers,
     toggleBookmarkMarkers,
     focusOnBookmark,
+    showSingleBookmarkMarker,
     destroyBookmark,
   };
 })();

@@ -1,12 +1,12 @@
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import { ToggleBookmarkMarkersMessage } from '@/shared/model/map.webview.types';
 import { tw } from '@/shared/libs/tw-helper';
 import { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { IconStar } from '../icons';
+import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 
 const BookmarkMarkersToggleButton = () => {
-  const { sendMessage } = useMapWebview();
+  const { sendMessage } = useProvideWebviewMessenger();
   const [mode, setMode] = useState<'on' | 'off'>('on');
 
   const handleToggleBtnPress = () => {

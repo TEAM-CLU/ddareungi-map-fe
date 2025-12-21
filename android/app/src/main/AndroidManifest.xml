@@ -22,8 +22,7 @@
         android:launchMode="singleTask"
         android:windowSoftInputMode="adjustResize"
         android:exported="true"
-        <!-- 키보드 입력창 가림 문제 -->
-        android:windowSoftInputMode="adjustResize">
+        >
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />

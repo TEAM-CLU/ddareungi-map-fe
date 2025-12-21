@@ -7,6 +7,7 @@ import { useWebViewRef } from '@/app/providers/webview';
 import { useEffect, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, ActivityIndicator } from 'react-native';
+import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 interface MapProps {
   isLocalMapReady: boolean;
   setIsLocalMapReady: React.Dispatch<React.SetStateAction<boolean>>;
@@ -31,6 +32,7 @@ const Map = ({
   });
 
   const { handleBookmarkMarkerClick } = useBookmark({ isMapReady });
+  const _hasHydrated = useBookmarkStore(state => state._hasHydrated);
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     handleMapReadyMessage(event);
@@ -45,7 +47,7 @@ const Map = ({
   const [mapUrl] = useState(() => {
     const timestamp = new Date().getTime();
     // iOS/Android 환경에 따라 주소 분기 (ngrok 주소면 그대로 사용)
-    const baseUrl = 'https://3f3d893368a5.ngrok-free.app/map.html';
+    const baseUrl = 'https://5d13b831d750.ngrok-free.app/map.html';
     return `${baseUrl}?t=${timestamp}`;
   });
   
@@ -53,6 +55,11 @@ const Map = ({
   useEffect(() => {
     setIsMapReady(isLocalMapReady);
   }, [isLocalMapReady]);
+
+  // 즐겨찾기 데이터 로드될때까지 대기 (즐겨찾기 마커 표시 등을 위해)
+  // if (!_hasHydrated) {
+  //   return null;
+  // }
 
   return (
     <WebView

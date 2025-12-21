@@ -27,7 +27,6 @@
   </body>
   <script>
     // 전역 변수 초기 세팅(window.var로 각 피쳐 js에서 접근가능)
-
     let map;
     window.isSelectedRouteDetailModalOpen = false;
     window.isCompassMode = false;
@@ -113,8 +112,6 @@
     const handleMessage = event => {
       try {
         const data = JSON.parse(event.data);
-        // === 내 위치 관련 메시지 처리 ===
-
         // === 내 위치 관련 메시지 처리 ===
 
         // 1. 내 위치 업데이트
@@ -228,6 +225,11 @@
         if (data.type === 'toggleBookmarkMarkers') {
           Bookmark.toggleBookmarkMarkers(data.isVisible);
         }
+
+        // 20. 단일 즐겨찾기 마커 표시 (토글 상태와 무관)
+        if (data.type === 'showSingleBookmarkMarker') {
+          Bookmark.showSingleBookmarkMarker(data.bookmarkData);
+        }
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }
@@ -240,5 +242,5 @@
   <script src="./src/features/routing/utils/routing.js" defer></script>
   <script src="./src/features/search/utils/search.js" defer></script>
   <script src="./src/features/station/utils/station.js" defer></script>
-  <!-- <script src="./src/shared/utils/bookmark.js" defer></script> -->
+  <script src="./src/shared/utils/bookmark.js" defer></script>
 </html>

@@ -1,19 +1,18 @@
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import { BookmarkItem, UseBookmarkOptions } from '../model/index.types';
 import { useModalStore } from '../stores/useModalStore';
-import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useBookmarkStore } from '../stores/useBookmarkStore';
 import { useEffect, useState } from 'react';
 import {
   UpdateBookmarksMessage,
-  WebViewMessageToRN,
 } from '../model/map.webview.types';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { AutocompleteResult } from '@/features/search/model/search.types';
+import { useProvideWebviewMessenger } from './useProvideWebviewMessenger';
+import { Alert } from 'react-native';
 
 export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
-  const { sendMessage } = useMapWebview();
+  const { sendMessage } = useProvideWebviewMessenger();
   const { bookmarks } = useBookmarkStore();
   const { setSelectedPlaceInfoForModal } = useSearchStore();
   const { setShowPlaceDetailModal } = useModalStore();
@@ -35,6 +34,16 @@ export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
       const data = JSON.parse(event.nativeEvent.data);
       if (data.type !== 'clickBookmarkMarker') return;
       const clickedBookmark: BookmarkItem = data.bookmarkData;
+
+      if (!clickedBookmark?.id || !clickedBookmark?.name || !clickedBookmark?.address || !clickedBookmark?.latitude || !clickedBookmark?.longitude) {
+        console.error('유효하지 않은 즐겨찾기 데이터:', clickedBookmark);
+        Alert.alert(
+          '오류',
+          '즐겨찾기 정보를 불러올 수 없습니다.',
+        );
+        return;
+      }
+      
       const bookmarkInfoForModal: AutocompleteResult = {
         placeKey: clickedBookmark.id,
         name: clickedBookmark.name,
@@ -47,6 +56,10 @@ export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
       setShowPlaceDetailModal(true);
     } catch (error) {
       console.error('Bookmark Marker Click Error:', error);
+      Alert.alert(
+        '오류',
+        '즐겨찾기 정보를 불러오는 중 오류가 발생했습니다.',
+      );
     }
   };
 

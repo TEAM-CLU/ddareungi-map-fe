@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Animated,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconBicycle } from '@/shared/components/icons';
@@ -36,6 +37,10 @@ const createPlaceBookmark = (
     throw new Error('장소의 좌표 정보가 없습니다.');
   }
 
+  if (!place.placeKey || !place.name) {
+    throw new Error('장소의 필수 정보가 없습니다.');
+  }
+  
   return {
     id: place.placeKey,
     name: place.name,
@@ -211,6 +216,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
       toggleBookmark(bookmarkItem);
     } catch (error) {
       console.error(error);
+      Alert.alert('즐겨찾기 등록 실패', error instanceof Error ? error.message : '즐겨찾기 등록 중 오류가 발생했습니다.');
     }
   };
 

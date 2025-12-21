@@ -81,7 +81,9 @@ const MapScreen = () => {
         />
       )}
 
-      <View style={[tw('absolute right-3'), { bottom: 200 }]}>
+      <View style={[tw('absolute right-3'), 
+        { bottom: showSelectedRouteDetailModal ? '86%' : '36%' }
+        ]}>
         <BookmarkMarkersToggleButton />
       </View>
 

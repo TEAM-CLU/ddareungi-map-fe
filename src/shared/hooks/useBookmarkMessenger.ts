@@ -1,13 +1,17 @@
-import { useMapWebview } from '@/features/map/hooks/useMapWebview';
 import { useCallback } from 'react';
-import { FocusOnBookmarkMessage, UpdateBookmarksMessage } from '@/shared/model/map.webview.types';
+import {
+  FocusOnBookmarkMessage,
+  ShowSingleBookmarkMarkerMessage,
+  UpdateBookmarksMessage,
+} from '@/shared/model/map.webview.types';
 import { BookmarkItem } from '@/shared/model/index.types';
+import { useProvideWebviewMessenger } from './useProvideWebviewMessenger';
 
 /**
  * 즐겨찾기 관련 WebView 통신 훅
  */
 export const useBookmarkMessenger = () => {
-  const { sendMessage } = useMapWebview();
+  const { sendMessage } = useProvideWebviewMessenger();
 
   /**
    * 즐겨찾기 목록을 웹뷰로 전송
@@ -34,8 +38,23 @@ export const useBookmarkMessenger = () => {
     [sendMessage],
   );
 
+  /**
+   * 단일 즐겨찾기 마커 표시 (토글 상태와 무관)
+   */
+  const showSingleBookmarkMarker = useCallback(
+    (bookmark: BookmarkItem) => {
+      const message: ShowSingleBookmarkMarkerMessage = {
+        type: 'showSingleBookmarkMarker',
+        bookmarkData: bookmark,
+      };
+      sendMessage(message);
+    },
+    [sendMessage],
+  );
+
   return {
     sendBookmarks,
     focusOnBookmark,
+    showSingleBookmarkMarker,
   };
 };

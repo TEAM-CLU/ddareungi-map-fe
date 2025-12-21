@@ -73,7 +73,7 @@ export const useSearchOrchestrator = () => {
    */
   const { bookmarks } = useBookmarkStore();
 
-  const { focusOnBookmark } = useBookmarkMessenger();
+  const { showSingleBookmarkMarker } = useBookmarkMessenger();
 
   /**
    * 검색바 클릭
@@ -133,14 +133,14 @@ export const useSearchOrchestrator = () => {
       searchInputRef?.current?.blur();
 
       // 0) 해당 장소가 즐겨찾기인지 확인
-      const isBookmarkedPlace = bookmarks.find(
+      const foundBookmark = bookmarks.find(
         bookmark => bookmark.id === selectedPlace.placeKey,
       );
 
-      // 1) 즐겨찾기인 경우 해당 마커로 포커스, 아닌 경우 새로 마커 표시
-      if (isBookmarkedPlace) {
+      // 1) 즐겨찾기인 경우 즐겨찾기 마커 표시, 아닌 경우 일반 장소 마커 표시
+      if (foundBookmark) {
         clearCurrentPlaceMarker();
-        focusOnBookmark(isBookmarkedPlace.id);
+        showSingleBookmarkMarker(foundBookmark);
       } else {
         if (selectedPlace.latitude && selectedPlace.longitude) {
           showPlaceMarker(
@@ -196,7 +196,9 @@ export const useSearchOrchestrator = () => {
       showPlaceMarker,
       bookmarks,
       clearCurrentPlaceMarker,
-      focusOnBookmark
+      showSingleBookmarkMarker,
+      setIsFocused,
+      searchInputRef,
     ],
   );
 

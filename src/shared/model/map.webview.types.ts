@@ -121,6 +121,11 @@ export interface ToggleBookmarkMarkersMessage {
   isVisible: boolean;
 }
 
+export interface ShowSingleBookmarkMarkerMessage {
+  type: 'showSingleBookmarkMarker';
+  bookmarkData: BookmarkItem;
+}
+
 // 모든 메시지 타입 유니온
 export type WebViewMessageToWeb =
   | MapReadyMessage
@@ -140,6 +145,7 @@ export type WebViewMessageToWeb =
   | UpdateBookmarksMessage
   | ToggleBookmarkMarkersMessage
   | FocusOnBookmarkMessage
+  | ShowSingleBookmarkMarkerMessage
   | ClearBookmarksMessage
   | StopFollowingMyLocationMessage;
 

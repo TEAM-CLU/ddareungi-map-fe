@@ -1,8 +1,7 @@
 // src/shared/stores/useMapStore.ts
-import React, { createRef } from 'react';
+import React from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import WebView from 'react-native-webview';
 
 interface MapState {
   globalNavigation: any;
@@ -15,8 +14,6 @@ interface MapState {
 export const useMapStore = create<MapState>()(
   devtools(
     set => ({
-      // webRef: createRef<WebView | null>(),
-      // navigation: null,
       globalNavigation: null,
       isMapReady: false,
 
