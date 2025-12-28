@@ -23,6 +23,7 @@ import { useLocationStore } from '@/features/location/stores/useLocationStore';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
+import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 
 interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
@@ -46,7 +47,7 @@ const SelectedRouteDetailModal = ({
       </View>
     );
   }
-
+  const { changeMyLocationMarker } = useNavigationMessenger();
   const { isNavigationMode, routeId, setIsNavigationMode, setRouteId } =
     useNavigationStore();
   const { setShowSelectedRouteDetailModal } = useModalStore();

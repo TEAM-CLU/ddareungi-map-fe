@@ -30,6 +30,7 @@
     let map;
     window.isSelectedRouteDetailModalOpen = false;
     window.isCompassMode = false;
+    window.isNavigationMode = false;
     const DEFAULT_LAT = 37.5665;
     const DEFAULT_LNG = 126.978;
 
@@ -229,6 +230,10 @@
         // 20. 단일 즐겨찾기 마커 표시 (토글 상태와 무관)
         if (data.type === 'showSingleBookmarkMarker') {
           Bookmark.showSingleBookmarkMarker(data.bookmarkData);
+        }
+        // === 내비게이션 기능 ===
+        if (data.type === 'changeMyLocationMarker') {
+          window.isNavigationMode = true;
         }
       } catch (error) {
         console.error('메시지 처리 실패:', error);
