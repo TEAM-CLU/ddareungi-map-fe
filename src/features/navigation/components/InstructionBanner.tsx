@@ -27,8 +27,10 @@ const InstructionBanner = ({ instruction, sign }: InstructionBannerProps) => {
   return (
     <View
       style={[
-        tw('w-full flex flex-row items-center px-5 py-4 bg-brand-primary'),
-        { borderRadius: 20, maxWidth: 348, height: 70, gap: 15 },
+        tw(
+          'w-full flex flex-row items-center px-1 py-2 bg-brand-primary justify-start',
+        ),
+        { borderRadius: 20, maxWidth: 348, height: 70, gap: 1 },
       ]}
     >
       <Image
@@ -43,7 +45,7 @@ const InstructionBanner = ({ instruction, sign }: InstructionBannerProps) => {
               key={idx}
               style={[
                 tw('font-primary-700 text-on-surface-secondary '),
-                { fontSize: 20 },
+                { fontSize: 18 },
               ]}
             >
               {instructionLine}
