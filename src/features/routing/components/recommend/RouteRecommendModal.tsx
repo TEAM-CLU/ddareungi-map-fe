@@ -2,16 +2,24 @@ import SquareButton from '@/shared/components/button/SquareButton';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconMinus, IconPlus } from '@/shared/components/icons';
-import React from 'react';
+import React, { use } from 'react';
 import { useRouteStore } from '../../stores/useRouteStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useShallow } from 'zustand/shallow';
 
 const RouteRecommendModal = () => {
-  const { distance, setDistance } = useRouteStore();
+  const { distance, setDistance } = useRouteStore(
+    useShallow(state => ({
+      distance: state.distance,
+      setDistance: state.setDistance,
+    })),
+  );
 
-  const { setShowRouteRecommendModal } = useModalStore();
-  const { globalNavigation } = useMapStore();
+  const setShowRouteRecommendModal = useModalStore(
+    state => state.setShowRouteRecommendModal,
+  );
+  const globalNavigation = useMapStore(state => state.globalNavigation);
 
   const handleOkBtnPress = () => {
     // 현재 화면이 RouteRecommend가 아닐 때만 navigate

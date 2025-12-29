@@ -1,13 +1,13 @@
-// src/shared/hooks/useMapController.ts
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import WebView, { WebViewMessageEvent } from 'react-native-webview';
+import { use, useCallback, useEffect, useRef, useState } from 'react';
+import { WebViewMessageEvent } from 'react-native-webview';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useModalStore } from '../stores/useModalStore';
 import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
 import { MapReadyMessage } from '@/shared/model/map.webview.types';
+import { useShallow } from 'zustand/shallow';
 
 /**
  * useMapOrchestrator
@@ -49,7 +49,13 @@ export const useMapOrchestrator = () => {
   /** ----------------------------------------
    * 3. 경로/거리 관련 상태 (routeStore)
    * ---------------------------------------- */
-  const { distance, setDistance, prevScreen } = useRouteStore();
+  const { distance, setDistance, prevScreen } = useRouteStore(
+    useShallow(state => ({
+      distance: state.distance,
+      setDistance: state.setDistance,
+      prevScreen: state.prevScreen,
+    })),
+  );
 
   /** ----------------------------------------
    * 4. 모달 show/hide 및 모달 ref 보관용 상태 (modalStore)
@@ -75,7 +81,7 @@ export const useMapOrchestrator = () => {
    * 5. 지도 전역 상태 (mapStore)
    *    - WebView ref / navigation 객체를 전역에서 재사용할 수 있도록 등록
    * ---------------------------------------- */
-  const { setGlobalNavigation } = useMapStore();
+  const setGlobalNavigation = useMapStore(state => state.setGlobalNavigation);
 
   /** ----------------------------------------
    * 6. 초기 mount 시: ref & navigation을 전역 store에 한번만 등록
@@ -148,7 +154,7 @@ export const useMapOrchestrator = () => {
     if (!modal) return;
     showBookmarkModal ? modal.present() : modal.dismiss();
   }, [showBookmarkModal]);
-  
+
   // 네비게이션 상세 모달
   useEffect(() => {
     const modal = navigationDetailModalLocalRef.current;

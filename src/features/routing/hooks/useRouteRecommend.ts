@@ -4,15 +4,21 @@ import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useAppRoute } from '@/shared/hooks/useAppRoute';
 import { useModalStore } from '@/shared/stores/useModalStore';
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, use } from 'react';
 import { Alert } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useRouteRecommend = () => {
   const route = useAppRoute<'RouteSelect'>();
   const { navigation } = useAppNavigation<'Map'>();
 
   const { setShowRouteRecommendModal, setShowSelectedRouteDetailModal } =
-    useModalStore();
+    useModalStore(
+      useShallow(state => ({
+        setShowRouteRecommendModal: state.setShowRouteRecommendModal,
+        setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
+      })),
+    );
 
   const {
     setTotalCaloriesBurned,
@@ -30,7 +36,22 @@ export const useRouteRecommend = () => {
     routeSearchError,
     searchCircularRoutes,
     resetAllData,
-  } = useRouteStore();
+  } = useRouteStore(
+    useShallow(state => ({
+      setTotalCaloriesBurned: state.setTotalCaloriesBurned,
+      setTotalTrees: state.setTotalTrees,
+      setPrevScreen: state.setPrevScreen,
+      start: state.start,
+      distance: state.distance,
+      setStart: state.setStart,
+      setSelectedRouteData: state.setSelectedRouteData,
+      routes: state.routes,
+      isLoadingRoutes: state.isLoadingRoutes,
+      routeSearchError: state.routeSearchError,
+      searchCircularRoutes: state.searchCircularRoutes,
+      resetAllData: state.resetAllData,
+    })),
+  );
 
   // 경로 시간 계산 기준 시간 (리프레시 가능)
   const [baseTime, setBaseTime] = React.useState<Date>(new Date());

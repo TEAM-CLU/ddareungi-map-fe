@@ -1,23 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Alert, TouchableOpacity, Text } from 'react-native';
+import React from 'react';
+import { View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import RouteInputBar from '@/features/routing/components/RouteInputBar';
-import {
-  Route,
-  RouteData,
-  RoutePoint,
-  RouteType,
-} from '@/features/routing/model/routing.types';
-import { RouteProp, useRoute, useFocusEffect } from '@react-navigation/native';
 import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
 import RouteTimeRefreshBar from '@/features/routing/components/RouteTimeRefreshBar';
-import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { useModalStore } from '@/shared/stores/useModalStore';
-import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
-import { useAppRoute } from '@/shared/hooks/useAppRoute';
 import RoundButton from '@/shared/components/button/RoundButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { useRouteSelect } from '@/features/routing/hooks/useRouteSelect';
 
 const RouteSelectScreen = () => {

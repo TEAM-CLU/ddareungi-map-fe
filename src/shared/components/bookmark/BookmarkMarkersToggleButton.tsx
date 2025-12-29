@@ -4,29 +4,22 @@ import { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { IconStar } from '../icons';
 import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
+import { useBookmarkMessenger } from '@/shared/hooks/useBookmarkMessenger';
 
 const BookmarkMarkersToggleButton = () => {
-  const { sendMessage } = useProvideWebviewMessenger();
+  const { turnOffBookmarkMarkers, turnOnBookmarkMarkers } =
+    useBookmarkMessenger();
   const [mode, setMode] = useState<'on' | 'off'>('on');
 
   const handleToggleBtnPress = () => {
     if (mode === 'on') {
       setMode('off');
-      const message: ToggleBookmarkMarkersMessage = {
-        type: 'toggleBookmarkMarkers',
-        isVisible: false,
-      };
-      sendMessage(message);
-      return;
+      turnOffBookmarkMarkers();
     }
 
     if (mode === 'off') {
       setMode('on');
-      const message: ToggleBookmarkMarkersMessage = {
-        type: 'toggleBookmarkMarkers',
-        isVisible: true,
-      };
-      sendMessage(message);
+      turnOnBookmarkMarkers();
       return;
     }
   };
@@ -41,7 +34,11 @@ const BookmarkMarkersToggleButton = () => {
         { zIndex: 10 },
       ]}
     >
-      {mode === 'on' ? <IconStar fillColor='#01da86' strokeColor='#01da86'/> : <IconStar fillColor='white' strokeColor='#77838f'/>}
+      {mode === 'on' ? (
+        <IconStar fillColor="#01da86" strokeColor="#01da86" />
+      ) : (
+        <IconStar fillColor="white" strokeColor="#77838f" />
+      )}
     </TouchableOpacity>
   );
 };

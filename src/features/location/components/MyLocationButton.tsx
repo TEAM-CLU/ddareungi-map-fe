@@ -6,10 +6,16 @@ import { tw } from '@/shared/libs/tw-helper';
 import { useEffect } from 'react';
 
 import { TouchableOpacity } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
 
 const MyLocationButton = () => {
-  const { locationMode, setLocationMode } = useLocationStore();
-  const { isNavigationMode } = useNavigationStore();
+  const { locationMode, setLocationMode } = useLocationStore(
+    useShallow(state => ({
+      locationMode: state.locationMode,
+      setLocationMode: state.setLocationMode,
+    })),
+  );
+  const isNavigationMode = useNavigationStore(state => state.isNavigationMode);
   const { setCenterOnMyLocation, myLocationCompassOn, myLocationCompassOff } =
     useLocationMessenger();
 

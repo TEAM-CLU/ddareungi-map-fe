@@ -12,19 +12,32 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
+import { useShallow } from 'zustand/react/shallow';
 
 const NearbyStationModal = () => {
   const { mutateAsync: getNearbyStations } = useNearbyStationsMutation();
   const [distances, setDistances] = useState<number[]>([]); // 거리 3개 배열
   const { setShowStationDetailModal, setShowNearByStationModal } =
-    useModalStore();
+    useModalStore(
+      useShallow(state => ({
+        setShowStationDetailModal: state.setShowStationDetailModal,
+        setShowNearByStationModal: state.setShowNearByStationModal,
+      })),
+    );
   const {
     setStationMetaData,
     nearbyStationDataList,
     setNearbyStationDataList,
     lamda,
-  } = useStationStore();
-  const { myPosition } = useMyPositionStore();
+  } = useStationStore(
+    useShallow(state => ({
+      setStationMetaData: state.setStationMetaData,
+      nearbyStationDataList: state.nearbyStationDataList,
+      setNearbyStationDataList: state.setNearbyStationDataList,
+      lamda: state.lamda,
+    })),
+  );
+  const myPosition = useMyPositionStore(state => state.myPosition);
   const { focusOnTargetedNearbyStation } = useStationMessenger();
 
   // 리스트 클릭시 상세대여소 모달로 이동

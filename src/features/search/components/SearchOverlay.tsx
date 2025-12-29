@@ -1,12 +1,10 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   FlatList,
-  Animated,
   Keyboard,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
@@ -24,7 +22,6 @@ import { AutocompleteResult, PlaceInfo } from '../model/search.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import { ScaleDecorator } from 'react-native-draggable-flatlist';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 import BookmarkBadge from '@/shared/components/badge/BookmarkBadge';
@@ -66,9 +63,9 @@ const SearchOverlay = ({
     clearRecentSearches,
   } = useRecentSearches();
 
-  const { showSearchOverlay } = useSearchStore();
+  const showSearchOverlay = useSearchStore(state => state.showSearchOverlay);
 
-  const { myPosition } = useMyPositionStore();
+  const myPosition = useMyPositionStore(state => state.myPosition);
 
   const { handlePlaceSelectionFlow } = useSearchOrchestrator();
 

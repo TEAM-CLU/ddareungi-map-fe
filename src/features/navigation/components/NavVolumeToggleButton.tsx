@@ -3,9 +3,16 @@ import { IconMute, IconVolume } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
 
 const NavVolumeToggleButton = () => {
-  const { soundRef, navVolume } = useNavDetailModalStore();
+  const { soundRef, navVolume } = useNavDetailModalStore(
+    useShallow(state => ({
+      soundRef: state.soundRef,
+      navVolume: state.navVolume,
+    })),
+  );
+
   const [isMuted, setIsMuted] = useState(false);
 
   const handleVolumeToggleBtnPress = async () => {

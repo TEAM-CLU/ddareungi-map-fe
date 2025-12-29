@@ -10,9 +10,17 @@ import BookmarkModal from '@/shared/components/bookmark/BookmarkEditModal';
 import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
 import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
 import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
+import { useShallow } from 'zustand/react/shallow';
 
 const GlobalModals = () => {
-  const { start, end, waypoints, selectedRouteData } = useRouteStore();
+  const { start, end, waypoints, selectedRouteData } = useRouteStore(
+    useShallow(state => ({
+      start: state.start,
+      end: state.end,
+      waypoints: state.waypoints,
+      selectedRouteData: state.selectedRouteData,
+    })),
+  );
   const {
     setShowNearByStationModal,
     setShowStationDetailModal,
@@ -28,9 +36,28 @@ const GlobalModals = () => {
     bookmarkModalRef,
     setShowBookmarkModal,
     navigationDetailModalRef,
-  } = useModalStore();
+  } = useModalStore(
+    useShallow(state => ({
+      setShowNearByStationModal: state.setShowNearByStationModal,
+      setShowStationDetailModal: state.setShowStationDetailModal,
+      setShowRouteRecommendModal: state.setShowRouteRecommendModal,
+      setShowPlaceDetailModal: state.setShowPlaceDetailModal,
+      setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
+      setShowNavigationDetailModal: state.setShowNavigationDetailModal,
+      selectedRouteDetailModalRef: state.selectedRouteDetailModalRef,
+      routeRecommendModalRef: state.routeRecommendModalRef,
+      nearbyStationModalRef: state.nearbyStationModalRef,
+      stationDetailModalRef: state.stationDetailModalRef,
+      placeDetailModalRef: state.placeDetailModalRef,
+      bookmarkModalRef: state.bookmarkModalRef,
+      setShowBookmarkModal: state.setShowBookmarkModal,
+      navigationDetailModalRef: state.navigationDetailModalRef,
+    })),
+  );
 
-  const { selectedPlaceInfoForModal } = useSearchStore();
+  const selectedPlaceInfoForModal = useSearchStore(
+    state => state.selectedPlaceInfoForModal,
+  );
 
   useNavDetailModal();
 
@@ -106,7 +133,7 @@ const GlobalModals = () => {
       >
         <BookmarkModal />
       </SlideModal>
-      
+
       {/* 네비게이션 디테일 모달 */}
       <SlideModal
         ref={navigationDetailModalRef}

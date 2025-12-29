@@ -3,7 +3,9 @@ import { Audio } from 'expo-av';
 import { useEffect, useRef, useState } from 'react';
 
 export const useNavDetailModal = () => {
-  const { setAllNavDetailModalItems } = useNavDetailModalStore();
+  const setAllNavDetailModalItems = useNavDetailModalStore(
+    state => state.setAllNavDetailModalItems,
+  );
 
   const soundLocalRef = useRef<Audio.Sound | null>(null);
   const [systemLocalVolume, setSystemLocalVolume] = useState<number>(0.5);

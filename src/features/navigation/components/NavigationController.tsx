@@ -1,12 +1,12 @@
 import { IconHamburger, IconPlay } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const NavigationController = () => {
-  const { setShowNavigationDetailModal } = useModalStore();
+  const setShowNavigationDetailModal = useModalStore(
+    state => state.setShowNavigationDetailModal,
+  );
   return (
     <View
       style={[

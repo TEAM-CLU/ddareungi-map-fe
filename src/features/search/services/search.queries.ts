@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react';
 import { PlaceInfo, SearchOptions } from '../model/search.types';
-import { useNetInfo } from '@react-native-community/netinfo';
-import { useIsFocused } from '@react-navigation/native';
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { reverseGeocode, searchAddressCoordinates, searchPlacesByKeyword } from './search.api';
-import { AppState } from 'react-native';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+} from '@tanstack/react-query';
+import {
+  reverseGeocode,
+  searchAddressCoordinates,
+  searchPlacesByKeyword,
+} from './search.api';
 
 // -----------------------------------------------------------
 // 1. 쿼리 키 팩토리 (Query Key Factory)
@@ -38,19 +42,19 @@ export const useInfinitePlaceSearch = (
 ) => {
   return useInfiniteQuery<PlaceInfo[], Error>({
     queryKey: placeKeys.keyword(query, options),
-    
+
     queryFn: async ({ pageParam = 1, signal }) => {
-      // API 함수에 signal을 넘겨주면, 
+      // API 함수에 signal을 넘겨주면,
       // 사용자가 타자를 빨리 칠 때 이전 요청이 자동 취소됨 (네트워크 낭비 방지)
       return searchPlacesByKeyword(
-        query, 
-        { ...options, page: pageParam as number }, 
-        signal
+        query,
+        { ...options, page: pageParam as number },
+        signal,
       );
     },
-    
+
     initialPageParam: 1,
-    
+
     // 다음 페이지가 있는지 계산하는 로직
     getNextPageParam: (lastPage, allPages) => {
       const currentSize = options.size || 15;
@@ -63,8 +67,8 @@ export const useInfinitePlaceSearch = (
 
     // [캐시 옵션]
     staleTime: 1000 * 60 * 5, // 5분간 데이터를 신선한 것으로 간주 (재요청 안 함)
-    gcTime: 1000 * 60 * 30,   // 30분간 캐시 메모리에 보관
-    
+    gcTime: 1000 * 60 * 30, // 30분간 캐시 메모리에 보관
+
     refetchOnWindowFocus: false, // 앱 전환했다 돌아왔을 때 깜빡임 방지
     retry: 1, // 실패 시 1번만 재시도 (404 등은 재시도 의미가 없으므로)
   });

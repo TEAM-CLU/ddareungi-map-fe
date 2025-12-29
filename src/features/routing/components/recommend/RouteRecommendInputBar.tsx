@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconClose, IconOval } from '@/shared/components/icons';
 import { createStartPoint } from '@/features/routing/utils/creatPoint';
+import { useShallow } from 'zustand/react/shallow';
 
 interface RouteRecommendInputBarProps {
   onClose: () => void;
@@ -17,7 +18,12 @@ const RouteRecommendInputBar = ({
   onRoutePointPress,
   onDistancePress,
 }: RouteRecommendInputBarProps) => {
-  const { start, distance } = useRouteStore();
+  const { start, distance } = useRouteStore(
+    useShallow(state => ({
+      start: state.start,
+      distance: state.distance,
+    })),
+  );
 
   const handleClosePress = useCallback(() => {
     onClose();

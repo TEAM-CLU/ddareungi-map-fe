@@ -10,7 +10,7 @@ export const useAutocomplete = () => {
   // 2. 디바운스된 검색어 (API 요청용 - 0.3초 뒤 반응)
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  const { myPosition } = useMyPositionStore();
+  const myPosition = useMyPositionStore(state => state.myPosition);
 
   // ----------------------------------------------------
   // [디바운싱 로직]
@@ -32,7 +32,7 @@ export const useAutocomplete = () => {
   const searchOptions: SearchOptions = useMemo(() => {
     // 검색어가 너무 짧으면 API 요청 안 함
     if (debouncedQuery.trim().length < 1) {
-      return {}; 
+      return {};
     }
 
     return myPosition
@@ -57,13 +57,13 @@ export const useAutocomplete = () => {
     data,
     isLoading: isQueryLoading, // 로딩 상태
     isError,
-    error: queryError,         // 에러 객체 (메시지 포함)
+    error: queryError, // 에러 객체 (메시지 포함)
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   } = useInfinitePlaceSearch(debouncedQuery, searchOptions);
-  
-// ----------------------------------------------------
+
+  // ----------------------------------------------------
   // [결과 데이터 가공]
   // 쿼리 데이터(pages)를 하나의 배열로 평탄화
   // ----------------------------------------------------
@@ -89,7 +89,7 @@ export const useAutocomplete = () => {
     query,
     results,
     isLoading: isQueryLoading,
-    error: isError ? queryError?.message: null,
+    error: isError ? queryError?.message : null,
 
     // 액션
     setQuery: handleQueryChange,

@@ -2,20 +2,22 @@ import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { removeOverlappingPart } from '@/features/station/utils/string';
-import { tw } from '@/shared/libs/tw-helper';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useEffect, useRef, useState } from 'react';
-import { Linking, Platform } from 'react-native';
 import {
-  View,
-  Text,
   ActivityIndicator,
+  Linking,
+  Platform,
+  Text,
   TouchableOpacity,
-  Animated,
+  View,
 } from 'react-native';
-import { useStationStore } from '../stores/useStationStore';
+import { Animated } from 'react-native';
 import { AutocompleteResult } from '@/features/search/model/search.types';
+import { useShallow } from 'zustand/react/shallow';
+import { useStationStore } from '@/features/station/stores/useStationStore';
+import { removeOverlappingPart } from '@/features/station/utils/string';
+import { tw } from '@/shared/libs/tw-helper';
 import { getDistanceText } from '@/shared/utils/formatting';
 
 interface StationDetailModalProps {
@@ -29,10 +31,19 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
     setEnd,
     addWaypoint,
     syncStartEndInLoopMode,
-  } = useRouteStore();
-  const { globalNavigation } = useMapStore();
-  const { stationMetaData, lamda } = useStationStore();
-  const { myPosition } = useMyPositionStore();
+  } = useRouteStore(
+    useShallow(state => ({
+      routeType: state.routeType,
+      setRouteType: state.setRouteType,
+      setStart: state.setStart,
+      setEnd: state.setEnd,
+      addWaypoint: state.addWaypoint,
+      syncStartEndInLoopMode: state.syncStartEndInLoopMode,
+    })),
+  );
+  const globalNavigation = useMapStore(state => state.globalNavigation);
+  const stationMetaData = useStationStore(state => state.stationMetaData);
+  const myPosition = useMyPositionStore(state => state.myPosition);
 
   // RouteType 토글 함수
   const toggleRouteType = () => {
@@ -151,7 +162,6 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
       await Linking.openURL(storeUrl);
     }
   };
-
 
   return (
     <View

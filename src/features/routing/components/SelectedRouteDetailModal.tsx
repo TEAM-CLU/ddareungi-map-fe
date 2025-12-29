@@ -23,7 +23,7 @@ import { useLocationStore } from '@/features/location/stores/useLocationStore';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
-import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
+import { useShallow } from 'zustand/react/shallow';
 
 interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
@@ -47,17 +47,33 @@ const SelectedRouteDetailModal = ({
       </View>
     );
   }
-  const { changeMyLocationMarker } = useNavigationMessenger();
   const { isNavigationMode, routeId, setIsNavigationMode, setRouteId } =
-    useNavigationStore();
-  const { setShowSelectedRouteDetailModal } = useModalStore();
+    useNavigationStore(
+      useShallow(state => ({
+        isNavigationMode: state.isNavigationMode,
+        routeId: state.routeId,
+        setIsNavigationMode: state.setIsNavigationMode,
+        setRouteId: state.setRouteId,
+      })),
+    );
+  const setShowSelectedRouteDetailModal = useModalStore(
+    state => state.setShowSelectedRouteDetailModal,
+  );
   const { totalCaloriesBurned, totalTrees, routeType, prevScreen } =
-    useRouteStore();
+    useRouteStore(
+      useShallow(state => ({
+        totalCaloriesBurned: state.totalCaloriesBurned,
+        totalTrees: state.totalTrees,
+        routeType: state.routeType,
+        prevScreen: state.prevScreen,
+      })),
+    );
   const { drawStaticPath, focusOnStaticPath, stopFollowingMyLocation } =
     useRoutingMessenger();
-  const { setLocationMode } = useLocationStore();
+  const setLocationMode = useLocationStore(state => state.setLocationMode);
   const { myLocationCompassOff } = useLocationMessenger();
-  const { isMapReady } = useMapStore();
+  const isMapReady = useMapStore(state => state.isMapReady);
+
   const {
     summary,
     segments,

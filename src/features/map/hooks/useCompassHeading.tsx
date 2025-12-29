@@ -1,4 +1,3 @@
-// hooks/useCompassHeading.ts
 import {
   CompassHeadingData,
   UseUserHeadingOptions,

@@ -12,12 +12,13 @@ import SelectedRouteDetailBadge from '@/features/routing/components/SelectedRout
 import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
 import { getCategoryText } from '@/shared/utils/formatting';
-import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
 import ReturnToRouteSelectButton from '@/features/routing/components/ReturnToRouteSelectButton';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import InstructionBanner from '@/features/navigation/components/InstructionBanner';
 import NavigationController from '@/features/navigation/components/NavigationController';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useShallow } from 'zustand/shallow';
+import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
 
 const MapScreen = () => {
   const {
@@ -30,9 +31,16 @@ const MapScreen = () => {
     setIsLocalMapReady,
   } = useMapOrchestrator();
 
-  const { isNavigationMode, routeId } = useNavigationStore();
-  const { showSelectedRouteDetailModal } = useModalStore();
-  const { selectedRouteData } = useRouteStore();
+  const { isNavigationMode, routeId } = useNavigationStore(
+    useShallow(state => ({
+      isNavigationMode: state.isNavigationMode,
+      routeId: state.routeId,
+    })),
+  );
+  const showSelectedRouteDetailModal = useModalStore(
+    state => state.showSelectedRouteDetailModal,
+  );
+  const selectedRouteData = useRouteStore(state => state.selectedRouteData);
   const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
     useSearchOrchestrator();
 
@@ -116,8 +124,9 @@ const MapScreen = () => {
 
       {!isNavigationMode && (
         <Footer
-          setIsStationButtonPressed={handleOpenNearbyStationModal}
+          setIsStationBtnPressed={handleOpenNearbyStationModal}
           setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
+          setIsBookmarkBtnPressed={handleOpenBookmarkModal}
         />
       )}
 
@@ -134,6 +143,12 @@ const MapScreen = () => {
       {!showSelectedRouteDetailModal && !isNavigationMode && (
         <View style={[tw('absolute right-3'), { bottom: '24%' }]}>
           <StationMarkersToggleBtn />
+        </View>
+      )}
+
+      {!showSelectedRouteDetailModal && !isNavigationMode && (
+        <View style={[tw('absolute right-3'), { bottom: '18%' }]}>
+          <BookmarkMarkersToggleButton />
         </View>
       )}
     </View>

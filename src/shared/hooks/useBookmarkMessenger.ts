@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import {
   FocusOnBookmarkMessage,
   ShowSingleBookmarkMarkerMessage,
+  ToggleBookmarkMarkersMessage,
   UpdateBookmarksMessage,
 } from '@/shared/model/map.webview.types';
 import { BookmarkItem } from '@/shared/model/index.types';
@@ -12,6 +13,23 @@ import { useProvideWebviewMessenger } from './useProvideWebviewMessenger';
  */
 export const useBookmarkMessenger = () => {
   const { sendMessage } = useProvideWebviewMessenger();
+
+  // 마커 표시 On/off
+  const turnOnBookmarkMarkers = useCallback(() => {
+    const message: ToggleBookmarkMarkersMessage = {
+      type: 'toggleBookmarkMarkers',
+      isVisible: true,
+    };
+    sendMessage(message);
+  }, [sendMessage]);
+
+  const turnOffBookmarkMarkers = useCallback(() => {
+    const message: ToggleBookmarkMarkersMessage = {
+      type: 'toggleBookmarkMarkers',
+      isVisible: false,
+    };
+    sendMessage(message);
+  }, [sendMessage]);
 
   /**
    * 즐겨찾기 목록을 웹뷰로 전송
@@ -56,5 +74,7 @@ export const useBookmarkMessenger = () => {
     sendBookmarks,
     focusOnBookmark,
     showSingleBookmarkMarker,
+    turnOffBookmarkMarkers,
+    turnOnBookmarkMarkers,
   };
 };

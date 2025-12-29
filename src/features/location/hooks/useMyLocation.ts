@@ -12,7 +12,7 @@ import { Coordinates } from '@/features/map/model/map.types';
 export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
   const { updateMyLocation, rotateMyHeading } = useLocationMessenger();
   const webViewRef = useWebViewRef();
-  const { setMyPosition } = useMyPositionStore();
+  const setMyPosition = useMyPositionStore(state => state.setMyPosition);
   const watchIdRef = useRef<number | null>(null);
   const lastPos = useRef<Coordinates | null>(null);
 

@@ -11,11 +11,22 @@ import Slider from '@react-native-community/slider';
 import { useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { VolumeManager } from 'react-native-volume-manager';
+import { useShallow } from 'zustand/react/shallow';
 
 const NavigationDetailModal = () => {
   const { soundRef, systemVolume, setSystemVolume, navVolume, setNavVolume } =
-    useNavDetailModalStore();
-  const { setShowNavigationDetailModal } = useModalStore();
+    useNavDetailModalStore(
+      useShallow(state => ({
+        soundRef: state.soundRef,
+        systemVolume: state.systemVolume,
+        setSystemVolume: state.setSystemVolume,
+        navVolume: state.navVolume,
+        setNavVolume: state.setNavVolume,
+      })),
+    );
+  const setShowNavigationDetailModal = useModalStore(
+    state => state.setShowNavigationDetailModal,
+  );
   // 시스템 볼륨 초기값 설정 및 리스너 등록
   useEffect(() => {
     try {

@@ -3,8 +3,6 @@ import { tw } from '@/shared/libs/tw-helper';
 import { useState } from 'react';
 import IconStationMarkerOn from '@/shared/components/icons/IconStationMarkerOn';
 import IconStationMarkerOff from '@/shared/components/icons/IconStationMarkerOff';
-import { ToggleStationMarkersMessage } from '@/shared/model/map.webview.types';
-import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
 
 const StationMarkersToggleBtn = () => {

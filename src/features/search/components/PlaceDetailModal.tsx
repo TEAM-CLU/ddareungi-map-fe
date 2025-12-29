@@ -24,15 +24,14 @@ import { getDistanceText } from '@/shared/utils/formatting';
 import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 import StarToggle from '@/shared/components/bookmark/StarToggle';
 import { BookmarkItem } from '@/shared/model/index.types';
+import { useShallow } from 'zustand/react/shallow';
 
 export interface PlaceDetailModalProps {
   place: AutocompleteResult | null;
   onClose?: () => void;
 }
 
-const createPlaceBookmark = (
-  place: AutocompleteResult,
-): BookmarkItem => {
+const createPlaceBookmark = (place: AutocompleteResult): BookmarkItem => {
   if (place.latitude == null || place.longitude == null) {
     throw new Error('장소의 좌표 정보가 없습니다.');
   }
@@ -40,7 +39,7 @@ const createPlaceBookmark = (
   if (!place.placeKey || !place.name) {
     throw new Error('장소의 필수 정보가 없습니다.');
   }
-  
+
   return {
     id: place.placeKey,
     name: place.name,
@@ -69,11 +68,20 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
     setEnd,
     addWaypoint,
     syncStartEndInLoopMode,
-  } = useRouteStore();
+  } = useRouteStore(
+    useShallow(state => ({
+      routeType: state.routeType,
+      setRouteType: state.setRouteType,
+      setStart: state.setStart,
+      setEnd: state.setEnd,
+      addWaypoint: state.addWaypoint,
+      syncStartEndInLoopMode: state.syncStartEndInLoopMode,
+    })),
+  );
 
-  const { globalNavigation } = useMapStore();
-  const { myPosition } = useMyPositionStore();
-  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
+  const globalNavigation = useMapStore(state => state.globalNavigation);
+  const myPosition = useMyPositionStore(state => state.myPosition);
+  const toggleBookmark = useBookmarkStore(state => state.toggleBookmark);
   const bookmarked = useBookmarkStore(state =>
     place.placeKey
       ? state.bookmarks.some(item => item.id === place.placeKey)
@@ -216,7 +224,12 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
       toggleBookmark(bookmarkItem);
     } catch (error) {
       console.error(error);
-      Alert.alert('즐겨찾기 등록 실패', error instanceof Error ? error.message : '즐겨찾기 등록 중 오류가 발생했습니다.');
+      Alert.alert(
+        '즐겨찾기 등록 실패',
+        error instanceof Error
+          ? error.message
+          : '즐겨찾기 등록 중 오류가 발생했습니다.',
+      );
     }
   };
 
@@ -244,10 +257,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
             )}
           </View>
         </View>
-        <StarToggle
-          active={bookmarked}
-          onToggle={handleToggleBookmark}
-        />
+        <StarToggle active={bookmarked} onToggle={handleToggleBookmark} />
       </View>
 
       {/* 거리/주소 정보 */}

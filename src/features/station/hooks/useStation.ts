@@ -20,14 +20,20 @@ import {
   NeedUpdateStationBikeCountListMessage,
 } from '@/shared/model/map.webview.types';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { useShallow } from 'zustand/shallow';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
-  const { isNavigationMode } = useNavigationStore();
+  const isNavigationMode = useNavigationStore(state => state.isNavigationMode);
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
-    useModalStore();
-  const { setStationMetaData } = useStationStore();
+    useModalStore(
+      useShallow(state => ({
+        setShowStationDetailModal: state.setShowStationDetailModal,
+        showSelectedRouteDetailModal: state.showSelectedRouteDetailModal,
+      })),
+    );
+  const setStationMetaData = useStationStore(state => state.setStationMetaData);
 
   const [mapCenterCoord, setMapCenterCoord] = useState<Coordinates | null>(
     null,

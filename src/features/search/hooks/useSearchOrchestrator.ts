@@ -8,8 +8,9 @@ import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useRoute, RouteProp } from '@react-navigation/native';
-import { useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
 import { useBookmarkMessenger } from '../../../shared/hooks/useBookmarkMessenger';
+import { useShallow } from 'zustand/react/shallow';
 
 /**
  * useSearchOrchestrator
@@ -33,7 +34,13 @@ export const useSearchOrchestrator = () => {
    * 검색 상태 (선택된 장소)
    * --------------------------- */
   const { setSelectedPlaceInfoForModal, setIsFocused, searchInputRef } =
-    useSearchStore();
+    useSearchStore(
+      useShallow(state => ({
+        setSelectedPlaceInfoForModal: state.setSelectedPlaceInfoForModal,
+        setIsFocused: state.setIsFocused,
+        searchInputRef: state.searchInputRef,
+      })),
+    );
 
   /** 현재 검색의 목적 (출발/도착/경유 or auto) */
   const [currentPlaceType, setCurrentPlaceType] = useState<string | null>(null);
@@ -46,7 +53,14 @@ export const useSearchOrchestrator = () => {
     setShowNearByStationModal,
     setShowRouteRecommendModal,
     setShowStationDetailModal,
-  } = useModalStore();
+  } = useModalStore(
+    useShallow(state => ({
+      setShowPlaceDetailModal: state.setShowPlaceDetailModal,
+      setShowNearByStationModal: state.setShowNearByStationModal,
+      setShowRouteRecommendModal: state.setShowRouteRecommendModal,
+      setShowStationDetailModal: state.setShowStationDetailModal,
+    })),
+  );
 
   /** ---------------------------
    * WebView 메시지 (지도 마커, 위치 이동 등)
@@ -61,17 +75,24 @@ export const useSearchOrchestrator = () => {
   /** ---------------------------
    * 경로 상태 (출발/도착 중 하나라도 있는지)
    * --------------------------- */
-  const { hasAnyRouteData, resetAllData } = useRouteStore();
+  const { hasAnyRouteData, resetAllData } = useRouteStore(
+    useShallow(state => ({
+      hasAnyRouteData: state.hasAnyRouteData,
+      resetAllData: state.resetAllData,
+    })),
+  );
 
   /** ---------------------------
    * 검색 오버레이 열기/닫기
    * --------------------------- */
-  const { setShowSearchOverlay } = useSearchStore();
+  const setShowSearchOverlay = useSearchStore(
+    state => state.setShowSearchOverlay,
+  );
 
   /**
    * 북마크 데이터
    */
-  const { bookmarks } = useBookmarkStore();
+  const bookmarks = useBookmarkStore(state => state.bookmarks);
 
   const { showSingleBookmarkMarker } = useBookmarkMessenger();
 
