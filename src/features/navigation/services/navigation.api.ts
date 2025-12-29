@@ -26,7 +26,7 @@ export const postStartNavigationSession = async (
   payload: StartNavigationSessionPayload,
 ): Promise<StartNavigationSessionResponse> => {
   const response = await navigationApi.post('/start', payload);
-  return response.data.data;
+  return response.data;
 };
 
 // 내비게이션 세션 유지, 갱신 10분

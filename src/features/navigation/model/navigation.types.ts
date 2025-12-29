@@ -24,7 +24,7 @@ export interface NavDetailModalState {
 
 // API 관련 타입
 
-interface NavigationInstruction {
+export interface NavigationInstruction {
   distance: number; // in meters
   time: number; // in seconds
   text: string;
@@ -42,9 +42,9 @@ export interface StartNavigationSessionResponse {
   data: {
     sessionId: string;
     coordinates: [number, number][];
+    instructions: NavigationInstruction[];
+    segments: Segment[];
   };
-  instructions: NavigationInstruction[];
-  segments: Segment[];
 }
 
 // 내비게이션 세션 유지

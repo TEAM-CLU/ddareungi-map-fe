@@ -19,6 +19,7 @@ import NavigationController from '@/features/navigation/components/NavigationCon
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useShallow } from 'zustand/shallow';
 import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
+import { useNavigationOrchestrator } from '@/features/navigation/hooks/useNavigationOrchestrator';
 
 const MapScreen = () => {
   const {
@@ -31,12 +32,9 @@ const MapScreen = () => {
     setIsLocalMapReady,
   } = useMapOrchestrator();
 
-  const { isNavigationMode, routeId } = useNavigationStore(
-    useShallow(state => ({
-      isNavigationMode: state.isNavigationMode,
-      routeId: state.routeId,
-    })),
-  );
+  const { isNavigationMode, routeId, currentInstruction } =
+    useNavigationOrchestrator();
+
   const showSelectedRouteDetailModal = useModalStore(
     state => state.showSelectedRouteDetailModal,
   );
@@ -57,7 +55,7 @@ const MapScreen = () => {
       />
 
       {/* 네비게이션 모드 */}
-      {isNavigationMode && !!routeId && (
+      {isNavigationMode && !!routeId && !!currentInstruction && (
         <SafeAreaView
           edges={['top']}
           style={[
@@ -66,7 +64,10 @@ const MapScreen = () => {
             ),
           ]}
         >
-          <InstructionBanner instruction="앞으로 200m 직진하세요." sign={0} />
+          <InstructionBanner
+            instruction={currentInstruction.text}
+            sign={currentInstruction.sign}
+          />
         </SafeAreaView>
       )}
 
