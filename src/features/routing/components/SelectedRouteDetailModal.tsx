@@ -24,6 +24,7 @@ import { useLocationMessenger } from '@/features/location/hooks/useLocationMesse
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useShallow } from 'zustand/react/shallow';
+import { useBookmarkMessenger } from '@/shared/hooks/useBookmarkMessenger';
 
 interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
@@ -73,6 +74,8 @@ const SelectedRouteDetailModal = ({
   const setLocationMode = useLocationStore(state => state.setLocationMode);
   const { myLocationCompassOff } = useLocationMessenger();
   const isMapReady = useMapStore(state => state.isMapReady);
+
+  const { turnOffBookmarkMarkers } = useBookmarkMessenger();
 
   const {
     summary,
@@ -132,6 +135,7 @@ const SelectedRouteDetailModal = ({
       };
       stopFollowingMyLocation();
       drawStaticPath(staticPathData);
+      turnOffBookmarkMarkers();
       myLocationCompassOff();
       setLocationMode('default');
     };
