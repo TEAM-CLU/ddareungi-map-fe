@@ -118,3 +118,10 @@ export interface ReRouteResponse {
     segments: Segment[];
   };
 }
+
+// useNavigationOrchestrator 내부 상태 타입
+export interface IntervalPathData {
+  intervalIndex: number;
+  interval: [number, number];
+  coordinates: Coordinates[];
+}

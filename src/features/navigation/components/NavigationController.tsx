@@ -3,7 +3,17 @@ import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-const NavigationController = () => {
+interface NavigationControllerProps {
+  estimatedArrivalTime: string;
+  remainingDistance: string;
+  traveledDistance: string;
+}
+
+const NavigationController = ({
+  estimatedArrivalTime,
+  remainingDistance,
+  traveledDistance,
+}: NavigationControllerProps) => {
   const setShowNavigationDetailModal = useModalStore(
     state => state.setShowNavigationDetailModal,
   );
@@ -42,7 +52,7 @@ const NavigationController = () => {
               { fontSize: 13 },
             ]}
           >
-            예상 도착시간 12:07AM
+            예상 도착시간 {estimatedArrivalTime}
           </Text>
           <TouchableOpacity onPress={() => setShowNavigationDetailModal(true)}>
             <IconHamburger />
@@ -54,7 +64,7 @@ const NavigationController = () => {
             { fontSize: 24 },
           ]}
         >
-          222m 남음
+          {remainingDistance} 남음
         </Text>
         <Text
           style={[
@@ -62,7 +72,7 @@ const NavigationController = () => {
             { fontSize: 13 },
           ]}
         >
-          소요거리 1.8km
+          소요거리 {traveledDistance}
         </Text>
       </View>
     </View>

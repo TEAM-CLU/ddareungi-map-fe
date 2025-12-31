@@ -27,3 +27,5 @@ export const DIRECTION_ICONS: Record<string, any> = {
   // KEEP_RIGHT
   '7': require('@/assets/imgs/instruction/arrow_keep_right.png'),
 };
+
+export const THROTTLE_WAIT_MS = 2000;

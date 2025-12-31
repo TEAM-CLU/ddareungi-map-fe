@@ -9,10 +9,14 @@ export const formatTime = (seconds: number): string => {
 };
 
 // 시간 포맷팅 (초 → n분)
-export const formatMinutes = (seconds: number): string => String(Math.round(seconds / 60));
+export const formatMinutes = (seconds: number): string =>
+  String(Math.round(seconds / 60));
 
 // 시간대 포맷팅 함수 (baseTime 기준 ~ 도착 예정 시간)
-export const formatTimeRange = (baseTime: Date, durationSeconds: number): string => {
+export const formatTimeRange = (
+  baseTime: Date,
+  durationSeconds: number,
+): string => {
   const arrival = new Date(baseTime.getTime() + durationSeconds * 1000);
 
   const formatHourMinute = (date: Date): string => {
@@ -24,6 +28,35 @@ export const formatTimeRange = (baseTime: Date, durationSeconds: number): string
   };
 
   return `${formatHourMinute(baseTime)} - ${formatHourMinute(arrival)}`;
+};
+
+// 시간 텍스트 계산 함수
+export const getTimeText = (
+  time: Date | null,
+  options?: {
+    loadingText?: string;
+    errorText?: string;
+  },
+): string => {
+  const loading = options?.loadingText || '거리를 계산 중이에요';
+  const error = options?.errorText || '거리를 찾을 수 없어요';
+
+  if (time === null) return loading;
+  if (time === undefined) return error;
+
+  let hours = time.getHours();
+  const minutes = time.getMinutes();
+
+  const isPM = hours >= 12;
+  const period = isPM ? 'PM' : 'AM';
+
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+
+  const hourText = String(hours).padStart(2, '0');
+  const minuteText = String(minutes).padStart(2, '0');
+
+  return `${hourText}:${minuteText}${period}`;
 };
 
 // 거리 포맷팅 (미터 → km)
@@ -40,7 +73,7 @@ export const getDistanceText = (
   options?: {
     loadingText?: string;
     errorText?: string;
-  }
+  },
 ): string => {
   const loading = options?.loadingText || '거리를 계산 중이에요';
   const error = options?.errorText || '거리를 찾을 수 없어요';

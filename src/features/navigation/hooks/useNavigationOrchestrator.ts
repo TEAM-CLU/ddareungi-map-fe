@@ -1,6 +1,7 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import {
+  IntervalPathData,
   keepNavigationSessionAlivePayload,
   NavigationInstruction,
   StartNavigationSessionPayload,
@@ -38,13 +39,17 @@ export const useNavigationOrchestrator = () => {
   const nextTurnCoordinate = useRef<Coordinate | null>(null);
 
   //  네비게이션 경로 생성 및 실시간 업데이트용
+
   const fullPathCoordinateList = useRef<[number, number][]>([]);
-  const coordinateListByInterval = useRef<Coordinate[]>([]);
+  const pathDataListByInterval = useRef<IntervalPathData[]>([]);
 
   // 지시 및 현재 지시
   const instructionList = useRef<NavigationInstruction[]>([]);
   const [currentInstruction, setCurrentInstruction] =
     useState<NavigationInstruction | null>(null);
+
+  // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산용
+  const currentIntervalIndex = useRef<number>(0);
 
   // 네비게이션 세션 업데이트용
   const sessionId = useRef<string | null>(null);
@@ -53,6 +58,15 @@ export const useNavigationOrchestrator = () => {
   useEffect(() => {
     if (!isNavigationMode || !routeId) return;
     const initNavigation = async () => {
+      // 초기화
+      pathDataListByInterval.current = [];
+      instructionList.current = [];
+      fullPathCoordinateList.current = [];
+      sessionId.current = null;
+      setCurrentInstruction(null);
+      nextTurnCoordinate.current = null;
+      currentIntervalIndex.current = 0;
+
       try {
         const payload: StartNavigationSessionPayload = {
           routeId,
@@ -75,7 +89,11 @@ export const useNavigationOrchestrator = () => {
           const segmentCoordinates = response.data.coordinates
             .slice(interval[0], interval[1] + 1)
             .map(coord => ({ lat: coord[1], lng: coord[0] }));
-          coordinateListByInterval.current.push(...segmentCoordinates);
+          pathDataListByInterval.current.push({
+            intervalIndex: i,
+            interval,
+            coordinates: segmentCoordinates,
+          });
         }
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -118,13 +136,14 @@ export const useNavigationOrchestrator = () => {
         const nextInstruction = instructionList.current[nextIndex];
         setCurrentInstruction(nextInstruction);
         nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
+        currentIntervalIndex.current = nextIndex;
       }
     }
   }, [myPosition]);
 
   // 세션 유지
   useEffect(() => {
-    if (!isNavigationMode && !sessionId.current) return;
+    if (!isNavigationMode || !sessionId.current) return;
     const keepSessionAlive = async () => {
       try {
         const payload: keepNavigationSessionAlivePayload = {
