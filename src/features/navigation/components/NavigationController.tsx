@@ -53,7 +53,7 @@ const NavigationController = ({
               { fontSize: 13 },
             ]}
           >
-            예상 도착시간 {getTimeText(estimatedArrivalTime)}
+            예상 도착시간: {getTimeText(estimatedArrivalTime)}
           </Text>
           <TouchableOpacity onPress={() => setShowNavigationDetailModal(true)}>
             <IconHamburger />
@@ -65,7 +65,9 @@ const NavigationController = ({
             { fontSize: 24 },
           ]}
         >
-          {getDistanceText(remainingDistance)} 남음
+          {remainingDistance !== null && remainingDistance !== undefined
+            ? getDistanceText(remainingDistance) + ' 남음'
+            : getDistanceText(remainingDistance)}
         </Text>
         <Text
           style={[
@@ -73,7 +75,7 @@ const NavigationController = ({
             { fontSize: 13 },
           ]}
         >
-          소요거리 {getDistanceText(traveledDistance)}
+          소요거리: {getDistanceText(traveledDistance)}
         </Text>
       </View>
     </View>
