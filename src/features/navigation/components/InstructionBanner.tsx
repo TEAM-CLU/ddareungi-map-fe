@@ -37,6 +37,7 @@ const InstructionBanner = ({ instruction, sign }: InstructionBannerProps) => {
         source={DIRECTION_ICONS[String(sign) as keyof typeof DIRECTION_ICONS]}
         style={{ width: 50, height: 50 } as ImageStyle}
         resizeMode="cover"
+        testID="direction-icon"
       />
       <View style={[tw('flex flex-col justify-center'), { gap: 2 }]}>
         {instructionLines.map((instructionLine, idx) => {
