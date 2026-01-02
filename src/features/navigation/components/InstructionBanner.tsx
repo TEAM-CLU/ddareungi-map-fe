@@ -1,31 +1,80 @@
-import { DIRECTION_ICONS } from '@/features/navigation/model/navigation.constants';
+import React, { useEffect, useRef, useState } from 'react';
+import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
+
+import {
+  DIRECTION_ICONS,
+  FALLBACK_TTS_URL,
+} from '@/features/navigation/model/navigation.constants';
+import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
 import { tw } from '@/shared/libs/tw-helper';
-import { useEffect, useState } from 'react';
-import { Image, ImageStyle, Text, View } from 'react-native';
+import TrackPlayer from 'react-native-track-player';
+import { globalTtsState } from '@/features/navigation/model/navigation.data';
 
 interface InstructionBannerProps {
+  currentIntervalIndex: number;
   instruction: string;
+  currentTtsUrl: string | null;
   sign: number;
 }
-const InstructionBanner = ({ instruction, sign }: InstructionBannerProps) => {
-  const [instructionLines, setInstructionLines] = useState<string[]>([]);
 
-  useEffect(() => {
-    // 단어 기준으로 n개마다 배열로 나누기
-    const splitAfterWords = (text: string, n: number) => {
-      const words = text.split(' ');
-      const splittedResult = [];
-      for (let i = 0; i < words.length; i += n) {
-        splittedResult.push(words.slice(i, i + n).join(' '));
-      }
-      setInstructionLines(splittedResult);
-      return;
-    };
-    splitAfterWords(instruction, 3);
+const InstructionBanner = ({
+  currentIntervalIndex,
+  instruction,
+  currentTtsUrl,
+  sign,
+}: InstructionBannerProps) => {
+  const instructionLines = React.useMemo(() => {
+    const words = (instruction ?? '').trim().split(/\s+/).filter(Boolean);
+    const result: string[] = [];
+    for (let i = 0; i < words.length; i += 3) {
+      result.push(words.slice(i, i + 3).join(' '));
+    }
+    return result;
   }, [instruction, sign]);
+  const navVolume = useNavDetailModalStore(state => state.navVolume);
+  const prevIntervalIndexRef = useRef<number>(-1);
+
+  // TTS 재생 처리
+  useEffect(() => {
+    // 중복 재생을 막기 위함
+    if (currentIntervalIndex === prevIntervalIndexRef.current) return;
+    prevIntervalIndexRef.current = currentIntervalIndex;
+    const playKey = `tts-${currentIntervalIndex}`;
+    if (playKey === globalTtsState.lastPlayedKey) return;
+    globalTtsState.lastPlayedKey = playKey;
+
+    const playTts = async () => {
+      const ttsUrlToPlay = currentTtsUrl ?? FALLBACK_TTS_URL;
+      await TrackPlayer.reset();
+      await TrackPlayer.add({
+        id: playKey,
+        url: ttsUrlToPlay,
+        title: 'Navigation Instruction',
+        artist: 'Ddarungi Map',
+      });
+      await TrackPlayer.setVolume(navVolume);
+      await TrackPlayer.play();
+    };
+
+    playTts();
+  }, [currentIntervalIndex, currentTtsUrl]);
+
+  const handleInstructionBannerPress = async () => {
+    const ttsUrlToPlay = currentTtsUrl ?? FALLBACK_TTS_URL;
+    await TrackPlayer.reset();
+    await TrackPlayer.add({
+      id: `tts-${currentIntervalIndex}`,
+      url: ttsUrlToPlay,
+      title: 'Navigation Instruction',
+      artist: 'Ddarungi Map',
+    });
+    await TrackPlayer.setVolume(navVolume);
+    await TrackPlayer.play();
+  };
 
   return (
-    <View
+    <TouchableOpacity
+      onPress={handleInstructionBannerPress}
       style={[
         tw(
           'w-full flex flex-row items-center px-1 py-2 bg-brand-primary justify-start',
@@ -40,21 +89,20 @@ const InstructionBanner = ({ instruction, sign }: InstructionBannerProps) => {
         testID="direction-icon"
       />
       <View style={[tw('flex flex-col justify-center'), { gap: 2 }]}>
-        {instructionLines.map((instructionLine, idx) => {
-          return (
-            <Text
-              key={idx}
-              style={[
-                tw('font-primary-700 text-on-surface-secondary '),
-                { fontSize: 18 },
-              ]}
-            >
-              {instructionLine}
-            </Text>
-          );
-        })}
+        {instructionLines.map((line, idx) => (
+          <Text
+            key={`${idx}-${line}`}
+            style={[
+              tw('font-primary-700 text-on-surface-secondary'),
+              { fontSize: 18 },
+            ]}
+          >
+            {line}
+          </Text>
+        ))}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
+
 export default InstructionBanner;

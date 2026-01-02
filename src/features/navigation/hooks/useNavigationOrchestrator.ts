@@ -71,6 +71,7 @@ export const useNavigationOrchestrator = () => {
   const [traveledDistanceMeter, setTraveledDistance] = useState<
     number | undefined | null
   >(null);
+  const currentTtsUrl = useRef<string | null>(null);
 
   // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산용
   const currentIntervalIndex = useRef<number>(0);
@@ -90,6 +91,7 @@ export const useNavigationOrchestrator = () => {
       setCurrentInstruction(null);
       nextTurnCoordinate.current = null;
       currentIntervalIndex.current = 0;
+      currentTtsUrl.current = null;
 
       try {
         const payload: StartNavigationSessionPayload = {
@@ -101,6 +103,10 @@ export const useNavigationOrchestrator = () => {
         sessionId.current = response.data.sessionId;
         fullPathCoordinateList.current = response.data.coordinates;
         instructionList.current = response.data.instructions;
+        currentTtsUrl.current =
+          response.data.instructions.length > 0
+            ? response.data.instructions[0].ttsUrl
+            : null;
 
         if (response.data.instructions.length > 0) {
           setCurrentInstruction(response.data.instructions[0]);
@@ -161,6 +167,7 @@ export const useNavigationOrchestrator = () => {
         setCurrentInstruction(nextInstruction);
         nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
         currentIntervalIndex.current = nextIndex;
+        currentTtsUrl.current = nextInstruction.ttsUrl;
       }
     }
   }, [myPosition]);
@@ -266,6 +273,8 @@ export const useNavigationOrchestrator = () => {
   }, [isNavigationMode, sessionId]);
 
   return {
+    currentIntervalIndex: currentIntervalIndex.current,
+    currentTtsUrl: currentTtsUrl.current,
     currentInstruction,
     isNavigationMode,
     routeId,

@@ -5,9 +5,7 @@ import {
   Segment,
   Summary,
 } from '@/features/routing/model/routing.types';
-import { Audio } from 'expo-av';
 export interface NavDetailModalState {
-  soundRef: React.RefObject<Audio.Sound | null> | null;
   systemVolume: number;
   setSystemVolume: (volume: number) => void;
   navVolume: number;
@@ -17,11 +15,7 @@ export interface NavDetailModalState {
     modalRefs: Partial<
       Pick<
         NavDetailModalState,
-        | 'soundRef'
-        | 'systemVolume'
-        | 'setSystemVolume'
-        | 'navVolume'
-        | 'setNavVolume'
+        'systemVolume' | 'setSystemVolume' | 'navVolume' | 'setNavVolume'
       >
     >,
   ) => void;
@@ -36,6 +30,7 @@ export interface NavigationInstruction {
   sign: number;
   interval: [number, number]; // [startIndex, endIndex] in coordinates array
   nextTurnCoordinate: Coordinates;
+  ttsUrl: string;
 }
 export interface StartNavigationSessionPayload {
   routeId: string;

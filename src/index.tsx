@@ -11,7 +11,6 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { WebViewRefProvider } from '@/app/providers/webview';
 
 const queryClient = new QueryClient();
-
 const Root = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

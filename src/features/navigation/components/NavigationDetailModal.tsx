@@ -14,10 +14,9 @@ import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/react/shallow';
 
 const NavigationDetailModal = () => {
-  const { soundRef, systemVolume, setSystemVolume, navVolume, setNavVolume } =
+  const { systemVolume, setSystemVolume, navVolume, setNavVolume } =
     useNavDetailModalStore(
       useShallow(state => ({
-        soundRef: state.soundRef,
         systemVolume: state.systemVolume,
         setSystemVolume: state.setSystemVolume,
         navVolume: state.navVolume,
@@ -50,14 +49,6 @@ const NavigationDetailModal = () => {
   // 네비게이션 음성 볼륨 변경 핸들러
   const handleNavVolumeSliderChange = async (volume: number) => {
     setNavVolume(volume);
-    if (!soundRef?.current) return;
-    await soundRef.current.setVolumeAsync(volume);
-    if (volume === 0) {
-      await soundRef.current?.setIsMutedAsync(true);
-    }
-    if (volume > 0) {
-      await soundRef.current?.setIsMutedAsync(false);
-    }
   };
 
   // 시스템 음성 볼륨 변경 핸들러

@@ -13,11 +13,9 @@ import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
 import { getCategoryText } from '@/shared/utils/formatting';
 import ReturnToRouteSelectButton from '@/features/routing/components/ReturnToRouteSelectButton';
-import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import InstructionBanner from '@/features/navigation/components/InstructionBanner';
 import NavigationController from '@/features/navigation/components/NavigationController';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useShallow } from 'zustand/shallow';
 import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
 import { useNavigationOrchestrator } from '@/features/navigation/hooks/useNavigationOrchestrator';
 
@@ -33,6 +31,8 @@ const MapScreen = () => {
   } = useMapOrchestrator();
 
   const {
+    currentTtsUrl,
+    currentIntervalIndex,
     isNavigationMode,
     routeId,
     currentInstruction,
@@ -71,6 +71,8 @@ const MapScreen = () => {
           ]}
         >
           <InstructionBanner
+            currentTtsUrl={currentTtsUrl}
+            currentIntervalIndex={currentIntervalIndex}
             instruction={currentInstruction.text}
             sign={currentInstruction.sign}
           />

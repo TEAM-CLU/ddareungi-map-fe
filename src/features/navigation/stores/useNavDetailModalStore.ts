@@ -5,7 +5,6 @@ import { devtools } from 'zustand/middleware';
 export const useNavDetailModalStore = create<NavDetailModalState>()(
   devtools(
     set => ({
-      soundRef: null,
       systemVolume: 0,
       setSystemVolume: (volume: number) =>
         set({ systemVolume: volume }, false, 'navDetailModal/setSystemVolume'),
