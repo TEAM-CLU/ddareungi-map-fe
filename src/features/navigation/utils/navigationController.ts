@@ -1,6 +1,8 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
+import { ACCURACY_OK } from '@/features/navigation/model/navigation.constants';
 import {
   IntervalPathData,
+  LocationMetaData,
   NavigationInstruction,
 } from '@/features/navigation/model/navigation.types';
 import { Coordinate } from '@/features/routing/model/routing.types';
@@ -118,14 +120,6 @@ const ema = (
 // 값 존재 확인 helper
 const hasNum = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v);
-interface LocationMetaData {
-  timestemp: number;
-  accuracy?: number;
-  osSpeed?: number;
-  coordinate: Coordinate;
-}
-
-const ACCURACY_OK = 40;
 
 export const returnAccurateSpeedMeter = (
   prevLocationMetaData: LocationMetaData,

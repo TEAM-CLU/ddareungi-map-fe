@@ -32,8 +32,14 @@ const MapScreen = () => {
     setIsLocalMapReady,
   } = useMapOrchestrator();
 
-  const { isNavigationMode, routeId, currentInstruction } =
-    useNavigationOrchestrator();
+  const {
+    isNavigationMode,
+    routeId,
+    currentInstruction,
+    eta,
+    remainingDistanceMeter,
+    traveledDistanceMeter,
+  } = useNavigationOrchestrator();
 
   const showSelectedRouteDetailModal = useModalStore(
     state => state.showSelectedRouteDetailModal,
@@ -78,7 +84,11 @@ const MapScreen = () => {
             'absolute bottom-0 left-0 right-0 flex justify-center items-center w-full',
           )}
         >
-          <NavigationController />
+          <NavigationController
+            estimatedArrivalTime={eta}
+            remainingDistance={remainingDistanceMeter}
+            traveledDistance={traveledDistanceMeter}
+          />
         </SafeAreaView>
       )}
 

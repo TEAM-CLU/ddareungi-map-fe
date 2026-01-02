@@ -1,6 +1,6 @@
 import { IconClose } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
-import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 
 const NavigationStartModal = () => {

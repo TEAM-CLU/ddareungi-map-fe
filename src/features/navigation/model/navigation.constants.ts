@@ -29,3 +29,5 @@ export const DIRECTION_ICONS: Record<string, any> = {
 };
 
 export const THROTTLE_WAIT_MS = 2000;
+
+export const ACCURACY_OK = 40;

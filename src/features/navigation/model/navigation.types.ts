@@ -1,5 +1,10 @@
 import { Coordinates } from '@/features/map/model/map.types';
-import { Bbox, Segment, Summary } from '@/features/routing/model/routing.types';
+import {
+  Bbox,
+  Coordinate,
+  Segment,
+  Summary,
+} from '@/features/routing/model/routing.types';
 import { Audio } from 'expo-av';
 export interface NavDetailModalState {
   soundRef: React.RefObject<Audio.Sound | null> | null;
@@ -123,5 +128,12 @@ export interface ReRouteResponse {
 export interface IntervalPathData {
   intervalIndex: number;
   interval: [number, number];
-  coordinates: Coordinates[];
+  coordinateList: Coordinates[];
+}
+
+export interface LocationMetaData {
+  timestemp: number;
+  accuracy?: number;
+  osSpeed?: number;
+  coordinate: Coordinate;
 }

@@ -32,14 +32,14 @@ export const formatTimeRange = (
 
 // 시간 텍스트 계산 함수
 export const getTimeText = (
-  time: Date | null,
+  time: Date | null | undefined,
   options?: {
     loadingText?: string;
     errorText?: string;
   },
 ): string => {
-  const loading = options?.loadingText || '거리를 계산 중이에요';
-  const error = options?.errorText || '거리를 찾을 수 없어요';
+  const loading = options?.loadingText || '시간을 계산 중이에요';
+  const error = options?.errorText || '시간을 측정할 수 없어요';
 
   if (time === null) return loading;
   if (time === undefined) return error;

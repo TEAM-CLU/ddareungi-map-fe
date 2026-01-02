@@ -1,12 +1,13 @@
 import { IconHamburger, IconPlay } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
+import { getDistanceText, getTimeText } from '@/shared/utils/formatting';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface NavigationControllerProps {
-  estimatedArrivalTime: string;
-  remainingDistance: string;
-  traveledDistance: string;
+  estimatedArrivalTime: Date | null | undefined;
+  remainingDistance: number | null | undefined;
+  traveledDistance: number | null | undefined;
 }
 
 const NavigationController = ({
@@ -52,7 +53,7 @@ const NavigationController = ({
               { fontSize: 13 },
             ]}
           >
-            예상 도착시간 {estimatedArrivalTime}
+            예상 도착시간 {getTimeText(estimatedArrivalTime)}
           </Text>
           <TouchableOpacity onPress={() => setShowNavigationDetailModal(true)}>
             <IconHamburger />
@@ -64,7 +65,7 @@ const NavigationController = ({
             { fontSize: 24 },
           ]}
         >
-          {remainingDistance} 남음
+          {getDistanceText(remainingDistance)} 남음
         </Text>
         <Text
           style={[
@@ -72,7 +73,7 @@ const NavigationController = ({
             { fontSize: 13 },
           ]}
         >
-          소요거리 {traveledDistance}
+          소요거리 {getDistanceText(traveledDistance)}
         </Text>
       </View>
     </View>
