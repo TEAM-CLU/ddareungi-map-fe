@@ -16,8 +16,8 @@ import { useNavigationStore } from '@/features/navigation/stores/useNavigationSt
 import {
   calculateRemainingDistanceMeter,
   calculateTraveledDistanceMeter,
-  returnAccurateSpeedMeter,
   calculateEta,
+  returnAccurateSpeedMeterPerSec,
 } from '@/features/navigation/utils/navigationController';
 
 import { Coordinate } from '@/features/routing/model/routing.types';
@@ -222,7 +222,7 @@ export const useNavigationOrchestrator = () => {
 
     // eta 계산
     // 1) 정확하고 보정된 속도 사용
-    const accurateSpeedMeterPerSec = returnAccurateSpeedMeter(
+    const accurateSpeedMeterPerSec = returnAccurateSpeedMeterPerSec(
       prevLocationMetaData.current,
       currentLocationMetaData.current,
     );

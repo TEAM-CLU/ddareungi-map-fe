@@ -6,33 +6,30 @@ import { TouchableOpacity } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 
 const NavVolumeToggleButton = () => {
-  const { navVolume, setNavVolume, systemVolume, setSystemVolume } =
-    useNavDetailModalStore(
-      useShallow(state => ({
-        systemVolume: state.systemVolume,
-        setSystemVolume: state.setSystemVolume,
-        navVolume: state.navVolume,
-        setNavVolume: state.setNavVolume,
-      })),
-    );
+  const { navVolume, setNavVolume } = useNavDetailModalStore(
+    useShallow(state => ({
+      systemVolume: state.systemVolume,
+      setSystemVolume: state.setSystemVolume,
+      navVolume: state.navVolume,
+      setNavVolume: state.setNavVolume,
+    })),
+  );
 
   const [isMuted, setIsMuted] = useState(false);
 
   const handleVolumeToggleBtnPress = () => {
-    if (navVolume === 0 && systemVolume === 0) setIsMuted(true);
+    if (navVolume === 0) setIsMuted(true);
 
     if (isMuted) {
       // 음소거 해제
       setIsMuted(false);
       setNavVolume(0.5);
-      setSystemVolume(0.5);
       return;
     }
     if (!isMuted) {
       // 음소거
       setIsMuted(true);
       setNavVolume(0);
-      setSystemVolume(0);
       return;
     }
   };
