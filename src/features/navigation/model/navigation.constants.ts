@@ -34,3 +34,16 @@ export const ACCURACY_OK = 40;
 
 export const FALLBACK_TTS_URL =
   'https://ddareungimap-tts-cache.s3.amazonaws.com/tts/ko-KR/b51d71d80e0025ab88bc5d697a3f91b32146b94b7d41cb3573c244d05f8a3110.mp3';
+
+export const ENTRY_RADIUS_METER = 20;
+export const EXIT_RADIUS_METER = 35;
+
+export const PASS_CONFIRM_COUNT = 3;
+
+export const DEADZONE_DISTANCE_METER = 6;
+export const MIN_MOVE_METER = 10;
+export const MAX_SPEED_MPS = 20;
+export const DOT_DEADZONE = 0;
+
+export const PASS_COUNT_DECAY = 1;
+export const PASS_COUNT_MAX = PASS_CONFIRM_COUNT;

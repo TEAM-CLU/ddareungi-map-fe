@@ -127,7 +127,7 @@ export const returnAccurateSpeedMeterPerSec = (
   prevEmaSpeed?: number,
 ) => {
   const dt =
-    (currentLocationMetaData.timestemp - prevLocationMetaData.timestemp) / 1000;
+    (currentLocationMetaData.timestamp - prevLocationMetaData.timestamp) / 1000;
   if (
     hasNum(prevLocationMetaData?.accuracy) &&
     hasNum(prevLocationMetaData?.osSpeed) &&

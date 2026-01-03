@@ -127,7 +127,7 @@ export interface IntervalPathData {
 }
 
 export interface LocationMetaData {
-  timestemp: number;
+  timestamp: number;
   accuracy?: number;
   osSpeed?: number;
   coordinate: Coordinate;

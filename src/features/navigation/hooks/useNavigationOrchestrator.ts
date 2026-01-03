@@ -2,6 +2,18 @@ import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import {
+  ACCURACY_OK,
+  DEADZONE_DISTANCE_METER,
+  DOT_DEADZONE,
+  ENTRY_RADIUS_METER,
+  EXIT_RADIUS_METER,
+  MAX_SPEED_MPS,
+  MIN_MOVE_METER,
+  PASS_CONFIRM_COUNT,
+  PASS_COUNT_DECAY,
+  PASS_COUNT_MAX,
+} from '@/features/navigation/model/navigation.constants';
+import {
   IntervalPathData,
   keepNavigationSessionAlivePayload,
   LocationMetaData,
@@ -14,6 +26,7 @@ import {
   useStartNavigationSessionMutation,
 } from '@/features/navigation/services/navigation.queries';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { calculateMotionVector } from '@/features/navigation/utils/calculateMotionVector';
 import {
   calculateRemainingDistanceMeter,
   calculateTraveledDistanceMeter,
@@ -75,6 +88,13 @@ export const useNavigationOrchestrator = () => {
     number | undefined | null
   >(null);
   const currentTtsUrl = useRef<string | null>(null);
+
+  // 턴 진입/지나침 판정용 상태
+  const isEnteredRef = useRef<boolean>(false);
+  const passCountRef = useRef<number>(0);
+  const lastDistanceFromMyPosToNextTurnPosRef = useRef<number | null>(null);
+  const prevMyPositionRef = useRef<Coordinate | null>(null);
+  const prevTimestampRef = useRef<number | null>(null);
 
   // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산용
   const currentIntervalIndex = useRef<number>(0);
@@ -144,24 +164,139 @@ export const useNavigationOrchestrator = () => {
     initNavigation();
   }, [isNavigationMode, routeId, isMapReady]);
 
-  // 거리 비교 후 지시 비교
   useEffect(() => {
     if (
       !isNavigationMode ||
       !myPosition ||
       !nextTurnCoordinate.current ||
       !currentInstruction
-    )
+    ) {
       return;
+    }
 
+    const resetTurnState = () => {
+      isEnteredRef.current = false;
+      passCountRef.current = 0;
+      lastDistanceFromMyPosToNextTurnPosRef.current = null;
+    };
+
+    // 1) 정확도 체크
+    const currentAccuracy = currentLocationMetaData.current?.accuracy;
+    if (typeof currentAccuracy === 'number' && currentAccuracy > ACCURACY_OK) {
+      return;
+    }
+
+    // 2) 턴까지 거리
     const distanceToNextTurn = getDistanceBetweenCoords(
       myPosition,
       nextTurnCoordinate.current,
     );
 
-    // 다음 턴까지 30미터 이내 접근 시 다음 지시로 업데이트
-    if (distanceToNextTurn <= 30) {
-      // 현재 지시 객체와 같은 객체의 인덱스 참조 (Shallow compare)
+    const nowTimestamp = Date.now();
+
+    // =========================
+    // 3) entry / exit
+    // =========================
+    if (!isEnteredRef.current && distanceToNextTurn <= ENTRY_RADIUS_METER) {
+      isEnteredRef.current = true;
+      passCountRef.current = 0;
+      lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
+
+      prevMyPositionRef.current = myPosition;
+      prevTimestampRef.current = nowTimestamp;
+      return;
+    }
+
+    if (isEnteredRef.current && distanceToNextTurn >= EXIT_RADIUS_METER) {
+      resetTurnState();
+
+      prevMyPositionRef.current = myPosition;
+      prevTimestampRef.current = nowTimestamp;
+      return;
+    }
+
+    // entry 아니면 passed 판정 자체 안 함
+    if (!isEnteredRef.current) {
+      prevMyPositionRef.current = myPosition;
+      prevTimestampRef.current = nowTimestamp;
+      lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
+      return;
+    }
+
+    // =========================
+    // 4) 거리 증가 추세 (멀어지기 시작, isEntering 이후부터 측정)
+    // =========================
+    const prevDistance = lastDistanceFromMyPosToNextTurnPosRef.current;
+    lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
+
+    if (prevDistance == null) {
+      prevMyPositionRef.current = myPosition;
+      prevTimestampRef.current = nowTimestamp;
+      return;
+    }
+
+    const deltaDistance = distanceToNextTurn - prevDistance;
+    const isGettingFarther = deltaDistance > DEADZONE_DISTANCE_METER;
+
+    // =========================
+    // 5) 벡터/내적 + 속도 게이트
+    // =========================
+    const prevPosition = prevMyPositionRef.current;
+    const prevTimestamp = prevTimestampRef.current;
+
+    // prev 갱신은 여기서 한번만
+    prevMyPositionRef.current = myPosition;
+    prevTimestampRef.current = nowTimestamp;
+
+    if (!prevPosition || prevTimestamp == null) return;
+
+    const dtSec = (nowTimestamp - prevTimestamp) / 1000;
+    const { moveMag, speedMps, dot } = calculateMotionVector(
+      prevPosition,
+      myPosition,
+      nextTurnCoordinate.current,
+      dtSec,
+    );
+
+    // GPS 점프 컷
+    if (speedMps > MAX_SPEED_MPS) {
+      passCountRef.current = Math.max(
+        0,
+        passCountRef.current - PASS_COUNT_DECAY,
+      );
+      return;
+    }
+
+    // 이동이 너무 작으면 방향 판정 의미 없음
+    if (moveMag < MIN_MOVE_METER) {
+      passCountRef.current = Math.max(
+        0,
+        passCountRef.current - PASS_COUNT_DECAY,
+      );
+      return;
+    }
+
+    // dot < 0 => 턴포인트를 등지고 움직임(멀어지는 방향)
+    const isMovingAwayFromTurn = dot < DOT_DEADZONE;
+
+    // =========================
+    // 6) passed 카운트
+    // =========================
+    const isPassedCandidate = isGettingFarther && isMovingAwayFromTurn;
+
+    if (!isPassedCandidate) {
+      passCountRef.current = Math.max(
+        0,
+        passCountRef.current - PASS_COUNT_DECAY,
+      );
+      return;
+    }
+    passCountRef.current = Math.min(PASS_COUNT_MAX, passCountRef.current + 1);
+
+    // =========================
+    // 7) 통과 확정 → 다음 instruction
+    // =========================
+    if (passCountRef.current >= PASS_CONFIRM_COUNT) {
       const currentIndex = instructionList.current.findIndex(
         instruction => instruction === currentInstruction,
       );
@@ -172,9 +307,12 @@ export const useNavigationOrchestrator = () => {
         nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
         currentIntervalIndex.current = nextIndex;
         currentTtsUrl.current = nextInstruction.ttsUrl;
+        resetTurnState();
+        prevMyPositionRef.current = myPosition;
+        prevTimestampRef.current = Date.now();
       }
     }
-  }, [myPosition]);
+  }, [myPosition, isNavigationMode, currentInstruction]);
 
   // prevLocationMetaData와 currentLocationMetaData 구분 저장
   useEffect(() => {
