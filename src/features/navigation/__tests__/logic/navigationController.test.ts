@@ -321,13 +321,13 @@ describe('NavigationController 핵심 로직 검증', () => {
     it('accuracy가 양호하면 OS 속도 기반 EMA 계산', () => {
       const prev = {
         coordinate: coord(0, 0),
-        timestemp: 0,
+        timestamp: 0,
         accuracy: 10,
         osSpeed: 2,
       };
       const curr = {
         coordinate: coord(0, 1),
-        timestemp: 1000,
+        timestamp: 1000,
         accuracy: 10,
         osSpeed: 4,
       };
@@ -338,13 +338,13 @@ describe('NavigationController 핵심 로직 검증', () => {
     it('accuracy가 낮으면 거리/시간 기반 EMA 계산', () => {
       const prev = {
         coordinate: coord(0, 0),
-        timestemp: 0,
+        timestamp: 0,
         accuracy: 50,
         osSpeed: 2,
       };
       const curr = {
         coordinate: coord(0, 0.001),
-        timestemp: 1000,
+        timestamp: 1000,
         accuracy: 50,
         osSpeed: 6,
       };
@@ -361,13 +361,13 @@ describe('NavigationController 핵심 로직 검증', () => {
     it('시간 차이가 없으면 EMA에 0을 반영', () => {
       const prev = {
         coordinate: coord(0, 0),
-        timestemp: 1000,
+        timestamp: 1000,
         accuracy: 10,
         osSpeed: 3,
       };
       const curr = {
         coordinate: coord(0, 0.001),
-        timestemp: 1000,
+        timestamp: 1000,
         accuracy: 10,
         osSpeed: 5,
       };
@@ -378,11 +378,11 @@ describe('NavigationController 핵심 로직 검증', () => {
     it('OS 속도/accuracy가 없으면 거리/시간으로 EMA 계산', () => {
       const prev = {
         coordinate: coord(0, 0),
-        timestemp: 0,
+        timestamp: 0,
       };
       const curr = {
         coordinate: coord(0, 0.001),
-        timestemp: 1000,
+        timestamp: 1000,
       };
       const distance = getDistanceBetweenCoords(
         prev.coordinate,
