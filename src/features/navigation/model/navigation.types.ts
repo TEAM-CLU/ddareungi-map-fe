@@ -132,3 +132,20 @@ export interface LocationMetaData {
   osSpeed?: number;
   coordinate: Coordinate;
 }
+
+export interface StabilizeDistanceInput {
+  newlyComputedDistanceMeter: number;
+  prevStableDistanceMeter: number;
+  prevMyPosition: Coordinate | null;
+  currentMyPosition: Coordinate;
+  prevTimestamp: number | null;
+  currentTimestamp: number;
+  type: 'traveled' | 'remaining';
+}
+
+// calculateMotionVector 결과 타입
+export type MotionVectorResult = {
+  moveMag: number; // 이동거리(m)
+  speedMps: number; // 속도(m/s)
+  dot: number; // v·u
+};

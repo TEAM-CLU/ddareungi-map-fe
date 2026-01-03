@@ -3,6 +3,7 @@ import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import {
   ACCURACY_OK,
+  MOTION_COMMON_OPTIONS,
   TURN_CONFIG,
 } from '@/features/navigation/model/navigation.constants';
 import {
@@ -20,10 +21,10 @@ import {
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { calculateMotionVector } from '@/features/navigation/utils/calculateMotionVector';
 import {
-  calculateRemainingDistanceMeter,
-  calculateTraveledDistanceMeter,
   calculateEta,
-  returnAccurateSpeedMps,
+  returnAccurateSpeed,
+  calculateRemainingDistance,
+  calculateTraveledDistance,
 } from '@/features/navigation/utils/navigationController';
 
 import { Coordinate } from '@/features/routing/model/routing.types';
@@ -93,17 +94,22 @@ export const useNavigationOrchestrator = () => {
     EXIT_RADIUS_METER,
     PASS_CONFIRM_COUNT,
     DEADZONE_DISTANCE_METER,
-    MIN_MOVE_METER,
-    MAX_SPEED_MPS,
+    MIN_EFFECTIVE_MOVE_METER,
     DOT_DEADZONE,
     PASS_COUNT_DECAY,
     PASS_COUNT_MAX,
   } = TURN_CONFIG;
-  // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산용
+
+  const { MAX_PHYSICAL_SPEED_MPS } = MOTION_COMMON_OPTIONS;
+
+  // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산, 소요거리용
   const currentIntervalIndex = useRef<number>(0);
+  const prevMyPositionForDistanceRef = useRef<Coordinate | null>(null);
+  const prevTimestampForDistanceRef = useRef<number | null>(null);
   const prevTraveledDistanceMeterRef = useRef<number>(0);
-  const prevMyPositionForTravelRef = useRef<Coordinate | null>(null);
-  const prevTimestampForTravelRef = useRef<number | null>(null);
+  const prevRemainingDistanceMeterRef = useRef<number>(
+    Number.POSITIVE_INFINITY,
+  );
 
   // 네비게이션 세션 업데이트용
   const sessionId = useRef<string | null>(null);
@@ -265,7 +271,7 @@ export const useNavigationOrchestrator = () => {
     );
 
     // GPS 점프 컷오프
-    if (speedMps > MAX_SPEED_MPS) {
+    if (speedMps > MAX_PHYSICAL_SPEED_MPS) {
       passCountRef.current = Math.max(
         0,
         passCountRef.current - PASS_COUNT_DECAY,
@@ -274,7 +280,7 @@ export const useNavigationOrchestrator = () => {
     }
 
     // 이동이 너무 작으면 방향 판정 의미 없음
-    if (moveMag < MIN_MOVE_METER) {
+    if (moveMag < MIN_EFFECTIVE_MOVE_METER) {
       passCountRef.current = Math.max(
         0,
         passCountRef.current - PASS_COUNT_DECAY,
@@ -325,7 +331,7 @@ export const useNavigationOrchestrator = () => {
     currentLocationMetaData.current = locationMetaData;
   }, [locationMetaData, isNavigationMode]);
 
-  // 남은거리, 이동거리 업데이트
+  // 소요거리/남은거리 업데이트
   useEffect(() => {
     if (
       pathDataListByInterval.current.length === 0 ||
@@ -335,69 +341,93 @@ export const useNavigationOrchestrator = () => {
 
     if (!isNavigationMode || !myPosition || !locationMetaData) return;
 
-    // ✅ 남은 거리 계산
-    setRemainingDistance(
-      calculateRemainingDistanceMeter(
-        myPosition,
-        pathDataListByInterval.current,
-        currentIntervalIndex.current,
-        instructionList.current,
-      ),
-    );
-
     const currentTimestamp =
       typeof locationMetaData.timestamp === 'number'
         ? locationMetaData.timestamp
         : Date.now();
 
-    const prevTraveledDistanceMeter = prevTraveledDistanceMeterRef.current;
-    const prevMyPositionForTravel = prevMyPositionForTravelRef.current;
-    const prevTimestampForTravel = prevTimestampForTravelRef.current;
+    const prevMyPositionForDistance = prevMyPositionForDistanceRef.current;
+    const prevTimestampForDistance = prevTimestampForDistanceRef.current;
 
-    // ✅ (A) 첫 샘플(초기값) 처리: 안정화 로직을 돌리기 전에 prev 세팅부터
-    if (prevMyPositionForTravel === null || prevTimestampForTravel === null) {
-      const firstTraveledDistanceMeter = Math.round(
-        calculateTraveledDistanceMeter(
-          myPosition,
-          pathDataListByInterval.current,
-          currentIntervalIndex.current,
-          instructionList.current,
+    // 첫 샘플(초기값) 처리: prevPos/prevTs가 없으면 "prev 세팅"부터 하고 종료
+    if (
+      prevMyPositionForDistance === null ||
+      prevTimestampForDistance === null
+    ) {
+      // traveled (첫 값은 증가/감소 안정화보단 "기준값 세팅" 의미)
+      const firstTraveledDistanceMeter = calculateTraveledDistance(
+        myPosition,
+        pathDataListByInterval.current,
+        currentIntervalIndex.current,
+        instructionList.current,
 
-          0,
-          null,
-          null,
-          currentTimestamp,
-        ),
+        prevTraveledDistanceMeterRef.current, //  0
+        null,
+        null,
+        currentTimestamp,
+      );
+
+      // remaining (첫 값도 기준값 세팅)
+      const firstRemainingDistanceMeter = calculateRemainingDistance(
+        myPosition,
+        pathDataListByInterval.current,
+        currentIntervalIndex.current,
+        instructionList.current,
+
+        prevRemainingDistanceMeterRef.current, //  0
+        null,
+        null,
+        currentTimestamp,
       );
 
       setTraveledDistance(firstTraveledDistanceMeter);
+      setRemainingDistance(firstRemainingDistanceMeter);
 
-      // 다음 tick부터 안정화 규칙 적용되도록 prev 갱신
+      // 다음 tick부터 stabilize가 제대로 먹도록 prev 갱신
       prevTraveledDistanceMeterRef.current = firstTraveledDistanceMeter;
-      prevMyPositionForTravelRef.current = myPosition;
-      prevTimestampForTravelRef.current = currentTimestamp;
+      prevRemainingDistanceMeterRef.current = firstRemainingDistanceMeter;
+
+      prevMyPositionForDistanceRef.current = myPosition;
+      prevTimestampForDistanceRef.current = currentTimestamp;
       return;
     }
 
-    // 정상 케이스: 안정화 포함 계산
-    const nextTraveledDistanceMeter = calculateTraveledDistanceMeter(
+    // traveled 계산 (내부에서 stabilizeDistance까지 끝남)
+    const nextTraveledDistanceMeter = calculateTraveledDistance(
       myPosition,
       pathDataListByInterval.current,
       currentIntervalIndex.current,
       instructionList.current,
 
-      prevTraveledDistanceMeter,
-      prevMyPositionForTravel,
-      prevTimestampForTravel,
+      prevTraveledDistanceMeterRef.current,
+      prevMyPositionForDistance,
+      prevTimestampForDistance,
+      currentTimestamp,
+    );
+
+    // remaining 계산 (내부에서 stabilizeDistance까지 끝남)
+    const nextRemainingDistanceMeter = calculateRemainingDistance(
+      myPosition,
+      pathDataListByInterval.current,
+      currentIntervalIndex.current,
+      instructionList.current,
+
+      prevRemainingDistanceMeterRef.current,
+      prevMyPositionForDistance,
+      prevTimestampForDistance,
       currentTimestamp,
     );
 
     setTraveledDistance(nextTraveledDistanceMeter);
+    setRemainingDistance(nextRemainingDistanceMeter);
 
-    // 핵심: 계산 “후”에 prev를 갱신해야 다음 tick에서 안정화가 먹음
+    // prevDistance는 각각 갱신 (단조성 기준)
     prevTraveledDistanceMeterRef.current = nextTraveledDistanceMeter;
-    prevMyPositionForTravelRef.current = myPosition;
-    prevTimestampForTravelRef.current = currentTimestamp;
+    prevRemainingDistanceMeterRef.current = nextRemainingDistanceMeter;
+
+    // 공통 prevPos/prevTs 갱신 (속도/정지/점프 판정 기준)
+    prevMyPositionForDistanceRef.current = myPosition;
+    prevTimestampForDistanceRef.current = currentTimestamp;
   }, [myPosition, locationMetaData, isNavigationMode]);
 
   // eta 업데이트
@@ -413,7 +443,7 @@ export const useNavigationOrchestrator = () => {
 
     // eta 계산
     // 1) 정확하고 보정된 속도 사용
-    const accurateSpeedMps = returnAccurateSpeedMps(
+    const accurateSpeedMps = returnAccurateSpeed(
       prevLocationMetaData.current,
       currentLocationMetaData.current,
     );
