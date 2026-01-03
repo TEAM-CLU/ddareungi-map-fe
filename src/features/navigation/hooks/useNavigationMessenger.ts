@@ -1,6 +1,6 @@
 import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 import { ReplaceMyLocationMarker } from '@/shared/model/map.webview.types';
-import { use, useCallback } from 'react';
+import { useCallback } from 'react';
 
 export const useNavigationMessenger = () => {
   const { sendMessage } = useProvideWebviewMessenger();

@@ -3,6 +3,7 @@
   let kakaoRef, mapRef;
   let myLocationMarker, myHeadingOverlay, outerCircle, innerCircle;
   let hasMoveToMyLocationRun = false;
+  let defaultMyLocationContent = null;
 
   // 내 위치 관련 오버레이 정의 및 생성
   const initMyLocationSetting = (kakao, map, DEFAULT_LAT, DEFAULT_LNG) => {
@@ -35,6 +36,7 @@
       yAnchor: 0.5,
       zIndex: 20,
     });
+    defaultMyLocationContent = myLocationSvg;
     myLocationMarker.setMap(mapRef);
 
     // 내 위치 방향 cone 생성 및 초기세팅
@@ -121,6 +123,12 @@
     if (myHeadingElement) {
       myHeadingElement.style.transform = `rotate(${heading - 90}deg)`;
     }
+    const navigationMarkerArrow = document.getElementById(
+      'myNavigationMarkerArrow',
+    );
+    if (navigationMarkerArrow) {
+      navigationMarkerArrow.style.transform = `rotate(${heading}deg)`;
+    }
   };
 
   // 나침반 오버레이 보이기/숨기기
@@ -149,6 +157,8 @@
             height="23"
             viewBox="0 0 24 24"
             fill="none"
+            id="myNavigationMarkerArrow"
+            style="transform: rotate(-90deg); transform-origin: 12px 12px;"
           >
             <!-- 흰색 배경 (여백 채우기용) -->
             <circle cx="12" cy="12" r="11" fill="#FFFFFF"/>
@@ -179,9 +189,7 @@
         `;
 
     myLocationMarker.setContent(
-      isNavigationMode
-        ? myLocationSvgForNavigation
-        : myLocationMarker.getContent(),
+      isNavigationMode ? myLocationSvgForNavigation : defaultMyLocationContent,
     );
   };
 

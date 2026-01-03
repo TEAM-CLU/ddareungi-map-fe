@@ -69,8 +69,12 @@ const SelectedRouteDetailModal = ({
         prevScreen: state.prevScreen,
       })),
     );
-  const { drawStaticPath, focusOnStaticPath, stopFollowingMyLocation } =
-    useRoutingMessenger();
+  const {
+    drawStaticPath,
+    focusOnStaticPath,
+    stopFollowingMyLocation,
+    clearStaticPath,
+  } = useRoutingMessenger();
   const setLocationMode = useLocationStore(state => state.setLocationMode);
   const { myLocationCompassOff } = useLocationMessenger();
   const isMapReady = useMapStore(state => state.isMapReady);
@@ -158,6 +162,7 @@ const SelectedRouteDetailModal = ({
   const handleNavigationStartBtnPress = () => {
     setRouteId(selectedRouteData.routeId);
     setIsNavigationMode(true);
+    clearStaticPath();
   };
 
   return (
