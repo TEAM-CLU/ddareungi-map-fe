@@ -258,7 +258,7 @@ export const useNavigationOrchestrator = () => {
       dtSec,
     );
 
-    // GPS 점프 컷
+    // GPS 점프 컷오프
     if (speedMps > MAX_SPEED_MPS) {
       passCountRef.current = Math.max(
         0,
@@ -296,22 +296,20 @@ export const useNavigationOrchestrator = () => {
     // =========================
     // 7) 통과 확정 → 다음 instruction
     // =========================
-    if (passCountRef.current >= PASS_CONFIRM_COUNT) {
-      const currentIndex = instructionList.current.findIndex(
-        instruction => instruction === currentInstruction,
-      );
-      const nextIndex = currentIndex + 1;
-      if (nextIndex < instructionList.current.length) {
-        const nextInstruction = instructionList.current[nextIndex];
-        setCurrentInstruction(nextInstruction);
-        nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
-        currentIntervalIndex.current = nextIndex;
-        currentTtsUrl.current = nextInstruction.ttsUrl;
-        resetTurnState();
-        prevMyPositionRef.current = myPosition;
-        prevTimestampRef.current = Date.now();
-      }
-    }
+    if (passCountRef.current < PASS_CONFIRM_COUNT) return;
+    const currentIndex = instructionList.current.findIndex(
+      instruction => instruction === currentInstruction,
+    );
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= instructionList.current.length) return;
+    const nextInstruction = instructionList.current[nextIndex];
+    setCurrentInstruction(nextInstruction);
+    nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
+    currentIntervalIndex.current = nextIndex;
+    currentTtsUrl.current = nextInstruction.ttsUrl;
+    resetTurnState();
+    prevMyPositionRef.current = myPosition;
+    prevTimestampRef.current = Date.now();
   }, [myPosition, isNavigationMode, currentInstruction]);
 
   // prevLocationMetaData와 currentLocationMetaData 구분 저장
