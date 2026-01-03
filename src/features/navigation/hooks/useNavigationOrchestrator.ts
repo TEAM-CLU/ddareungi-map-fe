@@ -93,8 +93,8 @@ export const useNavigationOrchestrator = () => {
   const isEnteredRef = useRef<boolean>(false);
   const passCountRef = useRef<number>(0);
   const lastDistanceFromMyPosToNextTurnPosRef = useRef<number | null>(null);
-  const prevMyPositionRef = useRef<Coordinate | null>(null);
-  const prevTimestampRef = useRef<number | null>(null);
+  const prevMyPositionForTurnRef = useRef<Coordinate | null>(null);
+  const prevTimestampForTurnRef = useRef<number | null>(null);
 
   // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산용
   const currentIntervalIndex = useRef<number>(0);
@@ -202,23 +202,23 @@ export const useNavigationOrchestrator = () => {
       passCountRef.current = 0;
       lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
 
-      prevMyPositionRef.current = myPosition;
-      prevTimestampRef.current = nowTimestamp;
+      prevMyPositionForTurnRef.current = myPosition;
+      prevTimestampForTurnRef.current = nowTimestamp;
       return;
     }
 
     if (isEnteredRef.current && distanceToNextTurn >= EXIT_RADIUS_METER) {
       resetTurnState();
 
-      prevMyPositionRef.current = myPosition;
-      prevTimestampRef.current = nowTimestamp;
+      prevMyPositionForTurnRef.current = myPosition;
+      prevTimestampForTurnRef.current = nowTimestamp;
       return;
     }
 
     // entry 아니면 passed 판정 자체 안 함
     if (!isEnteredRef.current) {
-      prevMyPositionRef.current = myPosition;
-      prevTimestampRef.current = nowTimestamp;
+      prevMyPositionForTurnRef.current = myPosition;
+      prevTimestampForTurnRef.current = nowTimestamp;
       lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
       return;
     }
@@ -230,8 +230,8 @@ export const useNavigationOrchestrator = () => {
     lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
 
     if (prevDistance == null) {
-      prevMyPositionRef.current = myPosition;
-      prevTimestampRef.current = nowTimestamp;
+      prevMyPositionForTurnRef.current = myPosition;
+      prevTimestampForTurnRef.current = nowTimestamp;
       return;
     }
 
@@ -241,12 +241,12 @@ export const useNavigationOrchestrator = () => {
     // =========================
     // 5) 벡터/내적 + 속도 게이트
     // =========================
-    const prevPosition = prevMyPositionRef.current;
-    const prevTimestamp = prevTimestampRef.current;
+    const prevPosition = prevMyPositionForTurnRef.current;
+    const prevTimestamp = prevTimestampForTurnRef.current;
 
     // prev 갱신은 여기서 한번만
-    prevMyPositionRef.current = myPosition;
-    prevTimestampRef.current = nowTimestamp;
+    prevMyPositionForTurnRef.current = myPosition;
+    prevTimestampForTurnRef.current = nowTimestamp;
 
     if (!prevPosition || prevTimestamp == null) return;
 
@@ -308,8 +308,8 @@ export const useNavigationOrchestrator = () => {
     currentIntervalIndex.current = nextIndex;
     currentTtsUrl.current = nextInstruction.ttsUrl;
     resetTurnState();
-    prevMyPositionRef.current = myPosition;
-    prevTimestampRef.current = Date.now();
+    prevMyPositionForTurnRef.current = myPosition;
+    prevTimestampForTurnRef.current = Date.now();
   }, [myPosition, isNavigationMode, currentInstruction]);
 
   // prevLocationMetaData와 currentLocationMetaData 구분 저장
