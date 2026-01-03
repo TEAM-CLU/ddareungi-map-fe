@@ -18,6 +18,7 @@ import NavigationController from '@/features/navigation/components/NavigationCon
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
 import { useNavigationOrchestrator } from '@/features/navigation/hooks/useNavigationOrchestrator';
+import NavVolumeToggleButton from '@/features/navigation/components/NavVolumeToggleButton';
 
 const MapScreen = () => {
   const {
@@ -94,6 +95,12 @@ const MapScreen = () => {
         </SafeAreaView>
       )}
 
+      {isNavigationMode && (
+        <View style={[tw('absolute right-3'), { bottom: '24%' }]}>
+          <NavVolumeToggleButton />
+        </View>
+      )}
+
       {/* 경로 선택 모드 */}
       {showSelectedRouteDetailModal &&
         selectedRouteData &&
@@ -142,7 +149,6 @@ const MapScreen = () => {
           setIsBookmarkBtnPressed={handleOpenBookmarkModal}
         />
       )}
-
       {/* 공용 */}
       <View
         style={[
