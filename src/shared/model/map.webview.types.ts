@@ -126,8 +126,9 @@ export interface ShowSingleBookmarkMarkerMessage {
   bookmarkData: BookmarkItem;
 }
 // === 내비게이션 관련 메시지 ===
-export interface ChangeMyLocationMarker {
-  type: 'changeMyLocationMarker';
+export interface ReplaceMyLocationMarker {
+  type: 'replaceMyLocationMarker';
+  isNavigationMode: boolean;
 }
 
 // 모든 메시지 타입 유니온
@@ -152,7 +153,7 @@ export type WebViewMessageToWeb =
   | ShowSingleBookmarkMarkerMessage
   | ClearBookmarksMessage
   | StopFollowingMyLocationMessage
-  | ChangeMyLocationMarker;
+  | ReplaceMyLocationMarker;
 
 /* === 웹뷰로부터 받아온 메시지 타입 === */
 

@@ -1,5 +1,6 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import {
   IntervalPathData,
   keepNavigationSessionAlivePayload,
@@ -33,6 +34,8 @@ export const useNavigationOrchestrator = () => {
 
   const { mutateAsync: keepNavigationSessionAlive } =
     useKeepNavigationSessionAliveMutation();
+
+  const { replaceMyLocationMarker } = useNavigationMessenger();
 
   const isMapReady = useMapStore(state => state.isMapReady);
 
@@ -84,6 +87,7 @@ export const useNavigationOrchestrator = () => {
     if (!isNavigationMode || !routeId) return;
     const initNavigation = async () => {
       // 초기화
+      replaceMyLocationMarker();
       pathDataListByInterval.current = [];
       instructionList.current = [];
       fullPathCoordinateList.current = [];

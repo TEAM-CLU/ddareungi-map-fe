@@ -30,7 +30,6 @@
     let map;
     window.isSelectedRouteDetailModalOpen = false;
     window.isCompassMode = false;
-    window.isNavigationMode = false;
     const DEFAULT_LAT = 37.5665;
     const DEFAULT_LNG = 126.978;
 
@@ -232,8 +231,8 @@
           Bookmark.showSingleBookmarkMarker(data.bookmarkData);
         }
         // === 내비게이션 기능 ===
-        if (data.type === 'changeMyLocationMarker') {
-          window.isNavigationMode = true;
+        if (data.type === 'replaceMyLocationMarker') {
+          MyLocation.replaceMyLocationMarker(data.isNavigationMode);
         }
       } catch (error) {
         console.error('메시지 처리 실패:', error);
