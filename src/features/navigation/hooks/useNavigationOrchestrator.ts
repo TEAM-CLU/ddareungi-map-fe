@@ -31,7 +31,7 @@ import {
   calculateRemainingDistanceMeter,
   calculateTraveledDistanceMeter,
   calculateEta,
-  returnAccurateSpeedMeterPerSec,
+  returnAccurateSpeedMps,
 } from '@/features/navigation/utils/navigationController';
 
 import { Coordinate } from '@/features/routing/model/routing.types';
@@ -79,7 +79,7 @@ export const useNavigationOrchestrator = () => {
   // 네비게이션 컨트롤러 필요 안내
   const prevLocationMetaData = useRef<LocationMetaData | null>(null);
   const currentLocationMetaData = useRef<LocationMetaData | null>(null);
-  const prevEmaSpeedMeterPerSec = useRef<number | null>(null);
+  const prevEmaSpeedMps = useRef<number | null>(null);
   const [eta, setEta] = useState<Date | undefined | null>(null);
   const [remainingDistanceMeter, setRemainingDistance] = useState<
     number | undefined | null
@@ -362,23 +362,14 @@ export const useNavigationOrchestrator = () => {
 
     // eta 계산
     // 1) 정확하고 보정된 속도 사용
-    const accurateSpeedMeterPerSec = returnAccurateSpeedMeterPerSec(
+    const accurateSpeedMps = returnAccurateSpeedMps(
       prevLocationMetaData.current,
       currentLocationMetaData.current,
     );
-    prevEmaSpeedMeterPerSec.current = accurateSpeedMeterPerSec;
+    prevEmaSpeedMps.current = accurateSpeedMps;
 
     // 2) 남은 거리 / 속도 = 남은 시간
-    setEta(calculateEta(remainingDistanceMeter, accurateSpeedMeterPerSec));
-
-    console.log(
-      '디버깅 ETA 업데이트:',
-      remainingDistanceMeter,
-      accurateSpeedMeterPerSec,
-      eta,
-      myPosition,
-      locationMetaData,
-    );
+    setEta(calculateEta(remainingDistanceMeter, accurateSpeedMps));
   }, [myPosition, locationMetaData, remainingDistanceMeter, isNavigationMode]);
 
   // 세션 유지

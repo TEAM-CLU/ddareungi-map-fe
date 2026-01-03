@@ -121,7 +121,7 @@ const ema = (
 const hasNum = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v);
 
-export const returnAccurateSpeedMeterPerSec = (
+export const returnAccurateSpeedMps = (
   prevLocationMetaData: LocationMetaData,
   currentLocationMetaData: LocationMetaData,
   prevEmaSpeed?: number,
@@ -153,11 +153,11 @@ export const returnAccurateSpeedMeterPerSec = (
       prevLocationMetaData.coordinate,
       currentLocationMetaData.coordinate,
     );
-    const rawSpeedMeterPerSec = distanceMeter / dt;
+    const rawSpeedMps = distanceMeter / dt;
 
-    if (!Number.isFinite(rawSpeedMeterPerSec)) return ema(prevBase, 0);
+    if (!Number.isFinite(rawSpeedMps)) return ema(prevBase, 0);
 
-    return ema(prevBase, rawSpeedMeterPerSec);
+    return ema(prevBase, rawSpeedMps);
   }
 
   // case 2: OS 속도 또는 accuracy가 없을 때 직접 계산
@@ -175,30 +175,28 @@ export const returnAccurateSpeedMeterPerSec = (
     prevLocationMetaData.coordinate,
     currentLocationMetaData.coordinate,
   );
-  const rawSpeedMeterPerSec = distanceM / dt; // m/s
+  const rawSpeedMps = distanceM / dt; // m/s
   const prevBase = hasNum(prevEmaSpeed)
     ? prevEmaSpeed
     : hasNum(prevLocationMetaData.osSpeed)
     ? prevLocationMetaData.osSpeed
-    : rawSpeedMeterPerSec;
+    : rawSpeedMps;
 
   // 속도값이 비정상적이면 0으로 처리
-  if (!Number.isFinite(rawSpeedMeterPerSec)) return ema(prevBase, 0);
+  if (!Number.isFinite(rawSpeedMps)) return ema(prevBase, 0);
 
-  return ema(prevBase, rawSpeedMeterPerSec);
+  return ema(prevBase, rawSpeedMps);
 };
 
 // 예상 도착 시간 계산
 export const calculateEta = (
   totalRemainingDistanceMeter: number,
-  currentEmaSpeedMeterPerSec: number,
+  currentEmaSpeedMps: number,
 ) => {
-  if (currentEmaSpeedMeterPerSec <= 0) return undefined;
+  if (currentEmaSpeedMps <= 0) return undefined;
   if (totalRemainingDistanceMeter <= 0) return undefined;
 
-  const remainingTimeSec =
-    totalRemainingDistanceMeter / currentEmaSpeedMeterPerSec;
-
+  const remainingTimeSec = totalRemainingDistanceMeter / currentEmaSpeedMps;
   return new Date(Date.now() + remainingTimeSec * 1000);
 };
 

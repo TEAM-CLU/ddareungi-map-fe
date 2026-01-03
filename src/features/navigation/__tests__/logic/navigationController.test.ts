@@ -2,7 +2,7 @@ import {
   calculateRemainingDistanceMeter,
   calculateTraveledDistanceMeter,
   calculateEta,
-  returnAccurateSpeedMeterPerSec,
+  returnAccurateSpeedMps,
 } from '@/features/navigation/utils/navigationController';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 
@@ -331,7 +331,7 @@ describe('NavigationController 핵심 로직 검증', () => {
         accuracy: 10,
         osSpeed: 4,
       };
-      const result = returnAccurateSpeedMeterPerSec(prev, curr, 2);
+      const result = returnAccurateSpeedMps(prev, curr, 2);
       expect(result).toBeCloseTo(2.4, 5);
     });
 
@@ -354,7 +354,7 @@ describe('NavigationController 핵심 로직 검증', () => {
       );
       const rawSpeed = distance / 1;
       const expected = 0.2 * rawSpeed + 0.8 * 2;
-      const result = returnAccurateSpeedMeterPerSec(prev, curr, 2);
+      const result = returnAccurateSpeedMps(prev, curr, 2);
       expect(result).toBeCloseTo(expected, 5);
     });
 
@@ -371,7 +371,7 @@ describe('NavigationController 핵심 로직 검증', () => {
         accuracy: 10,
         osSpeed: 5,
       };
-      const result = returnAccurateSpeedMeterPerSec(prev, curr, 3);
+      const result = returnAccurateSpeedMps(prev, curr, 3);
       expect(result).toBeCloseTo(2.4, 5);
     });
 
@@ -389,7 +389,7 @@ describe('NavigationController 핵심 로직 검증', () => {
         curr.coordinate,
       );
       const rawSpeed = distance / 1;
-      const result = returnAccurateSpeedMeterPerSec(prev, curr, undefined);
+      const result = returnAccurateSpeedMps(prev, curr, undefined);
       expect(result).toBeCloseTo(rawSpeed, 5);
     });
   });
