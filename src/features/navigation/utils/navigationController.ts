@@ -121,7 +121,7 @@ const ema = (
 const hasNum = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v);
 
-export const returnAccurateSpeedMeter = (
+export const returnAccurateSpeedMeterPerSec = (
   prevLocationMetaData: LocationMetaData,
   currentLocationMetaData: LocationMetaData,
   prevEmaSpeed?: number,
@@ -140,13 +140,15 @@ export const returnAccurateSpeedMeter = (
     const prevBase = hasNum(prevEmaSpeed)
       ? prevEmaSpeed
       : prevLocationMetaData.osSpeed!;
+
+    if (dt <= 0 || !Number.isFinite(dt)) return ema(prevBase, 0);
+
     // accuracy가 40 이하라면 OS speed 사용
     if (currentLocationMetaData.accuracy! <= ACCURACY_OK) {
       return ema(prevBase, currentLocationMetaData.osSpeed!);
     }
 
     // accuracy가 40 초과라면 직접 계산
-    if (dt <= 0 || !Number.isFinite(dt)) return ema(prevBase, 0);
     const distanceMeter = getDistanceBetweenCoords(
       prevLocationMetaData.coordinate,
       currentLocationMetaData.coordinate,

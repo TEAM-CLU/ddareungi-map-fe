@@ -1,8 +1,8 @@
 import {
   calculateRemainingDistanceMeter,
   calculateTraveledDistanceMeter,
-  returnAccurateSpeedMeter,
   calculateEta,
+  returnAccurateSpeedMeterPerSec,
 } from '@/features/navigation/utils/navigationController';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 
@@ -59,7 +59,9 @@ describe('NavigationController 핵심 로직 검증', () => {
     it('현재 인터벌의 중간 좌표 기준으로 남은 거리 합산', () => {
       const myPosition = interval0[1];
       const currentIntervalRemaining = sumSegmentDistances(interval0.slice(1));
-      const expected = round2(currentIntervalRemaining + instructionList[1].distance);
+      const expected = round2(
+        currentIntervalRemaining + instructionList[1].distance,
+      );
       const result = calculateRemainingDistanceMeter(
         myPosition,
         pathDataListByInterval,
@@ -207,7 +209,10 @@ describe('NavigationController 핵심 로직 검증', () => {
 
     it('현재 인터벌 중간 좌표 기준으로 소요 거리 합산', () => {
       const myPosition = interval0[1];
-      const directDistance = getDistanceBetweenCoords(interval0[0], interval0[1]);
+      const directDistance = getDistanceBetweenCoords(
+        interval0[0],
+        interval0[1],
+      );
       const polylineDistance = sumSegmentDistances(interval0.slice(0, 2));
       const expected = round2(directDistance + polylineDistance);
       const result = calculateTraveledDistanceMeter(
@@ -326,7 +331,7 @@ describe('NavigationController 핵심 로직 검증', () => {
         accuracy: 10,
         osSpeed: 4,
       };
-      const result = returnAccurateSpeedMeter(prev, curr, 2);
+      const result = returnAccurateSpeedMeterPerSec(prev, curr, 2);
       expect(result).toBeCloseTo(2.4, 5);
     });
 
@@ -343,10 +348,13 @@ describe('NavigationController 핵심 로직 검증', () => {
         accuracy: 50,
         osSpeed: 6,
       };
-      const distance = getDistanceBetweenCoords(prev.coordinate, curr.coordinate);
+      const distance = getDistanceBetweenCoords(
+        prev.coordinate,
+        curr.coordinate,
+      );
       const rawSpeed = distance / 1;
       const expected = 0.2 * rawSpeed + 0.8 * 2;
-      const result = returnAccurateSpeedMeter(prev, curr, 2);
+      const result = returnAccurateSpeedMeterPerSec(prev, curr, 2);
       expect(result).toBeCloseTo(expected, 5);
     });
 
@@ -363,7 +371,7 @@ describe('NavigationController 핵심 로직 검증', () => {
         accuracy: 10,
         osSpeed: 5,
       };
-      const result = returnAccurateSpeedMeter(prev, curr, 3);
+      const result = returnAccurateSpeedMeterPerSec(prev, curr, 3);
       expect(result).toBeCloseTo(2.4, 5);
     });
 
@@ -376,9 +384,12 @@ describe('NavigationController 핵심 로직 검증', () => {
         coordinate: coord(0, 0.001),
         timestemp: 1000,
       };
-      const distance = getDistanceBetweenCoords(prev.coordinate, curr.coordinate);
+      const distance = getDistanceBetweenCoords(
+        prev.coordinate,
+        curr.coordinate,
+      );
       const rawSpeed = distance / 1;
-      const result = returnAccurateSpeedMeter(prev, curr, undefined);
+      const result = returnAccurateSpeedMeterPerSec(prev, curr, undefined);
       expect(result).toBeCloseTo(rawSpeed, 5);
     });
   });

@@ -3,7 +3,7 @@ import {
   getDistanceText,
   formatDistance,
   formatCalories,
-} from '../formatting';
+} from '@/shared/utils/formatting';
 
 describe('getTimeText 시간 포맷 함수', () => {
   it('null 입력시 로딩 문구 반환', () => {
