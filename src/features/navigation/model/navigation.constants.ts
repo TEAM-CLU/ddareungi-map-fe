@@ -35,15 +35,30 @@ export const ACCURACY_OK = 40;
 export const FALLBACK_TTS_URL =
   'https://ddareungimap-tts-cache.s3.amazonaws.com/tts/ko-KR/b51d71d80e0025ab88bc5d697a3f91b32146b94b7d41cb3573c244d05f8a3110.mp3';
 
-export const ENTRY_RADIUS_METER = 20;
-export const EXIT_RADIUS_METER = 35;
+// navigationTurn.constants.ts
 
-export const PASS_CONFIRM_COUNT = 3;
+export const TURN_CONFIG = {
+  // entry / exit 반경
+  ENTRY_RADIUS_METER: 20, // 턴 진입 반경
+  EXIT_RADIUS_METER: 35, // 턴 이탈 반경 (ENTRY보다 크게)
 
-export const DEADZONE_DISTANCE_METER = 6;
-export const MIN_MOVE_METER = 10;
-export const MAX_SPEED_MPS = 20;
-export const DOT_DEADZONE = 0;
+  // 통과 확정 조건
+  PASS_CONFIRM_COUNT: 3, // 연속 N번 통과 시 확정
 
-export const PASS_COUNT_DECAY = 1;
-export const PASS_COUNT_MAX = PASS_CONFIRM_COUNT;
+  // 거리 / 이동 보정 관련
+  DEADZONE_DISTANCE_METER: 6, // 거리 변화 deadzone (GPS 흔들림 무시)
+  MIN_MOVE_METER: 10, // 방향(dot) 판정 최소 이동 거리
+  MAX_SPEED_MPS: 20, // 최대 허용 속도 (GPS 점프 방지)
+
+  // dot(내적) 보정 관련
+  DOT_DEADZONE: 0, // 0이면 부호만 사용 (음수 = 멀어짐)
+
+  // pass count 정책
+  PASS_COUNT_DECAY: 1, // 조건 불만족 시 감소량
+  PASS_COUNT_MAX: 3, // 과도 증가 방지 (보통 PASS_CONFIRM_COUNT와 동일)
+} as const;
+
+export const TRAVELED_DISTANCE_OPTIONS = {
+  MAX_SPEED_MPS: 20,
+  STOP_JUDGE_MOVE_METER: 3,
+} as const;

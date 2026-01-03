@@ -1,5 +1,8 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
-import { ACCURACY_OK } from '@/features/navigation/model/navigation.constants';
+import {
+  ACCURACY_OK,
+  TRAVELED_DISTANCE_OPTIONS,
+} from '@/features/navigation/model/navigation.constants';
 import {
   IntervalPathData,
   LocationMetaData,
@@ -99,13 +102,11 @@ export const calculateRemainingDistanceMeter = (
   }
 
   // 3. 전체 남은 거리 계산
-  const totalRemainingDistanceMeter =
-    Math.round(
-      (fromMyPositionToLastIntervalCoordDistance + remainingIntervalsDistance) *
-        100,
-    ) / 100;
+  const totalRemainingDistanceMeter = Math.round(
+    fromMyPositionToLastIntervalCoordDistance + remainingIntervalsDistance,
+  );
 
-  return totalRemainingDistanceMeter; // ex) "1.83"
+  return totalRemainingDistanceMeter;
 };
 
 // 지수이동평균 계산식: 속도 변동을 부드럽게 하기 위해 사용, 노이즈 감소 목적(ex: 사용자가 멈춰있어서 계속 0이니 아니면, 튀어서 0이니 등을 고려) helper
@@ -204,17 +205,55 @@ export const calculateEta = (
 1. 현재 내가 속한 인터벌의 firstCoordinate와 현재 내 좌표간 거리 계산(보정 필요)
 2. 지난 인터벌의 거리 합산
 3. (1)+(2)로 전체 소요 거리 계산
+4. 안정화 - 튐 방지 보정:
+   - 진행거리 감소 금지
+   - 최대 속도 기반 증가 제한
+   - 정지 판정 시 증가 억제
 */
-
 export const calculateTraveledDistanceMeter = (
   myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
   currentIntervalIndex: number,
   instructionList: NavigationInstruction[],
+
+  // 안정화(튐 방지)용 입력
+  prevTraveledDistanceMeter: number, // 이전에 확정해서 UI에 보여주던 진행거리
+  prevMyPositionForTravel: Coordinate | null, // 이전 위치(정지 판정)
+  prevTimestampForTravel: number | null, // 이전 타임스탬프(ms)
+  currentTimestamp: number, // 현재 타임스탬프(ms)
 ) => {
-  //1. 내 위치 기준 현재 인터벌 지난 거리 계산
+  const { MAX_SPEED_MPS, STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
+
+  // =========================
+  // 0) dtSec 계산 (물리적 증가 제한에 필요)
+  // =========================
+  const dtSec =
+    prevTimestampForTravel !== null
+      ? Math.max(0.001, (currentTimestamp - prevTimestampForTravel) / 1000)
+      : null;
+
+  // =========================
+  // 0-1) GPS 점프 판정
+  // =========================
+  if (prevMyPositionForTravel && dtSec !== null) {
+    const movedMeter = getDistanceBetweenCoords(
+      prevMyPositionForTravel,
+      myPosition,
+    );
+
+    const instantSpeedMps = movedMeter / dtSec;
+
+    // 물리적으로 불가능한 이동 → GPS 점프
+    if (instantSpeedMps > MAX_SPEED_MPS) {
+      return prevTraveledDistanceMeter;
+    }
+  }
+
+  // =========================
+  // 1) 내 위치 기준 현재 인터벌 지난 거리 계산
+  // =========================
   const intervalCoordinateList =
-    pathDataListByInterval[currentIntervalIndex].coordinateList ?? [];
+    pathDataListByInterval[currentIntervalIndex]?.coordinateList ?? [];
 
   let fromFirstIntervalCoordToMyPositionDistance = 0;
 
@@ -225,6 +264,7 @@ export const calculateTraveledDistanceMeter = (
       myPosition,
       intervalCoordinateList,
     );
+
     // 1.1-2) 가장 가까운 점 좌표 찾기
     const closetCoordinate = intervalCoordinateList[closetCoordinateIdx];
 
@@ -236,7 +276,7 @@ export const calculateTraveledDistanceMeter = (
       closetCoordinate,
     );
 
-    // 1.1-3-b) 가장 가까운 경로 점부터 첫 점까지 polyline 누적
+    // 1.1-3-b) 가장 가까운 경로 점까지 polyline 누적
     for (let i = 0; i < closetCoordinateIdx; i++) {
       fromFirstIntervalCoordToMyPositionDistance += getDistanceBetweenCoords(
         intervalCoordinateList[i],
@@ -258,8 +298,11 @@ export const calculateTraveledDistanceMeter = (
     fromFirstIntervalCoordToMyPositionDistance = 0;
   }
 
-  // 2. 지난 인터벌 거리 합산
+  // =========================
+  // 2) 지난 인터벌 거리 합산
+  // =========================
   let traveledIntervalsDistance = 0;
+
   // 첫 인터벌이 아닐 때만 계산
   if (currentIntervalIndex > 0) {
     for (let i = 0; i < currentIntervalIndex; i++) {
@@ -267,12 +310,47 @@ export const calculateTraveledDistanceMeter = (
     }
   }
 
-  // 3. 전체 소요 거리 계산
-  const totalTraveledDistanceMeter =
+  // =========================
+  // 3) 전체 소요 거리 "raw" 계산
+  // =========================
+  const newlyComputedTraveledDistanceMeter =
     Math.round(
       (fromFirstIntervalCoordToMyPositionDistance + traveledIntervalsDistance) *
         100,
     ) / 100;
 
-  return totalTraveledDistanceMeter; // ex) "1.83"
+  // =========================
+  // 4) 튐 방지 보정 (핵심)
+  // =========================
+
+  // 4-1) 규칙 1️: 진행거리는 절대 감소하지 않게
+  let stabilizedTraveledDistanceMeter = Math.max(
+    prevTraveledDistanceMeter,
+    newlyComputedTraveledDistanceMeter,
+  );
+
+  // 4-2) 정지 판정(거의 안 움직였는데 값만 튀는 경우 방지)
+  if (prevMyPositionForTravel) {
+    const movedMeter = getDistanceBetweenCoords(
+      prevMyPositionForTravel,
+      myPosition,
+    );
+
+    // "정지"면 증가를 막는다 -> 추가 옵션
+    if (movedMeter < STOP_JUDGE_MOVE_METER) {
+      return prevTraveledDistanceMeter;
+    }
+  }
+
+  // 4-3) 규칙 2️: 최대 속도 기반 “증가 최대폭” 제한
+  if (dtSec !== null) {
+    const maxPossibleIncreaseMeter = MAX_SPEED_MPS * dtSec;
+
+    stabilizedTraveledDistanceMeter = Math.min(
+      stabilizedTraveledDistanceMeter,
+      prevTraveledDistanceMeter + maxPossibleIncreaseMeter,
+    );
+  }
+
+  return Math.round(stabilizedTraveledDistanceMeter);
 };
