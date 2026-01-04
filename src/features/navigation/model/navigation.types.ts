@@ -149,3 +149,6 @@ export type MotionVectorResult = {
   speedMps: number; // 속도(m/s)
   dot: number; // v·u
 };
+
+// useTimer 훅에서 사용하는 타입
+export type TimerStatus = 'idle' | 'running' | 'paused';

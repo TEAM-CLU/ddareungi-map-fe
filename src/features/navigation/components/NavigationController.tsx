@@ -1,7 +1,13 @@
-import { IconHamburger, IconPlay } from '@/shared/components/icons';
+import { useTimer } from '@/features/navigation/hooks/useTimer';
+import { IconHamburger, IconPause, IconPlay } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
-import { getDistanceText, getTimeText } from '@/shared/utils/formatting';
+import {
+  formatTimeHHMMSS,
+  getDistanceText,
+  getTimeText,
+} from '@/shared/utils/formatting';
+import { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface NavigationControllerProps {
@@ -18,6 +24,30 @@ const NavigationController = ({
   const setShowNavigationDetailModal = useModalStore(
     state => state.setShowNavigationDetailModal,
   );
+
+  const { seconds, startTimer, pauseTimer } = useTimer();
+
+  const [playbackStatus, setPlaybackStatus] = useState<'playing' | 'paused'>(
+    'playing',
+  );
+
+  const handlePlayBackTogglePress = () => {
+    if (playbackStatus === 'playing') {
+      setPlaybackStatus('paused');
+      pauseTimer();
+      return;
+    }
+    if (playbackStatus === 'paused') {
+      setPlaybackStatus('playing');
+      startTimer();
+      return;
+    }
+  };
+
+  useEffect(() => {
+    startTimer();
+  }, [startTimer]);
+
   return (
     <View
       style={[
@@ -33,11 +63,26 @@ const NavigationController = ({
       ]}
     >
       <TouchableOpacity
+        onPress={handlePlayBackTogglePress}
         style={tw(
-          'bg-brand-primary flex items-center justify-center w-12 h-12 rounded-full',
+          'bg-brand-primary flex items-center justify-center w-12 h-12 rounded-full relative',
         )}
       >
-        <IconPlay />
+        <View
+          style={[
+            tw('flex items-center justify-center w-full h-full absolute'),
+            {
+              left: '51%',
+              transform: [{ translateX: -24 }],
+            },
+          ]}
+        >
+          {playbackStatus === 'playing' ? (
+            <IconPause color="#ffffff" />
+          ) : (
+            <IconPlay />
+          )}
+        </View>
       </TouchableOpacity>
       <View style={[tw('h-full'), { backgroundColor: '#E2E2E2', width: 1 }]} />
       <View
@@ -65,7 +110,7 @@ const NavigationController = ({
             { fontSize: 24 },
           ]}
         >
-          00:00:00
+          {formatTimeHHMMSS(seconds)}
         </Text>
         <View style={[tw('w-full flex flex-col items-start'), { gap: 4 }]}>
           <Text

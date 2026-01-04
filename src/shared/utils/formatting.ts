@@ -1,5 +1,18 @@
 import { Segment } from '@/features/routing/model/routing.types';
 
+// 시간 포맷팅 (초 → HH:MM:SS)
+export const formatTimeHHMMSS = (totalSeconds: number) => {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+};
+
 // 시간 포맷팅 (초 → n시간 n분)
 export const formatTime = (seconds: number): string => {
   const totalMinutes = Math.round(seconds / 60);
