@@ -18,6 +18,7 @@ import {
   useKeepNavigationSessionAliveMutation,
   useStartNavigationSessionMutation,
 } from '@/features/navigation/services/navigation.queries';
+import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { calculateMotionVector } from '@/features/navigation/utils/calculateMotionVector';
 import {
@@ -30,7 +31,7 @@ import {
 import { Coordinate } from '@/features/routing/model/routing.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { useShallow } from 'zustand/shallow';
 
@@ -113,6 +114,15 @@ export const useNavigationOrchestrator = () => {
   // 네비게이션 세션 업데이트용
   const sessionId = useRef<string | null>(null);
 
+  // 네비게이션 디테일 모달 계산용
+  const { setTotalIntervals, setCurrentIntervalIndex } =
+    useNavigationDetailModalStore(
+      useShallow(state => ({
+        setTotalIntervals: state.setTotalIntervals,
+        setCurrentIntervalIndex: state.setCurrentIntervalIndex,
+      })),
+    );
+
   // 초기화
   useEffect(() => {
     if (!isNavigationMode || !routeId) return;
@@ -147,6 +157,10 @@ export const useNavigationOrchestrator = () => {
           setCurrentInstruction(response.data.instructions[0]);
           nextTurnCoordinate.current =
             response.data.instructions[0].nextTurnCoordinate;
+
+          // 네비게이션 디테일 모달 상태 초기화
+          setTotalIntervals(response.data.instructions.length);
+          setCurrentIntervalIndex(0);
         }
 
         for (let i = 0; i < response.data.instructions.length; i++) {

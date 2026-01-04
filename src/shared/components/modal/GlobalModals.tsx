@@ -10,6 +10,8 @@ import BookmarkModal from '@/shared/components/bookmark/BookmarkEditModal';
 import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
 import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
 import { useShallow } from 'zustand/react/shallow';
+import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
+import { use } from 'react';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore(
@@ -57,6 +59,14 @@ const GlobalModals = () => {
   const selectedPlaceInfoForModal = useSearchStore(
     state => state.selectedPlaceInfoForModal,
   );
+
+  const { totalIntervals, currentIntervalIndex } =
+    useNavigationDetailModalStore(
+      useShallow(state => ({
+        totalIntervals: state.totalIntervals,
+        currentIntervalIndex: state.currentIntervalIndex,
+      })),
+    );
 
   return (
     <>
@@ -138,7 +148,10 @@ const GlobalModals = () => {
         initialIndex={1}
         onDismiss={() => setShowNavigationDetailModal(false)}
       >
-        <NavigationDetailModal />
+        <NavigationDetailModal
+          totalIntervals={totalIntervals}
+          currentIntervalIndex={currentIntervalIndex}
+        />
       </SlideModal>
     </>
   );

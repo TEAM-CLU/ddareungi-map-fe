@@ -1,3 +1,4 @@
+import IntervalProgressBar from '@/features/navigation/components/IntervalProgressBar';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import RoundButton from '@/shared/components/button/RoundButton';
 import {
@@ -13,18 +14,35 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/react/shallow';
 
-const NavigationDetailModal = () => {
+interface NavigationDetailModalProps {
+  currentIntervalIndex?: number;
+  totalIntervals?: number;
+}
+const NavigationDetailModal = ({
+  currentIntervalIndex,
+  totalIntervals,
+}: NavigationDetailModalProps) => {
   const { systemVolume, setSystemVolume } = useVolumeStore(
     useShallow(state => ({
       systemVolume: state.systemVolume,
       setSystemVolume: state.setSystemVolume,
     })),
   );
+
   const setShowNavigationDetailModal = useModalStore(
     state => state.setShowNavigationDetailModal,
   );
   // 시스템 볼륨 초기값 설정 및 리스너 등록
   useEffect(() => {
+    const canUseVolumeManager =
+      VolumeManager &&
+      typeof VolumeManager.getVolume === 'function' &&
+      typeof VolumeManager.addVolumeListener === 'function';
+
+    if (!canUseVolumeManager) {
+      return;
+    }
+
     try {
       VolumeManager.getVolume().then(volumeData =>
         setSystemVolume(volumeData.volume),
@@ -42,13 +60,15 @@ const NavigationDetailModal = () => {
     return () => {
       volumeListener.remove();
     };
-  }, []);
+  }, [setSystemVolume]);
 
   // 시스템 음성 볼륨 변경 핸들러
   const handleSystemVolumeSliderChange = async (volume: number) => {
     setSystemVolume(volume);
     try {
-      await VolumeManager.setVolume(volume);
+      if (VolumeManager && typeof VolumeManager.setVolume === 'function') {
+        await VolumeManager.setVolume(volume);
+      }
     } catch (error) {
       console.error('시스템 볼륨을 설정하는 중 오류 발생:', error);
     }
@@ -68,7 +88,7 @@ const NavigationDetailModal = () => {
             { fontSize: 20 },
           ]}
         >
-          네비게이션 설정
+          네비게이션 상세
         </Text>
         <TouchableOpacity onPress={() => setShowNavigationDetailModal(false)}>
           <IconChevronDown color={'#77838F'} />
@@ -78,6 +98,23 @@ const NavigationDetailModal = () => {
       <View
         style={[tw('w-full flex flex-col grow justify-start'), { gap: 35 }]}
       >
+        {totalIntervals !== undefined &&
+        currentIntervalIndex !== undefined &&
+        totalIntervals > 0 ? (
+          <IntervalProgressBar
+            totalIntervals={totalIntervals}
+            currentIntervalIndex={currentIntervalIndex}
+          />
+        ) : (
+          <Text
+            style={[
+              tw('font-primary-600 text-on-surface-primary text-left'),
+              { fontSize: 13 },
+            ]}
+          >
+            진행 구간 정보가 없습니다.
+          </Text>
+        )}
         <View style={[tw('flex flex-col w-full'), { gap: 30 }]}>
           <Text
             style={[
@@ -85,7 +122,7 @@ const NavigationDetailModal = () => {
               { fontSize: 13 },
             ]}
           >
-            알림음 음성크기
+            시스템 음성크기
           </Text>
           <View style={[tw('w-full flex flex-row  items-center'), { gap: 16 }]}>
             <IconMute />
