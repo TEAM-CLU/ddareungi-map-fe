@@ -74,7 +74,7 @@ const MapScreen = () => {
           <InstructionBanner
             currentTtsUrl={currentTtsUrl}
             currentIntervalIndex={currentIntervalIndex}
-            instruction={currentInstruction.text}
+            instructionText={currentInstruction.text}
             sign={currentInstruction.sign}
           />
         </SafeAreaView>

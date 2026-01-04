@@ -38,6 +38,85 @@ const findClosestCoordIndex = (
   return bestIdx;
 };
 
+/**
+ * ✅ 현재 인터벌 기준 거리 계산 (type으로 traveled/remaining 분기)
+ * - traveled: 인터벌 시작점 -> 내 위치까지 "지나온 거리"
+ * - remaining: 내 위치 -> 인터벌 마지막점까지 "남은 거리"
+ *
+ * 계산 방식:
+ * - interval 좌표가 2개 이상:
+ *    traveled  = (start -> closest) + polyline(start..closest)
+ *    remaining = (myPos -> closest) + polyline(closest..end)
+ * - interval 좌표가 1개:
+ *    traveled  = (onlyCoord -> myPos)
+ *    remaining = (myPos -> onlyCoord)
+ * - interval 좌표 없음: 0
+ */
+export const calculateIntervalDistanceByMyPositionMeter = (
+  myPosition: Coordinate,
+  pathDataListByInterval: IntervalPathData[],
+  currentIntervalIndex: number,
+  type: 'remaining' | 'traveled',
+) => {
+  const intervalCoordinateList =
+    pathDataListByInterval[currentIntervalIndex]?.coordinateList ?? [];
+
+  let distanceMeter = 0;
+
+  // case 1: 현재 인터벌 좌표가 2개 이상일 때
+  if (intervalCoordinateList.length > 1) {
+    const closestIdx = findClosestCoordIndex(
+      myPosition,
+      intervalCoordinateList,
+    );
+    const closestCoord = intervalCoordinateList[closestIdx];
+
+    if (type === 'traveled') {
+      // 1) start -> closest (직선) + 2) start..closest polyline 누적
+      distanceMeter += getDistanceBetweenCoords(
+        intervalCoordinateList[0],
+        closestCoord,
+      );
+
+      for (let i = 0; i < closestIdx; i++) {
+        distanceMeter += getDistanceBetweenCoords(
+          intervalCoordinateList[i],
+          intervalCoordinateList[i + 1],
+        );
+      }
+    }
+
+    if (type === 'remaining') {
+      // 1) myPos -> closest (직선) + 2) closest..end polyline 누적
+      distanceMeter += getDistanceBetweenCoords(myPosition, closestCoord);
+
+      for (let i = closestIdx; i < intervalCoordinateList.length - 1; i++) {
+        distanceMeter += getDistanceBetweenCoords(
+          intervalCoordinateList[i],
+          intervalCoordinateList[i + 1],
+        );
+      }
+    }
+  }
+
+  // case 2: 현재 인터벌 좌표가 1개일 때
+  if (intervalCoordinateList.length === 1) {
+    // traveled/remaining 모두 사실상 같은 값(직선거리)로 계산됨
+    // (onlyCoord <-> myPos)
+    distanceMeter += getDistanceBetweenCoords(
+      intervalCoordinateList[0],
+      myPosition,
+    );
+  }
+
+  // case 3: 현재 인터벌 좌표가 없을 때
+  if (intervalCoordinateList.length === 0) {
+    distanceMeter = 0;
+  }
+
+  return distanceMeter;
+};
+
 /* 남은 거리 측정
 1. 현재 내가 속한 인터벌의 "내 위치 ~ 인터벌 lastCoordinate" 남은 거리 계산(보정 필요)
 2. 남은 인터벌의 distance 합산
@@ -60,54 +139,42 @@ export const calculateRemainingDistance = (
   prevTimestampForRemaining: number | null,
   currentTimestamp: number,
 ) => {
+  const { MAX_PHYSICAL_SPEED_MPS } = MOTION_COMMON_OPTIONS;
+
+  // =========================
+  // 0) dtSec 계산 (물리적 증가 제한에 필요)
+  // =========================
+  const dtSec =
+    prevTimestampForRemaining !== null
+      ? Math.max(0.001, (currentTimestamp - prevTimestampForRemaining) / 1000)
+      : null;
+
+  // =========================
+  // 0-1) GPS 점프 판정 (강한 컷)
+  // =========================
+  if (prevMyPositionForRemaining && dtSec !== null) {
+    const movedMeter = getDistanceBetweenCoords(
+      prevMyPositionForRemaining,
+      myPosition,
+    );
+
+    const instantSpeedMps = movedMeter / dtSec;
+
+    // 물리적으로 불가능한 이동 → GPS 점프
+    if (instantSpeedMps > MAX_PHYSICAL_SPEED_MPS) {
+      return prevRemainingDistanceMeter;
+    }
+  }
   // =========================
   // 1) 내 위치 기준 현재 인터벌 남은 거리 계산
   // =========================
-  const intervalCoordinateList =
-    pathDataListByInterval[currentIntervalIndex]?.coordinateList ?? [];
-
-  let fromMyPositionToLastIntervalCoordDistance = 0;
-
-  // case 1: 현재 인터벌 좌표가 2개 이상일 때
-  if (intervalCoordinateList.length > 1) {
-    const closetCoordinateIdx = findClosestCoordIndex(
+  const fromMyPositionToLastIntervalCoordDistance =
+    calculateIntervalDistanceByMyPositionMeter(
       myPosition,
-      intervalCoordinateList,
+      pathDataListByInterval,
+      currentIntervalIndex,
+      'remaining',
     );
-    const closetCoordinate = intervalCoordinateList[closetCoordinateIdx];
-
-    // 1) 내 위치 -> 가장 가까운 경로점
-    fromMyPositionToLastIntervalCoordDistance += getDistanceBetweenCoords(
-      myPosition,
-      closetCoordinate,
-    );
-
-    // 2) 가장 가까운 점부터 마지막 점까지 polyline 누적
-    for (
-      let i = closetCoordinateIdx;
-      i < intervalCoordinateList.length - 1;
-      i++
-    ) {
-      fromMyPositionToLastIntervalCoordDistance += getDistanceBetweenCoords(
-        intervalCoordinateList[i],
-        intervalCoordinateList[i + 1],
-      );
-    }
-  }
-
-  // case 2: 현재 인터벌 좌표가 1개일 때
-  if (intervalCoordinateList.length === 1) {
-    fromMyPositionToLastIntervalCoordDistance += getDistanceBetweenCoords(
-      myPosition,
-      intervalCoordinateList[0],
-    );
-  }
-
-  // case 3: 현재 인터벌 좌표가 없을 때
-  if (intervalCoordinateList.length === 0) {
-    fromMyPositionToLastIntervalCoordDistance = 0;
-  }
-
   // =========================
   // 2) 남은 인터벌 거리 합산
   // =========================
@@ -284,51 +351,13 @@ export const calculateTraveledDistance = (
   // =========================
   // 1) 내 위치 기준 현재 인터벌 지난 거리 계산
   // =========================
-  const intervalCoordinateList =
-    pathDataListByInterval[currentIntervalIndex]?.coordinateList ?? [];
-
-  let fromFirstIntervalCoordToMyPositionDistance = 0;
-
-  // case 1: 현재 인터벌 좌표가 2개 이상일 때
-  if (intervalCoordinateList.length > 1) {
-    // 1.1-1) 현재 인터벌 좌표중 내위치로부터 가장 가까운 점 인덱스
-    const closetCoordinateIdx = findClosestCoordIndex(
+  const fromFirstIntervalCoordToMyPositionDistance =
+    calculateIntervalDistanceByMyPositionMeter(
       myPosition,
-      intervalCoordinateList,
+      pathDataListByInterval,
+      currentIntervalIndex,
+      'traveled',
     );
-
-    // 1.1-2) 가장 가까운 점 좌표 찾기
-    const closetCoordinate = intervalCoordinateList[closetCoordinateIdx];
-
-    // 1.1-3) 현재 인터벌에서 "인터벌 시작 ~ 내 위치"까지 폴리라인 지난 거리
-
-    // 1.1-3-a) 인터벌 시작점 → 가장 가까운 경로 점 거리 일단 계산
-    fromFirstIntervalCoordToMyPositionDistance += getDistanceBetweenCoords(
-      intervalCoordinateList[0],
-      closetCoordinate,
-    );
-
-    // 1.1-3-b) 가장 가까운 경로 점까지 polyline 누적
-    for (let i = 0; i < closetCoordinateIdx; i++) {
-      fromFirstIntervalCoordToMyPositionDistance += getDistanceBetweenCoords(
-        intervalCoordinateList[i],
-        intervalCoordinateList[i + 1],
-      );
-    }
-  }
-
-  // case 2: 현재 인터벌 좌표가 1개일 때
-  if (intervalCoordinateList.length === 1) {
-    fromFirstIntervalCoordToMyPositionDistance += getDistanceBetweenCoords(
-      intervalCoordinateList[0],
-      myPosition,
-    );
-  }
-
-  // case 3: 현재 인터벌 좌표가 없을 때
-  if (intervalCoordinateList.length === 0) {
-    fromFirstIntervalCoordToMyPositionDistance = 0;
-  }
 
   // =========================
   // 2) 지난 인터벌 거리 합산

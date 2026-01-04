@@ -12,25 +12,25 @@ import { globalTtsState } from '@/features/navigation/model/navigation.data';
 
 interface InstructionBannerProps {
   currentIntervalIndex: number;
-  instruction: string;
+  instructionText: string;
   currentTtsUrl: string | null;
   sign: number;
 }
 
 const InstructionBanner = ({
   currentIntervalIndex,
-  instruction,
+  instructionText,
   currentTtsUrl,
   sign,
 }: InstructionBannerProps) => {
   const instructionLines = React.useMemo(() => {
-    const words = (instruction ?? '').trim().split(/\s+/).filter(Boolean);
+    const words = (instructionText ?? '').trim().split(/\s+/).filter(Boolean);
     const result: string[] = [];
     for (let i = 0; i < words.length; i += 3) {
       result.push(words.slice(i, i + 3).join(' '));
     }
     return result;
-  }, [instruction, sign]);
+  }, [instructionText, sign]);
   const navVolume = useNavDetailModalStore(state => state.navVolume);
   const prevIntervalIndexRef = useRef<number>(-1);
 
@@ -82,12 +82,20 @@ const InstructionBanner = ({
         { borderRadius: 20, maxWidth: 348, height: 70, gap: 1 },
       ]}
     >
-      <Image
-        source={DIRECTION_ICONS[String(sign) as keyof typeof DIRECTION_ICONS]}
-        style={{ width: 50, height: 50 } as ImageStyle}
-        resizeMode="cover"
-        testID="direction-icon"
-      />
+      <View style={[(tw('flex flex-col justify-center'), { gap: 2 })]}>
+        <Image
+          source={DIRECTION_ICONS[String(sign) as keyof typeof DIRECTION_ICONS]}
+          style={{ width: 50, height: 50 } as ImageStyle}
+          resizeMode="cover"
+          testID="direction-icon"
+        />
+      </View>
+      <Text
+        style={[
+          tw('font-primary-600 text-on-surface-secondary'),
+          { fontSize: 14 },
+        ]}
+      ></Text>
       <View style={[tw('flex flex-col justify-center'), { gap: 2 }]}>
         {instructionLines.map((line, idx) => (
           <Text
