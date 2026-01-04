@@ -21,25 +21,70 @@ import { Coordinate } from '@/features/routing/model/routing.types';
 */
 
 // 인터벌 좌표중 가장 가까운 인덱스 찾기 - helper
-const findClosestCoordIndex = (
+/**
+ * polyline의 "선분" 기준으로
+ * 내 위치에 가장 가까운 선분의 시작점 index를 반환
+ *
+ */
+export const findClosestCoordIndex = (
   myPosition: Coordinate,
-  intervalCoordinateList: Coordinate[],
-) => {
+  coordinateList: Coordinate[],
+): number => {
+  if (coordinateList.length === 0) return 0;
+  if (coordinateList.length === 1) return 0;
+
   let bestIdx = 0;
   let bestDistance = Infinity;
 
-  for (let i = 0; i < intervalCoordinateList.length; i++) {
-    const d = getDistanceBetweenCoords(myPosition, intervalCoordinateList[i]);
-    if (d < bestDistance) {
-      bestDistance = d;
+  // 위경도를 로컬 평면(m 단위)으로 근사
+  const lat0 = myPosition.lat;
+  const meterPerDegLat = 111_320;
+  const meterPerDegLng = 111_320 * Math.cos((lat0 * Math.PI) / 180);
+
+  const toXY = (p: Coordinate) => ({
+    x: (p.lng - myPosition.lng) * meterPerDegLng,
+    y: (p.lat - myPosition.lat) * meterPerDegLat,
+  });
+
+  for (let i = 0; i < coordinateList.length - 1; i++) {
+    const a = coordinateList[i];
+    const b = coordinateList[i + 1];
+
+    const A = toXY(a);
+    const B = toXY(b);
+
+    const ABx = B.x - A.x;
+    const ABy = B.y - A.y;
+    const denom = ABx * ABx + ABy * ABy;
+
+    let distToSegment: number;
+
+    if (denom === 0) {
+      // a == b (이상 케이스)
+      distToSegment = getDistanceBetweenCoords(myPosition, a);
+    } else {
+      // P=(0,0)을 AB에 투영
+      const t = (-A.x * ABx + -A.y * ABy) / denom;
+
+      const tClamped = Math.max(0, Math.min(1, t));
+
+      const projX = A.x + ABx * tClamped;
+      const projY = A.y + ABy * tClamped;
+
+      distToSegment = Math.sqrt(projX * projX + projY * projY);
+    }
+
+    if (distToSegment < bestDistance) {
+      bestDistance = distToSegment;
       bestIdx = i;
     }
   }
+
   return bestIdx;
 };
 
 /**
- * ✅ 현재 인터벌 기준 거리 계산 (type으로 traveled/remaining 분기)
+ * 현재 인터벌 기준 거리 계산 (type으로 traveled/remaining 분기)
  * - traveled: 인터벌 시작점 -> 내 위치까지 "지나온 거리"
  * - remaining: 내 위치 -> 인터벌 마지막점까지 "남은 거리"
  *
