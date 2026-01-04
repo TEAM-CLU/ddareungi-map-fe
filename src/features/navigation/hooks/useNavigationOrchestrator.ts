@@ -485,6 +485,7 @@ export const useNavigationOrchestrator = () => {
   }, [isNavigationMode, sessionId]);
 
   return {
+    pathDataListByInterval: pathDataListByInterval.current,
     currentIntervalIndex: currentIntervalIndex.current,
     currentTtsUrl: currentTtsUrl.current,
     currentInstruction,

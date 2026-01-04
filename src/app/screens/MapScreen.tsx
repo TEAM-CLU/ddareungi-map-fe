@@ -32,6 +32,7 @@ const MapScreen = () => {
   } = useMapOrchestrator();
 
   const {
+    pathDataListByInterval,
     currentTtsUrl,
     currentIntervalIndex,
     isNavigationMode,
@@ -72,6 +73,7 @@ const MapScreen = () => {
           ]}
         >
           <InstructionBanner
+            pathDataListByInterval={pathDataListByInterval}
             currentTtsUrl={currentTtsUrl}
             currentIntervalIndex={currentIntervalIndex}
             instructionText={currentInstruction.text}

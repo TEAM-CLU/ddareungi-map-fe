@@ -67,6 +67,12 @@ export const formatDistance = (meters: number): string => {
     : `${distanceInKm.toFixed(1)}km`;
 };
 
+// 거리 포맷팅 (1000m 이상일 때 km, 미만일 때 m)
+export const formatDistanceAdaptive = (distanceMeter: number): string => {
+  return distanceMeter >= 1000
+    ? `${(distanceMeter / 1000).toFixed(1)}km`
+    : `${Math.round(distanceMeter)}m`;
+};
 // 거리 텍스트 계산 함수
 export const getDistanceText = (
   distance: number | null | undefined,
@@ -80,9 +86,7 @@ export const getDistanceText = (
 
   if (distance === null) return loading; // 로딩 중
   if (distance === undefined) return error; // 계산 실패
-  return distance >= 1000
-    ? `${(distance / 1000).toFixed(1)}km`
-    : `${Math.round(distance)}m`;
+  return formatDistanceAdaptive(distance);
 };
 
 // 칼로리 포맷팅 (3자리 콤마)

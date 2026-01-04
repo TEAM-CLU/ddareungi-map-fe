@@ -4,13 +4,20 @@ import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import {
   DIRECTION_ICONS,
   FALLBACK_TTS_URL,
+  INTERVAL_DISTANCE_OPTIONS,
+  TRAVELED_DISTANCE_OPTIONS,
 } from '@/features/navigation/model/navigation.constants';
 import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
 import { tw } from '@/shared/libs/tw-helper';
 import TrackPlayer from 'react-native-track-player';
 import { globalTtsState } from '@/features/navigation/model/navigation.data';
+import { IntervalPathData } from '@/features/navigation/model/navigation.types';
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
+import { calculateIntervalDistanceByMyPosition } from '@/features/navigation/utils/navigationController';
+import { formatDistanceAdaptive } from '@/shared/utils/formatting';
 
 interface InstructionBannerProps {
+  pathDataListByInterval: IntervalPathData[];
   currentIntervalIndex: number;
   instructionText: string;
   currentTtsUrl: string | null;
@@ -18,11 +25,13 @@ interface InstructionBannerProps {
 }
 
 const InstructionBanner = ({
+  pathDataListByInterval,
   currentIntervalIndex,
   instructionText,
   currentTtsUrl,
   sign,
 }: InstructionBannerProps) => {
+  const myPosition = useMyPositionStore(state => state.myPosition);
   const instructionLines = React.useMemo(() => {
     const words = (instructionText ?? '').trim().split(/\s+/).filter(Boolean);
     const result: string[] = [];
@@ -33,6 +42,9 @@ const InstructionBanner = ({
   }, [instructionText, sign]);
   const navVolume = useNavDetailModalStore(state => state.navVolume);
   const prevIntervalIndexRef = useRef<number>(-1);
+  const prevRemainingDistanceRef = useRef<number | null>(null);
+  const [currentRemainingDistanceMeter, setCurrentRemainingDistanceMeter] =
+    useState<number | null>(null);
 
   // TTS 재생 처리
   useEffect(() => {
@@ -59,6 +71,28 @@ const InstructionBanner = ({
     playTts();
   }, [currentIntervalIndex, currentTtsUrl]);
 
+  // 인터벌 내 남은 거리 계산
+  useEffect(() => {
+    if (!myPosition || pathDataListByInterval.length === 0) return;
+    const remainingDistanceMeter = calculateIntervalDistanceByMyPosition(
+      myPosition,
+      pathDataListByInterval,
+      currentIntervalIndex,
+      'remaining',
+    );
+
+    if (
+      Math.abs(
+        (prevRemainingDistanceRef.current ?? 0) - remainingDistanceMeter,
+      ) <= INTERVAL_DISTANCE_OPTIONS.MIN_INTERVAL_DISTANCE_METER
+    ) {
+      // 10미터 이내 변화는 무시
+      return;
+    }
+    setCurrentRemainingDistanceMeter(remainingDistanceMeter);
+    prevRemainingDistanceRef.current = remainingDistanceMeter;
+  }, [myPosition, currentIntervalIndex]);
+
   const handleInstructionBannerPress = async () => {
     const ttsUrlToPlay = currentTtsUrl ?? FALLBACK_TTS_URL;
     await TrackPlayer.reset();
@@ -79,23 +113,29 @@ const InstructionBanner = ({
         tw(
           'w-full flex flex-row items-center px-1 py-2 bg-brand-primary justify-start',
         ),
-        { borderRadius: 20, maxWidth: 348, height: 70, gap: 1 },
+        { borderRadius: 20, maxWidth: 348, height: 75, gap: 1 },
       ]}
     >
-      <View style={[(tw('flex flex-col justify-center'), { gap: 2 })]}>
+      <View
+        style={[(tw('flex flex-col justify-center items-center'), { gap: 2 })]}
+      >
         <Image
           source={DIRECTION_ICONS[String(sign) as keyof typeof DIRECTION_ICONS]}
           style={{ width: 50, height: 50 } as ImageStyle}
           resizeMode="cover"
           testID="direction-icon"
         />
+        <Text
+          style={[
+            tw('font-primary-600 text-on-surface-secondary text-center'),
+            { fontSize: 13 },
+          ]}
+        >
+          {currentRemainingDistanceMeter !== null
+            ? formatDistanceAdaptive(currentRemainingDistanceMeter)
+            : '계산중'}
+        </Text>
       </View>
-      <Text
-        style={[
-          tw('font-primary-600 text-on-surface-secondary'),
-          { fontSize: 14 },
-        ]}
-      ></Text>
       <View style={[tw('flex flex-col justify-center'), { gap: 2 }]}>
         {instructionLines.map((line, idx) => (
           <Text
