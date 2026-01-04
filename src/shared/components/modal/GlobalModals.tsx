@@ -11,7 +11,8 @@ import NavigationDetailModal from '@/features/navigation/components/NavigationDe
 import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
 import { useShallow } from 'zustand/react/shallow';
 import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
-import { use } from 'react';
+import NavigationEndModal from '@/features/navigation/components/NavigationEndModal';
+import NavigationStartModal from '@/features/navigation/components/NavigationStartModal';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore(
@@ -37,6 +38,12 @@ const GlobalModals = () => {
     bookmarkModalRef,
     setShowBookmarkModal,
     navigationDetailModalRef,
+    navigationStartModalRef,
+    navigationEndModalRef,
+    showNavigationEndModal,
+    showNavigationStartModal,
+    setShowNavigationStartModal,
+    setShowNavigationEndModal,
   } = useModalStore(
     useShallow(state => ({
       setShowNearByStationModal: state.setShowNearByStationModal,
@@ -53,6 +60,12 @@ const GlobalModals = () => {
       bookmarkModalRef: state.bookmarkModalRef,
       setShowBookmarkModal: state.setShowBookmarkModal,
       navigationDetailModalRef: state.navigationDetailModalRef,
+      navigationStartModalRef: state.navigationStartModalRef,
+      navigationEndModalRef: state.navigationEndModalRef,
+      showNavigationEndModal: state.showNavigationEndModal,
+      showNavigationStartModal: state.showNavigationStartModal,
+      setShowNavigationStartModal: state.setShowNavigationStartModal,
+      setShowNavigationEndModal: state.setShowNavigationEndModal,
     })),
   );
 
@@ -153,6 +166,22 @@ const GlobalModals = () => {
           currentIntervalIndex={currentIntervalIndex}
         />
       </SlideModal>
+
+      {/* 네비게이션 시작 모달 */}
+      {showNavigationStartModal && navigationStartModalRef && (
+        <NavigationStartModal
+          modalRef={navigationStartModalRef}
+          setShowNavigationStartModal={setShowNavigationStartModal}
+        />
+      )}
+
+      {/* 네비게이션 종료 모달 */}
+      {showNavigationEndModal && navigationEndModalRef && (
+        <NavigationEndModal
+          modalRef={navigationEndModalRef}
+          setShowNavigationEndModal={setShowNavigationEndModal}
+        />
+      )}
     </>
   );
 };

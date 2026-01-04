@@ -1,5 +1,5 @@
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { use, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useModalStore } from '../stores/useModalStore';
@@ -8,6 +8,7 @@ import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
 import { MapReadyMessage } from '@/shared/model/map.webview.types';
 import { useShallow } from 'zustand/shallow';
+import Modal from 'react-native-modal';
 
 /**
  * useMapOrchestrator
@@ -45,6 +46,9 @@ export const useMapOrchestrator = () => {
   const routeRecommendModalLocalRef = useRef<BottomSheetModal | null>(null);
   const bookmarkModalLocalRef = useRef<BottomSheetModal | null>(null);
   const navigationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
+  // 네비게이션 시작/종료 모달
+  const navigationStartModalLocalRef = useRef<Modal | null>(null);
+  const navigationEndModalLocalRef = useRef<Modal | null>(null);
 
   /** ----------------------------------------
    * 3. 경로/거리 관련 상태 (routeStore)
@@ -100,6 +104,8 @@ export const useMapOrchestrator = () => {
       routeRecommendModalRef: routeRecommendModalLocalRef,
       bookmarkModalRef: bookmarkModalLocalRef,
       navigationDetailModalRef: navigationDetailModalLocalRef,
+      navigationStartModalRef: navigationStartModalLocalRef,
+      navigationEndModalRef: navigationEndModalLocalRef,
     });
 
     // 네비게이션 객체 전역 저장 (모달/웹뷰 이벤트에서도 navigate 가능)

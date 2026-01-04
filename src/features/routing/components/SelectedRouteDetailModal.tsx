@@ -14,7 +14,7 @@ import {
   formatTimeRange,
   getCategoryText,
 } from '@/shared/utils/formatting';
-import React, { useEffect } from 'react';
+import React, { use, useEffect } from 'react';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
 import { StaticPathData } from '@/shared/model/map.webview.types';
@@ -57,9 +57,13 @@ const SelectedRouteDetailModal = ({
         setRouteId: state.setRouteId,
       })),
     );
-  const setShowSelectedRouteDetailModal = useModalStore(
-    state => state.setShowSelectedRouteDetailModal,
-  );
+  const { setShowSelectedRouteDetailModal, setShowNavigationStartModal } =
+    useModalStore(
+      useShallow(state => ({
+        setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
+        setShowNavigationStartModal: state.setShowNavigationStartModal,
+      })),
+    );
   const { totalCaloriesBurned, totalTrees, routeType, prevScreen } =
     useRouteStore(
       useShallow(state => ({
@@ -162,6 +166,7 @@ const SelectedRouteDetailModal = ({
   const handleNavigationStartBtnPress = () => {
     setRouteId(selectedRouteData.routeId);
     setIsNavigationMode(true);
+    setShowNavigationStartModal(true);
     clearStaticPath();
   };
 

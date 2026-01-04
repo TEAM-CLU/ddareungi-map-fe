@@ -3,9 +3,18 @@ import { tw } from '@/shared/libs/tw-helper';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 
-const NavigationFinishModal = () => {
+interface NavigationEndModalProps {
+  modalRef: React.RefObject<Modal | null>;
+  setShowNavigationEndModal: (show: boolean) => void;
+}
+
+const NavigationEndModal = ({
+  modalRef,
+  setShowNavigationEndModal,
+}: NavigationEndModalProps) => {
   return (
     <Modal
+      ref={modalRef}
       isVisible={true}
       backdropOpacity={0.3}
       animationIn={'fadeInUp'}
@@ -21,7 +30,10 @@ const NavigationFinishModal = () => {
           { gap: 50, maxWidth: 273, paddingVertical: 45 },
         ]}
       >
-        <TouchableOpacity style={[tw('absolute top-3 right-3')]}>
+        <TouchableOpacity
+          onPress={() => setShowNavigationEndModal(false)}
+          style={[tw('absolute top-3 right-3')]}
+        >
           <IconClose color="#01DA86" />
         </TouchableOpacity>
         <View
@@ -102,4 +114,4 @@ const NavigationFinishModal = () => {
     </Modal>
   );
 };
-export default NavigationFinishModal;
+export default NavigationEndModal;

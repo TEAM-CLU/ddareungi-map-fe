@@ -4,6 +4,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { RefObject } from 'react';
 import { ImageStyle, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import WebView from 'react-native-webview';
+import Modal from 'react-native-modal';
 
 export interface WebViewRefContextValue {
   webViewRef: RefObject<WebView | null>;
@@ -86,6 +87,8 @@ export interface ModalState {
   routeRecommendModalRef: React.RefObject<BottomSheetModal | null> | null;
   bookmarkModalRef: React.RefObject<BottomSheetModal | null> | null;
   navigationDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
+  navigationStartModalRef: React.RefObject<Modal | null> | null;
+  navigationEndModalRef: React.RefObject<Modal | null> | null;
   /* -----------------------------
           모달 오픈 / 닫힘 상태
   ------------------------------ */
@@ -96,6 +99,8 @@ export interface ModalState {
   showRouteRecommendModal: boolean;
   showBookmarkModal: boolean;
   showNavigationDetailModal: boolean;
+  showNavigationStartModal: boolean;
+  showNavigationEndModal: boolean;
 
   /* -----------------------------
                 Actions
@@ -116,6 +121,8 @@ export interface ModalState {
         | 'routeRecommendModalRef'
         | 'bookmarkModalRef'
         | 'navigationDetailModalRef'
+        | 'navigationStartModalRef'
+        | 'navigationEndModalRef'
       >
     >,
   ) => void;
@@ -128,4 +135,6 @@ export interface ModalState {
   setShowRouteRecommendModal: (isVisible: boolean) => void;
   setShowBookmarkModal: (isVisible: boolean) => void;
   setShowNavigationDetailModal: (isVisible: boolean) => void;
+  setShowNavigationStartModal: (isVisible: boolean) => void;
+  setShowNavigationEndModal: (isVisible: boolean) => void;
 }
