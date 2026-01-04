@@ -81,7 +81,7 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
           lng: pos.coords.longitude,
         });
         setLocationMetaData({
-          timestemp: pos.timestamp,
+          timestamp: pos.timestamp,
           accuracy: pos.coords.accuracy,
           osSpeed: pos.coords.speed ?? undefined,
           coordinate: {
