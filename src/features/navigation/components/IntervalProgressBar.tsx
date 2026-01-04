@@ -78,13 +78,13 @@ const IntervalProgressBar = ({
             })}
           </View>
 
-          <IconFinishLine width={20} height={20} />
+          <IconFinishLine width={22} height={22} />
         </View>
         {/* 인덱스 표시 */}
         <Text
           style={[
             tw('text-on-surface-primary font-primary-600 text-center'),
-            { fontSize: 13 },
+            { fontSize: 12 },
           ]}
         >
           {safeCurrentIndex + 1}/{totalIntervals}

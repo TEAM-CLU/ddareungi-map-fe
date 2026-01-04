@@ -66,7 +66,7 @@ const InstructionBanner = ({
         title: 'Navigation Instruction',
         artist: 'Ddarungi Map',
       });
-      await TrackPlayer.setVolume(systemVolume);
+      await TrackPlayer.setVolume(systemVolume === 0 ? 0.5 : systemVolume);
       await TrackPlayer.play();
     };
 
@@ -149,7 +149,7 @@ const InstructionBanner = ({
             key={`${idx}-${line}`}
             style={[
               tw('font-primary-700 text-on-surface-secondary'),
-              { fontSize: 18 },
+              { fontSize: 20 },
             ]}
           >
             {line}
