@@ -29,7 +29,7 @@ const NavigationController = ({
           paddingHorizontal: 22,
           paddingVertical: 11,
         },
-        { height: 107 },
+        { height: 122 },
       ]}
     >
       <TouchableOpacity
@@ -43,7 +43,7 @@ const NavigationController = ({
       <View
         style={[
           tw('flex flex-col justify-between items-start w-full flex-1'),
-          { gap: 10 },
+          { gap: 8 },
         ]}
       >
         <View style={tw('w-full flex flex-row justify-between items-center')}>
@@ -61,22 +61,32 @@ const NavigationController = ({
         </View>
         <Text
           style={[
-            tw('font-primary-600 text-brand-primary text-left'),
+            tw('font-primary-600 text-on-surface-primary text-left'),
             { fontSize: 24 },
           ]}
         >
-          {remainingDistance !== null && remainingDistance !== undefined
-            ? getDistanceText(remainingDistance) + ' 남음'
-            : getDistanceText(remainingDistance)}
+          00:00:00
         </Text>
-        <Text
-          style={[
-            tw('font-primary-500 text-on-surface-primary text-left'),
-            { fontSize: 13 },
-          ]}
-        >
-          소요거리: {getDistanceText(traveledDistance)}
-        </Text>
+        <View style={[tw('w-full flex flex-col items-start'), { gap: 4 }]}>
+          <Text
+            style={[
+              tw('font-primary-500 text-brand-primary text-left'),
+              { fontSize: 15 },
+            ]}
+          >
+            {remainingDistance !== null && remainingDistance !== undefined
+              ? getDistanceText(remainingDistance) + ' 남음'
+              : getDistanceText(remainingDistance)}
+          </Text>
+          <Text
+            style={[
+              tw('font-primary-500 text-on-surface-primary text-left'),
+              { fontSize: 13 },
+            ]}
+          >
+            소요거리: {getDistanceText(traveledDistance)}
+          </Text>
+        </View>
       </View>
     </View>
   );
