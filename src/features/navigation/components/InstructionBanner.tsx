@@ -120,7 +120,7 @@ const InstructionBanner = ({
         tw(
           'w-full flex flex-row items-center px-1 py-2 bg-brand-primary justify-start',
         ),
-        { borderRadius: 20, maxWidth: 348, height: 75, gap: 1 },
+        { borderRadius: 20, maxWidth: 348, height: 80, gap: 1 },
       ]}
     >
       <View
