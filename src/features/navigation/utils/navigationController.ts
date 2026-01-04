@@ -52,7 +52,7 @@ const findClosestCoordIndex = (
  *    remaining = (myPos -> onlyCoord)
  * - interval 좌표 없음: 0
  */
-export const calculateIntervalDistanceByMyPositionMeter = (
+export const calculateIntervalDistanceByMyPosition = (
   myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
   currentIntervalIndex: number,
@@ -169,7 +169,7 @@ export const calculateRemainingDistance = (
   // 1) 내 위치 기준 현재 인터벌 남은 거리 계산
   // =========================
   const fromMyPositionToLastIntervalCoordDistance =
-    calculateIntervalDistanceByMyPositionMeter(
+    calculateIntervalDistanceByMyPosition(
       myPosition,
       pathDataListByInterval,
       currentIntervalIndex,
@@ -352,7 +352,7 @@ export const calculateTraveledDistance = (
   // 1) 내 위치 기준 현재 인터벌 지난 거리 계산
   // =========================
   const fromFirstIntervalCoordToMyPositionDistance =
-    calculateIntervalDistanceByMyPositionMeter(
+    calculateIntervalDistanceByMyPosition(
       myPosition,
       pathDataListByInterval,
       currentIntervalIndex,
