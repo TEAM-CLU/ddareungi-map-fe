@@ -5,6 +5,7 @@ import {
   DIRECTION_ICONS,
   FALLBACK_TTS_URL,
   INTERVAL_DISTANCE_OPTIONS,
+  MOTION_COMMON_OPTIONS,
   TRAVELED_DISTANCE_OPTIONS,
 } from '@/features/navigation/model/navigation.constants';
 import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
@@ -43,6 +44,7 @@ const InstructionBanner = ({
   const navVolume = useNavDetailModalStore(state => state.navVolume);
   const prevIntervalIndexRef = useRef<number>(-1);
   const prevRemainingDistanceRef = useRef<number | null>(null);
+  const passCountRef = useRef<number>(0);
   const [currentRemainingDistanceMeter, setCurrentRemainingDistanceMeter] =
     useState<number | null>(null);
 
@@ -89,6 +91,11 @@ const InstructionBanner = ({
       // 10미터 이내 변화는 무시
       return;
     }
+
+    // 10m 이상의 변화도 3번 이내면 무시 (노이즈 필터링)
+    passCountRef.current += 1;
+    if (passCountRef.current < MOTION_COMMON_OPTIONS.PASS_CONFIRM_COUNT) return;
+    passCountRef.current = 0;
     setCurrentRemainingDistanceMeter(remainingDistanceMeter);
     prevRemainingDistanceRef.current = remainingDistanceMeter;
   }, [myPosition, currentIntervalIndex]);

@@ -92,7 +92,6 @@ export const useNavigationOrchestrator = () => {
   const {
     ENTRY_RADIUS_METER,
     EXIT_RADIUS_METER,
-    PASS_CONFIRM_COUNT,
     DEADZONE_DISTANCE_METER,
     MIN_EFFECTIVE_MOVE_METER,
     DOT_DEADZONE,
@@ -100,7 +99,7 @@ export const useNavigationOrchestrator = () => {
     PASS_COUNT_MAX,
   } = TURN_CONFIG;
 
-  const { MAX_PHYSICAL_SPEED_MPS } = MOTION_COMMON_OPTIONS;
+  const { MAX_PHYSICAL_SPEED_MPS, PASS_CONFIRM_COUNT } = MOTION_COMMON_OPTIONS;
 
   // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산, 소요거리용
   const currentIntervalIndex = useRef<number>(0);
