@@ -19,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
 import { useNavigationOrchestrator } from '@/features/navigation/hooks/useNavigationOrchestrator';
 import NavVolumeToggleButton from '@/features/navigation/components/NavVolumeToggleButton';
+import NorthIndicator from '@/features/navigation/components/NorthIndicator';
 
 const MapScreen = () => {
   const {
@@ -98,9 +99,14 @@ const MapScreen = () => {
       )}
 
       {isNavigationMode && (
-        <View style={[tw('absolute right-3'), { bottom: '24%' }]}>
-          <NavVolumeToggleButton />
-        </View>
+        <>
+          <View style={[tw('absolute right-3'), { bottom: '24%' }]}>
+            <NavVolumeToggleButton />
+          </View>
+          <View style={[tw('absolute right-3'), { bottom: '36%' }]}>
+            <NorthIndicator />
+          </View>
+        </>
       )}
 
       {/* 경로 선택 모드 */}
