@@ -8,7 +8,6 @@ import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import BookmarkModal from '@/shared/components/bookmark/BookmarkEditModal';
 import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
-import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
 import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -58,8 +57,6 @@ const GlobalModals = () => {
   const selectedPlaceInfoForModal = useSearchStore(
     state => state.selectedPlaceInfoForModal,
   );
-
-  useNavDetailModal();
 
   return (
     <>

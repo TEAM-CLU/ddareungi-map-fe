@@ -1,4 +1,4 @@
-import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
+import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import RoundButton from '@/shared/components/button/RoundButton';
 import {
   IconChevronDown,
@@ -14,15 +14,12 @@ import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/react/shallow';
 
 const NavigationDetailModal = () => {
-  const { systemVolume, setSystemVolume, navVolume, setNavVolume } =
-    useNavDetailModalStore(
-      useShallow(state => ({
-        systemVolume: state.systemVolume,
-        setSystemVolume: state.setSystemVolume,
-        navVolume: state.navVolume,
-        setNavVolume: state.setNavVolume,
-      })),
-    );
+  const { systemVolume, setSystemVolume } = useVolumeStore(
+    useShallow(state => ({
+      systemVolume: state.systemVolume,
+      setSystemVolume: state.setSystemVolume,
+    })),
+  );
   const setShowNavigationDetailModal = useModalStore(
     state => state.setShowNavigationDetailModal,
   );
@@ -46,10 +43,6 @@ const NavigationDetailModal = () => {
       volumeListener.remove();
     };
   }, []);
-  // 네비게이션 음성 볼륨 변경 핸들러
-  const handleNavVolumeSliderChange = async (volume: number) => {
-    setNavVolume(volume);
-  };
 
   // 시스템 음성 볼륨 변경 핸들러
   const handleSystemVolumeSliderChange = async (volume: number) => {
@@ -85,30 +78,6 @@ const NavigationDetailModal = () => {
       <View
         style={[tw('w-full flex flex-col grow justify-start'), { gap: 35 }]}
       >
-        <View style={[tw('flex flex-col w-full'), { gap: 30 }]}>
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-primary text-left'),
-              { fontSize: 13 },
-            ]}
-          >
-            길 안내 음성크기
-          </Text>
-          <View style={[tw('w-full flex flex-row items-center'), { gap: 16 }]}>
-            <IconMute />
-            <Slider
-              style={tw('flex-1')}
-              minimumValue={0}
-              maximumValue={1}
-              step={0.01}
-              value={navVolume}
-              onValueChange={handleNavVolumeSliderChange}
-              thumbImage={require('@/assets/imgs/volumeSliderThumb.png')}
-              minimumTrackTintColor="#01DA86"
-            />
-            <IconVolume />
-          </View>
-        </View>
         <View style={[tw('flex flex-col w-full'), { gap: 30 }]}>
           <Text
             style={[

@@ -5,20 +5,9 @@ import {
   Segment,
   Summary,
 } from '@/features/routing/model/routing.types';
-export interface NavDetailModalState {
+export interface VolumeState {
   systemVolume: number;
   setSystemVolume: (volume: number) => void;
-  navVolume: number;
-  setNavVolume: (volume: number) => void;
-
-  setAllNavDetailModalItems: (
-    modalRefs: Partial<
-      Pick<
-        NavDetailModalState,
-        'systemVolume' | 'setSystemVolume' | 'navVolume' | 'setNavVolume'
-      >
-    >,
-  ) => void;
 }
 
 // API 관련 타입

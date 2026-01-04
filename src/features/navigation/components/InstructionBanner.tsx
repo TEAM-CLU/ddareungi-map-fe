@@ -8,7 +8,6 @@ import {
   MOTION_COMMON_OPTIONS,
   TRAVELED_DISTANCE_OPTIONS,
 } from '@/features/navigation/model/navigation.constants';
-import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
 import { tw } from '@/shared/libs/tw-helper';
 import TrackPlayer from 'react-native-track-player';
 import { globalTtsState } from '@/features/navigation/model/navigation.data';
@@ -16,6 +15,7 @@ import { IntervalPathData } from '@/features/navigation/model/navigation.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { calculateIntervalDistanceByMyPosition } from '@/features/navigation/utils/navigationController';
 import { formatDistanceAdaptive } from '@/shared/utils/formatting';
+import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 
 interface InstructionBannerProps {
   pathDataListByInterval: IntervalPathData[];
@@ -41,7 +41,7 @@ const InstructionBanner = ({
     }
     return result;
   }, [instructionText, sign]);
-  const navVolume = useNavDetailModalStore(state => state.navVolume);
+  const systemVolume = useVolumeStore(state => state.systemVolume);
   const prevIntervalIndexRef = useRef<number>(-1);
   const prevRemainingDistanceRef = useRef<number | null>(null);
   const passCountRef = useRef<number>(0);
@@ -66,7 +66,7 @@ const InstructionBanner = ({
         title: 'Navigation Instruction',
         artist: 'Ddarungi Map',
       });
-      await TrackPlayer.setVolume(navVolume);
+      await TrackPlayer.setVolume(systemVolume);
       await TrackPlayer.play();
     };
 
@@ -109,7 +109,7 @@ const InstructionBanner = ({
       title: 'Navigation Instruction',
       artist: 'Ddarungi Map',
     });
-    await TrackPlayer.setVolume(navVolume);
+    await TrackPlayer.setVolume(systemVolume);
     await TrackPlayer.play();
   };
 
