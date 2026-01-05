@@ -129,8 +129,10 @@ export interface StabilizeDistanceInput {
   currentMyPosition: Coordinate;
   prevTimestamp: number | null;
   currentTimestamp: number;
-  type: 'traveled' | 'remaining';
+  type: DistanceType;
 }
+
+export type DistanceType = 'remaining' | 'traveled';
 
 // calculateMotionVector 결과 타입
 export type MotionVectorResult = {

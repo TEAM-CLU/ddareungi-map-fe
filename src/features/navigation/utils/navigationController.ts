@@ -5,6 +5,7 @@ import {
   TRAVELED_DISTANCE_OPTIONS,
 } from '@/features/navigation/model/navigation.constants';
 import {
+  DistanceType,
   IntervalPathData,
   LocationMetaData,
   NavigationInstruction,
@@ -101,7 +102,7 @@ export const calculateIntervalDistanceByMyPosition = (
   myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
   currentIntervalIndex: number,
-  type: 'remaining' | 'traveled',
+  type: DistanceType,
 ) => {
   const intervalCoordinateList =
     pathDataListByInterval[currentIntervalIndex]?.coordinateList ?? [];
