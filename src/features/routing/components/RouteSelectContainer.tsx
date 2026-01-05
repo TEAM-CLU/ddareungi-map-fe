@@ -135,19 +135,23 @@ const RouteSelectContainer = ({
             ? Math.round(lastWalkingSegment.summary.time / 60)
             : 0;
 
+        const walkingSeconds = calculateWalkingTime(segments);
+        const bikingSeconds = bikingSegment?.summary.time ?? 0;
+
         // 활동 데이터 계산
         const caloriesBurnedWalking = measureCaloriesBurned(
           'walking',
           userGender,
-          walkingMinutes,
+          walkingSeconds,
         );
         const caloriesBurendBiking = measureCaloriesBurned(
           'biking',
           userGender,
-          bikingMinutes,
+          bikingSeconds,
         );
-        const totalCaloriesBurned =
-          caloriesBurnedWalking + caloriesBurendBiking;
+        const totalCaloriesBurned = Math.trunc(
+          caloriesBurnedWalking + caloriesBurendBiking,
+        );
 
         const walkingDistance = segments.reduce((acc, segment) => {
           if (segment.type === 'walking') {
