@@ -1,8 +1,14 @@
-import { UpdateUserStatsPayload } from '@/features/auth/model/auth.types';
 import {
+  UpdateUserPayload,
+  UpdateUserStatsPayload,
+} from '@/features/auth/model/auth.types';
+import {
+  useUpdateUserInfoMutation,
   useUpdateUserStatsMutation,
   useUserInfoQuery,
 } from '@/features/auth/services/user.queries';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { useRouteSelect } from '@/features/routing/hooks/useRouteSelect';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { IconClose } from '@/shared/components/icons';
@@ -18,9 +24,9 @@ import { convertToTrees } from '@/shared/utils/measure';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 
-interface NavigationEndModalProps {
+interface NavigationFinishModalProps {
   modalRef: React.RefObject<Modal | null>;
-  setShowNavigationEndModal: (show: boolean) => void;
+  setShowNavigationFinishModal: (show: boolean) => void;
   totalCaloriesBurned: number;
   totalCarbonSaved: number;
   seconds: number;
@@ -28,23 +34,23 @@ interface NavigationEndModalProps {
   resetMeasures: () => void;
 }
 
-const NavigationEndModal = ({
+const NavigationFinishModal = ({
   modalRef,
-  setShowNavigationEndModal,
+  setShowNavigationFinishModal,
   totalCaloriesBurned,
   totalCarbonSaved,
   seconds,
   traveledDistanceMeter,
   resetMeasures,
-}: NavigationEndModalProps) => {
+}: NavigationFinishModalProps) => {
   const { data: prevUserInfo, isLoading } = useUserInfoQuery();
   const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
 
-  const handleCloseEndModalPress = async () => {
+  const handleCloseFinishModalPress = async () => {
     if (!prevUserInfo) {
-      setShowNavigationEndModal(false);
+      setShowNavigationFinishModal(false);
       resetMeasures();
       resetRouteData();
       resetSearchData();
@@ -65,14 +71,14 @@ const NavigationEndModal = ({
       };
 
       await updateUserUsageInfo(payload);
-      setShowNavigationEndModal(false);
+      setShowNavigationFinishModal(false);
       resetMeasures();
       resetRouteData();
       resetSearchData();
     } catch (error) {
       console.error('Failed to update user stats:', error);
     } finally {
-      setShowNavigationEndModal(false);
+      setShowNavigationFinishModal(false);
       resetMeasures();
       resetRouteData();
       resetSearchData();
@@ -101,7 +107,7 @@ const NavigationEndModal = ({
           ]}
         >
           <TouchableOpacity
-            onPress={handleCloseEndModalPress}
+            onPress={handleCloseFinishModalPress}
             style={[tw('absolute top-3 right-3')]}
           >
             <IconClose color="#01DA86" />
@@ -115,15 +121,16 @@ const NavigationEndModal = ({
                 { fontSize: 24 },
               ]}
             >
-              {'안내를\u00A0'}
+              {'드디어\u00A0'}
               <Text
                 style={[
                   tw('font-primary-700 text-brand-primary'),
                   { fontSize: 24 },
                 ]}
               >
-                종료
+                목적지
               </Text>
+              에
             </Text>
             <Text
               style={[
@@ -131,7 +138,7 @@ const NavigationEndModal = ({
                 { fontSize: 24 },
               ]}
             >
-              하였습니다.
+              도착했어요!
             </Text>
           </View>
           <View
@@ -170,9 +177,21 @@ const NavigationEndModal = ({
           >
             총 {formatDistanceAdaptive(traveledDistanceMeter ?? 0)} 이동했어요!
           </Text>
+          <Image
+            source={require('@/assets/imgs/finishFlag.png')}
+            style={
+              {
+                position: 'absolute',
+                left: 110,
+                bottom: 17,
+                zIndex: -1,
+              } as ImageStyle
+            }
+            resizeMode="cover"
+          />
         </View>
       )}
     </Modal>
   );
 };
-export default NavigationEndModal;
+export default NavigationFinishModal;

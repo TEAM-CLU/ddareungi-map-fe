@@ -11,11 +11,18 @@ interface NavigationState {
   totalCaloriesBurned: number;
   totalCarbonSaved: number;
 
+  traveledDistanceMeter: number | undefined | null;
+  setTraveledDistanceMeter: (distance: number | undefined | null) => void;
+
+  seconds: number;
+  setSeconds: (seconds: number) => void;
+
   setTotalCaloriesBurned: (calories: number) => void;
   setTotalCarbonSaved: (carbon: number) => void;
 
   addCaloriesBurned: (delta: number) => void;
   addCarbonSaved: (delta: number) => void;
+  addSeconds: (delta: number) => void;
 
   resetMeasures: () => void;
 }
@@ -25,15 +32,19 @@ export const useNavigationStore = create<NavigationState>()(
     set => ({
       isNavigationMode: false,
       routeId: null,
+      totalCaloriesBurned: 0,
+      totalCarbonSaved: 0,
+      traveledDistanceMeter: null,
+      seconds: 0,
+
+      setSeconds: (seconds: number) =>
+        set({ seconds }, false, 'navigation/setSeconds'),
 
       setRouteId: (routeId: string | null) =>
         set({ routeId }, false, 'navigation/setRouteId'),
 
       setIsNavigationMode: (isNavigationMode: boolean) =>
         set({ isNavigationMode }, false, 'navigation/setIsNavigationMode'),
-
-      totalCaloriesBurned: 0,
-      totalCarbonSaved: 0,
 
       setTotalCaloriesBurned: (calories: number) =>
         set(
@@ -63,11 +74,30 @@ export const useNavigationStore = create<NavigationState>()(
           'navigation/addCarbonReduced',
         ),
 
+      addSeconds: (delta: number) =>
+        set(
+          state => ({ seconds: state.seconds + delta }),
+          false,
+          'navigation/addSeconds',
+        ),
+
       resetMeasures: () =>
         set(
-          { totalCaloriesBurned: 0, totalCarbonSaved: 0 },
+          {
+            totalCaloriesBurned: 0,
+            totalCarbonSaved: 0,
+            seconds: 0,
+            traveledDistanceMeter: null,
+          },
           false,
           'navigation/resetMeasures',
+        ),
+
+      setTraveledDistanceMeter: (distance: number | undefined | null) =>
+        set(
+          { traveledDistanceMeter: distance },
+          false,
+          'navigation/setTraveledDistanceMeter',
         ),
     }),
     { name: 'navigation' },

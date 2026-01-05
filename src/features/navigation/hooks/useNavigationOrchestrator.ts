@@ -93,9 +93,12 @@ export const useNavigationOrchestrator = () => {
   const [remainingDistanceMeter, setRemainingDistance] = useState<
     number | undefined | null
   >(null);
-  const [traveledDistanceMeter, setTraveledDistance] = useState<
-    number | undefined | null
-  >(null);
+  const { traveledDistanceMeter, setTraveledDistance } = useNavigationStore(
+    useShallow(state => ({
+      traveledDistanceMeter: state.traveledDistanceMeter,
+      setTraveledDistance: state.setTraveledDistanceMeter,
+    })),
+  );
   const currentTtsUrl = useRef<string | null>(null);
 
   // 턴 진입/지나침 판정용 상태

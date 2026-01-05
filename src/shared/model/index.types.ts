@@ -89,6 +89,7 @@ export interface ModalState {
   navigationDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
   navigationStartModalRef: React.RefObject<Modal | null> | null;
   navigationEndModalRef: React.RefObject<Modal | null> | null;
+  navigationFinishModalRef: React.RefObject<Modal | null> | null;
   /* -----------------------------
           모달 오픈 / 닫힘 상태
   ------------------------------ */
@@ -101,6 +102,7 @@ export interface ModalState {
   showNavigationDetailModal: boolean;
   showNavigationStartModal: boolean;
   showNavigationEndModal: boolean;
+  showNavigationFinishModal: boolean;
 
   /* -----------------------------
                 Actions
@@ -123,6 +125,7 @@ export interface ModalState {
         | 'navigationDetailModalRef'
         | 'navigationStartModalRef'
         | 'navigationEndModalRef'
+        | 'navigationFinishModalRef'
       >
     >,
   ) => void;
@@ -137,4 +140,5 @@ export interface ModalState {
   setShowNavigationDetailModal: (isVisible: boolean) => void;
   setShowNavigationStartModal: (isVisible: boolean) => void;
   setShowNavigationEndModal: (isVisible: boolean) => void;
+  setShowNavigationFinishModal: (isVisible: boolean) => void;
 }

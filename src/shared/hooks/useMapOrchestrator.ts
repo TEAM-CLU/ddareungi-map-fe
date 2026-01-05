@@ -49,6 +49,7 @@ export const useMapOrchestrator = () => {
   // 네비게이션 시작/종료 모달
   const navigationStartModalLocalRef = useRef<Modal | null>(null);
   const navigationEndModalLocalRef = useRef<Modal | null>(null);
+  const navigationFinishModalLocalRef = useRef<Modal | null>(null);
 
   /** ----------------------------------------
    * 3. 경로/거리 관련 상태 (routeStore)
@@ -106,6 +107,7 @@ export const useMapOrchestrator = () => {
       navigationDetailModalRef: navigationDetailModalLocalRef,
       navigationStartModalRef: navigationStartModalLocalRef,
       navigationEndModalRef: navigationEndModalLocalRef,
+      navigationFinishModalRef: navigationFinishModalLocalRef,
     });
 
     // 네비게이션 객체 전역 저장 (모달/웹뷰 이벤트에서도 navigate 가능)

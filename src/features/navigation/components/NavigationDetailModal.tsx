@@ -26,12 +26,14 @@ const NavigationDetailModal = ({
   currentIntervalIndex,
   totalIntervals,
 }: NavigationDetailModalProps) => {
-  const { totalCaloriesBurned, totalCarbonSaved } = useNavigationStore(
-    useShallow(state => ({
-      totalCaloriesBurned: state.totalCaloriesBurned,
-      totalCarbonSaved: state.totalCarbonSaved,
-    })),
-  );
+  const { totalCaloriesBurned, totalCarbonSaved, setIsNavigationMode } =
+    useNavigationStore(
+      useShallow(state => ({
+        totalCaloriesBurned: state.totalCaloriesBurned,
+        totalCarbonSaved: state.totalCarbonSaved,
+        setIsNavigationMode: state.setIsNavigationMode,
+      })),
+    );
 
   const { systemVolume, setSystemVolume } = useVolumeStore(
     useShallow(state => ({
@@ -40,9 +42,13 @@ const NavigationDetailModal = ({
     })),
   );
 
-  const setShowNavigationDetailModal = useModalStore(
-    state => state.setShowNavigationDetailModal,
-  );
+  const { setShowNavigationDetailModal, setShowNavigationEndModal } =
+    useModalStore(
+      useShallow(state => ({
+        setShowNavigationDetailModal: state.setShowNavigationDetailModal,
+        setShowNavigationEndModal: state.setShowNavigationEndModal,
+      })),
+    );
   const isSlidingRef = useRef(false);
   const [sliderValue, setSliderValue] = useState(systemVolume);
 
@@ -63,6 +69,12 @@ const NavigationDetailModal = ({
     } finally {
       isSlidingRef.current = false;
     }
+  };
+
+  const handleEndNavigationPress = () => {
+    setIsNavigationMode(false);
+    setShowNavigationDetailModal(false);
+    setShowNavigationEndModal(true);
   };
 
   return (
@@ -152,9 +164,7 @@ const NavigationDetailModal = ({
         </View>
         <RoundButton
           title={'안내 종료하기'}
-          onPress={function (): void {
-            throw new Error('Function not implemented.');
-          }}
+          onPress={handleEndNavigationPress}
           preset={'lg'}
         />
       </View>

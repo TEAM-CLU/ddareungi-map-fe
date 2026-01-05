@@ -36,6 +36,7 @@ export const TTS_URL_PRESET = {
   FALLBACK_TTS_URL: require('@/assets/audios/errorTts.mp3'),
   START_TTS_URL: require('@/assets/audios/startTts.mp3'),
   END_TTS_URL: require('@/assets/audios/endTts.mp3'),
+  FINISH_TTS_URL: require('@/assets/audios/finishTts.mp3'),
 };
 
 // navigationTurn.constants.ts

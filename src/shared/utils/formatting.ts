@@ -25,6 +25,20 @@ export const formatTime = (seconds: number): string => {
 export const formatMinutes = (seconds: number): string =>
   String(Math.round(seconds / 60));
 
+// 시간 포맷팅 (초 -> n시간 n분 n초)
+export const formatTimeWithSeconds = (totalSeconds: number): string => {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  const hoursPart = hours > 0 ? `${hours}시간 ` : '';
+  const minutesPart = minutes > 0 ? `${minutes}분 ` : '';
+  const secondsPart = `${seconds}초`;
+
+  return `${hoursPart}${minutesPart}${secondsPart}`.trim();
+};
 // 시간대 포맷팅 함수 (baseTime 기준 ~ 도착 예정 시간)
 export const formatTimeRange = (
   baseTime: Date,

@@ -14,6 +14,7 @@ import {
   postCreateUser,
   postLoginUser,
   updateUserInfo,
+  updateUserStats,
 } from '@/features/auth/services/user.api';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
@@ -87,6 +88,17 @@ export const useDeleteUserMutation = () => {
     },
   });
   return mutation;
+};
+
+// 유저 통계 정보 수정
+export const useUpdateUserStatsMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: any) => updateUserStats(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userInfo'] });
+    },
+  });
 };
 
 // 이메일 중복 확인

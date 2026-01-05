@@ -11,8 +11,10 @@ import NavigationDetailModal from '@/features/navigation/components/NavigationDe
 import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
 import { useShallow } from 'zustand/react/shallow';
 import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
-import NavigationEndModal from '@/features/navigation/components/NavigationEndModal';
 import NavigationStartModal from '@/features/navigation/components/NavigationStartModal';
+import NavigationFinishModal from '@/features/navigation/components/NavigationFinishModal';
+import NavigationEndModal from '@/features/navigation/components/NavigationEndModal';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore(
@@ -40,10 +42,13 @@ const GlobalModals = () => {
     navigationDetailModalRef,
     navigationStartModalRef,
     navigationEndModalRef,
-    showNavigationEndModal,
+    navigationFinishModalRef,
     showNavigationStartModal,
+    showNavigationEndModal,
+    showNavigationFinishModal,
     setShowNavigationStartModal,
     setShowNavigationEndModal,
+    setShowNavigationFinishModal,
   } = useModalStore(
     useShallow(state => ({
       setShowNearByStationModal: state.setShowNearByStationModal,
@@ -62,10 +67,13 @@ const GlobalModals = () => {
       navigationDetailModalRef: state.navigationDetailModalRef,
       navigationStartModalRef: state.navigationStartModalRef,
       navigationEndModalRef: state.navigationEndModalRef,
+      navigationFinishModalRef: state.navigationFinishModalRef,
       showNavigationEndModal: state.showNavigationEndModal,
       showNavigationStartModal: state.showNavigationStartModal,
       setShowNavigationStartModal: state.setShowNavigationStartModal,
       setShowNavigationEndModal: state.setShowNavigationEndModal,
+      showNavigationFinishModal: state.showNavigationFinishModal,
+      setShowNavigationFinishModal: state.setShowNavigationFinishModal,
     })),
   );
 
@@ -80,6 +88,22 @@ const GlobalModals = () => {
         currentIntervalIndex: state.currentIntervalIndex,
       })),
     );
+
+  const {
+    seconds,
+    traveledDistanceMeter,
+    totalCaloriesBurned,
+    totalCarbonSaved,
+    resetMeasures,
+  } = useNavigationStore(
+    useShallow(state => ({
+      seconds: state.seconds,
+      traveledDistanceMeter: state.traveledDistanceMeter,
+      totalCaloriesBurned: state.totalCaloriesBurned,
+      totalCarbonSaved: state.totalCarbonSaved,
+      resetMeasures: state.resetMeasures,
+    })),
+  );
 
   return (
     <>
@@ -175,11 +199,29 @@ const GlobalModals = () => {
         />
       )}
 
-      {/* 네비게이션 종료 모달 */}
+      {/* 네비게이션 중간 종료 모달 */}
       {showNavigationEndModal && navigationEndModalRef && (
         <NavigationEndModal
           modalRef={navigationEndModalRef}
           setShowNavigationEndModal={setShowNavigationEndModal}
+          totalCaloriesBurned={totalCaloriesBurned}
+          totalCarbonSaved={totalCarbonSaved}
+          seconds={seconds}
+          traveledDistanceMeter={traveledDistanceMeter}
+          resetMeasures={resetMeasures}
+        />
+      )}
+
+      {/* 네비게이션 종료 모달 */}
+      {showNavigationFinishModal && navigationFinishModalRef && (
+        <NavigationFinishModal
+          modalRef={navigationFinishModalRef}
+          setShowNavigationFinishModal={setShowNavigationFinishModal}
+          totalCaloriesBurned={totalCaloriesBurned}
+          totalCarbonSaved={totalCarbonSaved}
+          seconds={seconds}
+          traveledDistanceMeter={traveledDistanceMeter}
+          resetMeasures={resetMeasures}
         />
       )}
     </>

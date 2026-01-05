@@ -8,9 +8,10 @@ import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useRoute, RouteProp } from '@react-navigation/native';
-import { use, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useBookmarkMessenger } from '../../../shared/hooks/useBookmarkMessenger';
 import { useShallow } from 'zustand/react/shallow';
+import { Keyboard } from 'react-native';
 
 /**
  * useSearchOrchestrator
@@ -131,9 +132,13 @@ export const useSearchOrchestrator = () => {
   const handleSearchClose = useCallback(() => {
     setShowSearchOverlay(false);
     setIsFocused(false);
-    searchInputRef?.current?.blur();
     setCurrentPlaceType(null);
-  }, [setShowSearchOverlay, setIsFocused, searchInputRef]);
+
+    requestAnimationFrame(() => {
+      searchInputRef?.current?.blur();
+      Keyboard.dismiss(); // 보험
+    });
+  }, []);
 
   /** ---------------------------
    * 장소 선택 시 전체 흐름 처리

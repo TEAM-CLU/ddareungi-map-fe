@@ -1,27 +1,36 @@
 import { TimerStatus } from '@/features/navigation/model/navigation.types';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { useCallback, useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+
+let sharedIntervalId: ReturnType<typeof setInterval> | null = null;
+let sharedOwnerCount = 0;
 
 export const useTimer = (initialSeconds = 0) => {
-  const [seconds, setSeconds] = useState<number>(initialSeconds);
+  const { seconds, addSeconds } = useNavigationStore(
+    useShallow(state => ({
+      seconds: state.seconds,
+      setSeconds: state.setSeconds,
+      addSeconds: state.addSeconds,
+    })),
+  );
   const [timerStatus, setTimerStatus] = useState<TimerStatus>('idle');
 
-  const intervalIdRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   const clearTimer = useCallback(() => {
-    if (intervalIdRef.current) {
-      clearInterval(intervalIdRef.current);
-      intervalIdRef.current = null;
+    if (sharedIntervalId) {
+      clearInterval(sharedIntervalId);
+      sharedIntervalId = null;
     }
   }, []);
 
   const startTimer = useCallback(() => {
-    if (intervalIdRef.current) return;
+    if (sharedIntervalId) return;
     setTimerStatus('running');
 
-    intervalIdRef.current = setInterval(() => {
-      setSeconds(prev => prev + 1);
+    sharedIntervalId = setInterval(() => {
+      addSeconds(1);
     }, 1000);
-  }, []);
+  }, [addSeconds]);
 
   const pauseTimer = useCallback(() => {
     clearTimer();
@@ -31,14 +40,23 @@ export const useTimer = (initialSeconds = 0) => {
   const resetTimer = useCallback(
     (nextSeconds = 0) => {
       clearTimer();
-      setSeconds(nextSeconds);
+      addSeconds(nextSeconds);
       setTimerStatus('idle');
     },
     [clearTimer],
   );
 
   // 컴포넌트 unmount 시 누수 방지
-  useEffect(() => clearTimer, [clearTimer]);
+  useEffect(() => {
+    sharedOwnerCount += 1;
+    return () => {
+      sharedOwnerCount -= 1;
+      if (sharedOwnerCount <= 0) {
+        clearTimer();
+        sharedOwnerCount = 0;
+      }
+    };
+  }, [clearTimer]);
 
   return {
     seconds,
