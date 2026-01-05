@@ -1,4 +1,3 @@
-import { RootStackParamList } from '@/app/types';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, TouchableOpacity, Text } from 'react-native';

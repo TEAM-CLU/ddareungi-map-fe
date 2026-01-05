@@ -2,19 +2,14 @@ import {
   Alert,
   AppState,
   Linking,
-  Modal,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import IconGoogle from '@/shared/components/icons/IconGoogle';
-import IconKakao from '@/shared/components/icons/IconKakao';
-import IconNaver from '@/shared/components/icons/IconNaver';
+import { IconGoogle, IconNaver, IconKakao } from '@/shared/components/icons';
 import { useAuth } from '@/app/providers';
 import { useEffect, useRef, useState } from 'react';
 import {
-  SocialAuthExchangeTokenResponse,
-  SocialAuthGetUrlResponse,
   SocialType,
 } from '@/features/auth/model/auth.types';
 import {
@@ -23,17 +18,15 @@ import {
   useSocialAuthGetUrlMutation,
 } from '@/features/auth/services/auth.queries';
 import { useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
-interface SocialLoginLinksProps {
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
+const SocialLoginLinks = () => {
   const { setToken } = useAuth();
-  const { mutateAsync: getAuthUrl } = useSocialAuthGetUrlMutation();
-  const { mutateAsync: exchangeToken } = useSocialAuthExchangeTokenMutation();
+
+  const { mutate: getSocialAuthUrl, isPending: isSocialLoading } =
+    useSocialAuthGetUrlMutation();
+  const { mutate: exchangeToken } = useSocialAuthExchangeTokenMutation();
+
   const [canStartPolling, setCanStartPolling] = useState<boolean>(false);
   const clientState = useRef<string>('');
   const codeVerifier = useRef<string>('');
@@ -43,32 +36,31 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
 
   const { navigation } = useAppNavigation();
 
-  const handleSocialLoginButtonPress = async (socialType: SocialType) => {
-    setIsLoading(true);
+  const handleSocialLoginButtonPress = (socialType: SocialType) => {
+    getSocialAuthUrl(socialType, {
+      onSuccess: response => {
+        const { authUrl, state, codeVerifier: verifier } = response.data;
+        if (!authUrl || !state || !verifier) {
+          resetFlow();
+          Alert.alert('오류', '로그인 정보를 받아오지 못했습니다.');
+          return;
+        }
+        clientState.current = state;
+        codeVerifier.current = verifier;
+        waitingForAuth.current = true;
+        Linking.openURL(authUrl).catch(() => {
+          resetFlow();
+          Alert.alert('오류', '앱 외부로 연결하는데 실패했습니다.');
+        });
+      },
 
-    try {
-      const response: SocialAuthGetUrlResponse = await getAuthUrl(socialType);
-      if (
-        !response.data.authUrl ||
-        !response.data.state ||
-        !response.data.codeVerifier
-      ) {
+      onError: error => {
         resetFlow();
-        return;
-      }
-      Linking.openURL(response.data.authUrl);
-      clientState.current = response.data.state;
-      codeVerifier.current = response.data.codeVerifier;
-      waitingForAuth.current = true;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        resetFlow();
-        Alert.alert(
-          `${error.response?.data?.message || '요청 실패. 다시 시도해주세요.'}`,
-        );
-      }
-    }
+        Alert.alert('오류', error.message);
+      },
+    });
   };
+
   const { data: loginStatusInfo } = useSocialAuthCheckStatusQuery({
     pollMs: 3000,
     canRun: canStartPolling,
@@ -76,7 +68,6 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
   });
 
   const resetFlow = () => {
-    setIsLoading(false);
     setCanStartPolling(false);
     clientState.current = '';
     codeVerifier.current = '';
@@ -100,52 +91,50 @@ const SocialLoginLinks = ({ setIsLoading }: SocialLoginLinksProps) => {
 
   // 토큰 교환
   useEffect(() => {
-    const handleSocialLogin = async () => {
-      if (!loginStatusInfo?.data.isComplete || !loginStatusInfo?.data.state) {
-        return;
-      }
+    const statusData = loginStatusInfo?.data;
 
-      if (clientState.current !== loginStatusInfo.data.state) {
-        resetFlow();
-        Alert.alert(
-          '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-        );
-        return;
-      }
-      try {
-        const payload = { codeVerifier: codeVerifier.current };
-        const response: SocialAuthExchangeTokenResponse = await exchangeToken(
-          payload,
-        );
-        if (!response.data.accessToken) {
+    if (!statusData?.isComplete || !statusData?.state) {
+      return;
+    }
+
+    if (clientState.current !== statusData.state) {
+      resetFlow();
+      Alert.alert('로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    const payload = { codeVerifier: codeVerifier.current };
+    exchangeToken(payload, {
+      onSuccess: async response => {
+        const accesssToken = response.data.accessToken;
+
+        if (!accesssToken) {
           resetFlow();
           Alert.alert(
+            '오류',
             '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
           );
           return;
         }
+
+        // 1. 폴링 중단 및 쿼리 정리 (계속 요청하는 것 방지)
         setCanStartPolling(false);
-        const key = ['auth', 'check-status', clientState.current] as const;
-        await queryClient.cancelQueries({ queryKey: key });
-        queryClient.removeQueries({ queryKey: key, exact: true });
-        setToken(response.data.accessToken);
+        const queryKey = ['auth', 'check-status', clientState.current] as const;
+        await queryClient.cancelQueries({ queryKey });
+        queryClient.removeQueries({ queryKey, exact: true });
+
+        // 2. 토큰 저장
+        await setToken(accesssToken);
+
+        // 3. 화면 이동
         navigation.navigate('Map');
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
+      },
+      onError: error => {
         resetFlow();
-        if (axios.isAxiosError(error)) {
-          Alert.alert(
-            `${
-              error.response?.data?.message || '요청 실패. 다시 시도해주세요.'
-            }`,
-          );
-        }
-      }
-    };
-    handleSocialLogin();
-  }, [loginStatusInfo]);
+        Alert.alert('오류', error.message);
+      },
+    });
+  }, [loginStatusInfo, exchangeToken, queryClient, navigation]);
 
   return (
     <View

@@ -1,10 +1,6 @@
-import { useEffect, useState } from 'react';
 import { PlaceInfo, SearchOptions } from '../model/search.types';
-import { useNetInfo } from '@react-native-community/netinfo';
-import { useIsFocused } from '@react-navigation/native';
 import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { reverseGeocode, searchAddressCoordinates, searchPlacesByKeyword } from './search.api';
-import { AppState } from 'react-native';
 
 // -----------------------------------------------------------
 // 1. 쿼리 키 팩토리 (Query Key Factory)

@@ -25,7 +25,6 @@ const LoginScreen = () => {
           <AuthChoice setLoginScreenStep={setLoginScreenStep} />
         ) : loginScreenStep === 2 ? (
           <AuthGateway
-            setIsLoading={setIsLoading}
             setLoginScreenStep={setLoginScreenStep}
           />
         ) : (

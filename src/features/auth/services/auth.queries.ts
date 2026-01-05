@@ -1,13 +1,6 @@
-import { RootStackParamList } from '@/app/types';
 import {
-  FindAccountPayload,
-  ResetPasswordPayload,
-  SendVerificationEmailPayload,
   SocialAuthCheckStatusQueryPayload,
   SocialAuthCheckStatusResponse,
-  SocialAuthExchangeTokenPayload,
-  SocialType,
-  VerifyEmailPayload,
 } from '@/features/auth/model/auth.types';
 import {
   postLogout,
@@ -19,93 +12,80 @@ import {
   postSocialAuthExchangeToken,
   postVerifyEmail,
 } from '@/features/auth/services/auth.api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CommonActions, NavigationProp } from '@react-navigation/native';
+import { CommonActions } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
-import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { useAuth } from '@/app/providers';
 
 // 이메일 인증 코드 발송
 export const useSendVerificationEmailMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: SendVerificationEmailPayload) =>
-      postSendVerificationEmail(payload),
+  return useMutation({
+    mutationFn: postSendVerificationEmail,
+    onSuccess: data => {
+      Alert.alert('알림', data.message);
+    },
   });
-
-  return mutation;
 };
 
 // 이메일 인증 코드 확인
 export const useVerifyEmailMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: VerifyEmailPayload) => postVerifyEmail(payload),
+  return useMutation({
+    mutationFn: postVerifyEmail,
+    onSuccess: data => {
+      Alert.alert('알림', data.message);
+    },
   });
-
-  return mutation;
 };
 
 // 계정 찾기
 export const useFindAccountMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: FindAccountPayload) => postFindAccount(payload),
+  return useMutation({
+    mutationFn: postFindAccount,
+    // 자체 모달 띄워주므로 onSuccess 필요 없음
+    // onSuccess: data => {
+    //   Alert.alert('알림', data.message);
+    // },
   });
-
-  return mutation;
 };
 
-// 비밀번호 재설정(비밀번호 찾기)
+// 비밀번호 재설정 (비밀번호 찾기)
 export const useResetPasswordMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: ResetPasswordPayload) => postResetPassword(payload),
+  return useMutation({
+    mutationFn: postResetPassword,
+    onSuccess: data => {
+      Alert.alert('알림', data.message);
+    },
   });
-
-  return mutation;
 };
 
 // 로그아웃
 export const useLogoutMutation = () => {
   const queryClient = useQueryClient();
   const { navigation } = useAppNavigation();
+  const { removeToken } = useAuth();
 
-  const mutation = useMutation({
+  return useMutation({
     mutationFn: postLogout,
-    onSuccess: async data => {
-      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
-      queryClient.clear();
+    onSettled: async () => {
+      await removeToken(); // 앱 내 토큰 삭제
+      queryClient.clear(); // 쿼리 캐시 초기화
+
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
           routes: [{ name: 'Login' }],
         }),
       );
-      if (data?.message) {
-        Alert.alert(data.message);
-      }
-    },
-    onError: async () => {
-      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
-      queryClient.clear();
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        }),
-      );
-      Alert.alert('로그아웃 중 문제가 발생했습니다.');
     },
   });
-
-  return mutation;
 };
 
-// 소셜 회원가입/로그인 auth url 요청 - 사용자가 버튼을 눌렀을때만 작동하도록 mutaation으로 구현
+// 소셜 회원가입/로그인 auth url 요청 - 사용자가 버튼을 눌렀을때만 작동하도록 mutation으로 구현
 export const useSocialAuthGetUrlMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (socialType: SocialType) => getSocialAuthUrl(socialType),
+  return useMutation({
+    mutationFn: getSocialAuthUrl,
   });
-
-  return mutation;
 };
 
 // 소셜 회원가입/로그인 상태 확인
@@ -149,10 +129,7 @@ export const useSocialAuthCheckStatusQuery = (
 
 // 소셜 회원가입/로그인 토큰 교환
 export const useSocialAuthExchangeTokenMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: SocialAuthExchangeTokenPayload) =>
-      postSocialAuthExchangeToken(payload),
+  return useMutation({
+    mutationFn: postSocialAuthExchangeToken,
   });
-
-  return mutation;
 };

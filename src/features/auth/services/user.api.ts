@@ -39,16 +39,8 @@ export const getUserInfo = async (): Promise<GetUserInfoResponse> => {
 export const updateUserInfo = async (
   payload: UpdateUserPayload,
 ): Promise<UpdateUserResponse> => {
-  try {
     const response = await api.put('/user/info-update', payload);
     return response.data;
-  } catch (error: any) {
-    Alert.alert(
-      '유저 정보 수정 실패',
-      error.response?.data?.message || error.message || '알 수 없는 오류',
-    );
-    throw error;
-  }
 };
 
 // 유저 삭제

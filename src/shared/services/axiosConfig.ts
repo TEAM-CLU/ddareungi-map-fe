@@ -59,7 +59,7 @@ export const commonErrorInterceptor = (
           text2: '인터넷 연결을 확인해주세요.',
         });
         customMessage = '인터넷 연결이 불안정합니다.';
-      } else if (status === 400 || status === 404) {
+      } else if (status && status >= 400 && status < 500) {
         // 백엔드에서 보내준 에러 메시지가 있으면 그걸 우선 사용
         customMessage =
           error.response?.data?.message || '요청을 처리할 수 없습니다.';

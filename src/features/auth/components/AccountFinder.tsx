@@ -1,24 +1,14 @@
-import { RootStackParamList } from '@/app/types';
-import AccountLinks from '@/features/auth/components/AccountLinks';
-import {
-  FindAccountResponse,
-  SendVerificationEmailResponse,
-  VerifyEmailPayload,
-  VerifyEmailResponse,
-} from '@/features/auth/model/auth.types';
+import { VerifyEmailPayload } from '@/features/auth/model/auth.types';
 import {
   useFindAccountMutation,
   useSendVerificationEmailMutation,
   useVerifyEmailMutation,
 } from '@/features/auth/services/auth.queries';
 import RoundButton from '@/shared/components/button/RoundButton';
-// import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
 import { tw } from '@/shared/libs/tw-helper';
-import { NavigationProp } from '@react-navigation/native';
-import axios from 'axios';
 import { useRef, useState } from 'react';
 import {
   TouchableOpacity,
@@ -38,10 +28,9 @@ interface AccountFinderProps {
 }
 
 const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
-  const { mutateAsync: sendVerificationCode } =
-    useSendVerificationEmailMutation();
-  const { mutateAsync: verifyCode } = useVerifyEmailMutation();
-  const { mutateAsync: findAccount } = useFindAccountMutation();
+  const { mutate: sendVerificationCode } = useSendVerificationEmailMutation();
+  const { mutate: verifyCode } = useVerifyEmailMutation();
+  const { mutate: findAccount } = useFindAccountMutation();
 
   const [email, setEmail] = useState<string>('');
   const [code, setCode] = useState<string>('');
@@ -71,7 +60,7 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
   const handleCloseButtonPress = () => setAccountFeatures(null);
 
   // 이메일 양식 확인 후 바로 코드 전송
-  const handleSendCodeButtonPress = async () => {
+  const handleSendCodeButtonPress = () => {
     // 이메일 입력 확인
     if (email.trim() === '') {
       setEmailSuccessDescription('');
@@ -93,26 +82,19 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
     const payload = { email: email };
 
     // 이메일 형식이 올바르면 코드 전송
-    try {
-      const response: SendVerificationEmailResponse =
-        await sendVerificationCode(payload);
-
-      // 성공 시
-      Alert.alert('인증 코드가 전송되었습니다.');
-      setIsValidEmail(true);
-      setIsValidCode(true);
-      setShowCodeInput(true);
-      setEmailErrorDescription('');
-      setCodeSuccessDescription(`${response.message}`);
-    } catch (error) {
-      // 네트워크 또는 서버 오류 처리
-      setCodeSuccessDescription('');
-      if (axios.isAxiosError(error)) {
-        setCodeErrorDescription(
-          `${error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'}`,
-        );
-      }
-    }
+    sendVerificationCode(payload, {
+      onSuccess: data => {
+        setIsValidEmail(true);
+        setIsValidCode(true);
+        setShowCodeInput(true);
+        setEmailErrorDescription('');
+        setCodeSuccessDescription(data.message);
+      },
+      onError: error => {
+        setCodeSuccessDescription('');
+        setCodeErrorDescription(error.message);
+      },
+    });
   };
 
   const handleVerifyCodeButtonPress = async () => {
@@ -173,26 +155,23 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
     };
 
     // 인증코드 확인
-    try {
-      const response: VerifyEmailResponse = await verifyCode(payload);
-
-      setCodeErrorDescription('');
-      setIsValidCode(true);
-      setCodeSuccessDescription(`${response.message}`);
-      setCanShowRegistrationInfo(true);
-      securityToken.current = response.data.securityToken;
-    } catch (error) {
-      setCodeSuccessDescription('');
-      setIsValidCode(false);
-      if (axios.isAxiosError(error)) {
-        setCodeErrorDescription(
-          `${error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'}`,
-        );
-      }
-    }
+    verifyCode(payload, {
+      onSuccess: response => {
+        setCodeErrorDescription('');
+        setIsValidCode(true);
+        setCodeSuccessDescription(response.message);
+        setCanShowRegistrationInfo(true);
+        securityToken.current = response.data.securityToken;
+      },
+      onError: error => {
+        setCodeSuccessDescription('');
+        setIsValidCode(false);
+        setCodeErrorDescription(error.message);
+      },
+    });
   };
 
-  const handleQueryRegistrationInfoBtnPress = async () => {
+  const handleQueryRegistrationInfoBtnPress = () => {
     if (!securityToken.current) {
       Alert.alert('요청 실패. 다시 시도해주세요.');
       setAccountFeatures(null);
@@ -203,19 +182,17 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
       securityToken: securityToken.current,
     };
 
-    try {
-      const response: FindAccountResponse = await findAccount(payload);
-      const sentences = response.message.split('.');
-      setRegistrationInfoMessage(sentences);
-      setAccountType(response.data.accountType);
-      setShowRegistrationInfo(true);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        Alert.alert(
-          `${error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'}`,
-        );
-      }
-    }
+    findAccount(payload, {
+      onSuccess: response => {
+        const sentences = response.message.split('.');
+        setRegistrationInfoMessage(sentences);
+        setAccountType(response.data.accountType);
+        setShowRegistrationInfo(true);
+      },
+      onError: error => {
+        Alert.alert('요청 실패', error.message);
+      },
+    });
   };
 
   return (

@@ -1,9 +1,6 @@
-import { RootStackParamList } from '@/app/types';
+import { useAuth } from '@/app/providers';
 import {
-  CheckEmailPayload,
-  CreateUserPayload,
   GetUserInfoResponse,
-  LoginUserPayload,
   UpdateUserPayload,
   UpdateUserResponse,
 } from '@/features/auth/model/auth.types';
@@ -24,18 +21,48 @@ import { Alert } from 'react-native';
 
 // 유저 회원가입
 export const useCreateUserMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: CreateUserPayload) => postCreateUser(payload),
+  return useMutation({
+    mutationFn: postCreateUser,
+    onSuccess: data => {
+      Alert.alert('알림', data.message);
+    },
   });
-  return mutation;
 };
 
 // 유저 로그인
 export const useLoginUserMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: LoginUserPayload) => postLoginUser(payload),
+  const { navigation } = useAppNavigation();
+  const { setToken } = useAuth();
+
+  return useMutation({
+    mutationFn: postLoginUser,
+
+    // 성공 시: 토큰 저장 + 상태 업데이트 + 화면 이동
+    onSuccess: async data => {
+      const accessToken = data?.data?.accessToken;
+
+      if (accessToken) {
+        // 1. 기기에 토큰 저장 (자동 로그인용)
+        await AsyncStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+        
+        // 2. 앱 전역 상태 업데이트
+        if (setToken) {
+          setToken(accessToken);
+        }
+
+        // 3. 화면 이동
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'Map' }],
+          }),
+        );
+      } else {
+        // 성공했으나 토큰이 없는 경우
+        Alert.alert('로그인 실패', '토큰이 존재하지 않습니다.');
+      }
+    },
   });
-  return mutation;
 };
 
 // 유저 정보 조회
@@ -52,8 +79,9 @@ export const useUpdateUserInfoMutation = () => {
   const queryClient = useQueryClient();
   return useMutation<UpdateUserResponse, Error, UpdateUserPayload>({
     mutationFn: updateUserInfo,
-    onSuccess: () => {
+    onSuccess: data => {
       queryClient.invalidateQueries({ queryKey: ['userInfo'] });
+      Alert.alert('알림', data.message);
     },
   });
 };
@@ -62,37 +90,31 @@ export const useUpdateUserInfoMutation = () => {
 export const useDeleteUserMutation = () => {
   const queryClient = useQueryClient();
   const { navigation } = useAppNavigation();
-  const mutation = useMutation({
-    mutationFn: () => deleteUser(),
-    onSuccess: async res => {
-      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+  const { removeToken } = useAuth();
+
+  return useMutation({
+    mutationFn: deleteUser,
+    onSuccess: async data => {
+      await removeToken(); // 앱 내 토큰 삭제
       queryClient.clear();
+
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
           routes: [{ name: 'Login' }],
         }),
       );
-    },
-    onError: async () => {
-      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
-      queryClient.clear();
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        }),
-      );
-      Alert.alert('회원탈퇴 중 문제가 발생했습니다.');
+      Alert.alert('알림', data.message);
     },
   });
-  return mutation;
 };
 
 // 이메일 중복 확인
 export const useCheckEmailMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: CheckEmailPayload) => postCheckEmail(payload),
+  return useMutation({
+    mutationFn: postCheckEmail,
+    onSuccess: data => {
+      Alert.alert('알림', data.message);
+    },
   });
-  return mutation;
 };

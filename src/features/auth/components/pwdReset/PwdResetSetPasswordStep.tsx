@@ -2,15 +2,11 @@ import Input from '@/shared/components/Input/Input';
 import { useEffect, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 import { Alert, Text, View } from 'react-native';
-import SquareButton from '@/shared/components/button/SquareButton';
 import RoundButton from '@/shared/components/button/RoundButton';
-import { checkPassword } from '@/features/auth/utils/checkPassword';
 import { useResetPasswordMutation } from '@/features/auth/services/auth.queries';
 import {
   ResetPasswordPayload,
-  ResetPasswordResponse,
 } from '@/features/auth/model/auth.types';
-import axios from 'axios';
 
 interface PwdResetSetPasswordStepProps {
   email: string;
@@ -27,7 +23,7 @@ const PwdResetSetPasswordStep = ({
   setResetPwdStep,
   setAccountFeatures,
 }: PwdResetSetPasswordStepProps) => {
-  const { mutateAsync: resetPwd } = useResetPasswordMutation();
+  const { mutate: resetPwd } = useResetPasswordMutation();
   const [newPwd, setNewPwd] = useState<string>('');
   const [confirmNewPwd, setConfirmNewPwd] = useState<string>('');
   const [isValidNewPwd, setIsValidNewPwd] = useState<boolean>(true);
@@ -113,7 +109,7 @@ const PwdResetSetPasswordStep = ({
     }
   };
 
-  const handleCompletePwdResetButtonPress = async () => {
+  const handleCompletePwdResetButtonPress = () => {
     // 이메일 양식 재확인 -> 외부에서 프롭스로 들어오는 값인기 때문에
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -128,26 +124,17 @@ const PwdResetSetPasswordStep = ({
         newPassword: newPwd,
       };
 
-      try {
-        const response: ResetPasswordResponse = await resetPwd(payload);
-
-        // 성공 케이스
-        Alert.alert(`${response.message}`);
-        setAccountFeatures(null);
-        return;
-      } catch (error) {
-        setIsValidNewPwd(false);
-        setNewPwdSuccessDescription('');
-        setConfirmNewPwdSuccessDescription('');
-        if (axios.isAxiosError(error)) {
-          setNewPwdErrorDescription(
-            `${
-              error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'
-            }`,
-          );
-        }
-        return;
-      }
+      resetPwd(payload, {
+        onSuccess: () => {
+          setAccountFeatures(null);
+        },
+        onError: (error) => {
+          setIsValidNewPwd(false);
+          setNewPwdSuccessDescription('');
+          setConfirmNewPwdSuccessDescription('');
+          setNewPwdErrorDescription(error.message);
+        },
+      });
     }
   };
 

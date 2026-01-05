@@ -1,6 +1,5 @@
 import RoundButton from '@/shared/components/button/RoundButton';
 import { IconClose } from '@/shared/components/icons';
-import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { tw } from '@/shared/libs/tw-helper';
 import CheckBox from '@react-native-community/checkbox';
 import { useEffect, useState } from 'react';
@@ -28,8 +27,6 @@ const PrivacyConsentModal = ({
   onCancel,
 }: PrivacyConsentModalProps) => {
   const [canProceed, setCanProceed] = useState(false);
-
-  const { navigation } = useAppNavigation();
 
   const handleAgreeBtnPress = () => {
     if (!isConsentRequiredAgreed) {

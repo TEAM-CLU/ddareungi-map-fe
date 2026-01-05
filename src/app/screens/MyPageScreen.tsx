@@ -4,6 +4,7 @@ import EditProfile from '@/features/mypage/components/EditProfile';
 import MypageMain from '@/features/mypage/components/main/MypageMain';
 import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import OnboardingScreen from './OnboardingScreen';
 
 type PageType = 'main' | 'updateInfo' | 'updatePassword' | 'help';
 
@@ -29,6 +30,8 @@ const MyPageScreen = () => {
       // case 'updatePassword':
       // return <ChangePassword onBack={() => setPage('main')} />;
       // return <PwdResetContainer />;
+      case 'help':
+        return <OnboardingScreen />;
       default:
         return <MypageMain onNavigate={setPage} />;
     }

@@ -15,9 +15,7 @@ import {
   VerifyEmailPayload,
   VerifyEmailResponse,
 } from '@/features/auth/model/auth.types';
-import { SERVER_URL } from '@/shared/model/index.constants';
 import { api } from '@/shared/services/axios';
-import axios from 'axios';
 
 // 이메일 인증 코드 발송
 export const postSendVerificationEmail = async (
