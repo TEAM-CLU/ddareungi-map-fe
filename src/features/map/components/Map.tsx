@@ -47,7 +47,7 @@ const Map = ({
   const [mapUrl] = useState(() => {
     const timestamp = new Date().getTime();
     // iOS/Android 환경에 따라 주소 분기 (ngrok 주소면 그대로 사용)
-    const baseUrl = 'https://5d13b831d750.ngrok-free.app/map.html';
+    const baseUrl = 'https://2ecf08848c8e.ngrok-free.app/map.html';
     return `${baseUrl}?t=${timestamp}`;
   });
   

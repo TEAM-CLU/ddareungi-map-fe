@@ -26,6 +26,7 @@ export type InputType =
 
 export interface AuthContextType {
   accessToken: string | null;
+  isAuthLoading: boolean;
   setToken: (token: string) => Promise<void>;
   getToken: () => Promise<string | null>;
   removeToken: () => Promise<void>;

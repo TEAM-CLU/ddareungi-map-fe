@@ -6,23 +6,17 @@ import {
   RouteResponse,
 } from '../model/routing.types';
 import { Alert } from 'react-native';
-
-const routingApi = axios.create({
-  baseURL: `${SERVER_URL}/routes`,
-  timeout: 1000000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import { api } from '@/shared/services/axios';
 
 // 통합 경로 검색
 export const postFullJourney = async (
   payload: FullJourneyPayload,
 ): Promise<RouteResponse> => {
   try {
-    const response = await routingApi.post<RouteResponse>(
-      '/full-journey',
+    const response = await api.post<RouteResponse>(
+      '/routes/full-journey',
       payload,
+      { timeout: 100000 },
     );
     return response.data;
   } catch (error) {
@@ -39,9 +33,10 @@ export const postCircularJourney = async (
   payload: CircularJourneyPayload,
 ): Promise<RouteResponse> => {
   try {
-    const response = await routingApi.post<RouteResponse>(
-      '/circular-journey',
+    const response = await api.post<RouteResponse>(
+      '/routes/circular-journey',
       payload,
+      { timeout: 100000 },
     );
     return response.data;
   } catch (error) {

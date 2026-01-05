@@ -1,5 +1,5 @@
 import StepIndicator from '@/shared/components/StepIndicator';
-import { Image, ImageStyle, Text, View } from 'react-native';
+import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { tw } from '@/shared/libs/tw-helper';
@@ -10,6 +10,7 @@ interface OnboardingLayoutProps {
   text1: string;
   text2: string;
   imageSource: any;
+  onStart?: () => void;
 }
 
 const OnboardingLayout = ({
@@ -18,6 +19,7 @@ const OnboardingLayout = ({
   text1,
   text2,
   imageSource,
+  onStart,
 }: OnboardingLayoutProps) => {
   return (
     <SafeAreaView
@@ -63,6 +65,19 @@ const OnboardingLayout = ({
           resizeMode="contain"
         />
       </View>
+
+      {onStart && (
+        <View style={tw('absolute bottom-10 w-full px-6')}>
+          <TouchableOpacity
+            onPress={onStart}
+            style={tw(
+              'w-full bg-black py-4 rounded-xl items-center justify-center shadow-lg',
+            )}
+          >
+            <Text style={tw('text-white font-bold text-lg')}>시작하기</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

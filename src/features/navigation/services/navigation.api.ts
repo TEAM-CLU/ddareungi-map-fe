@@ -11,6 +11,7 @@ import {
   TerminateNavigationSessionResponse,
 } from '@/features/navigation/model/navigation.types';
 import { SERVER_URL } from '@/shared/model/index.constants';
+import { api } from '@/shared/services/axios';
 import axios from 'axios';
 
 const navigationApi = axios.create({
@@ -25,7 +26,7 @@ const navigationApi = axios.create({
 export const postStartNavigationSession = async (
   payload: StartNavigationSessionPayload,
 ): Promise<StartNavigationSessionResponse> => {
-  const response = await navigationApi.post('/start', payload);
+  const response = await api.post('/navigation/start', payload);
   return response.data.data;
 };
 
@@ -33,7 +34,7 @@ export const postStartNavigationSession = async (
 export const postKeepNavigationSessionAlive = async (
   payload: keepNavigationSessionAlivePayload,
 ): Promise<keepNavigationSessionAliveResponse> => {
-  const response = await navigationApi.post(`/${payload.sessionId}/heartbeat`);
+  const response = await api.post(`/${payload.sessionId}/heartbeat`);
   return response.data;
 };
 
@@ -41,7 +42,7 @@ export const postKeepNavigationSessionAlive = async (
 export const deleteTerminateNavigationSession = async (
   payload: TerminateNavigationSessionPayload,
 ): Promise<TerminateNavigationSessionResponse> => {
-  const response = await navigationApi.delete(`/${payload.sessionId}`);
+  const response = await api.delete(`/navigation/${payload.sessionId}`);
   return response.data;
 };
 
@@ -49,7 +50,7 @@ export const deleteTerminateNavigationSession = async (
 export const postReturnToExistingRoute = async (
   payload: ReturnToExistingRoutePayload,
 ): Promise<ReturnToExistingRouteResponse> => {
-  const response = await navigationApi.post(`/${payload.sessionId}/return`, {
+  const response = await api.post(`/navigation/${payload.sessionId}/return`, {
     currentLocation: payload.currentLocation,
     remainingWaypoints: payload.remainingWaypoints,
   });
@@ -61,7 +62,7 @@ export const postReturnToExistingRoute = async (
 export const postReRoute = async (
   payload: ReRoutePayload,
 ): Promise<ReRouteResponse> => {
-  const response = await navigationApi.post(`/${payload.sessionId}/reroute`, {
+  const response = await api.post(`/navigation/${payload.sessionId}/reroute`, {
     currentLocation: payload.currentLocation,
     remainingWaypoints: payload.remainingWaypoints,
   });

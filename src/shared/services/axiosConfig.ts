@@ -7,8 +7,11 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 import { Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-export const commonErrorInterceptor = (instance: AxiosInstance) => {
-  instance.interceptors.response.use(
+export const commonErrorInterceptor = (
+  instance: AxiosInstance,
+  onLogout?: () => Promise<void> | void,
+) => {
+  return instance.interceptors.response.use(
     response => response,
     async (error: AxiosError<{ message?: string }>) => {
       // 취소된 요청은 무시
@@ -19,8 +22,18 @@ export const commonErrorInterceptor = (instance: AxiosInstance) => {
 
       // 1. 중요 에러 (Alert)
       if (status === 401) {
-        Alert.alert('인증 만료', '다시 로그인해주세요.');
-        // 네비게이션 로직 필요하면 처리
+        Alert.alert(
+          '인증 만료',
+          '세션이 만료되었습니다. 다시 로그인해주세요.',
+          [
+            {
+              text: '확인',
+              onPress: async () => {
+                if (onLogout) await onLogout();
+              },
+            },
+          ],
+        );
         return Promise.reject(new Error('로그인이 만료되었습니다.'));
       }
       if (status === 403) {
