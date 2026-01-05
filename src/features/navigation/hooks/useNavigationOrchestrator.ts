@@ -1,9 +1,11 @@
+import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import {
   ACCURACY_OK,
   MOTION_COMMON_OPTIONS,
+  TRAVELED_DISTANCE_OPTIONS,
   TURN_CONFIG,
 } from '@/features/navigation/model/navigation.constants';
 import {
@@ -21,6 +23,7 @@ import {
 import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { calculateMotionVector } from '@/features/navigation/utils/calculateMotionVector';
+import { classifyTransportBySpeed } from '@/features/navigation/utils/classifyTransportBySpeed';
 import {
   calculateEta,
   returnAccurateSpeed,
@@ -30,8 +33,12 @@ import {
 
 import { Coordinate } from '@/features/routing/model/routing.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
+import {
+  measureCaloriesBurned,
+  measureCarbonSaved,
+} from '@/shared/utils/measure';
 import axios from 'axios';
-import { use, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { useShallow } from 'zustand/shallow';
 
@@ -42,16 +49,22 @@ export const useNavigationOrchestrator = () => {
   const { mutateAsync: keepNavigationSessionAlive } =
     useKeepNavigationSessionAliveMutation();
 
+  const { data: userInfoData } = useUserInfoQuery();
+  const userGender = userInfoData?.data.gender;
+
   const { replaceMyLocationMarker } = useNavigationMessenger();
 
   const isMapReady = useMapStore(state => state.isMapReady);
 
-  const { isNavigationMode, routeId } = useNavigationStore(
-    useShallow(state => ({
-      isNavigationMode: state.isNavigationMode,
-      routeId: state.routeId,
-    })),
-  );
+  const { isNavigationMode, routeId, addCaloriesBurned, addCarbonSaved } =
+    useNavigationStore(
+      useShallow(state => ({
+        isNavigationMode: state.isNavigationMode,
+        routeId: state.routeId,
+        addCaloriesBurned: state.addCaloriesBurned,
+        addCarbonSaved: state.addCarbonSaved,
+      })),
+    );
   // 지시 배너 업데이트 기준: 내 위치가 다음 턴 좌표에 가까워지면 다음 지시로 업데이트
   const { myPosition, locationMetaData } = useMyPositionStore(
     useShallow(state => ({
@@ -104,12 +117,17 @@ export const useNavigationOrchestrator = () => {
 
   // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산, 소요거리용
   const currentIntervalIndex = useRef<number>(0);
-  const prevMyPositionForDistanceRef = useRef<Coordinate | null>(null);
   const prevTimestampForDistanceRef = useRef<number | null>(null);
+  const prevMyPositionForDistanceRef = useRef<Coordinate | null>(null);
   const prevTraveledDistanceMeterRef = useRef<number>(0);
   const prevRemainingDistanceMeterRef = useRef<number>(
     Number.POSITIVE_INFINITY,
   );
+
+  // 칼로리, 탄소 저감 측정용
+  const prevTimestampForMeasureRef = useRef<number | null>(null);
+  const prevTraveledDistanceForMeasureRef = useRef<number | null>(null);
+  const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
 
   // 네비게이션 세션 업데이트용
   const sessionId = useRef<string | null>(null);
@@ -189,6 +207,7 @@ export const useNavigationOrchestrator = () => {
     initNavigation();
   }, [isNavigationMode, routeId, isMapReady]);
 
+  // 턴 진입/지나침 감지 및 지시 업데이트
   useEffect(() => {
     if (
       !isNavigationMode ||
@@ -466,6 +485,68 @@ export const useNavigationOrchestrator = () => {
     setEta(calculateEta(remainingDistanceMeter, accurateSpeedMps));
   }, [myPosition, locationMetaData, remainingDistanceMeter, isNavigationMode]);
 
+  // 칼로리, 탄소 저감 측정
+  useEffect(() => {
+    if (!isNavigationMode || traveledDistanceMeter == null || !locationMetaData)
+      return;
+
+    // 첫 샘플 세팅
+    if (prevTraveledDistanceForMeasureRef.current === null) {
+      prevTraveledDistanceForMeasureRef.current = traveledDistanceMeter;
+      return;
+    }
+
+    const prevTraveledDistanceForMeasure =
+      prevTraveledDistanceForMeasureRef.current;
+    const deltaDistance =
+      traveledDistanceMeter - prevTraveledDistanceForMeasure;
+
+    // 다음 tick 준비
+    prevTraveledDistanceForMeasureRef.current = traveledDistanceMeter;
+    const safeDeltaDistance = Math.max(0, deltaDistance);
+
+    if (safeDeltaDistance <= STOP_JUDGE_MOVE_METER) return;
+
+    // 시간 delta는 timestamp로
+    const currentTimestamp =
+      typeof locationMetaData.timestamp === 'number'
+        ? locationMetaData.timestamp
+        : Date.now();
+
+    const prevTimestampForMeasure = prevTimestampForMeasureRef.current;
+    if (prevTimestampForMeasure == null) {
+      prevTimestampForMeasureRef.current = currentTimestamp;
+      return;
+    }
+
+    const dtSec = Math.max(
+      0.001,
+      (currentTimestamp - prevTimestampForMeasure) / 1000,
+    );
+    prevTimestampForMeasureRef.current = currentTimestamp;
+
+    const currentSpeedMps = safeDeltaDistance / dtSec;
+
+    // 말도 안 되는 speed는 컷
+    if (currentSpeedMps > MOTION_COMMON_OPTIONS.MAX_PHYSICAL_SPEED_MPS) return;
+
+    const transportationType = classifyTransportBySpeed(currentSpeedMps);
+
+    const currentCaloriesDelta = measureCaloriesBurned(
+      transportationType,
+      userGender,
+      dtSec,
+    );
+
+    const currentCarbonDelta = measureCarbonSaved(
+      transportationType,
+      safeDeltaDistance,
+    );
+
+    addCaloriesBurned(currentCaloriesDelta);
+    addCarbonSaved(currentCarbonDelta);
+  }, [isNavigationMode, traveledDistanceMeter, locationMetaData, userGender]);
+
   // 세션 유지
   useEffect(() => {
     if (!isNavigationMode || !sessionId.current) return;
@@ -490,7 +571,7 @@ export const useNavigationOrchestrator = () => {
 
     const intervalId = setInterval(() => {
       keepSessionAlive();
-    }, 10 * 60 * 1000); // 10분마다 세션 유지 요청
+    }, 9 * 60 * 1000); // 9분마다 세션 유지 요청
 
     return () => {
       clearInterval(intervalId);

@@ -1,5 +1,8 @@
 import IntervalProgressBar from '@/features/navigation/components/IntervalProgressBar';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
+import CalorieBadge from '@/shared/components/badge/CalorieBadge';
+import TreeBadge from '@/shared/components/badge/TreeBadge';
 import RoundButton from '@/shared/components/button/RoundButton';
 import {
   IconChevronDown,
@@ -8,6 +11,8 @@ import {
 } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
+import { formatCalories } from '@/shared/utils/formatting';
+import { convertToTrees } from '@/shared/utils/measure';
 import Slider from '@react-native-community/slider';
 import { useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
@@ -22,6 +27,12 @@ const NavigationDetailModal = ({
   currentIntervalIndex,
   totalIntervals,
 }: NavigationDetailModalProps) => {
+  const { totalCaloriesBurned, totalCarbonSaved } = useNavigationStore(
+    useShallow(state => ({
+      totalCaloriesBurned: state.totalCaloriesBurned,
+      totalCarbonSaved: state.totalCarbonSaved,
+    })),
+  );
   const { systemVolume, setSystemVolume } = useVolumeStore(
     useShallow(state => ({
       systemVolume: state.systemVolume,
@@ -98,6 +109,21 @@ const NavigationDetailModal = ({
       <View
         style={[tw('w-full flex flex-col grow justify-start'), { gap: 35 }]}
       >
+        <View style={[tw('flex flex-col w-full'), { gap: 30 }]}>
+          <Text
+            style={[
+              tw('font-primary-600 text-on-surface-primary text-left'),
+              { fontSize: 13 },
+            ]}
+          >
+            실시간 칼로리 소모량 / 탄소 저감량
+          </Text>
+          <View style={[tw('w-full flex flex-row  items-center'), { gap: 16 }]}>
+            <CalorieBadge value={totalCaloriesBurned} />
+            <TreeBadge value={convertToTrees(totalCarbonSaved)} />
+          </View>
+        </View>
+        {/*  */}
         {totalIntervals !== undefined &&
         currentIntervalIndex !== undefined &&
         totalIntervals > 0 ? (
@@ -115,6 +141,7 @@ const NavigationDetailModal = ({
             진행 구간 정보가 없습니다.
           </Text>
         )}
+        {/*  */}
         <View style={[tw('flex flex-col w-full'), { gap: 30 }]}>
           <Text
             style={[

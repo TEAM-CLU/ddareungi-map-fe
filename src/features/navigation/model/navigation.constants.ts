@@ -65,3 +65,9 @@ export const REMAINING_DISTANCE_OPTIONS = {
 export const INTERVAL_DISTANCE_OPTIONS = {
   MIN_INTERVAL_DISTANCE_METER: 10,
 } as const;
+
+// classifyTransportBySpeed.ts
+export const SPEED_THRESHOLDS = {
+  WALK_MAX_MPS: 2.3, // 대략 8.3km/h
+  BIKING_MIN_MPS: 2.8, // 대략 10km/h
+};

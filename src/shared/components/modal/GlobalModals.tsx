@@ -157,7 +157,7 @@ const GlobalModals = () => {
       {/* 네비게이션 디테일 모달 */}
       <SlideModal
         ref={navigationDetailModalRef}
-        snapPoints={['43%', '47%']}
+        snapPoints={['55%', '60%']}
         initialIndex={1}
         onDismiss={() => setShowNavigationDetailModal(false)}
       >

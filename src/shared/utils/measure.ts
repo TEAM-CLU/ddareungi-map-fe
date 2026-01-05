@@ -6,13 +6,13 @@ import {
 import { TransportationType, Gender } from '@/shared/model/index.types';
 
 export const measureCaloriesBurned = (
-  transportationType: TransportationType, // 'walking' | 'cycling' | 'idle'
+  transportationType: TransportationType,
   gender: Gender,
   deltaSeconds: number,
 ): number => {
   if (deltaSeconds <= 0) return 0;
 
-  const { MEAN_WALKING_MET, MEAN_CYCLING_MET } = MEAN_ACITIVITY_MET;
+  const { MEAN_WALKING_MET, MEAN_BIKING_MET } = MEAN_ACITIVITY_MET;
   const {
     MEAN_ADULT_MAN_WEIGHT_KG,
     MEAN_ADULT_WOMAN_WEIGHT_KG,
@@ -29,7 +29,7 @@ export const measureCaloriesBurned = (
     transportationType === 'walking'
       ? MEAN_WALKING_MET
       : transportationType === 'biking'
-      ? MEAN_CYCLING_MET
+      ? MEAN_BIKING_MET
       : 0;
 
   const hours = deltaSeconds / 3600;
@@ -42,7 +42,7 @@ export const measureCarbonSaved = (
   const {
     EMISSION_CAR_PER_KM,
     EMISSION_WALKING_PER_KM,
-    EMISSION_CYCLING_PER_KM,
+    EMISSION_BIKING_PER_KM,
   } = MEAN_CARBON_EMISSION;
   const distanceKm = distanceMeter / 1000;
   const carEmissionKM = distanceKm * EMISSION_CAR_PER_KM;
@@ -50,7 +50,7 @@ export const measureCarbonSaved = (
   const userEmission =
     transportationType === 'walking'
       ? distanceKm * EMISSION_WALKING_PER_KM
-      : distanceKm * EMISSION_CYCLING_PER_KM;
+      : distanceKm * EMISSION_BIKING_PER_KM;
 
   return carEmissionKM - userEmission;
 };
