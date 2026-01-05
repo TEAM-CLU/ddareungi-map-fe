@@ -32,8 +32,11 @@ export const THROTTLE_WAIT_MS = 2000;
 
 export const ACCURACY_OK = 40;
 
-export const FALLBACK_TTS_URL =
-  'https://ddareungimap-tts-cache.s3.amazonaws.com/tts/ko-KR/b51d71d80e0025ab88bc5d697a3f91b32146b94b7d41cb3573c244d05f8a3110.mp3';
+export const TTS_URL_PRESET = {
+  FALLBACK_TTS_URL: require('@/assets/audios/errorTts.mp3'),
+  START_TTS_URL: require('@/assets/audios/startTts.mp3'),
+  END_TTS_URL: require('@/assets/audios/endTts.mp3'),
+};
 
 // navigationTurn.constants.ts
 export const MOTION_COMMON_OPTIONS = {

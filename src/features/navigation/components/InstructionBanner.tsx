@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 
 import {
   DIRECTION_ICONS,
-  FALLBACK_TTS_URL,
   INTERVAL_DISTANCE_OPTIONS,
   MOTION_COMMON_OPTIONS,
-  TRAVELED_DISTANCE_OPTIONS,
+  TTS_URL_PRESET,
 } from '@/features/navigation/model/navigation.constants';
 import { tw } from '@/shared/libs/tw-helper';
 import TrackPlayer from 'react-native-track-player';
@@ -16,6 +15,7 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { calculateIntervalDistanceByMyPosition } from '@/features/navigation/utils/navigationController';
 import { formatDistanceAdaptive } from '@/shared/utils/formatting';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
+import { playTts } from '@/features/navigation/utils/playTts';
 
 interface InstructionBannerProps {
   pathDataListByInterval: IntervalPathData[];
@@ -48,30 +48,41 @@ const InstructionBanner = ({
   const [currentRemainingDistanceMeter, setCurrentRemainingDistanceMeter] =
     useState<number | null>(null);
 
+  const { FALLBACK_TTS_URL, START_TTS_URL, END_TTS_URL } = TTS_URL_PRESET;
+  const hasPlayedStartTtsRef = useRef(false);
+
   // TTS 재생 처리
   useEffect(() => {
-    // 중복 재생을 막기 위함
-    if (currentIntervalIndex === prevIntervalIndexRef.current) return;
-    prevIntervalIndexRef.current = currentIntervalIndex;
-    const playKey = `tts-${currentIntervalIndex}`;
-    if (playKey === globalTtsState.lastPlayedKey) return;
-    globalTtsState.lastPlayedKey = playKey;
+    const playInstruction = () => {
+      prevIntervalIndexRef.current = currentIntervalIndex;
 
-    const playTts = async () => {
+      const playKey = `tts-${currentIntervalIndex}`;
+      if (globalTtsState.lastPlayedKey === playKey) return;
+      globalTtsState.lastPlayedKey = playKey;
+
       const ttsUrlToPlay = currentTtsUrl ?? FALLBACK_TTS_URL;
-      await TrackPlayer.reset();
-      await TrackPlayer.add({
-        id: playKey,
-        url: ttsUrlToPlay,
-        title: 'Navigation Instruction',
-        artist: 'Ddarungi Map',
-      });
-      await TrackPlayer.setVolume(systemVolume === 0 ? 0.5 : systemVolume);
-      await TrackPlayer.play();
+      playTts(playKey, ttsUrlToPlay, systemVolume);
     };
 
-    playTts();
-  }, [currentIntervalIndex, currentTtsUrl]);
+    // START TTS
+    if (!hasPlayedStartTtsRef.current) {
+      hasPlayedStartTtsRef.current = true;
+
+      const startKey = 'tts-start';
+      if (globalTtsState.lastPlayedKey === startKey) return;
+      globalTtsState.lastPlayedKey = startKey;
+      playTts(startKey, START_TTS_URL, systemVolume);
+      setTimeout(() => {
+        playInstruction();
+      }, 5000);
+
+      return;
+    }
+
+    // interval 변경 시
+    if (currentIntervalIndex === prevIntervalIndexRef.current) return;
+    playInstruction();
+  }, [currentIntervalIndex, currentTtsUrl, systemVolume]);
 
   // 인터벌 내 남은 거리 계산
   useEffect(() => {
@@ -100,18 +111,11 @@ const InstructionBanner = ({
     prevRemainingDistanceRef.current = remainingDistanceMeter;
   }, [myPosition, currentIntervalIndex]);
 
-  const handleInstructionBannerPress = async () => {
-    const ttsUrlToPlay = currentTtsUrl ?? FALLBACK_TTS_URL;
-    await TrackPlayer.reset();
-    await TrackPlayer.add({
-      id: `tts-${currentIntervalIndex}`,
-      url: ttsUrlToPlay,
-      title: 'Navigation Instruction',
-      artist: 'Ddarungi Map',
-    });
-    await TrackPlayer.setVolume(systemVolume);
-    await TrackPlayer.play();
-  };
+  const handleInstructionBannerPress = useCallback(() => {
+    const key = `tts-${currentIntervalIndex}`;
+    const url = currentTtsUrl ?? FALLBACK_TTS_URL;
+    playTts(key, url, systemVolume);
+  }, [currentIntervalIndex, currentTtsUrl, systemVolume]);
 
   return (
     <TouchableOpacity
