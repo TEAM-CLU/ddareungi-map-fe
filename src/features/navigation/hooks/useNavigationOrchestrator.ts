@@ -22,6 +22,7 @@ import {
 } from '@/features/navigation/services/navigation.queries';
 import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { calculateMotionVector } from '@/features/navigation/utils/calculateMotionVector';
 import { classifyTransportBySpeed } from '@/features/navigation/utils/classifyTransportBySpeed';
 import {
@@ -40,6 +41,7 @@ import {
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
+import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/shallow';
 
 export const useNavigationOrchestrator = () => {
@@ -128,6 +130,14 @@ export const useNavigationOrchestrator = () => {
   const prevTimestampForMeasureRef = useRef<number | null>(null);
   const prevTraveledDistanceForMeasureRef = useRef<number | null>(null);
   const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
+
+  // 볼륨 상태
+  const { systemVolume, setSystemVolume } = useVolumeStore(
+    useShallow(state => ({
+      systemVolume: state.systemVolume,
+      setSystemVolume: state.setSystemVolume,
+    })),
+  );
 
   // 네비게이션 세션 업데이트용
   const sessionId = useRef<string | null>(null);
@@ -546,6 +556,36 @@ export const useNavigationOrchestrator = () => {
     addCaloriesBurned(currentCaloriesDelta);
     addCarbonSaved(currentCarbonDelta);
   }, [isNavigationMode, traveledDistanceMeter, locationMetaData, userGender]);
+
+  // 시스템 볼륨 초기값 설정 및 리스너 등록
+  useEffect(() => {
+    const canUseVolumeManager =
+      VolumeManager &&
+      typeof VolumeManager.getVolume === 'function' &&
+      typeof VolumeManager.addVolumeListener === 'function';
+
+    if (!canUseVolumeManager) {
+      return;
+    }
+
+    try {
+      VolumeManager.getVolume().then(volumeData =>
+        setSystemVolume(volumeData.volume),
+      );
+    } catch (error) {
+      console.error('시스템 볼륨을 가져오는 중 오류 발생:', error);
+    }
+
+    const volumeListener = VolumeManager.addVolumeListener(
+      (volumeData: { volume: number }) => {
+        setSystemVolume(volumeData.volume);
+      },
+    );
+
+    return () => {
+      volumeListener.remove();
+    };
+  }, []);
 
   // 세션 유지
   useEffect(() => {

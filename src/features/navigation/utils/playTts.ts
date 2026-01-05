@@ -8,6 +8,6 @@ export const playTts = async (key: string, url: any, systemVolume: number) => {
     title: 'Navigation Instruction',
     artist: 'Ddarungi Map',
   });
-  await TrackPlayer.setVolume(systemVolume === 0 ? 0.5 : systemVolume);
+  await TrackPlayer.setVolume(systemVolume);
   await TrackPlayer.play();
 };

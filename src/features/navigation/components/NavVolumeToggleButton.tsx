@@ -1,8 +1,9 @@
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { IconMute, IconVolume } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
-import { useState } from 'react';
+import { useRef } from 'react';
 import { TouchableOpacity } from 'react-native';
+import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/react/shallow';
 
 const NavVolumeToggleButton = () => {
@@ -13,23 +14,24 @@ const NavVolumeToggleButton = () => {
     })),
   );
 
-  const [isMuted, setIsMuted] = useState(false);
+  const lastNonZeroVolumeRef = useRef(0.5);
 
-  const handleVolumeTogglePress = () => {
-    if (systemVolume === 0) setIsMuted(true);
+  const applySystemVolume = async (volume: number) => {
+    setSystemVolume(volume);
+    if (VolumeManager && typeof VolumeManager.setVolume === 'function') {
+      await VolumeManager.setVolume(volume);
+    }
+  };
 
-    if (isMuted) {
-      // 음소거 해제
-      setIsMuted(false);
-      setSystemVolume(0.5);
+  const handleVolumeTogglePress = async () => {
+    if (systemVolume > 0) {
+      lastNonZeroVolumeRef.current = systemVolume;
+      await applySystemVolume(0);
       return;
     }
-    if (!isMuted) {
-      // 음소거
-      setIsMuted(true);
-      setSystemVolume(0);
-      return;
-    }
+
+    const restoreVolume = Math.max(0.1, lastNonZeroVolumeRef.current || 0.5);
+    await applySystemVolume(restoreVolume);
   };
   return (
     <TouchableOpacity
@@ -41,7 +43,7 @@ const NavVolumeToggleButton = () => {
         { zIndex: 10 },
       ]}
     >
-      {isMuted ? <IconMute color="#77838F" /> : <IconVolume />}
+      {systemVolume === 0 ? <IconMute color="#77838F" /> : <IconVolume />}
     </TouchableOpacity>
   );
 };

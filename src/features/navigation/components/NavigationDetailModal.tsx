@@ -11,10 +11,9 @@ import {
 } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
-import { formatCalories } from '@/shared/utils/formatting';
 import { convertToTrees } from '@/shared/utils/measure';
 import Slider from '@react-native-community/slider';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/react/shallow';
@@ -33,6 +32,7 @@ const NavigationDetailModal = ({
       totalCarbonSaved: state.totalCarbonSaved,
     })),
   );
+
   const { systemVolume, setSystemVolume } = useVolumeStore(
     useShallow(state => ({
       systemVolume: state.systemVolume,
@@ -43,38 +43,16 @@ const NavigationDetailModal = ({
   const setShowNavigationDetailModal = useModalStore(
     state => state.setShowNavigationDetailModal,
   );
-  // 시스템 볼륨 초기값 설정 및 리스너 등록
+  const isSlidingRef = useRef(false);
+  const [sliderValue, setSliderValue] = useState(systemVolume);
+
   useEffect(() => {
-    const canUseVolumeManager =
-      VolumeManager &&
-      typeof VolumeManager.getVolume === 'function' &&
-      typeof VolumeManager.addVolumeListener === 'function';
-
-    if (!canUseVolumeManager) {
-      return;
-    }
-
-    try {
-      VolumeManager.getVolume().then(volumeData =>
-        setSystemVolume(volumeData.volume),
-      );
-    } catch (error) {
-      console.error('시스템 볼륨을 가져오는 중 오류 발생:', error);
-    }
-
-    const volumeListener = VolumeManager.addVolumeListener(
-      (volumeData: { volume: number }) => {
-        setSystemVolume(volumeData.volume);
-      },
-    );
-
-    return () => {
-      volumeListener.remove();
-    };
-  }, [setSystemVolume]);
+    if (isSlidingRef.current) return;
+    setSliderValue(systemVolume);
+  }, [systemVolume]);
 
   // 시스템 음성 볼륨 변경 핸들러
-  const handleSystemVolumeSliderChange = async (volume: number) => {
+  const handleSystemVolumeSlidingComplete = async (volume: number) => {
     setSystemVolume(volume);
     try {
       if (VolumeManager && typeof VolumeManager.setVolume === 'function') {
@@ -82,6 +60,8 @@ const NavigationDetailModal = ({
       }
     } catch (error) {
       console.error('시스템 볼륨을 설정하는 중 오류 발생:', error);
+    } finally {
+      isSlidingRef.current = false;
     }
   };
 
@@ -116,7 +96,7 @@ const NavigationDetailModal = ({
               { fontSize: 13 },
             ]}
           >
-            실시간 칼로리 소모량 / 탄소 저감량
+            현재 칼로리 소모량 / 탄소 저감량
           </Text>
           <View style={[tw('w-full flex flex-row  items-center'), { gap: 16 }]}>
             <CalorieBadge value={totalCaloriesBurned} />
@@ -158,8 +138,12 @@ const NavigationDetailModal = ({
               minimumValue={0}
               maximumValue={1}
               step={0.01}
-              value={systemVolume}
-              onValueChange={handleSystemVolumeSliderChange}
+              value={sliderValue}
+              onValueChange={setSliderValue}
+              onSlidingStart={() => {
+                isSlidingRef.current = true;
+              }}
+              onSlidingComplete={handleSystemVolumeSlidingComplete}
               thumbImage={require('@/assets/imgs/volumeSliderThumb.png')}
               minimumTrackTintColor="#01DA86"
             />
