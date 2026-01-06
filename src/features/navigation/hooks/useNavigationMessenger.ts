@@ -5,13 +5,16 @@ import { useCallback } from 'react';
 export const useNavigationMessenger = () => {
   const { sendMessage } = useProvideWebviewMessenger();
 
-  const replaceMyLocationMarker = useCallback(() => {
-    const message: ReplaceMyLocationMarker = {
-      type: 'replaceMyLocationMarker',
-      isNavigationMode: true,
-    };
-    sendMessage(message);
-  }, [sendMessage]);
+  const replaceMyLocationMarker = useCallback(
+    (isNavigationMode: boolean) => {
+      const message: ReplaceMyLocationMarker = {
+        type: 'replaceMyLocationMarker',
+        isNavigationMode: isNavigationMode,
+      };
+      sendMessage(message);
+    },
+    [sendMessage],
+  );
 
   return {
     replaceMyLocationMarker,

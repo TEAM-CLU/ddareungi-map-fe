@@ -159,7 +159,7 @@ export const useNavigationOrchestrator = () => {
     if (!isNavigationMode || !routeId) return;
     const initNavigation = async () => {
       // 초기화
-      replaceMyLocationMarker();
+      replaceMyLocationMarker(true);
       pathDataListByInterval.current = [];
       instructionList.current = [];
       fullPathCoordinateList.current = [];

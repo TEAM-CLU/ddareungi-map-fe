@@ -7,6 +7,7 @@ import {
   useUpdateUserStatsMutation,
   useUserInfoQuery,
 } from '@/features/auth/services/user.queries';
+import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import { TTS_URL_PRESET } from '@/features/navigation/model/navigation.constants';
 import { globalTtsState } from '@/features/navigation/model/navigation.data';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
@@ -52,6 +53,7 @@ const NavigationFinishModal = ({
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
   const { systemVolume } = useVolumeStore();
+  const { replaceMyLocationMarker } = useNavigationMessenger();
 
   const handleCloseFinishModalPress = async () => {
     if (!prevUserInfo) {
@@ -59,6 +61,7 @@ const NavigationFinishModal = ({
       resetMeasures();
       resetRouteData();
       resetSearchData();
+      replaceMyLocationMarker(false);
 
       const finishTtsKey = 'navigation_finish_modal_tts_finish_navigation';
       const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
@@ -85,6 +88,7 @@ const NavigationFinishModal = ({
       resetMeasures();
       resetRouteData();
       resetSearchData();
+      replaceMyLocationMarker(false);
 
       const finishTtsKey = 'navigation_finish_modal_tts_finish_navigation';
       const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
@@ -97,6 +101,7 @@ const NavigationFinishModal = ({
       resetMeasures();
       resetRouteData();
       resetSearchData();
+      replaceMyLocationMarker(false);
 
       const finishTtsKey = 'navigation_finish_modal_tts_finish_navigation';
       const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
