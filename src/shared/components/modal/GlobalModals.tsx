@@ -95,6 +95,7 @@ const GlobalModals = () => {
     traveledDistanceMeter,
     totalCaloriesBurned,
     totalCarbonSaved,
+    sessionId,
     resetAlldata,
   } = useNavigationStore(
     useShallow(state => ({
@@ -102,6 +103,7 @@ const GlobalModals = () => {
       traveledDistanceMeter: state.traveledDistanceMeter,
       totalCaloriesBurned: state.totalCaloriesBurned,
       totalCarbonSaved: state.totalCarbonSaved,
+      sessionId: state.sessionId,
       resetAlldata: state.resetAllData,
     })),
   );
@@ -210,6 +212,7 @@ const GlobalModals = () => {
           seconds={seconds}
           traveledDistanceMeter={traveledDistanceMeter}
           resetNavigationData={resetAlldata}
+          sessionId={sessionId}
         />
       )}
 
@@ -223,6 +226,7 @@ const GlobalModals = () => {
           seconds={seconds}
           traveledDistanceMeter={traveledDistanceMeter}
           resetNavigationData={resetAlldata}
+          sessionId={sessionId}
         />
       )}
     </>

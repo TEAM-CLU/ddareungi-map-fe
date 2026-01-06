@@ -93,10 +93,17 @@ export const useNavigationOrchestrator = () => {
   const [remainingDistanceMeter, setRemainingDistance] = useState<
     number | undefined | null
   >(null);
-  const { traveledDistanceMeter, setTraveledDistance } = useNavigationStore(
+  const {
+    traveledDistanceMeter,
+    setTraveledDistance,
+    sessionId,
+    setSessionId,
+  } = useNavigationStore(
     useShallow(state => ({
       traveledDistanceMeter: state.traveledDistanceMeter,
       setTraveledDistance: state.setTraveledDistanceMeter,
+      sessionId: state.sessionId,
+      setSessionId: state.setSessionId,
     })),
   );
   const currentTtsUrl = useRef<string | null>(null);
@@ -142,9 +149,6 @@ export const useNavigationOrchestrator = () => {
     })),
   );
 
-  // 네비게이션 세션 업데이트용
-  const sessionId = useRef<string | null>(null);
-
   // 네비게이션 디테일 모달 계산용
   const { setTotalIntervals, setCurrentIntervalIndex } =
     useNavigationDetailModalStore(
@@ -163,7 +167,7 @@ export const useNavigationOrchestrator = () => {
       pathDataListByInterval.current = [];
       instructionList.current = [];
       fullPathCoordinateList.current = [];
-      sessionId.current = null;
+      setSessionId(null);
       setCurrentInstruction(null);
       nextTurnCoordinate.current = null;
       currentIntervalIndex.current = 0;
@@ -176,7 +180,7 @@ export const useNavigationOrchestrator = () => {
 
         const response: StartNavigationSessionResponse =
           await startNavigationSession(payload);
-        sessionId.current = response.data.sessionId;
+        setSessionId(response.data.sessionId);
         fullPathCoordinateList.current = response.data.coordinates;
         instructionList.current = response.data.instructions;
         currentTtsUrl.current =
@@ -592,11 +596,11 @@ export const useNavigationOrchestrator = () => {
 
   // 세션 유지
   useEffect(() => {
-    if (!isNavigationMode || !sessionId.current) return;
+    if (!isNavigationMode || !sessionId) return;
     const keepSessionAlive = async () => {
       try {
         const payload: keepNavigationSessionAlivePayload = {
-          sessionId: sessionId.current!,
+          sessionId: sessionId,
         };
 
         await keepNavigationSessionAlive(payload);

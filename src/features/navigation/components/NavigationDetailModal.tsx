@@ -1,4 +1,5 @@
 import IntervalProgressBar from '@/features/navigation/components/IntervalProgressBar';
+import { useTerminateNavigationSessionMutation } from '@/features/navigation/services/navigation.queries';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import CalorieBadge from '@/shared/components/badge/CalorieBadge';

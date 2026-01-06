@@ -8,6 +8,9 @@ interface NavigationState {
   routeId: string | null;
   setRouteId: (routeId: string | null) => void;
 
+  sessionId: string | null;
+  setSessionId: (sessionId: string | null) => void;
+
   totalCaloriesBurned: number;
   totalCarbonSaved: number;
 
@@ -32,6 +35,7 @@ export const useNavigationStore = create<NavigationState>()(
     set => ({
       isNavigationMode: false,
       routeId: null,
+      sessionId: null,
       totalCaloriesBurned: 0,
       totalCarbonSaved: 0,
       traveledDistanceMeter: null,
@@ -42,6 +46,9 @@ export const useNavigationStore = create<NavigationState>()(
 
       setRouteId: (routeId: string | null) =>
         set({ routeId }, false, 'navigation/setRouteId'),
+
+      setSessionId: (sessionId: string | null) =>
+        set({ sessionId }, false, 'navigation/setSessionId'),
 
       setIsNavigationMode: (isNavigationMode: boolean) =>
         set({ isNavigationMode }, false, 'navigation/setIsNavigationMode'),
@@ -93,6 +100,7 @@ export const useNavigationStore = create<NavigationState>()(
           {
             isNavigationMode: false,
             routeId: null,
+            sessionId: null,
             totalCaloriesBurned: 0,
             totalCarbonSaved: 0,
             traveledDistanceMeter: null,

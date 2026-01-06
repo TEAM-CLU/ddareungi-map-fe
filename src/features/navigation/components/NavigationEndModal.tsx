@@ -6,6 +6,7 @@ import {
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import { TTS_URL_PRESET } from '@/features/navigation/model/navigation.constants';
 import { globalTtsState } from '@/features/navigation/model/navigation.data';
+import { useTerminateNavigationSessionMutation } from '@/features/navigation/services/navigation.queries';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { playTts } from '@/features/navigation/utils/playTts';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
@@ -19,6 +20,7 @@ import {
   formatTimeWithSeconds,
 } from '@/shared/utils/formatting';
 import { convertToTrees } from '@/shared/utils/measure';
+import { useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 
@@ -30,6 +32,7 @@ interface NavigationEndModalProps {
   seconds: number;
   traveledDistanceMeter: number | undefined | null;
   resetNavigationData: () => void;
+  sessionId: string | null;
 }
 
 const NavigationEndModal = ({
@@ -40,13 +43,32 @@ const NavigationEndModal = ({
   seconds,
   traveledDistanceMeter,
   resetNavigationData,
+  sessionId,
 }: NavigationEndModalProps) => {
   const { data: prevUserInfo, isLoading } = useUserInfoQuery();
   const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
+  const { mutateAsync: terminateNavigationSession } =
+    useTerminateNavigationSessionMutation();
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
   const { systemVolume } = useVolumeStore();
   const { replaceMyLocationMarker } = useNavigationMessenger();
+
+  useEffect(() => {
+    const terminateNavigation = async () => {
+      const endTtsKey = 'navigation_end_modal_tts_end_navigation';
+      const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
+      playTts(endTtsKey, endTtsUrl, systemVolume);
+      if (sessionId === null || sessionId === '') return;
+      try {
+        const payload = {
+          sessionId: sessionId,
+        };
+        await terminateNavigationSession(payload);
+      } catch (error) {}
+    };
+    terminateNavigation();
+  }, []);
 
   const handleCloseEndModalPress = async () => {
     if (!prevUserInfo) {
@@ -55,10 +77,6 @@ const NavigationEndModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
-
-      const endTtsKey = 'navigation_end_modal_tts_end_navigation';
-      const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
-      playTts(endTtsKey, endTtsUrl, systemVolume);
       globalTtsState.lastPlayedKey = '';
       return;
     }
@@ -82,10 +100,6 @@ const NavigationEndModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
-
-      const endTtsKey = 'navigation_end_modal_tts_end_navigation';
-      const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
-      playTts(endTtsKey, endTtsUrl, systemVolume);
       globalTtsState.lastPlayedKey = '';
     } catch (error) {
       console.error('Failed to update user stats:', error);
@@ -95,10 +109,6 @@ const NavigationEndModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
-
-      const endTtsKey = 'navigation_end_modal_tts_end_navigation';
-      const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
-      playTts(endTtsKey, endTtsUrl, systemVolume);
       globalTtsState.lastPlayedKey = '';
     }
   };
