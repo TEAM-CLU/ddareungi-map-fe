@@ -3,6 +3,10 @@ import {
   useUpdateUserStatsMutation,
   useUserInfoQuery,
 } from '@/features/auth/services/user.queries';
+import { TTS_URL_PRESET } from '@/features/navigation/model/navigation.constants';
+import { globalTtsState } from '@/features/navigation/model/navigation.data';
+import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
+import { playTts } from '@/features/navigation/utils/playTts';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { IconClose } from '@/shared/components/icons';
@@ -41,6 +45,7 @@ const NavigationEndModal = ({
   const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
+  const { systemVolume } = useVolumeStore();
 
   const handleCloseEndModalPress = async () => {
     if (!prevUserInfo) {
@@ -48,6 +53,11 @@ const NavigationEndModal = ({
       resetMeasures();
       resetRouteData();
       resetSearchData();
+
+      const endTtsKey = 'navigation_end_modal_tts_end_navigation';
+      const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
+      playTts(endTtsKey, endTtsUrl, systemVolume);
+      globalTtsState.lastPlayedKey = '';
       return;
     }
 
@@ -69,6 +79,11 @@ const NavigationEndModal = ({
       resetMeasures();
       resetRouteData();
       resetSearchData();
+
+      const endTtsKey = 'navigation_end_modal_tts_end_navigation';
+      const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
+      playTts(endTtsKey, endTtsUrl, systemVolume);
+      globalTtsState.lastPlayedKey = '';
     } catch (error) {
       console.error('Failed to update user stats:', error);
     } finally {
@@ -76,6 +91,11 @@ const NavigationEndModal = ({
       resetMeasures();
       resetRouteData();
       resetSearchData();
+
+      const endTtsKey = 'navigation_end_modal_tts_end_navigation';
+      const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
+      playTts(endTtsKey, endTtsUrl, systemVolume);
+      globalTtsState.lastPlayedKey = '';
     }
   };
 

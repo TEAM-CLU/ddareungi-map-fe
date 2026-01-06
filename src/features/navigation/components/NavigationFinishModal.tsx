@@ -7,7 +7,11 @@ import {
   useUpdateUserStatsMutation,
   useUserInfoQuery,
 } from '@/features/auth/services/user.queries';
+import { TTS_URL_PRESET } from '@/features/navigation/model/navigation.constants';
+import { globalTtsState } from '@/features/navigation/model/navigation.data';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
+import { playTts } from '@/features/navigation/utils/playTts';
 import { useRouteSelect } from '@/features/routing/hooks/useRouteSelect';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
@@ -47,6 +51,7 @@ const NavigationFinishModal = ({
   const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
+  const { systemVolume } = useVolumeStore();
 
   const handleCloseFinishModalPress = async () => {
     if (!prevUserInfo) {
@@ -54,6 +59,11 @@ const NavigationFinishModal = ({
       resetMeasures();
       resetRouteData();
       resetSearchData();
+
+      const finishTtsKey = 'navigation_finish_modal_tts_finish_navigation';
+      const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
+      playTts(finishTtsKey, finishTtsUrl, systemVolume);
+      globalTtsState.lastPlayedKey = '';
       return;
     }
 
@@ -75,6 +85,11 @@ const NavigationFinishModal = ({
       resetMeasures();
       resetRouteData();
       resetSearchData();
+
+      const finishTtsKey = 'navigation_finish_modal_tts_finish_navigation';
+      const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
+      playTts(finishTtsKey, finishTtsUrl, systemVolume);
+      globalTtsState.lastPlayedKey = '';
     } catch (error) {
       console.error('Failed to update user stats:', error);
     } finally {
@@ -82,6 +97,11 @@ const NavigationFinishModal = ({
       resetMeasures();
       resetRouteData();
       resetSearchData();
+
+      const finishTtsKey = 'navigation_finish_modal_tts_finish_navigation';
+      const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
+      playTts(finishTtsKey, finishTtsUrl, systemVolume);
+      globalTtsState.lastPlayedKey = '';
     }
   };
 
