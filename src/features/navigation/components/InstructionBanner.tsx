@@ -82,7 +82,7 @@ const InstructionBanner = ({
     // interval 변경 시
     if (currentIntervalIndex === prevIntervalIndexRef.current) return;
     playInstruction();
-  }, [currentIntervalIndex, currentTtsUrl, systemVolume]);
+  }, [currentIntervalIndex, currentTtsUrl]);
 
   // 인터벌 내 남은 거리 계산
   useEffect(() => {

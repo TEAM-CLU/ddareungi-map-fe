@@ -16,11 +16,10 @@ import { tw } from '@/shared/libs/tw-helper';
 import {
   formatCalories,
   formatDistanceAdaptive,
-  formatTime,
   formatTimeWithSeconds,
 } from '@/shared/utils/formatting';
 import { convertToTrees } from '@/shared/utils/measure';
-import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 
 interface NavigationEndModalProps {
@@ -30,7 +29,7 @@ interface NavigationEndModalProps {
   totalCarbonSaved: number;
   seconds: number;
   traveledDistanceMeter: number | undefined | null;
-  resetMeasures: () => void;
+  resetNavigationData: () => void;
 }
 
 const NavigationEndModal = ({
@@ -40,7 +39,7 @@ const NavigationEndModal = ({
   totalCarbonSaved,
   seconds,
   traveledDistanceMeter,
-  resetMeasures,
+  resetNavigationData,
 }: NavigationEndModalProps) => {
   const { data: prevUserInfo, isLoading } = useUserInfoQuery();
   const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
@@ -52,7 +51,7 @@ const NavigationEndModal = ({
   const handleCloseEndModalPress = async () => {
     if (!prevUserInfo) {
       setShowNavigationEndModal(false);
-      resetMeasures();
+      resetNavigationData();
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
@@ -79,7 +78,7 @@ const NavigationEndModal = ({
 
       await updateUserUsageInfo(payload);
       setShowNavigationEndModal(false);
-      resetMeasures();
+      resetNavigationData();
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
@@ -92,7 +91,7 @@ const NavigationEndModal = ({
       console.error('Failed to update user stats:', error);
     } finally {
       setShowNavigationEndModal(false);
-      resetMeasures();
+      resetNavigationData();
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);

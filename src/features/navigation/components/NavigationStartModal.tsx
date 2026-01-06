@@ -4,7 +4,7 @@ import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 
 interface NavigationStartModalProps {
-  modalRef: React.RefObject<Modal>;
+  modalRef: React.RefObject<Modal | null>;
   setShowNavigationStartModal: (show: boolean) => void;
 }
 

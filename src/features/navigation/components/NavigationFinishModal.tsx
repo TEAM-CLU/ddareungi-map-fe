@@ -36,7 +36,7 @@ interface NavigationFinishModalProps {
   totalCarbonSaved: number;
   seconds: number;
   traveledDistanceMeter: number | undefined | null;
-  resetMeasures: () => void;
+  resetNavigationData: () => void;
 }
 
 const NavigationFinishModal = ({
@@ -46,7 +46,7 @@ const NavigationFinishModal = ({
   totalCarbonSaved,
   seconds,
   traveledDistanceMeter,
-  resetMeasures,
+  resetNavigationData,
 }: NavigationFinishModalProps) => {
   const { data: prevUserInfo, isLoading } = useUserInfoQuery();
   const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
@@ -58,7 +58,7 @@ const NavigationFinishModal = ({
   const handleCloseFinishModalPress = async () => {
     if (!prevUserInfo) {
       setShowNavigationFinishModal(false);
-      resetMeasures();
+      resetNavigationData();
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
@@ -85,7 +85,7 @@ const NavigationFinishModal = ({
 
       await updateUserUsageInfo(payload);
       setShowNavigationFinishModal(false);
-      resetMeasures();
+      resetNavigationData();
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
@@ -98,7 +98,7 @@ const NavigationFinishModal = ({
       console.error('Failed to update user stats:', error);
     } finally {
       setShowNavigationFinishModal(false);
-      resetMeasures();
+      resetNavigationData();
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);

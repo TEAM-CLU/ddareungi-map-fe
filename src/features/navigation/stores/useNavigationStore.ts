@@ -24,7 +24,7 @@ interface NavigationState {
   addCarbonSaved: (delta: number) => void;
   addSeconds: (delta: number) => void;
 
-  resetMeasures: () => void;
+  resetAllData: () => void;
 }
 
 export const useNavigationStore = create<NavigationState>()(
@@ -81,23 +81,25 @@ export const useNavigationStore = create<NavigationState>()(
           'navigation/addSeconds',
         ),
 
-      resetMeasures: () =>
-        set(
-          {
-            totalCaloriesBurned: 0,
-            totalCarbonSaved: 0,
-            seconds: 0,
-            traveledDistanceMeter: null,
-          },
-          false,
-          'navigation/resetMeasures',
-        ),
-
       setTraveledDistanceMeter: (distance: number | undefined | null) =>
         set(
           { traveledDistanceMeter: distance },
           false,
           'navigation/setTraveledDistanceMeter',
+        ),
+
+      resetAllData: () =>
+        set(
+          {
+            isNavigationMode: false,
+            routeId: null,
+            totalCaloriesBurned: 0,
+            totalCarbonSaved: 0,
+            traveledDistanceMeter: null,
+            seconds: 0,
+          },
+          false,
+          'navigation/resetAllData',
         ),
     }),
     { name: 'navigation' },

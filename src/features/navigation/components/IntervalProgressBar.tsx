@@ -27,11 +27,11 @@ const IntervalProgressBar = ({
   );
 
   return (
-    <View style={[tw('flex flex-col w-full'), { gap: 30 }]}>
+    <View style={[tw('flex flex-col w-full'), { gap: 15 }]}>
       <Text
         style={[
           tw('font-primary-600 text-on-surface-primary text-left'),
-          { fontSize: 13 },
+          { fontSize: 15 },
         ]}
       >
         경로 구간 진행률
@@ -42,10 +42,10 @@ const IntervalProgressBar = ({
           <Text
             style={[
               tw('text-brand-primary font-primary-600'),
-              { fontSize: 13 },
+              { fontSize: 13, color: '#006AFF' },
             ]}
           >
-            START
+            출발
           </Text>
 
           {/* Progress Bar */}
@@ -78,13 +78,20 @@ const IntervalProgressBar = ({
             })}
           </View>
 
-          <IconFinishLine width={22} height={22} />
+          <Text
+            style={[
+              tw('text-brand-primary font-primary-600'),
+              { fontSize: 13, color: '#FF0000' },
+            ]}
+          >
+            도착
+          </Text>
         </View>
         {/* 인덱스 표시 */}
         <Text
           style={[
             tw('text-on-surface-primary font-primary-600 text-center'),
-            { fontSize: 12 },
+            { fontSize: 13 },
           ]}
         >
           {safeCurrentIndex + 1}/{totalIntervals}

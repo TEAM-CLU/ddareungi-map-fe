@@ -26,14 +26,12 @@ const NavigationDetailModal = ({
   currentIntervalIndex,
   totalIntervals,
 }: NavigationDetailModalProps) => {
-  const { totalCaloriesBurned, totalCarbonSaved, setIsNavigationMode } =
-    useNavigationStore(
-      useShallow(state => ({
-        totalCaloriesBurned: state.totalCaloriesBurned,
-        totalCarbonSaved: state.totalCarbonSaved,
-        setIsNavigationMode: state.setIsNavigationMode,
-      })),
-    );
+  const { totalCaloriesBurned, totalCarbonSaved } = useNavigationStore(
+    useShallow(state => ({
+      totalCaloriesBurned: state.totalCaloriesBurned,
+      totalCarbonSaved: state.totalCarbonSaved,
+    })),
+  );
 
   const { systemVolume, setSystemVolume } = useVolumeStore(
     useShallow(state => ({
@@ -72,7 +70,6 @@ const NavigationDetailModal = ({
   };
 
   const handleEndNavigationPress = () => {
-    setIsNavigationMode(false);
     setShowNavigationDetailModal(false);
     setShowNavigationEndModal(true);
   };
@@ -101,11 +98,11 @@ const NavigationDetailModal = ({
       <View
         style={[tw('w-full flex flex-col grow justify-start'), { gap: 35 }]}
       >
-        <View style={[tw('flex flex-col w-full'), { gap: 30 }]}>
+        <View style={[tw('flex flex-col w-full mt-3'), { gap: 15 }]}>
           <Text
             style={[
               tw('font-primary-600 text-on-surface-primary text-left'),
-              { fontSize: 13 },
+              { fontSize: 15 },
             ]}
           >
             현재 칼로리 소모량 / 탄소 저감량
@@ -127,18 +124,18 @@ const NavigationDetailModal = ({
           <Text
             style={[
               tw('font-primary-600 text-on-surface-primary text-left'),
-              { fontSize: 13 },
+              { fontSize: 15 },
             ]}
           >
             진행 구간 정보가 없습니다.
           </Text>
         )}
         {/*  */}
-        <View style={[tw('flex flex-col w-full'), { gap: 30 }]}>
+        <View style={[tw('flex flex-col w-full'), { gap: 15 }]}>
           <Text
             style={[
               tw('font-primary-600 text-on-surface-primary text-left'),
-              { fontSize: 13 },
+              { fontSize: 15 },
             ]}
           >
             시스템 음성크기
