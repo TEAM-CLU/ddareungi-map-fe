@@ -21,10 +21,10 @@ import { useLogoutMutation } from '@/features/auth/services/auth.queries';
 import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
 
 const EditProfile = ({ onBack }: { onBack: () => void }) => {
-  const { data: user, isLoading } = useUserInfoQuery();
-  const { mutateAsync: updateUser } = useUpdateUserInfoMutation();
-  const { mutateAsync: logout } = useLogoutMutation();
-  const { mutateAsync: deleteUser } = useDeleteUserMutation();
+  const { data: user, isPending } = useUserInfoQuery();
+  const { mutate: updateUser } = useUpdateUserInfoMutation();
+  const { mutate: logout } = useLogoutMutation();
+  const { mutate: deleteUser } = useDeleteUserMutation();
 
   const [name, setName] = useState('');
   const [year, setYear] = useState<number | null>(null);
@@ -91,7 +91,7 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
 
   const isFormReady = isValidName && isValidGender && isValidBirthDate;
 
-  const handleSavePress = async () => {
+  const handleSavePress = () => {
     if (!isFormReady) {
       Alert.alert('필수 항목을 입력해주세요.');
       return;
@@ -108,22 +108,11 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
         consentedAt ?? user?.data.consentedAt ?? new Date().toISOString(),
     };
 
-    try {
-      const res = await updateUser(updatedData);
-      Alert.alert('수정 완료', res?.message || '정보가 수정되었습니다.', [
-        {
-          text: '확인',
-          onPress: () => onBack(),
-        },
-      ]);
-    } catch (error: any) {
-      Alert.alert(
-        '수정 실패',
-        error.response?.data?.message ||
-          error.message ||
-          '수정 중 오류가 발생했습니다.',
-      );
-    }
+    updateUser(updatedData, {
+      onError: error => {
+        Alert.alert('오류', error.message);
+      },
+    });
   };
 
   const handleLogoutPress = () => {
@@ -135,16 +124,7 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
         {
           text: '확인',
           style: 'destructive',
-          onPress: () => {
-            logout(undefined, {
-              onSuccess: res => {
-                Alert.alert(res.message);
-              },
-              onError: () => {
-                Alert.alert('로그아웃 중 오류가 발생했습니다.');
-              },
-            });
-          },
+          onPress: () => logout(),
         },
       ],
       { cancelable: true },
@@ -160,22 +140,18 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
         {
           text: '확인',
           style: 'destructive',
-          onPress: () => {
-            deleteUser()
-              .then(res => {
-                Alert.alert(res.message);
-              })
-              .catch(() => {
-                Alert.alert('회원탈퇴 중 오류가 발생했습니다.');
-              });
-          },
+          onPress: () => deleteUser(undefined, {
+            onError: error => {
+              Alert.alert('오류', error.message);
+            },
+          }),
         },
       ],
       { cancelable: true },
     );
   };
 
-  if (isLoading) return <SimpleLoading title="" />;
+  if (isPending) return <SimpleLoading title="" />;
 
   return (
     <SafeAreaView style={tw('flex-1 bg-surface-secondary pt-6')}>

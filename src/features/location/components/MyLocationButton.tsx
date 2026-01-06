@@ -4,7 +4,6 @@ import { useNavigationStore } from '@/features/navigation/stores/useNavigationSt
 import IconLocatorMark from '@/shared/components/icons/IconLocatorMark';
 import { tw } from '@/shared/libs/tw-helper';
 import { useEffect } from 'react';
-
 import { TouchableOpacity } from 'react-native';
 
 const MyLocationButton = () => {

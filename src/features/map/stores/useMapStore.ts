@@ -1,4 +1,3 @@
-// src/shared/stores/useMapStore.ts
 import React from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';

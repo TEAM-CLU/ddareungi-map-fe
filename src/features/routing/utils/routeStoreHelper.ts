@@ -29,6 +29,5 @@ export const getDefaultWaypoints = (routeType: RouteType): Waypoint[] =>
  */
 export const withRouteInvalidation = (updates: Partial<RouteState>) => ({
   ...updates,
-  routes: null,
-  routeSearchError: null,
+  selectedRouteData: null,
 });

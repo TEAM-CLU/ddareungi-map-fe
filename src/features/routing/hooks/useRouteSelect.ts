@@ -2,6 +2,7 @@ import {
   RouteType,
   RoutePoint,
   Route,
+  FullJourneyPayload,
 } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
@@ -11,10 +12,13 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
+import { useFullJourneyMutation } from '../services/routing.queries';
 
 export const useRouteSelect = () => {
   const route = useAppRoute<'RouteSelect'>();
   const { navigation } = useAppNavigation();
+
+  const { mutate: searchRoutes, data: routes, isPending: isLoadingRoutes, error: routeSearchError } = useFullJourneyMutation();
 
   const {
     routeType,
@@ -38,10 +42,6 @@ export const useRouteSelect = () => {
     syncStartEndInLoopMode,
     isRouteComplete,
 
-    routes,
-    isLoadingRoutes,
-    routeSearchError,
-    searchRoutes,
     resetAllData,
   } = useRouteStore();
 
@@ -180,8 +180,30 @@ export const useRouteSelect = () => {
       return;
     }
 
-    searchRoutes();
-  }, [isRouteComplete, searchRoutes]);
+    if (!start || !end) return;
+
+    const filledWaypoints = waypoints
+    .filter(wp => wp.place?.latitude && wp.place?.longitude)
+    .map(wp => ({
+      lat: wp.place!.latitude!,
+      lng: wp.place!.longitude!,
+    }));
+
+    const payload: FullJourneyPayload = {
+      start: { lat: start.latitude, lng: start.longitude },
+      end: { lat: end.latitude, lng: end.longitude },
+      waypoints: filledWaypoints.length > 0 ? filledWaypoints : undefined,
+    };
+
+    searchRoutes(payload, {
+      onSuccess: data => {
+        console.log('경로 검색 성공:', data);
+      },
+      onError: error => {
+        Alert.alert('오류', error.message);
+      }
+    })
+  }, [isRouteComplete, start, end, waypoints, routeType, searchRoutes]);
 
   // 검색된 경로 클릭 핸들러
   const handleRouteItemPress = useCallback(
@@ -208,17 +230,15 @@ export const useRouteSelect = () => {
   );
 
   return {
-    routes,
-    isLoadingRoutes,
-    routeSearchError,
-
     baseTime,
     setBaseTime,
-
     handleRoutePointPress,
     handleAddNewWaypointAndEdit,
     handleRouteInputBarClose,
     handleRouteSearchConfirm,
     handleRouteItemPress,
+    routes,
+    isLoadingRoutes,
+    routeSearchError,
   };
 };

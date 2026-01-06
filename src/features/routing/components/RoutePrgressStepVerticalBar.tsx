@@ -1,7 +1,7 @@
 import IconBicycle from '@/shared/components/icons/IconBicycle';
 import IconRun from '@/shared/components/icons/IconRun';
 import { tw } from '@/shared/libs/tw-helper';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 const RouteProgressStepVerticalBar = () => {
   return (

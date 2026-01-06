@@ -3,15 +3,11 @@ import { devtools } from 'zustand/middleware';
 import {
   RoutePoint,
   RouteType,
-  FullJourneyPayload,
-  CircularJourneyPayload,
   Route,
   RouteState,
   Waypoint,
   RouteItem,
 } from '../model/routing.types';
-import { postFullJourney, postCircularJourney } from '../services/routing.api';
-import { Alert } from 'react-native';
 import {
   createEmptyWaypoint,
   getDefaultWaypoints,
@@ -38,11 +34,7 @@ export const useRouteStore = create<RouteState>()(
       showSelectedRouteDetailModal: false,
       currentSelectedPoint: null,
       currentFieldType: null,
-
-      routes: null,
       selectedRouteData: null,
-      isLoadingRoutes: false,
-      routeSearchError: null,
 
       // ----------- 액션 -----------
 
@@ -229,7 +221,6 @@ export const useRouteStore = create<RouteState>()(
       경유지 순서 변경
       */
       /** ⛳ 핵심: 드래그 후 전체 waypoints 재정렬 적용 */
-      /** ⛳ 핵심: 드래그 후 전체 waypoints 재정렬 적용 */
       reorderWaypoints: newWaypoints =>
         set(
           withRouteInvalidation({
@@ -260,8 +251,6 @@ export const useRouteStore = create<RouteState>()(
             start: null,
             end: null,
             waypoints: getDefaultWaypoints(state.routeType),
-            routes: null,
-            routeSearchError: null,
           }),
           false,
           'clearAllRoutes',
@@ -272,119 +261,6 @@ export const useRouteStore = create<RouteState>()(
 
       setCurrentFieldType: (type: 'start' | 'end' | 'waypoint' | null) =>
         set({ currentFieldType: type }, false, 'setCurrentFieldType'),
-
-      // ------------- API Actions -------------
-
-      searchRoutes: async () => {
-        const { start, end, waypoints } = get();
-
-        set(
-          { isLoadingRoutes: true, routeSearchError: null },
-          false,
-          'searchRoutes-start',
-        );
-
-        try {
-          // 1. 필수 데이터 검증
-          if (!start || !end) {
-            throw new Error('출발지와 도착지를 모두 설정해주세요.');
-          }
-
-          if (
-            !start.latitude ||
-            !start.longitude ||
-            !end.latitude ||
-            !end.longitude
-          ) {
-            throw new Error('출발지 또는 도착지의 좌표 정보가 없습니다.');
-          }
-
-          // 2. 유효한 경유지 필터링 및 가공
-          const filledWaypoints = waypoints
-            .filter(wp => wp.place?.latitude && wp.place?.longitude)
-            .map(wp => ({
-              lat: wp.place!.latitude!,
-              lng: wp.place!.longitude!,
-            }));
-
-          const payload: FullJourneyPayload = {
-            start: { lat: start.latitude, lng: start.longitude },
-            end: { lat: end.latitude, lng: end.longitude },
-            waypoints: filledWaypoints.length > 0 ? filledWaypoints : undefined,
-          };
-
-          // 3. API 호출
-          const response = await postFullJourney(payload);
-          set(
-            { routes: response, isLoadingRoutes: false },
-            false,
-            'searchRoutes-success',
-          );
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : '경로 검색 중 오류가 발생했습니다.';
-          Alert.alert('경로 검색 실패', errorMessage);
-          set(
-            { routeSearchError: errorMessage, isLoadingRoutes: false },
-            false,
-            'searchRoutes-error',
-          );
-        }
-      },
-
-      searchCircularRoutes: async () => {
-        const { start, distance } = get();
-        set(
-          { isLoadingRoutes: true, routeSearchError: null },
-          false,
-          'searchCircularRoutes-start',
-        );
-
-        try {
-          // 1. 필수 데이터 검증
-          if (!start?.latitude || !start?.longitude)
-            throw new Error('출발지 좌표가 필요합니다.');
-          if (!distance || distance <= 0)
-            throw new Error('이동 거리를 설정해주세요.');
-
-          // 2. 페이로드 구성
-          const payload: CircularJourneyPayload = {
-            start: {
-              lat: start.latitude,
-              lng: start.longitude,
-            },
-            targetDistance: distance * 1000, // km를 m로 변환
-          };
-
-          // 3. API 호출
-          const response = await postCircularJourney(payload);
-          set(
-            { routes: response, isLoadingRoutes: false },
-            false,
-            'searchCircularRoutes-success',
-          );
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : '원형 경로 검색 중 오류가 발생했습니다.';
-          Alert.alert('원형 경로 검색 실패', errorMessage);
-          set(
-            { routeSearchError: errorMessage, isLoadingRoutes: false },
-            false,
-            'searchCircularRoutes-error',
-          );
-        }
-      },
-
-      resetRouteSearch: () =>
-        set(
-          { routes: null, routeSearchError: null },
-          false,
-          'resetRouteSearch',
-        ),
 
       // ----------- 활동 관련 데이터 설정 -------------
 
@@ -402,8 +278,6 @@ export const useRouteStore = create<RouteState>()(
           {
             start: newPlace,
             end: newPlace,
-            routes: null,
-            routeSearchError: null,
           },
           false,
           'syncStartEndInLoopMode',
@@ -419,10 +293,8 @@ export const useRouteStore = create<RouteState>()(
             waypoints:
               routeType === RouteType.LOOP ? [createEmptyWaypoint(0)] : [],
             distance: null,
-            routes: null,
             totalCaloriesBurned: null,
             totalTrees: null,
-            routeSearchError: null,
             currentSelectedPoint: null,
             currentFieldType: null,
             selectedRouteData: null,

@@ -16,10 +16,10 @@ export const hasLocationPermission = async () => {
 export const requestLocationPermission = async () => {
   try {
     // 1. 먼저 현재 상태 확인
-
     if (await hasLocationPermission()) {
       return true;
     }
+    
     // 2. 권한 요청
     const result = await request(permission);
 

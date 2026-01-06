@@ -28,8 +28,8 @@ export type RouteData = { [key: string]: AutocompleteResult };
 
 /********** API 타입 **********/
 export interface Coordinate {
-  lat: number;
-  lng: number;
+  lat: number | undefined;
+  lng: number | undefined;
 }
 
 // 경로 요약 (전체 요약 정보)
@@ -164,10 +164,10 @@ export interface RouteState {
   prevScreen: 'RouteSelect' | 'RouteRecommend' | null; // 이전 화면 정보 판정을 통한 뒤로가기 버튼 누를시 돌아갈 화면 지정
 
   // --- [API State] 비동기 통신 상태 ---
-  routes: RouteResponse | null; // 서버로부터 받은 검색된 경로 결과
+  // routes: RouteResponse | null; // 서버로부터 받은 검색된 경로 결과
   selectedRouteData: Route | null; // 사용자가 선택한 경로 데이터
-  isLoadingRoutes: boolean; // 로딩 중 여부
-  routeSearchError: string | null; // 에러 메시지
+  // isLoadingRoutes: boolean; // 로딩 중 여부
+  // routeSearchError: string | null; // 에러 메시지
 
   // --- [Basic Actions] 기본 설정 액션 ---
   setRouteType: (type: RouteType) => void;

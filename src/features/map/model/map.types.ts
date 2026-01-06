@@ -5,7 +5,6 @@ export interface Coordinates {
 }
 
 // 방향
-
 export interface CompassHeadingData {
   heading: number; // 0~360
   accuracy?: number;

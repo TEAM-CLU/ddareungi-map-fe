@@ -9,7 +9,6 @@ import { useMapStore } from '@/features/map/stores/useMapStore';
 
 const RouteRecommendModal = () => {
   const { distance, setDistance } = useRouteStore();
-
   const { setShowRouteRecommendModal } = useModalStore();
   const { globalNavigation } = useMapStore();
 

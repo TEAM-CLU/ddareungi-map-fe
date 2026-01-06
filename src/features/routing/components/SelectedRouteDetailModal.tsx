@@ -1,7 +1,6 @@
 import { ActivityIndicator, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import CalorieBadge from '@/shared/components/badge/CalorieBadge';
-import TreeBadge from '@/shared/components/badge/TreeBadge';
+import { CalorieBadge, TreeBadge } from '@/shared/components/badge';
 import { IconSpotMarker } from '@/shared/components/icons';
 import { ScrollView } from 'react-native-gesture-handler';
 import RouteProgressStepVerticalBar from '@/features/routing/components/RoutePrgressStepVerticalBar';

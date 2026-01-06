@@ -32,7 +32,7 @@ const Map = ({
   });
 
   const { handleBookmarkMarkerClick } = useBookmark({ isMapReady });
-  const _hasHydrated = useBookmarkStore(state => state._hasHydrated);
+  // const _hasHydrated = useBookmarkStore(state => state._hasHydrated);
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     handleMapReadyMessage(event);
