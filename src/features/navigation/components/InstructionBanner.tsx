@@ -8,7 +8,6 @@ import {
   TTS_URL_PRESET,
 } from '@/features/navigation/model/navigation.constants';
 import { tw } from '@/shared/libs/tw-helper';
-import TrackPlayer from 'react-native-track-player';
 import { globalTtsState } from '@/features/navigation/model/navigation.data';
 import { IntervalPathData } from '@/features/navigation/model/navigation.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
@@ -20,7 +19,7 @@ import { playTts } from '@/features/navigation/utils/playTts';
 interface InstructionBannerProps {
   pathDataListByInterval: IntervalPathData[];
   currentIntervalIndex: number;
-  instructionText: string;
+  currentInstructionText: string;
   currentTtsUrl: string | null;
   sign: number;
 }
@@ -28,19 +27,22 @@ interface InstructionBannerProps {
 const InstructionBanner = ({
   pathDataListByInterval,
   currentIntervalIndex,
-  instructionText,
+  currentInstructionText,
   currentTtsUrl,
   sign,
 }: InstructionBannerProps) => {
   const myPosition = useMyPositionStore(state => state.myPosition);
   const instructionLines = React.useMemo(() => {
-    const words = (instructionText ?? '').trim().split(/\s+/).filter(Boolean);
+    const words = (currentInstructionText ?? '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
     const result: string[] = [];
     for (let i = 0; i < words.length; i += 3) {
       result.push(words.slice(i, i + 3).join(' '));
     }
     return result;
-  }, [instructionText, sign]);
+  }, [currentInstructionText, sign]);
   const systemVolume = useVolumeStore(state => state.systemVolume);
   const prevIntervalIndexRef = useRef<number>(-1);
   const prevRemainingDistanceRef = useRef<number | null>(null);
@@ -50,6 +52,19 @@ const InstructionBanner = ({
 
   const { FALLBACK_TTS_URL, START_TTS_URL, END_TTS_URL } = TTS_URL_PRESET;
   const hasPlayedStartTtsRef = useRef(false);
+
+  // 인터벌 갱신시 거리계산 값 초기화
+  useEffect(() => {
+    if (
+      pathDataListByInterval.length === 0 ||
+      currentIntervalIndex === prevIntervalIndexRef.current
+    )
+      return;
+
+    prevRemainingDistanceRef.current = null;
+    passCountRef.current = 0;
+    setCurrentRemainingDistanceMeter(null);
+  }, [currentIntervalIndex]);
 
   // TTS 재생 처리
   useEffect(() => {
@@ -122,11 +137,25 @@ const InstructionBanner = ({
       onPress={handleInstructionBannerPress}
       style={[
         tw(
-          'w-full flex flex-row items-center px-1 py-2 bg-brand-primary justify-start',
+          'w-full flex flex-row items-center px-1 py-2 bg-brand-primary justify-start relative',
         ),
         { borderRadius: 20, maxWidth: 348, height: 80, gap: 1 },
       ]}
     >
+      <View
+        style={tw(
+          'flex justify-center h-5 w-5 items-center px-2 bg-surface-primary rounded-full absolute right-2 top-1',
+        )}
+      >
+        <Text
+          style={[
+            tw('font-primary-600 text-on-surface-primary'),
+            { fontSize: 13 },
+          ]}
+        >
+          {currentIntervalIndex + 1}
+        </Text>
+      </View>
       <View
         style={[(tw('flex flex-col justify-center items-center'), { gap: 2 })]}
       >
