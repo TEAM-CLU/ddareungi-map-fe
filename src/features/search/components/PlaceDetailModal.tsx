@@ -19,30 +19,30 @@ import {
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
-import { AutocompleteResult } from '../model/search.types';
 import { getDistanceText } from '@/shared/utils/formatting';
 import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
 import StarToggle from '@/shared/components/bookmark/StarToggle';
 import { BookmarkItem } from '@/shared/model/index.types';
+import { PlaceInfo } from '../model/search.types';
 
 export interface PlaceDetailModalProps {
-  place: AutocompleteResult | null;
+  place: PlaceInfo | null;
   onClose?: () => void;
 }
 
 const createPlaceBookmark = (
-  place: AutocompleteResult,
+  place: PlaceInfo,
 ): BookmarkItem => {
   if (place.latitude == null || place.longitude == null) {
     throw new Error('장소의 좌표 정보가 없습니다.');
   }
 
-  if (!place.placeKey || !place.name) {
+  if (!place.placeId || !place.name) {
     throw new Error('장소의 필수 정보가 없습니다.');
   }
   
   return {
-    id: place.placeKey,
+    id: place.placeId,
     name: place.name,
     alias: place.name, // 별칭 기본값
     color: '#04C75B', // 색상 기본값
@@ -75,8 +75,8 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   const { myPosition } = useMyPositionStore();
   const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
   const bookmarked = useBookmarkStore(state =>
-    place.placeKey
-      ? state.bookmarks.some(item => item.id === place.placeKey)
+    place.placeId
+      ? state.bookmarks.some(item => item.id === place.placeId)
       : false,
   );
 
@@ -166,8 +166,8 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   const handleFirstButtonPress = () => {
     onClose?.(); // 모달 닫기
 
-    const placeData: AutocompleteResult = {
-      placeKey: `start-${Date.now()}`, // 출발지는 고유 ID
+    const placeData: PlaceInfo = {
+      placeId: `start-${Date.now()}`, // 출발지는 고유 ID
       name: place.name,
       address: place.address,
       latitude: place.latitude,
@@ -189,8 +189,8 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   const handleSecondButtonPress = () => {
     onClose?.(); // 모달 닫기
 
-    const placeData: AutocompleteResult = {
-      placeKey: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
+    const placeData: PlaceInfo = {
+      placeId: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
       name: place.name,
       address: place.address,
       latitude: place.latitude,

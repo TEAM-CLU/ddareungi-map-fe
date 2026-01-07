@@ -28,9 +28,9 @@ export interface KakaoSearchResponse {
   };
 }
 
-// 앱 내부 장소 정보 타입
+// 앱 내부 장소 정보 기준 타입
 export interface PlaceInfo {
-  id: string;
+  placeId: string;
   name: string;
   address: string;
   roadAddress?: string;
@@ -38,6 +38,12 @@ export interface PlaceInfo {
   longitude: number;
   category?: string;
   distance?: string;
+}
+
+// 최근 검색 기록
+// 기본 장소 정보에 'timestamp' 필드만 추가
+export interface RecentSearchItem extends PlaceInfo {
+  timestamp: number; // 저장된 시각
 }
 
 // 검색 옵션 타입
@@ -48,24 +54,4 @@ export interface SearchOptions {
   page?: number; // 페이지 번호 (1~45)
   size?: number; // 한 페이지에 보여질 문서의 개수 (1~15)
   sort?: 'distance' | 'accuracy'; // 정렬 방식
-}
-
-// 자동완성 검색 결과 타입
-export interface AutocompleteResult {
-  placeKey: string; // 장소 고유 ID
-  name: string; // 장소명 (예: 스타벅스 강남점)
-  address: string; // 주소 (예: 서울 강남구...)
-  latitude?: number; // 위도
-  longitude?: number; // 경도
-  distance?: string; // 현재 위치로부터의 거리 (m)
-  category?: string; // 장소 카테고리 (카페, 음식점 등)
-}
-
-export interface RecentSearchItem {
-  placeKey: string;
-  name: string;
-  address: string;
-  timestamp: number;
-  latitude?: number;
-  longitude?: number;
 }

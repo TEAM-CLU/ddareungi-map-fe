@@ -1,5 +1,5 @@
 import { RouteType } from '@/features/routing/model/routing.types';
-import { AutocompleteResult } from '@/features/search/model/search.types';
+import { PlaceInfo } from '@/features/search/model/search.types';
 
 export type RootStackParamList = {
   DevHub: undefined;
@@ -20,14 +20,14 @@ export type RootStackParamList = {
     | undefined;
   RouteSelect:
     | {
-        selectedPlace?: AutocompleteResult; // 선택된 장소 정보
+        selectedPlace?: PlaceInfo; // 선택된 장소 정보
         placeType?: string; // 채워질 위치
         routeType?: RouteType; // 루프/일반 여부
       }
     | undefined;
   RouteRecommend:
     | {
-        selectedPlace?: AutocompleteResult; // 선택된 장소 정보
+        selectedPlace?: PlaceInfo; // 선택된 장소 정보
         placeType?: string; // 채워질 위치 ('start')
       }
     | undefined;

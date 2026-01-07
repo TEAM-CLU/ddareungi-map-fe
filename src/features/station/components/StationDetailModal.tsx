@@ -15,8 +15,8 @@ import {
   Animated,
 } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
-import { AutocompleteResult } from '@/features/search/model/search.types';
 import { getDistanceText } from '@/shared/utils/formatting';
+import { PlaceInfo } from '@/features/search/model/search.types';
 
 interface StationDetailModalProps {
   onClose?: () => void;
@@ -62,8 +62,8 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
   const handleFirstButtonPress = () => {
     onClose?.(); // 모달 닫기
 
-    const placeData: AutocompleteResult = {
-      placeKey: `start-${Date.now()}`,
+    const placeData: PlaceInfo = {
+      placeId: `start-${Date.now()}`,
       name: stationMetaData!.name,
       address: stationMetaData!.address,
       latitude: stationMetaData!.latitude!,
@@ -84,8 +84,8 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
   const handleSecondButtonPress = () => {
     onClose?.(); // 모달 닫기
 
-    const placeData: AutocompleteResult = {
-      placeKey: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
+    const placeData: PlaceInfo = {
+      placeId: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
       name: stationMetaData!.name,
       address: stationMetaData!.address,
       latitude: stationMetaData!.latitude!,

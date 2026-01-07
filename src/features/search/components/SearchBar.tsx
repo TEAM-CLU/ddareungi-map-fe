@@ -1,4 +1,4 @@
-import { TouchableOpacity, View, Text, TextInput } from 'react-native';
+import { TouchableOpacity, View, TextInput } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import {
   IconBackArrow,

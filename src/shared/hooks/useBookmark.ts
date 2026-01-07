@@ -7,9 +7,9 @@ import {
 } from '../model/map.webview.types';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import { AutocompleteResult } from '@/features/search/model/search.types';
 import { useProvideWebviewMessenger } from './useProvideWebviewMessenger';
 import { Alert } from 'react-native';
+import { PlaceInfo } from '@/features/search/model/search.types';
 
 export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
   const { sendMessage } = useProvideWebviewMessenger();
@@ -44,8 +44,8 @@ export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
         return;
       }
       
-      const bookmarkInfoForModal: AutocompleteResult = {
-        placeKey: clickedBookmark.id,
+      const bookmarkInfoForModal: PlaceInfo = {
+        placeId: clickedBookmark.id,
         name: clickedBookmark.name,
         address: clickedBookmark.address,
         latitude: clickedBookmark.latitude,

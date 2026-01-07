@@ -13,15 +13,13 @@ import { useNetInfo } from '@react-native-community/netinfo';
 import { useIsFocused } from '@react-navigation/native';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { Alert, AppState } from 'react-native';
+import { AppState } from 'react-native';
 
 // 가장 가까운 대여소 3개 조회 - 버튼을 눌렀을 때만 조회
 export const useNearbyStationsMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: NearbyStationListPayload) =>
-      getNearbyStationList(payload),
+  return useMutation({
+    mutationFn: getNearbyStationList,
   });
-  return mutation;
 };
 
 // 지도 특정 영역 내 대여소 조회
@@ -67,9 +65,8 @@ export const useStationDataListQuery = (payload: MapAreaQueryPayload) => {
 
 // 대여소 재고 정보 조회
 export const useGetStationsLatestBikeCountMutation = () => {
-  const mutation = useMutation({
+  return useMutation({
     mutationFn: (payload: GetStationLatestBikeCountListPayload) =>
       postStationLatestBikeCountList(payload),
   });
-  return mutation;
 };

@@ -1,16 +1,16 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { AutocompleteResult } from '../model/search.types';
 import { TextInput } from 'react-native';
+import { PlaceInfo } from '../model/search.types';
 
 interface SearchState {
-  selectedPlaceInfoForModal: AutocompleteResult | null;
+  selectedPlaceInfoForModal: PlaceInfo | null;
   searchText: string;
   showSearchOverlay: boolean;
   isFocused: boolean;
   searchInputRef: React.RefObject<TextInput | null> | null;
   setShowSearchOverlay: (show: boolean) => void;
-  setSelectedPlaceInfoForModal: (place: AutocompleteResult | null) => void;
+  setSelectedPlaceInfoForModal: (place: PlaceInfo | null) => void;
   setSearchText: (text: string) => void;
   setIsFocused: (focused: boolean) => void;
   setSearchInputRef: (ref: React.RefObject<TextInput | null> | null) => void;

@@ -19,10 +19,10 @@ const kakaoClient = axios.create({
   timeout: 5000, // 5초 동안 응답 없으면 타임아웃
 });
 
-// [요청 인터셉터] API 키 주입
+// [요청 인터셉터] 헤더 주입
 kakaoClient.interceptors.request.use(
   config => {
-    if (!KAKAO_REST_API_KEY || KAKAO_REST_API_KEY.startsWith('KAKAO_')) {
+    if (!KAKAO_REST_API_KEY) {
       return Promise.reject(new Error('카카오 API 키가 설정되지 않았습니다.'));
     }
     config.headers.Authorization = `KakaoAK ${KAKAO_REST_API_KEY}`;
@@ -31,16 +31,29 @@ kakaoClient.interceptors.request.use(
   error => Promise.reject(error),
 );
 
-// [응답 인터셉터] 서버에서 받은 결과에 에러 있는지 먼저 검사
+// [응답 인터셉터 1] 카카오 에러 포맷 -> 우리 앱 포맷 변환
+kakaoClient.interceptors.response.use(
+  response => response,
+  async error => {
+    // 카카오는 에러 메세지를 'msg'로 줄 때가 있음. 이를 'message'로 복사해서 공통 인터셉터가 읽을 수 있게 해줌
+    if (error.response?.data?.msg) {
+      error.response.data.message = error.response.data.msg;
+    }
+    return Promise.reject(error);
+  }
+);
+
+// [응답 인터셉터 2] 공통 에러 처리
+// * 주의: 카카오 401 에러(키 만료)가 앱 로그아웃을 유발하지 않도록 onLogout은 전달하지 않음
 commonErrorInterceptor(kakaoClient);
 
 // ------------------------------------------------------------------
-// 2. 데이터 변환 헬퍼 (순수 함수)
+// 2. 데이터 변환 헬퍼
 // ------------------------------------------------------------------
 
 // 카카오 API 응답을 앱 내부 형식으로 변환
 const transformToPlaceInfo = (place: KakaoSearchPlace): PlaceInfo => ({
-  id: place.id,
+  placeId: place.id,
   name: place.place_name,
   address: place.address_name,
   roadAddress: place.road_address_name || undefined,
@@ -51,7 +64,7 @@ const transformToPlaceInfo = (place: KakaoSearchPlace): PlaceInfo => ({
 });
 
 // ------------------------------------------------------------------
-// 3. API 함수들 (try-catch 제거 -> 인터셉터가 처리함)
+// 3. API 함수
 // ------------------------------------------------------------------
 
 /**
@@ -102,7 +115,7 @@ export const searchAddressCoordinates = async (
   const place = data.documents[0];
   return {
     // 주소 검색은 ID가 없으므로 고유 ID 생성
-    id: `address_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+    placeId: `address_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
     name: place.address_name || place.road_address_name,
     address: place.address_name,
     roadAddress: place.road_address_name,
@@ -132,7 +145,7 @@ export const reverseGeocode = async (
 
   const { road_address, address } = data.documents[0];
   return {
-    id: `current_${Date.now()}`,
+    placeId: `current_${Date.now()}`,
     name: road_address?.building_name || address.address_name || '현재 위치',
     address: address.address_name,
     roadAddress: road_address?.address_name,
