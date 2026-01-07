@@ -41,7 +41,7 @@ export const TTS_URL_PRESET = {
 
 // navigationTurn.constants.ts
 export const MOTION_COMMON_OPTIONS = {
-  MAX_PHYSICAL_SPEED_MPS: 20,
+  MAX_PHYSICAL_SPEED_MPS: 15,
   PASS_CONFIRM_COUNT: 3,
 } as const;
 

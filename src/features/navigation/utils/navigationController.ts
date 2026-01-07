@@ -392,6 +392,12 @@ export const calculateTraveledDistance = (
     if (instantSpeedMps > MAX_PHYSICAL_SPEED_MPS) {
       return prevTraveledDistanceMeter;
     }
+
+    // 정지 판정 추가 - 이동 거리가 너무 작으면 이전 값 유지
+    const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
+    if (movedMeter < STOP_JUDGE_MOVE_METER) {
+      return prevTraveledDistanceMeter;
+    }
   }
 
   // =========================
@@ -455,8 +461,6 @@ export const stabilizeDistance = ({
 }: StabilizeDistanceInput) => {
   const { MAX_PHYSICAL_SPEED_MPS } = MOTION_COMMON_OPTIONS;
   const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
-  const { STOP_JUDGE_MOVE_METER: REMAINING_STOP_JUDGE_MOVE_METER } =
-    TRAVELED_DISTANCE_OPTIONS;
 
   // =========================
   // 0) dtSec 계산
@@ -485,12 +489,7 @@ export const stabilizeDistance = ({
       currentMyPosition,
     );
 
-    const stopThresholdMeter =
-      type === 'traveled'
-        ? STOP_JUDGE_MOVE_METER
-        : REMAINING_STOP_JUDGE_MOVE_METER;
-
-    if (movedDistanceMeter < stopThresholdMeter) {
+    if (movedDistanceMeter < STOP_JUDGE_MOVE_METER) {
       return Math.round(prevStableDistanceMeter);
     }
   }
