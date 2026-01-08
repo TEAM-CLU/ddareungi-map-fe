@@ -1,4 +1,5 @@
 import IntervalProgressBar from '@/features/navigation/components/IntervalProgressBar';
+import { clearSharedTimer } from '@/features/navigation/hooks/useTimer';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import CalorieBadge from '@/shared/components/badge/CalorieBadge';
@@ -70,6 +71,7 @@ const NavigationDetailModal = ({
   };
 
   const handleEndNavigationPress = () => {
+    clearSharedTimer();
     setShowNavigationDetailModal(false);
     setShowNavigationEndModal(true);
   };

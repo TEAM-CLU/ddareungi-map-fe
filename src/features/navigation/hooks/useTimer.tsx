@@ -6,8 +6,17 @@ import { useShallow } from 'zustand/react/shallow';
 let sharedIntervalId: ReturnType<typeof setInterval> | null = null;
 let sharedOwnerCount = 0;
 
+// 전역적으로 타이머를 정리하는 함수 (네비게이션 종료 시 사용)
+export const clearSharedTimer = () => {
+  if (sharedIntervalId) {
+    clearInterval(sharedIntervalId);
+    sharedIntervalId = null;
+  }
+  sharedOwnerCount = 0;
+};
+
 export const useTimer = (initialSeconds = 0) => {
-  const { seconds, addSeconds } = useNavigationStore(
+  const { seconds, setSeconds, addSeconds } = useNavigationStore(
     useShallow(state => ({
       seconds: state.seconds,
       setSeconds: state.setSeconds,
@@ -40,10 +49,10 @@ export const useTimer = (initialSeconds = 0) => {
   const resetTimer = useCallback(
     (nextSeconds = 0) => {
       clearTimer();
-      addSeconds(nextSeconds);
+      setSeconds(nextSeconds);
       setTimerStatus('idle');
     },
-    [clearTimer],
+    [clearTimer, setSeconds],
   );
 
   // 컴포넌트 unmount 시 누수 방지

@@ -8,6 +8,7 @@ import {
   useUserInfoQuery,
 } from '@/features/auth/services/user.queries';
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
+import { clearSharedTimer } from '@/features/navigation/hooks/useTimer';
 import { TTS_URL_PRESET } from '@/features/navigation/model/navigation.constants';
 import { globalTtsState } from '@/features/navigation/model/navigation.data';
 import { useTerminateNavigationSessionMutation } from '@/features/navigation/services/navigation.queries';
@@ -81,6 +82,7 @@ const NavigationFinishModal = ({
   const handleCloseFinishModalPress = async () => {
     if (!prevUserInfo) {
       setShowNavigationFinishModal(false);
+      clearSharedTimer();
       resetNavigationData();
       resetRouteData();
       resetSearchData();
@@ -104,6 +106,7 @@ const NavigationFinishModal = ({
 
       await updateUserUsageInfo(payload);
       setShowNavigationFinishModal(false);
+      clearSharedTimer();
       resetNavigationData();
       resetRouteData();
       resetSearchData();
@@ -113,6 +116,7 @@ const NavigationFinishModal = ({
       console.error('Failed to update user stats:', error);
     } finally {
       setShowNavigationFinishModal(false);
+      clearSharedTimer();
       resetNavigationData();
       resetRouteData();
       resetSearchData();
