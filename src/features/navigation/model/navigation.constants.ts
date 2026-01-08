@@ -42,6 +42,7 @@ export const TTS_URL_PRESET = {
   ARRIVE_WAYPOINT_TTS_URL: require('@/assets/audios/arriveWaypointTts.mp3'),
   REROUTE_TTS_URL: require('@/assets/audios/rerouteTts.mp3'),
   RECOVER_TTS_URL: require('@/assets/audios/recoverTts.mp3'),
+  SUCCESS_REROUTE_TTS_URL: require('@/assets/audios/successRerouteTts.mp3'),
 };
 
 // navigationTurn.constants.ts

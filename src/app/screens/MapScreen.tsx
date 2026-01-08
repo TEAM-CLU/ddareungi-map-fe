@@ -46,7 +46,7 @@ const MapScreen = () => {
     eta,
     remainingDistanceMeter,
     traveledDistanceMeter,
-    isHandlingOffRoute,
+    isLoadingForOffRoute,
   } = useNavigationOrchestrator();
 
   const showSelectedRouteDetailModal = useModalStore(
@@ -68,7 +68,7 @@ const MapScreen = () => {
         handleMapReadyMessage={handleMapReadyMessage}
       />
 
-      {isHandlingOffRoute && <SimpleLoading title="경로 재탐색 중" />}
+      {isLoadingForOffRoute && <SimpleLoading title="경로 재탐색 중" />}
 
       {/* 네비게이션 모드 */}
       {isNavigationMode && !!routeId && !!currentInstruction && (
