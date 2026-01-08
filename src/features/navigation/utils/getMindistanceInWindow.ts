@@ -1,6 +1,7 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { OFF_ROUTE_CONFIG } from '@/features/navigation/model/navigation.constants';
 import { Coordinate } from '@/features/routing/model/routing.types';
+import { clamp } from '@/shared/utils/clamp';
 
 export const getMinDistanceInWindow = (
   myPosition: Coordinate,

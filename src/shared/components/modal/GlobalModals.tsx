@@ -15,7 +15,6 @@ import NavigationStartModal from '@/features/navigation/components/NavigationSta
 import NavigationFinishModal from '@/features/navigation/components/NavigationFinishModal';
 import NavigationEndModal from '@/features/navigation/components/NavigationEndModal';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
-import { reset } from 'react-native-track-player/lib/src/trackPlayer';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore(

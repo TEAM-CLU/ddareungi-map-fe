@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import IconFinishLine from '@/shared/components/icons/IconFinishLine';
 import { createStableColorByIndex } from '@/features/navigation/utils/createStableColorByIndex';
 
 interface IntervalProgressBarProps {

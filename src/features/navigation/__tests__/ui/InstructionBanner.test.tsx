@@ -3,8 +3,10 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import InstructionBanner from '@/features/navigation/components/InstructionBanner';
 import { TailwindProvider } from '@/app/providers/tailwind/provider';
 import TrackPlayer from 'react-native-track-player';
-import { FALLBACK_TTS_URL } from '@/features/navigation/model/navigation.constants';
+import { TTS_URL_PRESET } from '@/features/navigation/model/navigation.constants';
 import { globalTtsState } from '@/features/navigation/model/navigation.data';
+
+const FALLBACK_TTS_URL = TTS_URL_PRESET.FALLBACK_TTS_URL;
 
 jest.mock('react-native-track-player', () => ({
   __esModule: true,
@@ -31,10 +33,15 @@ describe('InstructionBanner', () => {
   it('renders instruction text split into lines', () => {
     const { getByText } = renderWithProvider(
       <InstructionBanner
+        pathDataListByInterval={[]}
         currentIntervalIndex={0}
-        instruction="좌회전 후 100m 직진하세요"
+        currentInstructionText="좌회전 후 100m 직진하세요"
         currentTtsUrl={null}
-        sign={1}
+        currentSign={1}
+        previewInstructionText=""
+        previewTtsUrl={null}
+        previewSign={null}
+        isLoading={false}
       />,
     );
     expect(getByText('좌회전 후 100m')).toBeTruthy();
@@ -44,10 +51,15 @@ describe('InstructionBanner', () => {
   it('renders direction icon', () => {
     const { getByTestId } = renderWithProvider(
       <InstructionBanner
+        pathDataListByInterval={[]}
         currentIntervalIndex={0}
-        instruction="우회전 후 200m 직진"
+        currentInstructionText="우회전 후 200m 직진"
         currentTtsUrl={null}
-        sign={2}
+        currentSign={2}
+        previewInstructionText=""
+        previewTtsUrl={null}
+        previewSign={null}
+        isLoading={false}
       />,
     );
     expect(getByTestId('direction-icon')).toBeTruthy();
@@ -56,10 +68,15 @@ describe('InstructionBanner', () => {
   it('plays fallback TTS when interval changes', async () => {
     renderWithProvider(
       <InstructionBanner
+        pathDataListByInterval={[]}
         currentIntervalIndex={0}
-        instruction="직진하세요"
+        currentInstructionText="직진하세요"
         currentTtsUrl={null}
-        sign={0}
+        currentSign={0}
+        previewInstructionText=""
+        previewTtsUrl={null}
+        previewSign={null}
+        isLoading={false}
       />,
     );
 
@@ -83,10 +100,15 @@ describe('InstructionBanner', () => {
 
     const { getByTestId } = renderWithProvider(
       <InstructionBanner
+        pathDataListByInterval={[]}
         currentIntervalIndex={0}
-        instruction="좌회전"
+        currentInstructionText="좌회전"
         currentTtsUrl={ttsUrl}
-        sign={-1}
+        currentSign={-1}
+        previewInstructionText=""
+        previewTtsUrl={null}
+        previewSign={null}
+        isLoading={false}
       />,
     );
 

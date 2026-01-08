@@ -12,9 +12,7 @@ import {
   INTERVAL_DISTANCE_OPTIONS,
   MOTION_COMMON_OPTIONS,
   PREVIEW_CONIFG,
-  PREVIEW_THRESHOLD_METER,
   TTS_URL_PRESET,
-  TURN_CONFIG,
 } from '@/features/navigation/model/navigation.constants';
 import { tw } from '@/shared/libs/tw-helper';
 import { globalTtsState } from '@/features/navigation/model/navigation.data';
@@ -37,9 +35,11 @@ interface InstructionBannerProps {
   previewInstructionText: string;
   previewTtsUrl: string | null;
   previewSign: number | null;
+
+  isLoading: boolean;
 }
 
-// ✅ 여기만 튜닝하면 됨
+//  여기만 튜닝하면 됨
 
 const InstructionBanner = ({
   pathDataListByInterval,
@@ -50,7 +50,12 @@ const InstructionBanner = ({
   previewInstructionText,
   previewTtsUrl,
   previewSign,
+  isLoading,
 }: InstructionBannerProps) => {
+  if (isLoading) {
+    return null;
+  }
+
   const myPosition = useMyPositionStore(state => state.myPosition);
   const systemVolume = useVolumeStore(state => state.systemVolume);
 
@@ -224,35 +229,31 @@ const InstructionBanner = ({
         { borderRadius: 20, maxWidth: 348, height: 80, gap: 1 },
       ]}
     >
-      {/* 인덱스 뱃지(현재 인터벌 기준 표시 유지) */}
       <View
-        style={tw(
-          'flex justify-center h-5 w-5 items-center px-2 bg-surface-primary rounded-full absolute right-2 top-1',
-        )}
+        style={[
+          tw('absolute -bottom-4 flex flex-row items-center justify-between'),
+          { left: '-50%', translateX: 50 },
+        ]}
       >
-        <Text
-          style={[
-            tw('font-primary-600 text-on-surface-primary'),
-            { fontSize: 13 },
-          ]}
+        <View
+          style={tw(
+            'flex justify-center h-5 w-5 items-center px-2 bg-surface-primary rounded-full',
+          )}
         >
-          {currentIntervalIndex + 1}
-        </Text>
-      </View>
-
-      <View
-        style={[tw('flex flex-col justify-center items-center'), { gap: 2 }]}
-      >
-        <Image
-          source={
-            DIRECTION_ICONS[String(displaySign) as keyof typeof DIRECTION_ICONS]
-          }
-          style={{ width: 50, height: 50 } as ImageStyle}
-          resizeMode="cover"
-        />
+          <Text
+            style={[
+              tw('font-primary-600 text-on-surface-primary'),
+              { fontSize: 13 },
+            ]}
+          >
+            {currentIntervalIndex + 1}
+          </Text>
+        </View>
         <Text
           style={[
-            tw('font-primary-600 text-on-surface-secondary text-center'),
+            tw(
+              'font-primary-600 text-on-surface-secondary text-center rounded-xl bg-brand-primary px-2 py-1',
+            ),
             { fontSize: 13 },
           ]}
         >
@@ -261,7 +262,13 @@ const InstructionBanner = ({
             : '계산중'}
         </Text>
       </View>
-
+      <Image
+        source={
+          DIRECTION_ICONS[String(displaySign) as keyof typeof DIRECTION_ICONS]
+        }
+        style={{ width: 50, height: 50 } as ImageStyle}
+        resizeMode="cover"
+      />
       <View style={[tw('flex flex-col justify-center'), { gap: 2 }]}>
         {instructionLines.map((line, idx) => (
           <Text

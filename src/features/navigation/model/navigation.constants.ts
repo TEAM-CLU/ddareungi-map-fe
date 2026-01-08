@@ -59,7 +59,6 @@ export const TURN_CONFIG = {
   DOT_DEADZONE: 0,
   PASS_COUNT_DECAY: 1,
   PASS_COUNT_MAX: 3,
-  PREVIEW_ENTER_COUNT_MIN: 2,
 } as const;
 
 export const TRAVELED_DISTANCE_OPTIONS = {
@@ -87,6 +86,10 @@ export const SPEED_THRESHOLDS = {
 };
 
 // InstructionBanner.tsx
+export const PREVIEW_CONIFG = {
+  PREVIEW_THRESHOLD_METER: 50,
+  PREVIEW_ENTER_COUNT_MIN: 2,
+};
 export const PREVIEW_THRESHOLD_METER = 50;
 
 // 재탐색 관련

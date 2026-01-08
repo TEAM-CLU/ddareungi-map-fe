@@ -1,19 +1,18 @@
-import {
-  OFF_ROUTE_CONFIG,
-  TTS_URL_PRESET,
-  WAYPOINT_CONFIG,
-} from './../model/navigation.constants';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import {
-  ACCURACY_OK,
-  MOTION_COMMON_OPTIONS,
-  TRAVELED_DISTANCE_OPTIONS,
   TURN_CONFIG,
+  MOTION_COMMON_OPTIONS,
+  OFF_ROUTE_CONFIG,
+  TTS_URL_PRESET,
+  TRAVELED_DISTANCE_OPTIONS,
+  ACCURACY_OK,
+  WAYPOINT_CONFIG,
 } from '@/features/navigation/model/navigation.constants';
+
 import {
   IntervalPathData,
   keepNavigationSessionAlivePayload,
@@ -51,10 +50,10 @@ import {
   measureCarbonSaved,
 } from '@/shared/utils/measure';
 import axios from 'axios';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { VolumeManager } from 'react-native-volume-manager';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useNavigationOrchestrator = () => {
   const { mutateAsync: startNavigationSession } =

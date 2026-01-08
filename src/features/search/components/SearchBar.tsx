@@ -7,7 +7,7 @@ import {
 } from '@/shared/components/icons';
 import { useEffect, useRef } from 'react';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 
 interface SearchBarProps {
   value: string;

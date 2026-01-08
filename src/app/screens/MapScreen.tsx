@@ -89,6 +89,7 @@ const MapScreen = () => {
             previewInstructionText={previewInstructionText}
             currentSign={currentInstruction.sign}
             previewSign={previewSign}
+            isLoading={isLoadingForOffRoute}
           />
         </SafeAreaView>
       )}
