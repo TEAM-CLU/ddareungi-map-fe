@@ -1,5 +1,10 @@
+import {
+  OFF_ROUTE_CONFIG,
+  WAYPOINT_CONFIG,
+} from './../model/navigation.constants';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
+import { Coordinates } from '@/features/map/model/map.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import {
@@ -18,6 +23,8 @@ import {
 } from '@/features/navigation/model/navigation.types';
 import {
   useKeepNavigationSessionAliveMutation,
+  useReRouteMutation,
+  useReturnToExistingRouteMutation,
   useStartNavigationSessionMutation,
 } from '@/features/navigation/services/navigation.queries';
 import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
@@ -25,14 +32,17 @@ import { useNavigationStore } from '@/features/navigation/stores/useNavigationSt
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { calculateMotionVector } from '@/features/navigation/utils/calculateMotionVector';
 import { classifyTransportBySpeed } from '@/features/navigation/utils/classifyTransportBySpeed';
+import { getMinDistanceInWindow } from '@/features/navigation/utils/getMindistanceInWindow';
 import {
   calculateEta,
   returnAccurateSpeed,
   calculateRemainingDistance,
   calculateTraveledDistance,
+  findClosestCoordIndex,
 } from '@/features/navigation/utils/navigationController';
 
 import { Coordinate } from '@/features/routing/model/routing.types';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import {
   measureCaloriesBurned,
@@ -114,6 +124,10 @@ export const useNavigationOrchestrator = () => {
   const lastDistanceFromMyPosToNextTurnPosRef = useRef<number | null>(null);
   const prevMyPositionForTurnRef = useRef<Coordinate | null>(null);
   const prevTimestampForTurnRef = useRef<number | null>(null);
+  const previewInstructionText = useRef<string>('');
+  const previewTtsUrl = useRef<string | null>(null);
+  const previewSign = useRef<number | null>(null);
+  const previewEnterCount = useRef<number>(0);
 
   const {
     ENTRY_RADIUS_METER,
@@ -172,6 +186,10 @@ export const useNavigationOrchestrator = () => {
       nextTurnCoordinate.current = null;
       currentIntervalIndex.current = 0;
       currentTtsUrl.current = null;
+      previewInstructionText.current = '';
+      previewTtsUrl.current = null;
+      previewSign.current = null;
+      previewEnterCount.current = 0;
 
       try {
         const payload: StartNavigationSessionPayload = {
@@ -186,6 +204,18 @@ export const useNavigationOrchestrator = () => {
         currentTtsUrl.current =
           response.data.instructions.length > 0
             ? response.data.instructions[0].ttsUrl
+            : null;
+        previewInstructionText.current =
+          response.data.instructions.length > 1
+            ? response.data.instructions[1].text
+            : '';
+        previewTtsUrl.current =
+          response.data.instructions.length > 1
+            ? response.data.instructions[1].ttsUrl
+            : null;
+        previewSign.current =
+          response.data.instructions.length > 1
+            ? response.data.instructions[1].sign
             : null;
 
         if (response.data.instructions.length > 0) {
@@ -262,9 +292,10 @@ export const useNavigationOrchestrator = () => {
       isEnteredRef.current = true;
       passCountRef.current = 0;
       lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
-
       prevMyPositionForTurnRef.current = myPosition;
       prevTimestampForTurnRef.current = nowTimestamp;
+      previewEnterCount.current += 1;
+
       return;
     }
 
@@ -358,16 +389,20 @@ export const useNavigationOrchestrator = () => {
     // 7) 통과 확정 → 다음 instruction
     // =========================
     if (passCountRef.current < PASS_CONFIRM_COUNT) return;
-    const currentIndex = instructionList.current.findIndex(
-      instruction => instruction === currentInstruction,
-    );
-    const nextIndex = currentIndex + 1;
+
+    const nextIndex = currentIntervalIndex.current + 1;
     if (nextIndex >= instructionList.current.length) return;
     const nextInstruction = instructionList.current[nextIndex];
     setCurrentInstruction(nextInstruction);
     nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
     currentIntervalIndex.current = nextIndex;
     currentTtsUrl.current = nextInstruction.ttsUrl;
+    previewInstructionText.current =
+      instructionList.current[nextIndex + 1]?.text ?? '';
+    previewTtsUrl.current =
+      instructionList.current[nextIndex + 1]?.ttsUrl ?? null;
+    previewSign.current = instructionList.current[nextIndex + 1]?.sign ?? null;
+    previewEnterCount.current = 0;
     resetTurnState();
     prevMyPositionForTurnRef.current = myPosition;
     prevTimestampForTurnRef.current = Date.now();
@@ -379,6 +414,218 @@ export const useNavigationOrchestrator = () => {
     prevLocationMetaData.current = currentLocationMetaData.current;
     currentLocationMetaData.current = locationMetaData;
   }, [locationMetaData, isNavigationMode]);
+
+  // 경유지 지나침 판단
+  const selectedRouteData = useRouteStore(state => state.selectedRouteData);
+
+  // 지나친 waypoint index들을 누적 (원하는 결과)
+  const passedWaypointIdxSetRef = useRef<Set<number>>(new Set());
+  const [passedWaypointIndexes, setPassedWaypointIndexes] = useState<number[]>(
+    [],
+  );
+
+  // waypoint 상태(entered / lastNearest / count)
+  const isWaypointEnteredRef = useRef(false);
+  const waypointCandidateIdxRef = useRef<number>(-1);
+  const waypointPassCountRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!isNavigationMode || !locationMetaData || !selectedRouteData) return;
+
+    const myPosition = locationMetaData.coordinate;
+    const positionAccuracy = locationMetaData.accuracy;
+    if (typeof positionAccuracy !== 'number') return;
+    if (positionAccuracy > ACCURACY_OK) return;
+
+    const waypoints: Coordinate[] = selectedRouteData.waypoints ?? [];
+    if (waypoints.length === 0) return;
+
+    // 이미 다 지나쳤으면 끝
+    if (passedWaypointIdxSetRef.current.size >= waypoints.length) return;
+
+    // 아직 안 지나친 waypoint 중 "가장 가까운 것" 찾기
+    let bestIdx = -1;
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    for (let i = 0; i < waypoints.length; i++) {
+      if (passedWaypointIdxSetRef.current.has(i)) continue;
+
+      const d = getDistanceBetweenCoords(myPosition, waypoints[i]);
+      if (d < bestDistance) {
+        bestDistance = d;
+        bestIdx = i;
+      }
+    }
+
+    if (bestIdx < 0) return;
+
+    const ENTRY_METER = WAYPOINT_CONFIG.ENTRY_RADIUS_METER;
+    const EXIT_METER = WAYPOINT_CONFIG.EXIT_RADIUS_METER;
+    const PASS_CONFIRM = WAYPOINT_CONFIG.PASS_CONFIRM_COUNT;
+
+    // 1) entry: 반경 안으로 들어오면 "이번 후보 waypoint"를 고정
+    if (!isWaypointEnteredRef.current && bestDistance <= ENTRY_METER) {
+      isWaypointEnteredRef.current = true;
+      waypointCandidateIdxRef.current = bestIdx;
+      waypointPassCountRef.current = 0;
+      return;
+    }
+
+    // entry 상태가 아니면 종료
+    if (!isWaypointEnteredRef.current) return;
+
+    const candidateIdx = waypointCandidateIdxRef.current;
+    if (candidateIdx < 0) {
+      isWaypointEnteredRef.current = false;
+      return;
+    }
+
+    // 후보 waypoint 기준 거리로 다시 측정 (bestIdx가 바뀌면 흔들리니까 "후보 고정"이 중요)
+    const candidateDist = getDistanceBetweenCoords(
+      myPosition,
+      waypoints[candidateIdx],
+    );
+
+    // 2) exit: 후보에서 멀어졌으면 "지나침 후보" 카운트
+    if (candidateDist >= EXIT_METER) {
+      waypointPassCountRef.current += 1;
+
+      if (waypointPassCountRef.current >= PASS_CONFIRM) {
+        // 지나침 확정
+        passedWaypointIdxSetRef.current.add(candidateIdx);
+
+        // 원하는 결과값: 지나친 모든 waypoint index
+        const nextArr = Array.from(passedWaypointIdxSetRef.current).sort(
+          (a, b) => a - b,
+        );
+        setPassedWaypointIndexes(nextArr);
+
+        // 상태 리셋
+        isWaypointEnteredRef.current = false;
+        waypointCandidateIdxRef.current = -1;
+        waypointPassCountRef.current = 0;
+      }
+      return;
+    }
+
+    // 3) 아직 exit 아니면 passCount는 감쇠/리셋 (튐 방지)
+    waypointPassCountRef.current = 0;
+  }, [isNavigationMode, locationMetaData, selectedRouteData]);
+
+  // 경로 복귀
+
+  useEffect(() => {}, [isNavigationMode, myPosition]);
+  const { RECOVERY_TRIGGER_METER, REROUTE_TRIGGER_METER, MAX_TRIGGER_COUNT } =
+    OFF_ROUTE_CONFIG;
+
+  const recoverTriggerCount = useRef(0);
+  const rerouteTriggerCount = useRef(0);
+  const isHandlingOffRouteRef = useRef(false);
+
+  const { mutateAsync: recoveryRoute } = useReturnToExistingRouteMutation();
+  const { mutateAsync: reroute } = useReRouteMutation();
+  useEffect(() => {
+    if (!isNavigationMode || !currentLocationMetaData.current || !sessionId)
+      return;
+
+    const myPosition = currentLocationMetaData.current.coordinate;
+    const positionAccuracy = currentLocationMetaData.current?.accuracy;
+    if (typeof positionAccuracy !== 'number') return;
+    if (positionAccuracy > ACCURACY_OK) return;
+
+    const judgeOffRoute = async () => {
+      if (isHandlingOffRouteRef.current) return;
+
+      const intervalCoordinateList =
+        pathDataListByInterval.current[currentIntervalIndex.current]
+          ?.coordinateList ?? [];
+
+      if (intervalCoordinateList.length < 2) return;
+
+      const bestIdx = findClosestCoordIndex(myPosition, intervalCoordinateList);
+      if (bestIdx < 0) return;
+
+      const minDistanceFromMyPosToPath = getMinDistanceInWindow(
+        myPosition,
+        intervalCoordinateList,
+        bestIdx,
+      );
+
+      // off-route 기준은 "멀어짐"
+      const isOffForRecovery =
+        minDistanceFromMyPosToPath >= RECOVERY_TRIGGER_METER;
+      const isOffForReroute =
+        minDistanceFromMyPosToPath >= REROUTE_TRIGGER_METER;
+
+      // 카운트 업데이트 + 정상 복귀 시 리셋
+      recoverTriggerCount.current = isOffForRecovery
+        ? Math.min(MAX_TRIGGER_COUNT, recoverTriggerCount.current + 1)
+        : 0;
+
+      rerouteTriggerCount.current = isOffForReroute
+        ? Math.min(MAX_TRIGGER_COUNT, rerouteTriggerCount.current + 1)
+        : 0;
+
+      // 우선순위: reroute > recovery
+      if (rerouteTriggerCount.current >= MAX_TRIGGER_COUNT) {
+        isHandlingOffRouteRef.current = true;
+        rerouteTriggerCount.current = 0;
+        recoverTriggerCount.current = 0;
+
+        try {
+          const remainingWaypoints = selectedRouteData?.waypoints
+            ?.map((wp, idx) =>
+              passedWaypointIdxSetRef.current.has(idx)
+                ? null
+                : { lat: wp.lat, lng: wp.lng },
+            )
+            .filter((wp): wp is Coordinates => wp !== null);
+          await reroute({
+            sessionId,
+            currentLocation: {
+              lat: myPosition.lat,
+              lng: myPosition.lng,
+            },
+            remainingWaypoints: remainingWaypoints?.length
+              ? remainingWaypoints
+              : undefined,
+          });
+        } finally {
+          isHandlingOffRouteRef.current = false;
+        }
+        return;
+      }
+
+      if (recoverTriggerCount.current >= MAX_TRIGGER_COUNT) {
+        isHandlingOffRouteRef.current = true;
+        recoverTriggerCount.current = 0;
+
+        try {
+          const remainingWaypoints = selectedRouteData?.waypoints
+            ?.map((wp, idx) =>
+              passedWaypointIdxSetRef.current.has(idx)
+                ? null
+                : { lat: wp.lat, lng: wp.lng },
+            )
+            .filter((wp): wp is Coordinates => wp !== null);
+          await recoveryRoute({
+            sessionId,
+            currentLocation: {
+              lat: myPosition.lat,
+              lng: myPosition.lng,
+            },
+            remainingWaypoints: remainingWaypoints?.length
+              ? remainingWaypoints
+              : undefined,
+          });
+        } finally {
+          isHandlingOffRouteRef.current = false;
+        }
+      }
+    };
+
+    judgeOffRoute();
+  }, [isNavigationMode, locationMetaData, sessionId]);
 
   // 소요거리/남은거리 업데이트
   useEffect(() => {
@@ -629,6 +876,9 @@ export const useNavigationOrchestrator = () => {
     pathDataListByInterval: pathDataListByInterval.current,
     currentIntervalIndex: currentIntervalIndex.current,
     currentTtsUrl: currentTtsUrl.current,
+    previewInstructionText: previewInstructionText.current,
+    previewTtsUrl: previewTtsUrl.current,
+    previewSign: previewSign.current,
     currentInstruction,
     isNavigationMode,
     routeId,

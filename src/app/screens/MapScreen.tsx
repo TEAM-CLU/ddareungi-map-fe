@@ -36,6 +36,9 @@ const MapScreen = () => {
     pathDataListByInterval,
     currentTtsUrl,
     currentIntervalIndex,
+    previewInstructionText,
+    previewTtsUrl,
+    previewSign,
     isNavigationMode,
     routeId,
     currentInstruction,
@@ -77,8 +80,11 @@ const MapScreen = () => {
             pathDataListByInterval={pathDataListByInterval}
             currentTtsUrl={currentTtsUrl}
             currentIntervalIndex={currentIntervalIndex}
-            instructionText={currentInstruction.text}
-            sign={currentInstruction.sign}
+            currentInstructionText={currentInstruction.text}
+            previewTtsUrl={previewTtsUrl}
+            previewInstructionText={previewInstructionText}
+            currentSign={currentInstruction.sign}
+            previewSign={previewSign}
           />
         </SafeAreaView>
       )}

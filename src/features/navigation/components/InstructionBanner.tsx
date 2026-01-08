@@ -1,11 +1,19 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 
 import {
   DIRECTION_ICONS,
   INTERVAL_DISTANCE_OPTIONS,
   MOTION_COMMON_OPTIONS,
+  PREVIEW_THRESHOLD_METER,
   TTS_URL_PRESET,
+  TURN_CONFIG,
 } from '@/features/navigation/model/navigation.constants';
 import { tw } from '@/shared/libs/tw-helper';
 import { globalTtsState } from '@/features/navigation/model/navigation.data';
@@ -18,42 +26,49 @@ import { playTts } from '@/features/navigation/utils/playTts';
 
 interface InstructionBannerProps {
   pathDataListByInterval: IntervalPathData[];
+
   currentIntervalIndex: number;
   currentInstructionText: string;
   currentTtsUrl: string | null;
-  sign: number;
+  currentSign: number;
+
+  // “다음 지시(프리뷰)”는 orchestrator에서 내려줌
+  previewInstructionText: string;
+  previewTtsUrl: string | null;
+  previewSign: number | null;
 }
+
+// ✅ 여기만 튜닝하면 됨
 
 const InstructionBanner = ({
   pathDataListByInterval,
   currentIntervalIndex,
   currentInstructionText,
   currentTtsUrl,
-  sign,
+  currentSign,
+  previewInstructionText,
+  previewTtsUrl,
+  previewSign,
 }: InstructionBannerProps) => {
   const myPosition = useMyPositionStore(state => state.myPosition);
-  const instructionLines = React.useMemo(() => {
-    const words = (currentInstructionText ?? '')
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean);
-    const result: string[] = [];
-    for (let i = 0; i < words.length; i += 3) {
-      result.push(words.slice(i, i + 3).join(' '));
-    }
-    return result;
-  }, [currentInstructionText, sign]);
   const systemVolume = useVolumeStore(state => state.systemVolume);
+
+  const { PREVIEW_ENTER_COUNT_MIN } = TURN_CONFIG;
+  const { FALLBACK_TTS_URL, START_TTS_URL } = TTS_URL_PRESET;
+  const hasPlayedStartTtsRef = useRef(false);
+
+  // ----------------------------
+  // 1) 현재 인터벌 남은거리 계산
+  // ----------------------------
   const prevIntervalIndexRef = useRef<number>(-1);
   const prevRemainingDistanceRef = useRef<number | null>(null);
   const passCountRef = useRef<number>(0);
+  const previewEnterCount = useRef<number>(0);
+
   const [currentRemainingDistanceMeter, setCurrentRemainingDistanceMeter] =
     useState<number | null>(null);
 
-  const { FALLBACK_TTS_URL, START_TTS_URL, END_TTS_URL } = TTS_URL_PRESET;
-  const hasPlayedStartTtsRef = useRef(false);
-
-  // 인터벌 갱신시 거리계산 값 초기화
+  // 인터벌 바뀌면 남은거리 계산값 리셋
   useEffect(() => {
     if (
       pathDataListByInterval.length === 0 ||
@@ -61,47 +76,15 @@ const InstructionBanner = ({
     )
       return;
 
+    prevIntervalIndexRef.current = currentIntervalIndex;
     prevRemainingDistanceRef.current = null;
     passCountRef.current = 0;
     setCurrentRemainingDistanceMeter(null);
-  }, [currentIntervalIndex]);
+  }, [currentIntervalIndex, pathDataListByInterval.length]);
 
-  // TTS 재생 처리
-  useEffect(() => {
-    const playInstruction = () => {
-      prevIntervalIndexRef.current = currentIntervalIndex;
-
-      const playKey = `tts-${currentIntervalIndex}`;
-      if (globalTtsState.lastPlayedKey === playKey) return;
-      globalTtsState.lastPlayedKey = playKey;
-
-      const ttsUrlToPlay = currentTtsUrl ?? FALLBACK_TTS_URL;
-      playTts(playKey, ttsUrlToPlay, systemVolume);
-    };
-
-    // START TTS
-    if (!hasPlayedStartTtsRef.current) {
-      hasPlayedStartTtsRef.current = true;
-
-      const startKey = 'tts-start';
-      if (globalTtsState.lastPlayedKey === startKey) return;
-      globalTtsState.lastPlayedKey = startKey;
-      playTts(startKey, START_TTS_URL, systemVolume);
-      setTimeout(() => {
-        playInstruction();
-      }, 5000);
-
-      return;
-    }
-
-    // interval 변경 시
-    if (currentIntervalIndex === prevIntervalIndexRef.current) return;
-    playInstruction();
-  }, [currentIntervalIndex, currentTtsUrl]);
-
-  // 인터벌 내 남은 거리 계산
   useEffect(() => {
     if (!myPosition || pathDataListByInterval.length === 0) return;
+
     const remainingDistanceMeter = calculateIntervalDistanceByMyPosition(
       myPosition,
       pathDataListByInterval,
@@ -109,28 +92,121 @@ const InstructionBanner = ({
       'remaining',
     );
 
+    // 10m 이하 변화 무시
     if (
       Math.abs(
         (prevRemainingDistanceRef.current ?? 0) - remainingDistanceMeter,
       ) <= INTERVAL_DISTANCE_OPTIONS.MIN_INTERVAL_DISTANCE_METER
     ) {
-      // 10미터 이내 변화는 무시
       return;
     }
 
-    // 10m 이상의 변화도 3번 이내면 무시 (노이즈 필터링)
+    // 10m 이상 변화도 3번 누적 후 반영
     passCountRef.current += 1;
     if (passCountRef.current < MOTION_COMMON_OPTIONS.PASS_CONFIRM_COUNT) return;
-    passCountRef.current = 0;
-    setCurrentRemainingDistanceMeter(remainingDistanceMeter);
-    prevRemainingDistanceRef.current = remainingDistanceMeter;
-  }, [myPosition, currentIntervalIndex]);
 
+    passCountRef.current = 0;
+    prevRemainingDistanceRef.current = remainingDistanceMeter;
+    setCurrentRemainingDistanceMeter(remainingDistanceMeter);
+  }, [myPosition, currentIntervalIndex, pathDataListByInterval]);
+
+  // ----------------------------
+  // 2) 프리뷰 모드 판단: “현재 인터벌 남은거리 <= 40m”
+  // ----------------------------
+  const hasPreviewPayload =
+    Boolean(previewInstructionText?.trim()) && previewSign !== null;
+
+  const isPreviewMode =
+    hasPreviewPayload &&
+    currentRemainingDistanceMeter !== null &&
+    currentRemainingDistanceMeter <= PREVIEW_THRESHOLD_METER;
+
+  // ----------------------------
+  // 3) 표시/클릭/TTS 모두 display로 통일
+  // ----------------------------
+  const displayText = isPreviewMode
+    ? previewInstructionText
+    : currentInstructionText;
+  const displaySign = isPreviewMode ? (previewSign as number) : currentSign;
+  const displayTtsUrl =
+    (isPreviewMode ? previewTtsUrl : currentTtsUrl) ?? FALLBACK_TTS_URL;
+
+  const instructionLines = useMemo(() => {
+    const words = (displayText ?? '').trim().split(/\s+/).filter(Boolean);
+
+    const result: string[] = [];
+    for (let i = 0; i < words.length; i += 3) {
+      result.push(words.slice(i, i + 3).join(' '));
+    }
+    return result;
+  }, [displayText]);
+
+  // ----------------------------
+  // 4) TTS 정책
+  // - START 1회
+  // - current interval 바뀌면 current TTS 1회
+  // - previewMode 진입 순간 preview TTS 1회
+  // ----------------------------
+  const prevCurrentIntervalRef = useRef<number>(-1);
+  const prevPreviewModeRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    // START 1회
+    if (!hasPlayedStartTtsRef.current) {
+      hasPlayedStartTtsRef.current = true;
+
+      const startKey = 'tts-start';
+      if (globalTtsState.lastPlayedKey !== startKey) {
+        globalTtsState.lastPlayedKey = startKey;
+        playTts(startKey, START_TTS_URL, systemVolume);
+      }
+      return;
+    }
+
+    // 1) preview 모드 "진입" 순간에만 preview TTS
+    if (isPreviewMode && !prevPreviewModeRef.current) {
+      prevPreviewModeRef.current = true;
+
+      const previewttsKey = `tts-preview-${currentIntervalIndex}`;
+      if (globalTtsState.lastPlayedKey !== previewttsKey) {
+        globalTtsState.lastPlayedKey = previewttsKey;
+        playTts(previewttsKey, previewTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
+      }
+      return;
+    }
+
+    // preview 모드가 풀리면 상태도 풀어줌
+    if (!isPreviewMode && prevPreviewModeRef.current) {
+      prevPreviewModeRef.current = false;
+    }
+
+    // 2) current interval 변경 시 current TTS
+    if (currentIntervalIndex === prevCurrentIntervalRef.current) return;
+    prevCurrentIntervalRef.current = currentIntervalIndex;
+
+    const currentTtsKey = `tts-current-${currentIntervalIndex}`;
+    if (globalTtsState.lastPlayedKey !== currentTtsKey) {
+      globalTtsState.lastPlayedKey = currentTtsKey;
+      playTts(currentTtsKey, currentTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
+    }
+  }, [
+    currentIntervalIndex,
+    currentTtsUrl,
+    isPreviewMode,
+    previewTtsUrl,
+    systemVolume,
+    START_TTS_URL,
+    FALLBACK_TTS_URL,
+  ]);
+
+  // 클릭 시도 “지금 화면에 보이는(display)” 걸 재생
   const handleInstructionBannerPress = useCallback(() => {
-    const key = `tts-${currentIntervalIndex}`;
-    const url = currentTtsUrl ?? FALLBACK_TTS_URL;
-    playTts(key, url, systemVolume);
-  }, [currentIntervalIndex, currentTtsUrl, systemVolume]);
+    const key = isPreviewMode
+      ? `tts-preview-tap-${currentIntervalIndex}`
+      : `tts-current-tap-${currentIntervalIndex}`;
+
+    playTts(key, displayTtsUrl, systemVolume);
+  }, [isPreviewMode, currentIntervalIndex, displayTtsUrl, systemVolume]);
 
   return (
     <TouchableOpacity
@@ -142,6 +218,7 @@ const InstructionBanner = ({
         { borderRadius: 20, maxWidth: 348, height: 80, gap: 1 },
       ]}
     >
+      {/* 인덱스 뱃지(현재 인터벌 기준 표시 유지) */}
       <View
         style={tw(
           'flex justify-center h-5 w-5 items-center px-2 bg-surface-primary rounded-full absolute right-2 top-1',
@@ -156,14 +233,16 @@ const InstructionBanner = ({
           {currentIntervalIndex + 1}
         </Text>
       </View>
+
       <View
-        style={[(tw('flex flex-col justify-center items-center'), { gap: 2 })]}
+        style={[tw('flex flex-col justify-center items-center'), { gap: 2 }]}
       >
         <Image
-          source={DIRECTION_ICONS[String(sign) as keyof typeof DIRECTION_ICONS]}
+          source={
+            DIRECTION_ICONS[String(displaySign) as keyof typeof DIRECTION_ICONS]
+          }
           style={{ width: 50, height: 50 } as ImageStyle}
           resizeMode="cover"
-          testID="direction-icon"
         />
         <Text
           style={[
@@ -176,6 +255,7 @@ const InstructionBanner = ({
             : '계산중'}
         </Text>
       </View>
+
       <View style={[tw('flex flex-col justify-center'), { gap: 2 }]}>
         {instructionLines.map((line, idx) => (
           <Text
