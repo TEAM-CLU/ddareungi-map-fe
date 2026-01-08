@@ -11,6 +11,7 @@ import {
   DIRECTION_ICONS,
   INTERVAL_DISTANCE_OPTIONS,
   MOTION_COMMON_OPTIONS,
+  PREVIEW_CONIFG,
   PREVIEW_THRESHOLD_METER,
   TTS_URL_PRESET,
   TURN_CONFIG,
@@ -53,7 +54,7 @@ const InstructionBanner = ({
   const myPosition = useMyPositionStore(state => state.myPosition);
   const systemVolume = useVolumeStore(state => state.systemVolume);
 
-  const { PREVIEW_ENTER_COUNT_MIN } = TURN_CONFIG;
+  const { PREVIEW_THRESHOLD_METER, PREVIEW_ENTER_COUNT_MIN } = PREVIEW_CONIFG;
   const { FALLBACK_TTS_URL, START_TTS_URL } = TTS_URL_PRESET;
   const hasPlayedStartTtsRef = useRef(false);
 
@@ -63,7 +64,7 @@ const InstructionBanner = ({
   const prevIntervalIndexRef = useRef<number>(-1);
   const prevRemainingDistanceRef = useRef<number | null>(null);
   const passCountRef = useRef<number>(0);
-  const previewEnterCount = useRef<number>(0);
+  const [previewEnterCount, previewEnterCountSet] = useState<number>(0);
 
   const [currentRemainingDistanceMeter, setCurrentRemainingDistanceMeter] =
     useState<number | null>(null);
@@ -80,6 +81,7 @@ const InstructionBanner = ({
     prevRemainingDistanceRef.current = null;
     passCountRef.current = 0;
     setCurrentRemainingDistanceMeter(null);
+    previewEnterCountSet(0);
   }, [currentIntervalIndex, pathDataListByInterval.length]);
 
   useEffect(() => {
@@ -108,10 +110,13 @@ const InstructionBanner = ({
     passCountRef.current = 0;
     prevRemainingDistanceRef.current = remainingDistanceMeter;
     setCurrentRemainingDistanceMeter(remainingDistanceMeter);
+    if (remainingDistanceMeter <= PREVIEW_THRESHOLD_METER) {
+      previewEnterCountSet(prev => Math.min(prev + 1, PREVIEW_ENTER_COUNT_MIN));
+    }
   }, [myPosition, currentIntervalIndex, pathDataListByInterval]);
 
   // ----------------------------
-  // 2) 프리뷰 모드 판단: “현재 인터벌 남은거리 <= 40m”
+  // 2) 프리뷰 모드 판단: “현재 인터벌 남은거리 <= 50m” + count 조건
   // ----------------------------
   const hasPreviewPayload =
     Boolean(previewInstructionText?.trim()) && previewSign !== null;
@@ -119,7 +124,8 @@ const InstructionBanner = ({
   const isPreviewMode =
     hasPreviewPayload &&
     currentRemainingDistanceMeter !== null &&
-    currentRemainingDistanceMeter <= PREVIEW_THRESHOLD_METER;
+    currentRemainingDistanceMeter <= PREVIEW_THRESHOLD_METER &&
+    previewEnterCount >= PREVIEW_ENTER_COUNT_MIN;
 
   // ----------------------------
   // 3) 표시/클릭/TTS 모두 display로 통일
