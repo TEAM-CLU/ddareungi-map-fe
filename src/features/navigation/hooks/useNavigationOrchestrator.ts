@@ -566,6 +566,15 @@ export const useNavigationOrchestrator = () => {
         ? Math.min(MAX_TRIGGER_COUNT, rerouteTriggerCount.current + 1)
         : 0;
 
+      // 경유지 정보 준비
+      const remainingWaypoints = selectedRouteData?.waypoints
+        ?.map((wp, idx) =>
+          passedWaypointIdxSetRef.current.has(idx)
+            ? null
+            : { lat: wp.lat, lng: wp.lng },
+        )
+        .filter((wp): wp is Coordinates => wp !== null);
+
       // 우선순위: reroute > recovery
       if (rerouteTriggerCount.current >= MAX_TRIGGER_COUNT) {
         isHandlingOffRouteRef.current = true;
@@ -573,13 +582,6 @@ export const useNavigationOrchestrator = () => {
         recoverTriggerCount.current = 0;
 
         try {
-          const remainingWaypoints = selectedRouteData?.waypoints
-            ?.map((wp, idx) =>
-              passedWaypointIdxSetRef.current.has(idx)
-                ? null
-                : { lat: wp.lat, lng: wp.lng },
-            )
-            .filter((wp): wp is Coordinates => wp !== null);
           await reroute({
             sessionId,
             currentLocation: {
@@ -601,13 +603,6 @@ export const useNavigationOrchestrator = () => {
         recoverTriggerCount.current = 0;
 
         try {
-          const remainingWaypoints = selectedRouteData?.waypoints
-            ?.map((wp, idx) =>
-              passedWaypointIdxSetRef.current.has(idx)
-                ? null
-                : { lat: wp.lat, lng: wp.lng },
-            )
-            .filter((wp): wp is Coordinates => wp !== null);
           await recoveryRoute({
             sessionId,
             currentLocation: {
