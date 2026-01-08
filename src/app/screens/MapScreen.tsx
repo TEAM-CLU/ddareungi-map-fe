@@ -20,6 +20,7 @@ import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMa
 import { useNavigationOrchestrator } from '@/features/navigation/hooks/useNavigationOrchestrator';
 import NavVolumeToggleButton from '@/features/navigation/components/NavVolumeToggleButton';
 import NorthIndicator from '@/features/navigation/components/NorthIndicator';
+import SimpleLoading from '@/shared/components/SimpleLoading';
 
 const MapScreen = () => {
   const {
@@ -45,6 +46,7 @@ const MapScreen = () => {
     eta,
     remainingDistanceMeter,
     traveledDistanceMeter,
+    isHandlingOffRoute,
   } = useNavigationOrchestrator();
 
   const showSelectedRouteDetailModal = useModalStore(
@@ -65,6 +67,8 @@ const MapScreen = () => {
         setIsLocalMapReady={setIsLocalMapReady}
         handleMapReadyMessage={handleMapReadyMessage}
       />
+
+      {isHandlingOffRoute && <SimpleLoading title="경로 재탐색 중" />}
 
       {/* 네비게이션 모드 */}
       {isNavigationMode && !!routeId && !!currentInstruction && (

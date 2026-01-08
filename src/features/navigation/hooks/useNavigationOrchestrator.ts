@@ -1,5 +1,6 @@
 import {
   OFF_ROUTE_CONFIG,
+  TTS_URL_PRESET,
   WAYPOINT_CONFIG,
 } from './../model/navigation.constants';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
@@ -40,6 +41,7 @@ import {
   calculateTraveledDistance,
   findClosestCoordIndex,
 } from '@/features/navigation/utils/navigationController';
+import { playTts } from '@/features/navigation/utils/playTts';
 
 import { Coordinate } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
@@ -415,6 +417,8 @@ export const useNavigationOrchestrator = () => {
     currentLocationMetaData.current = locationMetaData;
   }, [locationMetaData, isNavigationMode]);
 
+  const { ARRIVE_WAYPOINT_TTS_URL, REROUTE_TTS_URL, RECOVER_TTS_URL } =
+    TTS_URL_PRESET;
   // 경유지 지나침 판단
   const selectedRouteData = useRouteStore(state => state.selectedRouteData);
 
@@ -490,21 +494,23 @@ export const useNavigationOrchestrator = () => {
     if (candidateDist >= EXIT_METER) {
       waypointPassCountRef.current += 1;
 
-      if (waypointPassCountRef.current >= PASS_CONFIRM) {
-        // 지나침 확정
-        passedWaypointIdxSetRef.current.add(candidateIdx);
+      if (waypointPassCountRef.current < PASS_CONFIRM) return;
 
-        // 원하는 결과값: 지나친 모든 waypoint index
-        const nextArr = Array.from(passedWaypointIdxSetRef.current).sort(
-          (a, b) => a - b,
-        );
-        setPassedWaypointIndexes(nextArr);
+      // 지나침 확정
+      passedWaypointIdxSetRef.current.add(candidateIdx);
 
-        // 상태 리셋
-        isWaypointEnteredRef.current = false;
-        waypointCandidateIdxRef.current = -1;
-        waypointPassCountRef.current = 0;
-      }
+      // 원하는 결과값: 지나친 모든 waypoint index
+      const nextArr = Array.from(passedWaypointIdxSetRef.current).sort(
+        (a, b) => a - b,
+      );
+      setPassedWaypointIndexes(nextArr);
+
+      playTts('tts-waypoint-arrive', ARRIVE_WAYPOINT_TTS_URL, systemVolume);
+
+      // 상태 리셋
+      isWaypointEnteredRef.current = false;
+      waypointCandidateIdxRef.current = -1;
+      waypointPassCountRef.current = 0;
       return;
     }
 
@@ -514,13 +520,12 @@ export const useNavigationOrchestrator = () => {
 
   // 경로 복귀
 
-  useEffect(() => {}, [isNavigationMode, myPosition]);
   const { RECOVERY_TRIGGER_METER, REROUTE_TRIGGER_METER, MAX_TRIGGER_COUNT } =
     OFF_ROUTE_CONFIG;
 
   const recoverTriggerCount = useRef(0);
   const rerouteTriggerCount = useRef(0);
-  const isHandlingOffRouteRef = useRef(false);
+  const [isHandlingOffRoute, setIsHandlingOffRoute] = useState<boolean>(false);
 
   const { mutateAsync: recoveryRoute } = useReturnToExistingRouteMutation();
   const { mutateAsync: reroute } = useReRouteMutation();
@@ -534,7 +539,7 @@ export const useNavigationOrchestrator = () => {
     if (positionAccuracy > ACCURACY_OK) return;
 
     const judgeOffRoute = async () => {
-      if (isHandlingOffRouteRef.current) return;
+      if (isHandlingOffRoute) return;
 
       const intervalCoordinateList =
         pathDataListByInterval.current[currentIntervalIndex.current]
@@ -566,6 +571,15 @@ export const useNavigationOrchestrator = () => {
         ? Math.min(MAX_TRIGGER_COUNT, rerouteTriggerCount.current + 1)
         : 0;
 
+      if (
+        (recoverTriggerCount.current > 0 &&
+          recoverTriggerCount.current < MAX_TRIGGER_COUNT) ||
+        (rerouteTriggerCount.current > 0 &&
+          rerouteTriggerCount.current < MAX_TRIGGER_COUNT)
+      ) {
+        playTts('tts-offroute-detected', RECOVER_TTS_URL, systemVolume);
+      }
+
       // 경유지 정보 준비
       const remainingWaypoints = selectedRouteData?.waypoints
         ?.map((wp, idx) =>
@@ -577,7 +591,8 @@ export const useNavigationOrchestrator = () => {
 
       // 우선순위: reroute > recovery
       if (rerouteTriggerCount.current >= MAX_TRIGGER_COUNT) {
-        isHandlingOffRouteRef.current = true;
+        playTts('tts-offroute-reroute', REROUTE_TTS_URL, systemVolume);
+        setIsHandlingOffRoute(true);
         rerouteTriggerCount.current = 0;
         recoverTriggerCount.current = 0;
 
@@ -593,13 +608,14 @@ export const useNavigationOrchestrator = () => {
               : undefined,
           });
         } finally {
-          isHandlingOffRouteRef.current = false;
+          setIsHandlingOffRoute(false);
         }
         return;
       }
 
       if (recoverTriggerCount.current >= MAX_TRIGGER_COUNT) {
-        isHandlingOffRouteRef.current = true;
+        playTts('tts-offroute-recover', RECOVER_TTS_URL, systemVolume);
+        setIsHandlingOffRoute(true);
         recoverTriggerCount.current = 0;
 
         try {
@@ -614,7 +630,7 @@ export const useNavigationOrchestrator = () => {
               : undefined,
           });
         } finally {
-          isHandlingOffRouteRef.current = false;
+          setIsHandlingOffRoute(false);
         }
       }
     };
@@ -880,5 +896,6 @@ export const useNavigationOrchestrator = () => {
     eta,
     remainingDistanceMeter,
     traveledDistanceMeter,
+    isHandlingOffRoute,
   };
 };

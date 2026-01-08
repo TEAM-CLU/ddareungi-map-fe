@@ -40,6 +40,8 @@ export const TTS_URL_PRESET = {
   CURRENT_FIXED_TTS_URL: require('@/assets/audios/currentFixedTts.mp3'),
   PREVIEW_FIXED_TTS_URL: require('@/assets/audios/previewFixedTts.mp3'),
   ARRIVE_WAYPOINT_TTS_URL: require('@/assets/audios/arriveWaypointTts.mp3'),
+  REROUTE_TTS_URL: require('@/assets/audios/rerouteTts.mp3'),
+  RECOVER_TTS_URL: require('@/assets/audios/recoverTts.mp3'),
 };
 
 // navigationTurn.constants.ts
@@ -71,7 +73,7 @@ export const INTERVAL_DISTANCE_OPTIONS = {
   MIN_INTERVAL_DISTANCE_METER: 10,
 } as const;
 
-const WAYPOINT_CONFIG = {
+export const WAYPOINT_CONFIG = {
   ENTRY_RADIUS_METER: 20, // waypoint 근처로 들어왔다 판정
   EXIT_RADIUS_METER: 35, // 다시 멀어지면 지나침 확정 후보
   PASS_CONFIRM_COUNT: 2, // 2회 반복되면 진짜 지나침
