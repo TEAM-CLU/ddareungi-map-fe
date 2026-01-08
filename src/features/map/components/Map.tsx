@@ -23,11 +23,7 @@ const Map = ({
   const webViewRef = useWebViewRef();
   useMyLocation({ isMapReady });
 
-  const {
-    handleMapCenterIdle,
-    handleStationBikeCountListUpdate,
-    handleStationMarkerClick,
-  } = useStation({
+  const { handleStationMessage } = useStation({
     isMapReady,
   });
 
@@ -36,9 +32,7 @@ const Map = ({
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     handleMapReadyMessage(event);
-    handleMapCenterIdle(event);
-    handleStationBikeCountListUpdate(event);
-    handleStationMarkerClick(event);
+    handleStationMessage(event);
     handleBookmarkMarkerClick(event);
   };
 
@@ -50,7 +44,7 @@ const Map = ({
     const baseUrl = 'https://2ecf08848c8e.ngrok-free.app/map.html';
     return `${baseUrl}?t=${timestamp}`;
   });
-  
+
   // selectedRouteDetailModal에서 쓰기 위해 zustand용 isMapReady 동기화
   useEffect(() => {
     setIsMapReady(isLocalMapReady);

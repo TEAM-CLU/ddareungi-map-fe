@@ -9,10 +9,14 @@ export const formatTime = (seconds: number): string => {
 };
 
 // 시간 포맷팅 (초 → n분)
-export const formatMinutes = (seconds: number): string => String(Math.round(seconds / 60));
+export const formatMinutes = (seconds: number): string =>
+  String(Math.round(seconds / 60));
 
 // 시간대 포맷팅 함수 (baseTime 기준 ~ 도착 예정 시간)
-export const formatTimeRange = (baseTime: Date, durationSeconds: number): string => {
+export const formatTimeRange = (
+  baseTime: Date,
+  durationSeconds: number,
+): string => {
   const arrival = new Date(baseTime.getTime() + durationSeconds * 1000);
 
   const formatHourMinute = (date: Date): string => {
@@ -28,10 +32,14 @@ export const formatTimeRange = (baseTime: Date, durationSeconds: number): string
 
 // 거리 포맷팅 (미터 → km)
 export const formatDistance = (meters: number): string => {
-  const distanceInKm = meters / 1000;
-  return distanceInKm % 1 === 0
-    ? `${distanceInKm.toFixed(0)}km`
-    : `${distanceInKm.toFixed(1)}km`;
+  if (meters >= 1000) {
+    // 1. km 변환 후 소수점 첫째 자리까지 반올림
+    const km = (meters / 1000).toFixed(1);
+    // 2. "2.0" -> 2 처럼 불필요한 소수점 0을 자동으로 제거
+    return `${parseFloat(km)}km`;
+  }
+  // 3. 1000m 미만은 정수로 반올림
+  return `${Math.round(meters)}m`;
 };
 
 // 거리 텍스트 계산 함수
@@ -40,16 +48,14 @@ export const getDistanceText = (
   options?: {
     loadingText?: string;
     errorText?: string;
-  }
+  },
 ): string => {
-  const loading = options?.loadingText || '거리를 계산 중이에요';
-  const error = options?.errorText || '거리를 찾을 수 없어요';
+  const { loadingText = '계산 중...', errorText = '거리 정보 없음' } =
+    options || {};
 
-  if (distance === null) return loading; // 로딩 중
-  if (distance === undefined) return error; // 계산 실패
-  return distance >= 1000
-    ? `${(distance / 1000).toFixed(1)}km`
-    : `${Math.round(distance)}m`;
+  if (distance === null) return loadingText; // 로딩 중
+  if (distance === undefined) return errorText; // 계산 실패
+  return formatDistance(distance);
 };
 
 // 칼로리 포맷팅 (3자리 콤마)

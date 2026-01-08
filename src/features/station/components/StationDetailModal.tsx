@@ -31,7 +31,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
     syncStartEndInLoopMode,
   } = useRouteStore();
   const { globalNavigation } = useMapStore();
-  const { stationMetaData, lamda } = useStationStore();
+  const { stationMetaData } = useStationStore();
   const { myPosition } = useMyPositionStore();
 
   // RouteType 토글 함수
