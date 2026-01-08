@@ -1,4 +1,3 @@
-// src/shared/stores/useModalStore.ts
 import { ModalState } from '@/shared/model/index.types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';

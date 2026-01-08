@@ -22,7 +22,7 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
+import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 import BookmarkBadge from '@/shared/components/badge/BookmarkBadge';
 import { BookmarkItem } from '@/shared/model/index.types';
 import { useSearchOrchestrator } from '../hooks/useSearchOrchestrator';

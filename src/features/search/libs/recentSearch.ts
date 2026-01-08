@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PlaceInfo, RecentSearchItem } from '../model/search.types';
-import { RECENT_SEARCH_KEY, MAX_RECENT_SEARCHES } from '../model/search.constants';
+import { RECENT_SEARCH_KEY, MAX_RECENT_SEARCHE_COUNT } from '../model/search.constants';
 
 // [조회] AsyncStorage에서 가져오기
 export const getRecentSearches = async (): Promise<RecentSearchItem[]> => {
@@ -27,7 +27,7 @@ export const saveRecentSearch = async (
 
   // 중복 제거 및 갯수 제한
   const filtered = currentList.filter(item => item.placeId !== place.placeId);
-  const updated = [newItem, ...filtered].slice(0, MAX_RECENT_SEARCHES);
+  const updated = [newItem, ...filtered].slice(0, MAX_RECENT_SEARCHE_COUNT);
 
   await AsyncStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(updated));
   return updated;

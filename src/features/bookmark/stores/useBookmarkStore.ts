@@ -1,20 +1,24 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { BookmarkItem } from '../model/index.types';
-import { Alert } from 'react-native';
+import { BookmarkItem } from '../../../shared/model/index.types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MAX_BOOKMARK_COUNT } from '../model/bookmark.constants';
+
+export type toggleBookmarkResult =
+  | 'added'
+  | 'removed'
+  | 'limit_reached'
+  | 'fail';
 
 interface BookmarkState {
   bookmarks: BookmarkItem[];
 
-  // 데이터 로드 상태 체크용 (내부 데이터)
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
 
-  toggleBookmark: (bookmark: BookmarkItem) => void;
-  addBookmark: (bookmark: BookmarkItem) => void;
+  toggleBookmark: (bookmark: BookmarkItem) => toggleBookmarkResult;
+  addBookmark: (bookmark: BookmarkItem) => boolean;
   removeBookmark: (id: string) => void;
-
   updateBookmarkAlias: (id: string, alias: string) => void;
   updateBookmarkColor: (id: string, color: string) => void;
 }
@@ -35,8 +39,10 @@ export const useBookmarkStore = create<BookmarkState>()(
 
         if (exists) {
           removeBookmark(bookmark.id);
+          return 'removed';
         } else {
-          addBookmark(bookmark);
+          const isAdded = addBookmark(bookmark);
+          return isAdded ? 'added' : 'limit_reached';
         }
       },
 
@@ -44,16 +50,11 @@ export const useBookmarkStore = create<BookmarkState>()(
         const list = get().bookmarks;
 
         // 중복 방어 로직 (이미 있으면 무시)
-        if (list.some(item => item.id === bookmark.id)) return;
+        if (list.some(item => item.id === bookmark.id)) return false;
 
         // 개수 제한 체크
-        if (list.length >= 10) {
-          console.warn(`즐겨찾기 최대 개수(10개)를 초과했습니다.`);
-          Alert.alert(
-            '즐겨찾기 최대 개수 초과',
-            '즐겨찾기는 최대 10개까지 등록할 수 있습니다.',
-          );
-          return;
+        if (list.length >= MAX_BOOKMARK_COUNT) {
+          return false;
         }
 
         const newBookmark = {
@@ -64,6 +65,7 @@ export const useBookmarkStore = create<BookmarkState>()(
         };
 
         set(state => ({ bookmarks: [...state.bookmarks, newBookmark] }));
+        return true;
       },
 
       removeBookmark: (id: string) => {
@@ -93,9 +95,7 @@ export const useBookmarkStore = create<BookmarkState>()(
       storage: createJSONStorage(() => AsyncStorage),
       version: 1, // 데이터 구조 변경 대비
       onRehydrateStorage: () => (state, error) => {
-        if (error) {
-          console.error('즐겨찾기 데이터 로드 실패:', error);
-        }
+        if (error) console.error('즐겨찾기 데이터 로드 실패:', error);
         state?.setHasHydrated(true);
       },
     },

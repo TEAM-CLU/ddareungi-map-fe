@@ -4,11 +4,11 @@ import { useAutocomplete } from '@/features/search/hooks/useAutocomplete';
 import { useSearchMessenger } from '@/features/search/hooks/useSearchMessenger';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
-import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
+import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
-import { useBookmarkMessenger } from '../../../shared/hooks/useBookmarkMessenger';
+import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
 import { PlaceInfo } from '../model/search.types';
 
 /**

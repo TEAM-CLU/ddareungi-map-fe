@@ -1,0 +1,1 @@
+export const MAX_BOOKMARK_COUNT = 10;

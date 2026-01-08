@@ -15,8 +15,8 @@ import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { getDistanceText } from '@/shared/utils/formatting';
-import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
-import StarToggle from '@/shared/components/bookmark/StarToggle';
+import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
+import StarToggle from '@/features/bookmark/components/StarToggle';
 import { BookmarkItem } from '@/shared/model/index.types';
 import { PlaceInfo } from '../model/search.types';
 import { useNearbyStationsQuery } from '@/features/station/services/station.queries';
@@ -178,17 +178,15 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
     북마크 토글 핸들러
   */
   const handleToggleBookmark = () => {
-    try {
-      const bookmarkItem = createPlaceBookmark(place);
-      toggleBookmark(bookmarkItem);
-    } catch (error) {
-      console.error(error);
+    const bookmarkItem = createPlaceBookmark(place);
+    const result = toggleBookmark(bookmarkItem);
+    if (result === 'limit_reached') {
       Alert.alert(
-        '즐겨찾기 등록 실패',
-        error instanceof Error
-          ? error.message
-          : '즐겨찾기 등록 중 오류가 발생했습니다.',
+        '즐겨찾기 최대 개수 초과',
+        '즐겨찾기는 최대 10개까지 등록할 수 있습니다. 기존 즐겨찾기를 삭제한 후 다시 시도해주세요.',
       );
+    } else if (result === 'added') {
+      console.log('즐겨찾기 추가됨');
     }
   };
 

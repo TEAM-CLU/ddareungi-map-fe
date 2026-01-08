@@ -2,12 +2,12 @@ import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { useMyLocation } from '@/features/location/hooks/useMyLocation';
 import { useStation } from '@/features/station/hooks/useStation';
 import { useMapStore } from '../stores/useMapStore';
-import { useBookmark } from '@/shared/hooks/useBookmark';
+import { useBookmark } from '@/features/bookmark/hooks/useBookmark';
 import { useWebViewRef } from '@/app/providers/webview';
 import { useEffect, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, ActivityIndicator } from 'react-native';
-import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
+import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 interface MapProps {
   isLocalMapReady: boolean;
   setIsLocalMapReady: React.Dispatch<React.SetStateAction<boolean>>;
@@ -28,7 +28,6 @@ const Map = ({
   });
 
   const { handleBookmarkMarkerClick } = useBookmark({ isMapReady });
-  // const _hasHydrated = useBookmarkStore(state => state._hasHydrated);
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     handleMapReadyMessage(event);
@@ -49,11 +48,6 @@ const Map = ({
   useEffect(() => {
     setIsMapReady(isLocalMapReady);
   }, [isLocalMapReady]);
-
-  // 즐겨찾기 데이터 로드될때까지 대기 (즐겨찾기 마커 표시 등을 위해)
-  // if (!_hasHydrated) {
-  //   return null;
-  // }
 
   return (
     <WebView
