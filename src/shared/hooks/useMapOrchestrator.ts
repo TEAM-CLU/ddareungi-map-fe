@@ -1,13 +1,26 @@
-// src/shared/hooks/useMapController.ts
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import WebView, { WebViewMessageEvent } from 'react-native-webview';
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { WebViewMessageEvent } from 'react-native-webview';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useModalStore } from '../stores/useModalStore';
 import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
 import { MapReadyMessage } from '@/shared/model/map.webview.types';
+
+// 모달의 상태(Boolean)와 Ref를 동기화하는 훅
+const useModalSync = (
+  ref: RefObject<BottomSheetModal | null>,
+  isVisible: boolean,
+) => {
+  useEffect(() => {
+    if (isVisible) {
+      ref.current?.present();
+    } else {
+      ref.current?.dismiss();
+    }
+  }, [isVisible, ref]);
+};
 
 /**
  * useMapOrchestrator
@@ -59,16 +72,21 @@ export const useMapOrchestrator = () => {
   const {
     showPlaceDetailModal,
     showNearByStationModal,
-    setShowNearByStationModal,
     showSelectedRouteDetailModal,
-    setShowSelectedRouteDetailModal,
     showStationDetailModal,
     showRouteRecommendModal,
-    setShowRouteRecommendModal,
-    showBookmarkModal,
-    setShowBookmarkModal,
-    setModalRefs,
     showNavigationDetailModal,
+    showBookmarkModal,
+
+    setShowPlaceDetailModal,
+    setShowNearByStationModal,
+    setShowSelectedRouteDetailModal,
+    setShowStationDetailModal,
+    setShowRouteRecommendModal,
+    setShowNavigationDetailModal,
+    setShowBookmarkModal,
+
+    setModalRefs,
   } = useModalStore();
 
   /** ----------------------------------------
@@ -106,56 +124,13 @@ export const useMapOrchestrator = () => {
    * - store: "지금 이 모달이 열려 있어야 하는가?"만 관리 (boolean)
    * - controller: ref.current.present()/dismiss()를 실제로 호출
    * ---------------------------------------- */
-
-  // 선택된 경로 상세 모달
-  useEffect(() => {
-    const modal = selectedRouteDetailModalLocalRef.current;
-    if (!modal) return;
-    showSelectedRouteDetailModal ? modal.present() : modal.dismiss();
-  }, [showSelectedRouteDetailModal]);
-
-  // 주변 대여소 모달
-  useEffect(() => {
-    const modal = nearbyStationModalLocalRef.current;
-    if (!modal) return;
-    showNearByStationModal ? modal.present() : modal.dismiss();
-  }, [showNearByStationModal]);
-
-  // 경로 추천 모달
-  useEffect(() => {
-    const modal = routeRecommendModalLocalRef.current;
-    if (!modal) return;
-    showRouteRecommendModal ? modal.present() : modal.dismiss();
-  }, [showRouteRecommendModal]);
-
-  // 대여소 상세 모달
-  useEffect(() => {
-    const modal = stationDetailModalLocalRef.current;
-    if (!modal) return;
-    showStationDetailModal ? modal.present() : modal.dismiss();
-  }, [showStationDetailModal]);
-
-  // 장소 상세 모달
-  useEffect(() => {
-    const modal = placeDetailModalLocalRef.current;
-    if (!modal) return;
-    showPlaceDetailModal ? modal.present() : modal.dismiss();
-  }, [showPlaceDetailModal]);
-
-  // 즐겨찾기 모달
-  useEffect(() => {
-    const modal = bookmarkModalLocalRef.current;
-    if (!modal) return;
-    showBookmarkModal ? modal.present() : modal.dismiss();
-  }, [showBookmarkModal]);
-  
-  // 네비게이션 상세 모달
-  useEffect(() => {
-    const modal = navigationDetailModalLocalRef.current;
-    if (!modal) return;
-    // 네비게이션 상세 모달은 show 상태가 없으므로 항상 present/dismiss 하지 않음
-    showNavigationDetailModal ? modal.present() : modal.dismiss();
-  }, [showNavigationDetailModal]);
+  useModalSync(placeDetailModalLocalRef, showPlaceDetailModal);
+  useModalSync(selectedRouteDetailModalLocalRef, showSelectedRouteDetailModal);
+  useModalSync(nearbyStationModalLocalRef, showNearByStationModal);
+  useModalSync(stationDetailModalLocalRef, showStationDetailModal);
+  useModalSync(routeRecommendModalLocalRef, showRouteRecommendModal);
+  useModalSync(bookmarkModalLocalRef, showBookmarkModal);
+  useModalSync(navigationDetailModalLocalRef, showNavigationDetailModal);
 
   /** ----------------------------------------
    * 8. 외부에서 사용할 이벤트 핸들러들
