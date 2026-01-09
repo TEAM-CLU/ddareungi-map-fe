@@ -19,12 +19,16 @@ import SquareButton from '@/shared/components/button/SquareButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLogoutMutation } from '@/features/auth/services/auth.queries';
 import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
+import { CommonActions } from '@react-navigation/native';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 const EditProfile = ({ onBack }: { onBack: () => void }) => {
   const { data: user, isPending } = useUserInfoQuery();
   const { mutate: updateUser } = useUpdateUserInfoMutation();
   const { mutate: logout } = useLogoutMutation();
   const { mutate: deleteUser } = useDeleteUserMutation();
+
+  const { navigation } = useAppNavigation();
 
   const [name, setName] = useState('');
   const [year, setYear] = useState<number | null>(null);
@@ -109,6 +113,9 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
     };
 
     updateUser(updatedData, {
+      onSuccess: data => {
+        Alert.alert('알림', data.message);
+      },
       onError: error => {
         Alert.alert('오류', error.message);
       },
@@ -124,10 +131,23 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
         {
           text: '확인',
           style: 'destructive',
-          onPress: () => logout(),
+          onPress: () => {
+            logout(undefined, {
+              onSettled: () => {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  }),
+                );
+              },
+            });
+          },
         },
       ],
-      { cancelable: true },
+      {
+        cancelable: true,
+      },
     );
   };
 
@@ -140,11 +160,21 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
         {
           text: '확인',
           style: 'destructive',
-          onPress: () => deleteUser(undefined, {
-            onError: error => {
-              Alert.alert('오류', error.message);
-            },
-          }),
+          onPress: () =>
+            deleteUser(undefined, {
+              onSuccess: data => {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  }),
+                );
+                Alert.alert('알림', data.message);
+              },
+              onError: error => {
+                Alert.alert('오류', error.message);
+              },
+            }),
         },
       ],
       { cancelable: true },

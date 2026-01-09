@@ -9,9 +9,7 @@ import SignUpProfileStep from '@/features/auth/components/signUp/SignUpProfileSt
 import { TouchableWithoutFeedback } from 'react-native';
 import SignUpPermissionStep from '@/features/auth/components/signUp/SignUpPermissionStep';
 import { useCreateUserMutation } from '@/features/auth/services/user.queries';
-import {
-  CreateUserPayload,
-} from '@/features/auth/model/auth.types';
+import { CreateUserPayload } from '@/features/auth/model/auth.types';
 import RoundButton from '@/shared/components/button/RoundButton';
 import IconBicycle from '@/shared/components/icons/IconBicycle';
 import SimpleLoading from '@/shared/components/SimpleLoading';
@@ -85,10 +83,11 @@ const RegisterScreen = () => {
 
     if (signUpStep === 4 && isReadyToSignUp) {
       signUp(payload, {
-        onSuccess: () => {
+        onSuccess: data => {
           navigation.navigate('Login');
+          Alert.alert('알림', data.message);
         },
-        onError: (error) => {
+        onError: error => {
           Alert.alert('오류', error.message);
         },
       });

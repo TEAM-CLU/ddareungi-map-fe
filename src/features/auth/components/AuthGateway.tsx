@@ -10,15 +10,16 @@ import { TouchableOpacity, View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AccountFinder from '@/features/auth/components/AccountFinder';
 import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
+import { CommonActions } from '@react-navigation/native';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 interface AuthGatewayProps {
   setLoginScreenStep: React.Dispatch<React.SetStateAction<1 | 2>>;
 }
 
-const AuthGateway = ({
-  setLoginScreenStep,
-}: AuthGatewayProps) => {
+const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   const { mutate: login } = useLoginUserMutation();
+  const { navigation } = useAppNavigation();
 
   const [id, setId] = useState<string>('');
   const [pwd, setPwd] = useState<string>('');
@@ -74,6 +75,20 @@ const AuthGateway = ({
     };
 
     login(payload, {
+      onSuccess: data => {
+        const accessToken = data?.data?.accessToken;
+        if (accessToken) {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Map' }],
+            }),
+          );
+        } else {
+          // 성공했으나 토큰이 없는 경우
+          Alert.alert('로그인 실패', '토큰이 존재하지 않습니다.');
+        }
+      },
       onError: error => {
         Alert.alert('로그인 실패', error.message);
         setIsIdValid(false);

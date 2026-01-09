@@ -2,7 +2,7 @@ import Input from '@/shared/components/Input/Input';
 import { useEffect, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import SquareButton from '@/shared/components/button/SquareButton';
 import RoundButton from '@/shared/components/button/RoundButton';
 import {
@@ -26,8 +26,7 @@ const SignUpEmailStep = ({
   setSignUpStep,
 }: SignUpEmailStepProps) => {
   const { mutate: checkEmailRedundancy } = useCheckEmailMutation();
-  const { mutate: sendVerificationCode } =
-    useSendVerificationEmailMutation();
+  const { mutate: sendVerificationCode } = useSendVerificationEmailMutation();
   const { mutate: verifyCode } = useVerifyEmailMutation();
 
   const [code, setCode] = useState<string>('');
@@ -76,6 +75,7 @@ const SignUpEmailStep = ({
         setEmailErrorDescription('');
         setIsValidEmail(true);
         setEmailSuccessDescription(data.message);
+        Alert.alert('알림', data.message);
 
         // 2. 인증 코드 전송
         sendVerificationCode(payload, {
@@ -85,14 +85,15 @@ const SignUpEmailStep = ({
             setShowCodeInput(true);
             setCodeErrorDescription('');
             setCodeSuccessDescription(data.message);
+            Alert.alert('알림', data.message);
           },
-          onError: (error) => {
+          onError: error => {
             setCodeSuccessDescription('');
             setCodeErrorDescription(error.message);
           },
         });
       },
-      onError: (error) => {
+      onError: error => {
         setEmailSuccessDescription('');
         setIsValidEmail(false);
         setEmailErrorDescription(error.message);
@@ -163,8 +164,9 @@ const SignUpEmailStep = ({
         setIsValidCode(true);
         setCodeSuccessDescription(data.message);
         setCanGoNextStep(true);
+        Alert.alert('알림', data.message);
       },
-      onError: (error) => {
+      onError: error => {
         setCodeSuccessDescription('');
         setIsValidCode(false);
         setCodeErrorDescription(error.message);

@@ -12,19 +12,13 @@ import {
   postSocialAuthExchangeToken,
   postVerifyEmail,
 } from '@/features/auth/services/auth.api';
-import { CommonActions } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
-import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useAuth } from '@/app/providers';
 
 // 이메일 인증 코드 발송
 export const useSendVerificationEmailMutation = () => {
   return useMutation({
     mutationFn: postSendVerificationEmail,
-    onSuccess: data => {
-      Alert.alert('알림', data.message);
-    },
   });
 };
 
@@ -32,9 +26,6 @@ export const useSendVerificationEmailMutation = () => {
 export const useVerifyEmailMutation = () => {
   return useMutation({
     mutationFn: postVerifyEmail,
-    onSuccess: data => {
-      Alert.alert('알림', data.message);
-    },
   });
 };
 
@@ -42,10 +33,6 @@ export const useVerifyEmailMutation = () => {
 export const useFindAccountMutation = () => {
   return useMutation({
     mutationFn: postFindAccount,
-    // 자체 모달 띄워주므로 onSuccess 필요 없음
-    // onSuccess: data => {
-    //   Alert.alert('알림', data.message);
-    // },
   });
 };
 
@@ -53,16 +40,12 @@ export const useFindAccountMutation = () => {
 export const useResetPasswordMutation = () => {
   return useMutation({
     mutationFn: postResetPassword,
-    onSuccess: data => {
-      Alert.alert('알림', data.message);
-    },
   });
 };
 
 // 로그아웃
 export const useLogoutMutation = () => {
   const queryClient = useQueryClient();
-  const { navigation } = useAppNavigation();
   const { removeToken } = useAuth();
 
   return useMutation({
@@ -70,13 +53,6 @@ export const useLogoutMutation = () => {
     onSettled: async () => {
       await removeToken(); // 앱 내 토큰 삭제
       queryClient.clear(); // 쿼리 캐시 초기화
-
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        }),
-      );
     },
   });
 };

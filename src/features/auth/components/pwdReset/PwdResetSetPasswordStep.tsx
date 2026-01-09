@@ -125,8 +125,9 @@ const PwdResetSetPasswordStep = ({
       };
 
       resetPwd(payload, {
-        onSuccess: () => {
+        onSuccess: data => {
           setAccountFeatures(null);
+          Alert.alert('알림', data.message);
         },
         onError: (error) => {
           setIsValidNewPwd(false);

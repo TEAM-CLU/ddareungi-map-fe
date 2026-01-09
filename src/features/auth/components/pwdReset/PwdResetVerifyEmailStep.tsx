@@ -1,16 +1,14 @@
 import Input from '@/shared/components/Input/Input';
 import { useEffect, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import SquareButton from '@/shared/components/button/SquareButton';
 import RoundButton from '@/shared/components/button/RoundButton';
 import {
   useSendVerificationEmailMutation,
   useVerifyEmailMutation,
 } from '@/features/auth/services/auth.queries';
-import {
-  VerifyEmailPayload,
-} from '@/features/auth/model/auth.types';
+import { VerifyEmailPayload } from '@/features/auth/model/auth.types';
 
 interface PwdResetVerifyEmailStepProps {
   email: string;
@@ -23,8 +21,7 @@ const PwdResetVerifyEmailStep = ({
   setEmail,
   setPwdResetStep,
 }: PwdResetVerifyEmailStepProps) => {
-  const { mutate: sendVerificationCode } =
-    useSendVerificationEmailMutation();
+  const { mutate: sendVerificationCode } = useSendVerificationEmailMutation();
   const { mutate: verifyCode } = useVerifyEmailMutation();
 
   const [code, setCode] = useState<string>('');
@@ -69,14 +66,15 @@ const PwdResetVerifyEmailStep = ({
 
     // 이메일 형식이 올바르면 코드 전송
     sendVerificationCode(payload, {
-      onSuccess: (data) => {
+      onSuccess: data => {
         setIsValidEmail(true);
         setIsValidCode(true);
         setShowCodeInput(true);
         setEmailErrorDescription('');
-        setCodeSuccessDescription(data.message)
+        setCodeSuccessDescription(data.message);
+        Alert.alert('알림', data.message);
       },
-      onError: (error) => {
+      onError: error => {
         setCodeSuccessDescription('');
         setCodeErrorDescription(error.message);
       },
@@ -142,17 +140,18 @@ const PwdResetVerifyEmailStep = ({
 
     // 인증코드 확인
     verifyCode(payload, {
-      onSuccess: (data) => {
+      onSuccess: data => {
         setCodeErrorDescription('');
         setIsValidCode(true);
         setCodeSuccessDescription(data.message);
         setCanGoNextStep(true);
+        Alert.alert('알림', data.message);
       },
-      onError: (error) => {
+      onError: error => {
         setCodeSuccessDescription('');
         setIsValidCode(false);
         setCodeErrorDescription(error.message);
-      }
+      },
     });
   };
 

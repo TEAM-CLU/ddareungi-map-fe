@@ -10,6 +10,7 @@ import { MYPAGE_MENU_ITEMS } from '../../model/mypage.constants';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useLogoutMutation } from '@/features/auth/services/auth.queries';
+import { CommonActions } from '@react-navigation/native';
 
 const MypageMain = ({
   onNavigate,
@@ -45,10 +46,23 @@ const MypageMain = ({
         {
           text: '확인',
           style: 'destructive',
-          onPress: () => logout(),
+          onPress: () => {
+            logout(undefined, {
+              onSettled: () => {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  }),
+                );
+              },
+            });
+          },
         },
       ],
-      { cancelable: true },
+      {
+        cancelable: true,
+      },
     );
   };
 
@@ -197,7 +211,9 @@ const MypageMain = ({
               activeOpacity={0.6}
             >
               <Text
-                style={tw('text-placeholder font-primary-500 text-xs underline')}
+                style={tw(
+                  'text-placeholder font-primary-500 text-xs underline',
+                )}
               >
                 로그아웃
               </Text>
