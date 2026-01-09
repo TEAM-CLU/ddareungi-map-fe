@@ -67,9 +67,11 @@ export const useLoginUserMutation = () => {
 
 // 유저 정보 조회
 export const useUserInfoQuery = () => {
+  const { accessToken } = useAuth();
   return useQuery<GetUserInfoResponse>({
     queryKey: ['userInfo'],
     queryFn: getUserInfo,
+    enabled: !!accessToken, // 토큰 존재할 때만 쿼리 실행
     // staleTime: Infinity,
   });
 };
