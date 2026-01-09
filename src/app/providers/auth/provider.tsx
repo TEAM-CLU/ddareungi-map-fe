@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from './context';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
-import { commonErrorInterceptor } from '@/shared/services/axiosConfig';
-import { api } from '@/shared/services/axios';
+import { useAxiosInterceptor } from '@/shared/hooks/useAxiosInterceptor';
 
 export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
@@ -59,13 +58,7 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
     loadToken();
   }, []);
 
-  // 앱 실행 시 인터셉터 설치
-  useEffect(() => {
-    const interceptorId = commonErrorInterceptor(api, removeToken);
-    return () => {
-      api.interceptors.response.eject(interceptorId);
-    };
-  }, [removeToken]);
+  useAxiosInterceptor(removeToken);
 
   const value = useMemo(
     () => ({
