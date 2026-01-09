@@ -15,13 +15,12 @@ import {
   TTS_URL_PRESET,
 } from '@/features/navigation/model/navigation.constants';
 import { tw } from '@/shared/libs/tw-helper';
-import { globalTtsState } from '@/features/navigation/model/navigation.data';
 import { IntervalPathData } from '@/features/navigation/model/navigation.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { calculateIntervalDistanceByMyPosition } from '@/features/navigation/utils/navigationController';
 import { formatDistanceAdaptive } from '@/shared/utils/formatting';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
-import { playTts } from '@/features/navigation/utils/playTts';
+import { playTts } from '@/features/navigation/libs/playTts';
 
 interface InstructionBannerProps {
   pathDataListByInterval: IntervalPathData[];
@@ -166,23 +165,18 @@ const InstructionBanner = ({
     if (!hasPlayedStartTtsRef.current) {
       hasPlayedStartTtsRef.current = true;
 
-      const startKey = 'tts-start';
-      if (globalTtsState.lastPlayedKey !== startKey) {
-        globalTtsState.lastPlayedKey = startKey;
-        playTts(startKey, START_TTS_URL, systemVolume);
-      }
+      const startKey = 'tts-navigation-start';
+      playTts(startKey, START_TTS_URL, systemVolume);
+
       return;
     }
 
     // 1) preview 모드 "진입" 순간에만 preview TTS
     if (isPreviewMode && !prevPreviewModeRef.current) {
       prevPreviewModeRef.current = true;
-
       const previewttsKey = `tts-preview-${currentIntervalIndex}`;
-      if (globalTtsState.lastPlayedKey !== previewttsKey) {
-        globalTtsState.lastPlayedKey = previewttsKey;
-        playTts(previewttsKey, previewTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
-      }
+      playTts(previewttsKey, previewTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
+
       return;
     }
 
@@ -196,10 +190,7 @@ const InstructionBanner = ({
     prevCurrentIntervalRef.current = currentIntervalIndex;
 
     const currentTtsKey = `tts-current-${currentIntervalIndex}`;
-    if (globalTtsState.lastPlayedKey !== currentTtsKey) {
-      globalTtsState.lastPlayedKey = currentTtsKey;
-      playTts(currentTtsKey, currentTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
-    }
+    playTts(currentTtsKey, currentTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
   }, [
     currentIntervalIndex,
     currentTtsUrl,
@@ -213,8 +204,8 @@ const InstructionBanner = ({
   // 클릭 시도 “지금 화면에 보이는(display)” 걸 재생
   const handleInstructionBannerPress = useCallback(() => {
     const key = isPreviewMode
-      ? `tts-preview-tap-${currentIntervalIndex}`
-      : `tts-current-tap-${currentIntervalIndex}`;
+      ? `tts-preview-${currentIntervalIndex}`
+      : `tts-turn-${currentIntervalIndex}`;
 
     playTts(key, displayTtsUrl, systemVolume);
   }, [isPreviewMode, currentIntervalIndex, displayTtsUrl, systemVolume]);

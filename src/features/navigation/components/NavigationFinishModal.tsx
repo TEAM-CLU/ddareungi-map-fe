@@ -10,11 +10,10 @@ import {
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import { clearSharedTimer } from '@/features/navigation/hooks/useTimer';
 import { TTS_URL_PRESET } from '@/features/navigation/model/navigation.constants';
-import { globalTtsState } from '@/features/navigation/model/navigation.data';
 import { useTerminateNavigationSessionMutation } from '@/features/navigation/services/navigation.queries';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
-import { playTts } from '@/features/navigation/utils/playTts';
+import { playTts } from '@/features/navigation/libs/playTts';
 import { useRouteSelect } from '@/features/routing/hooks/useRouteSelect';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
@@ -30,6 +29,7 @@ import { convertToTrees } from '@/shared/utils/measure';
 import { useEffect } from 'react';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
+import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
 
 interface NavigationFinishModalProps {
   modalRef: React.RefObject<Modal | null>;
@@ -63,7 +63,7 @@ const NavigationFinishModal = ({
 
   useEffect(() => {
     const terminateNavigation = async () => {
-      const finishTtsKey = 'navigation_finish_modal_tts_finish_navigation';
+      const finishTtsKey = 'tts-navigation-end';
       const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
       playTts(finishTtsKey, finishTtsUrl, systemVolume);
       if (sessionId === null || sessionId === '') return;
@@ -87,7 +87,7 @@ const NavigationFinishModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
-      globalTtsState.lastPlayedKey = '';
+      clearTtsQueue();
       return;
     }
 
@@ -111,7 +111,7 @@ const NavigationFinishModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
-      globalTtsState.lastPlayedKey = '';
+      clearTtsQueue();
     } catch (error) {
       console.error('Failed to update user stats:', error);
     } finally {
@@ -121,7 +121,7 @@ const NavigationFinishModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
-      globalTtsState.lastPlayedKey = '';
+      clearTtsQueue();
     }
   };
 

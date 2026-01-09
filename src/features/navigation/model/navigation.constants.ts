@@ -43,6 +43,7 @@ export const TTS_URL_PRESET = {
   REROUTE_TTS_URL: require('@/assets/audios/rerouteTts.mp3'),
   RECOVER_TTS_URL: require('@/assets/audios/recoverTts.mp3'),
   SUCCESS_REROUTE_TTS_URL: require('@/assets/audios/successRerouteTts.mp3'),
+  WARNING_OFFROUTE_TTS_URL: require('@/assets/audios/warnOffRouteTts.mp3'),
 };
 
 // navigationTurn.constants.ts
@@ -105,4 +106,41 @@ export const OFF_ROUTE_CONFIG = {
 
   // 재탐색 카운트 정책
   MAX_TRIGGER_COUNT: 3,
+
+  // 재탐색/복귀 카운트 감쇠량
+  COUNT_DECAY: 1,
 };
+
+// playTts.ts
+const COOLDOWN_ADDITIONAL_MS = 2000;
+export interface TtsItem {
+  key: string;
+  url: string;
+  volume: number;
+  enqueuedAt: number;
+}
+/**
+ * "재생 시작" 기준으로 같은 key를 막는 시간(ms)
+ * - offroute 류는 길게(난사 방지)
+ * - turn/preview는 짧게(UX)
+ * - waypoint/arrive는 중간
+ */
+export const COOLDOWN_BY_KEY: Record<string, number> = {
+  // start / arrive
+  'tts-navigation-start': 4000 + COOLDOWN_ADDITIONAL_MS,
+  'tts-navigation-end': 1000 + COOLDOWN_ADDITIONAL_MS,
+  // off-route
+  'tts-offroute-warning': 4000 + COOLDOWN_ADDITIONAL_MS,
+  'tts-offroute-recover': 3000 + COOLDOWN_ADDITIONAL_MS,
+  'tts-offroute-reroute': 4000 + COOLDOWN_ADDITIONAL_MS,
+  'tts-offroute-reroute-success': 2000 + COOLDOWN_ADDITIONAL_MS,
+
+  // waypoint
+  'tts-waypoint-arrive': 2000 + COOLDOWN_ADDITIONAL_MS,
+
+  // turn / preview 등(필요시 너가 키 맞춰서 추가)
+  'tts-turn': 2000 + COOLDOWN_ADDITIONAL_MS,
+  'tts-preview': 3000 + COOLDOWN_ADDITIONAL_MS,
+};
+
+export const DEFAULT_COOLDOWN_MS = 3000;

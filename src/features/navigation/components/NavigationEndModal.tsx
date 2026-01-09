@@ -6,10 +6,9 @@ import {
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import { clearSharedTimer } from '@/features/navigation/hooks/useTimer';
 import { TTS_URL_PRESET } from '@/features/navigation/model/navigation.constants';
-import { globalTtsState } from '@/features/navigation/model/navigation.data';
 import { useTerminateNavigationSessionMutation } from '@/features/navigation/services/navigation.queries';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
-import { playTts } from '@/features/navigation/utils/playTts';
+import { playTts } from '@/features/navigation/libs/playTts';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { IconClose } from '@/shared/components/icons';
@@ -24,6 +23,7 @@ import { convertToTrees } from '@/shared/utils/measure';
 import { useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
+import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
 
 interface NavigationEndModalProps {
   modalRef: React.RefObject<Modal | null>;
@@ -57,7 +57,7 @@ const NavigationEndModal = ({
 
   useEffect(() => {
     const terminateNavigation = async () => {
-      const endTtsKey = 'navigation_end_modal_tts_end_navigation';
+      const endTtsKey = 'tts-navigation-end';
       const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
       playTts(endTtsKey, endTtsUrl, systemVolume);
       if (sessionId === null || sessionId === '') return;
@@ -79,7 +79,7 @@ const NavigationEndModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
-      globalTtsState.lastPlayedKey = '';
+      clearTtsQueue();
       return;
     }
 
@@ -103,7 +103,6 @@ const NavigationEndModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
-      globalTtsState.lastPlayedKey = '';
     } catch (error) {
       console.error('Failed to update user stats:', error);
     } finally {
@@ -113,7 +112,6 @@ const NavigationEndModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
-      globalTtsState.lastPlayedKey = '';
     }
   };
 

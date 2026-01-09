@@ -27,12 +27,14 @@ const NavigationDetailModal = ({
   currentIntervalIndex,
   totalIntervals,
 }: NavigationDetailModalProps) => {
-  const { totalCaloriesBurned, totalCarbonSaved } = useNavigationStore(
-    useShallow(state => ({
-      totalCaloriesBurned: state.totalCaloriesBurned,
-      totalCarbonSaved: state.totalCarbonSaved,
-    })),
-  );
+  const { totalCaloriesBurned, totalCarbonSaved, setIsNavigationMode } =
+    useNavigationStore(
+      useShallow(state => ({
+        totalCaloriesBurned: state.totalCaloriesBurned,
+        totalCarbonSaved: state.totalCarbonSaved,
+        setIsNavigationMode: state.setIsNavigationMode,
+      })),
+    );
 
   const { systemVolume, setSystemVolume } = useVolumeStore(
     useShallow(state => ({
@@ -74,6 +76,7 @@ const NavigationDetailModal = ({
     clearSharedTimer();
     setShowNavigationDetailModal(false);
     setShowNavigationEndModal(true);
+    setIsNavigationMode(false);
   };
 
   return (

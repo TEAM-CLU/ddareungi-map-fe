@@ -81,7 +81,7 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
           lng: pos.coords.longitude,
         });
         setLocationMetaData({
-          timestamp: pos.timestamp,
+          timestamp: pos.timestamp ?? Date.now(),
           accuracy: pos.coords.accuracy,
           osSpeed: pos.coords.speed ?? undefined,
           coordinate: {
@@ -101,6 +101,15 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
         setMyPosition({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
+        });
+        setLocationMetaData({
+          timestamp: pos.timestamp ?? Date.now(),
+          accuracy: pos.coords.accuracy,
+          osSpeed: pos.coords.speed ?? undefined,
+          coordinate: {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          },
         });
         sendLocation(pos);
       },

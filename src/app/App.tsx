@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import DevHub from '@/app/routes/DevHub';
 import TrackPlayer from 'react-native-track-player';
 import { trackPlayerService } from '@/features/navigation/utils/trackPlayerService';
+import { registerTtsQueueHandler } from '@/features/navigation/libs/ttsPlayer';
 
 const App = () => {
   TrackPlayer.registerPlaybackService(() => trackPlayerService);
@@ -12,6 +13,8 @@ const App = () => {
       await TrackPlayer.updateOptions({
         capabilities: [],
       });
+
+      registerTtsQueueHandler();
     };
 
     setupTrackPlayer();
