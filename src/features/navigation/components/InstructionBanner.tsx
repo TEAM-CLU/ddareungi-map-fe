@@ -59,7 +59,8 @@ const InstructionBanner = ({
   const systemVolume = useVolumeStore(state => state.systemVolume);
 
   const { PREVIEW_THRESHOLD_METER, PREVIEW_ENTER_COUNT_MIN } = PREVIEW_CONIFG;
-  const { FALLBACK_TTS_URL, START_TTS_URL } = TTS_URL_PRESET;
+  const { FALLBACK_TTS_URL, START_TTS_URL, CURRENT_FIXED_TTS_URL } =
+    TTS_URL_PRESET;
   const hasPlayedStartTtsRef = useRef(false);
 
   // ----------------------------
@@ -138,8 +139,6 @@ const InstructionBanner = ({
     ? previewInstructionText
     : currentInstructionText;
   const displaySign = isPreviewMode ? (previewSign as number) : currentSign;
-  const displayTtsUrl =
-    (isPreviewMode ? previewTtsUrl : currentTtsUrl) ?? FALLBACK_TTS_URL;
 
   const instructionLines = useMemo(() => {
     const words = (displayText ?? '').trim().split(/\s+/).filter(Boolean);
@@ -157,6 +156,8 @@ const InstructionBanner = ({
   // - current interval 바뀌면 current TTS 1회
   // - previewMode 진입 순간 preview TTS 1회
   // ----------------------------
+  // ... 생략 (위는 동일)
+
   const prevCurrentIntervalRef = useRef<number>(-1);
   const prevPreviewModeRef = useRef<boolean>(false);
 
@@ -165,8 +166,16 @@ const InstructionBanner = ({
     if (!hasPlayedStartTtsRef.current) {
       hasPlayedStartTtsRef.current = true;
 
+      // ✅ 첫 마운트에서 "current interval"도 동기화 (바로 fixed 튀는 거 방지)
+      prevCurrentIntervalRef.current = currentIntervalIndex;
+
       const startKey = 'tts-navigation-start';
+      const firstActualKey = `tts-actual-${currentIntervalIndex}`;
+
       playTts(startKey, START_TTS_URL, systemVolume);
+
+      // ✅ 첫 실제 지시 1회 (여기서는 currentTtsUrl)
+      playTts(firstActualKey, currentTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
 
       return;
     }
@@ -174,9 +183,9 @@ const InstructionBanner = ({
     // 1) preview 모드 "진입" 순간에만 preview TTS
     if (isPreviewMode && !prevPreviewModeRef.current) {
       prevPreviewModeRef.current = true;
-      const previewttsKey = `tts-preview-${currentIntervalIndex}`;
-      playTts(previewttsKey, previewTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
 
+      const previewKey = `tts-preview-${currentIntervalIndex}`;
+      playTts(previewKey, previewTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
       return;
     }
 
@@ -185,12 +194,12 @@ const InstructionBanner = ({
       prevPreviewModeRef.current = false;
     }
 
-    // 2) current interval 변경 시 current TTS
+    // 2) current interval 변경 시 "고정 멘트" 1회
     if (currentIntervalIndex === prevCurrentIntervalRef.current) return;
     prevCurrentIntervalRef.current = currentIntervalIndex;
 
-    const currentTtsKey = `tts-current-${currentIntervalIndex}`;
-    playTts(currentTtsKey, currentTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
+    const fixedKey = `tts-turn-${currentIntervalIndex}`;
+    playTts(fixedKey, CURRENT_FIXED_TTS_URL ?? FALLBACK_TTS_URL, systemVolume);
   }, [
     currentIntervalIndex,
     currentTtsUrl,
@@ -199,16 +208,14 @@ const InstructionBanner = ({
     systemVolume,
     START_TTS_URL,
     FALLBACK_TTS_URL,
+    CURRENT_FIXED_TTS_URL,
   ]);
 
-  // 클릭 시도 “지금 화면에 보이는(display)” 걸 재생
+  // ✅ 클릭 시에는 "항상 현재 지시(currentTtsUrl)" 재생
   const handleInstructionBannerPress = useCallback(() => {
-    const key = isPreviewMode
-      ? `tts-preview-${currentIntervalIndex}`
-      : `tts-turn-${currentIntervalIndex}`;
-
-    playTts(key, displayTtsUrl, systemVolume);
-  }, [isPreviewMode, currentIntervalIndex, displayTtsUrl, systemVolume]);
+    const tapKey = `tts-tap-${currentIntervalIndex}`;
+    playTts(tapKey, currentTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
+  }, [currentIntervalIndex, currentTtsUrl, systemVolume, FALLBACK_TTS_URL]);
 
   return (
     <TouchableOpacity
