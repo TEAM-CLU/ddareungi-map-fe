@@ -515,8 +515,8 @@
         const inward = walkingToOriginPath.slice(midIdx);
 
         // 화면 기준: 위쪽으로 올리면서, 갈 때는 오른쪽 / 올 때는 왼쪽
-        const outwardOffset = offsetLatLngPath(outward, 6, -10);
-        const inwardOffset = offsetLatLngPath(inward, -6, -10);
+        const outwardOffset = offsetLatLngPath(outward, 3, -10);
+        const inwardOffset = offsetLatLngPath(inward, -3, -10);
 
         walkingToOriginPath = [...outwardOffset, ...inwardOffset];
       } else {
@@ -538,8 +538,8 @@
         bikeRouteKaKaoPath = applyRoundTripOffsetForLoop(
           bikeRouteKaKaoPath,
           waypoints, // waypoint 좌표 기준으로 분할
-          8, // outward: 오른쪽으로 8px 정도
-          -8, // inward: 왼쪽으로 8px 정도
+          4, // outward: 오른쪽으로 4px 정도
+          -4, // inward: 왼쪽으로 4px 정도
         );
       }
 

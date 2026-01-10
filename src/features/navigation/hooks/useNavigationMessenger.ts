@@ -35,16 +35,10 @@ export const useNavigationMessenger = () => {
   );
 
   const updateNavigationCurrentInterval = useCallback(
-    (
-      currentIntervalIndex: number,
-      intervals: [number, number][],
-      fullPathCoordinateList: [number, number][],
-    ) => {
+    (currentIntervalIndex: number) => {
       const message: UpdateNavigationCurrentIntervalMessage = {
         type: 'updateNavigationCurrentInterval',
         currentIntervalIndex,
-        intervals,
-        fullPathCoordinateList,
       };
       sendMessage(message);
     },

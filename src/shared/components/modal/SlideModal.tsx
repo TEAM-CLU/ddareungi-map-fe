@@ -34,10 +34,15 @@ const SlideModal = forwardRef<BottomSheetModal, SlideModalProps>(
         onDismiss={onDismiss}
         enablePanDownToClose={enablePanDownToClose}
         enableOverDrag
-        backgroundStyle={tw('bg-surface-primary rounded-t-3xl')}
+        backgroundStyle={tw('bg-surface-primary rounded-3xl')}
         handleIndicatorStyle={[
-          tw('rounded-lg self-center mt-3'),
-          { backgroundColor: '#CFCCD4', width: 42, height: 5.8 },
+          tw('rounded-lg  mt-3'),
+          {
+            backgroundColor: '#CFCCD4',
+            width: 42,
+            height: 5.8,
+            alignSelf: 'center',
+          },
         ]}
         // 키보드가 올라올 때 시트 동작 설정
         keyboardBehavior="interactive"

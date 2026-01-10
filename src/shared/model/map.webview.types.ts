@@ -151,8 +151,6 @@ export interface DrawNavigationPathMessage {
 export interface UpdateNavigationCurrentIntervalMessage {
   type: 'updateNavigationCurrentInterval';
   currentIntervalIndex: number;
-  intervals: [number, number][];
-  fullPathCoordinateList: [number, number][];
 }
 
 export interface ClearNavigationPathMessage {

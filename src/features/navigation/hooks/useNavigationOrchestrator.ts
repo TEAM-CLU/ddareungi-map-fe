@@ -463,11 +463,7 @@ export const useNavigationOrchestrator = () => {
     );
 
     if (intervals.length > 0 && fullPathCoordinateList.current.length > 0) {
-      updateNavigationCurrentInterval(
-        currentIntervalIndex.current,
-        intervals,
-        fullPathCoordinateList.current,
-      );
+      updateNavigationCurrentInterval(currentIntervalIndex.current);
     }
   }, [
     currentIntervalIndex.current,
