@@ -315,6 +315,7 @@
 
   const applyRoundTripOffsetForLoop = (
     latLngPath,
+    waypoints = null, // waypoint 좌표 배열
     outwardOffsetX = 8, // 가는 길: 화면 기준 오른쪽으로
     inwardOffsetX = -8, // 오는 길: 화면 기준 왼쪽으로
   ) => {
@@ -324,7 +325,25 @@
     }
 
     const len = latLngPath.length;
-    const midIdx = Math.floor(len / 2);
+    let midIdx = Math.floor(len / 2); // 기본값: 배열 중간
+
+    // waypoint가 있으면 첫 번째 waypoint 좌표를 기준으로 midIdx 찾기
+    if (waypoints && waypoints.length > 0) {
+      const waypointCoord = waypoints[0];
+      let bestIdx = midIdx;
+      let bestDistance = Number.POSITIVE_INFINITY;
+
+      latLngPath.forEach((latlng, idx) => {
+        const dLat = latlng.getLat() - waypointCoord.lat;
+        const dLng = latlng.getLng() - waypointCoord.lng;
+        const dist = Math.sqrt(dLat * dLat + dLng * dLng);
+        if (dist < bestDistance) {
+          bestDistance = dist;
+          bestIdx = idx;
+        }
+      });
+      midIdx = bestIdx;
+    }
 
     // 앞쪽: 원점 → 턴포인트 (가는 길)
     const outwardPath = latLngPath.slice(0, midIdx + 1);
@@ -518,6 +537,7 @@
       if (routeType === 'loop' && waypoints && waypoints.length === 1) {
         bikeRouteKaKaoPath = applyRoundTripOffsetForLoop(
           bikeRouteKaKaoPath,
+          waypoints, // waypoint 좌표 기준으로 분할
           8, // outward: 오른쪽으로 8px 정도
           -8, // inward: 왼쪽으로 8px 정도
         );
