@@ -21,10 +21,9 @@ import {
 } from '@/shared/utils/formatting';
 import { convertToTrees } from '@/shared/utils/measure';
 import { useEffect } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
-
 interface NavigationEndModalProps {
   modalRef: React.RefObject<Modal | null>;
   setShowNavigationEndModal: (show: boolean) => void;
@@ -53,7 +52,8 @@ const NavigationEndModal = ({
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
   const { systemVolume } = useVolumeStore();
-  const { replaceMyLocationMarker } = useNavigationMessenger();
+  const { replaceMyLocationMarker, clearNavigationPath } =
+    useNavigationMessenger();
 
   useEffect(() => {
     const terminateNavigation = async () => {
@@ -68,6 +68,7 @@ const NavigationEndModal = ({
         await terminateNavigationSession(payload);
       } catch (error) {}
     };
+    clearNavigationPath();
     terminateNavigation();
   }, []);
 
@@ -206,6 +207,18 @@ const NavigationEndModal = ({
           >
             총 {formatDistanceAdaptive(traveledDistanceMeter ?? 0)} 이동했어요!
           </Text>
+          <Image
+            source={require('@/assets/imgs/finishFlag.png')}
+            style={
+              {
+                position: 'absolute',
+                left: 110,
+                bottom: 17,
+                zIndex: -1,
+              } as ImageStyle
+            }
+            resizeMode="cover"
+          />
         </View>
       )}
     </Modal>

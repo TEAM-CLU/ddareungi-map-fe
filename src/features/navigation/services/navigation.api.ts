@@ -54,7 +54,7 @@ export const postReturnToExistingRoute = async (
     remainingWaypoints: payload.remainingWaypoints,
   });
 
-  return response.data.data;
+  return response.data;
 };
 
 // 완전 재탐색
@@ -65,5 +65,5 @@ export const postReRoute = async (
     currentLocation: payload.currentLocation,
     remainingWaypoints: payload.remainingWaypoints,
   });
-  return response.data.data;
+  return response.data;
 };

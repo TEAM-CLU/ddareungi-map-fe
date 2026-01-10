@@ -131,6 +131,38 @@ export interface ReplaceMyLocationMarker {
   isNavigationMode: boolean;
 }
 
+export interface NavigationPathData {
+  routeType: RouteType;
+  startPoint: [number, number];
+  endPoint: [number, number];
+  waypoints: Coordinate[] | null;
+  fullPathCoordinateList: [number, number][];
+  intervals: [number, number][];
+  currentIntervalIndex: number;
+  startStationPoint: Coordinate;
+  endStationPoint: Coordinate;
+}
+
+export interface DrawNavigationPathMessage {
+  type: 'drawNavigationPath';
+  navigationPathData: NavigationPathData;
+}
+
+export interface UpdateNavigationCurrentIntervalMessage {
+  type: 'updateNavigationCurrentInterval';
+  currentIntervalIndex: number;
+  intervals: [number, number][];
+  fullPathCoordinateList: [number, number][];
+}
+
+export interface ClearNavigationPathMessage {
+  type: 'clearNavigationPath';
+}
+
+export interface FocusOnNavigationPathMessage {
+  type: 'focusOnNavigationPath';
+}
+
 // 모든 메시지 타입 유니온
 export type WebViewMessageToWeb =
   | MapReadyMessage
@@ -153,7 +185,11 @@ export type WebViewMessageToWeb =
   | ShowSingleBookmarkMarkerMessage
   | ClearBookmarksMessage
   | StopFollowingMyLocationMessage
-  | ReplaceMyLocationMarker;
+  | ReplaceMyLocationMarker
+  | DrawNavigationPathMessage
+  | UpdateNavigationCurrentIntervalMessage
+  | ClearNavigationPathMessage
+  | FocusOnNavigationPathMessage;
 
 /* === 웹뷰로부터 받아온 메시지 타입 === */
 

@@ -59,7 +59,8 @@ const NavigationFinishModal = ({
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
   const { systemVolume } = useVolumeStore();
-  const { replaceMyLocationMarker } = useNavigationMessenger();
+  const { replaceMyLocationMarker, clearNavigationPath } =
+    useNavigationMessenger();
 
   useEffect(() => {
     const terminateNavigation = async () => {
@@ -76,6 +77,7 @@ const NavigationFinishModal = ({
         console.error('Failed to terminate navigation session:', error);
       }
     };
+    clearNavigationPath();
     terminateNavigation();
   }, []);
 

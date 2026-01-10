@@ -141,6 +141,7 @@ export const COOLDOWN_BY_KEY: Record<string, number> = {
   // turn / preview 등(필요시 너가 키 맞춰서 추가)
   'tts-turn': 2000 + COOLDOWN_ADDITIONAL_MS,
   'tts-preview': 3000 + COOLDOWN_ADDITIONAL_MS,
+  'tts-tap': 500,
 };
 
 export const DEFAULT_COOLDOWN_MS = 3000;

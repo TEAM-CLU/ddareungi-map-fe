@@ -134,11 +134,12 @@ const InstructionBanner = ({
 
   // ----------------------------
   // 3) 표시/클릭/TTS 모두 display로 통일
+  //    interval 전환 직후 ~ preview 전까지는 "다음 안내까지 직진하세요" 고정 문구
   // ----------------------------
   const displayText = isPreviewMode
     ? previewInstructionText
-    : currentInstructionText;
-  const displaySign = isPreviewMode ? (previewSign as number) : currentSign;
+    : '다음 안내까지 직진하세요';
+  const displaySign = isPreviewMode ? (previewSign as number) : 0; // 0은 직진 아이콘
 
   const instructionLines = useMemo(() => {
     const words = (displayText ?? '').trim().split(/\s+/).filter(Boolean);
@@ -211,7 +212,6 @@ const InstructionBanner = ({
     CURRENT_FIXED_TTS_URL,
   ]);
 
-  // ✅ 클릭 시에는 "항상 현재 지시(currentTtsUrl)" 재생
   const handleInstructionBannerPress = useCallback(() => {
     const tapKey = `tts-tap-${currentIntervalIndex}`;
     playTts(tapKey, currentTtsUrl ?? FALLBACK_TTS_URL, systemVolume);
@@ -228,37 +228,50 @@ const InstructionBanner = ({
       ]}
     >
       <View
-        style={[
-          tw('absolute -bottom-4 flex flex-row items-center justify-between'),
-          { left: '-50%', translateX: 50 },
-        ]}
+        style={{
+          position: 'absolute',
+          top: 90,
+          width: '100%',
+          alignItems: 'flex-start',
+        }}
       >
         <View
-          style={tw(
-            'flex justify-center h-5 w-5 items-center px-2 bg-surface-primary rounded-full',
-          )}
+          style={[
+            tw(
+              'flex flex-row items-center justify-between px-2 py-1 bg-brand-primary',
+            ),
+            {
+              borderRadius: 20,
+              gap: 8,
+              width: 80,
+            },
+          ]}
         >
+          <View
+            style={tw(
+              'flex justify-center h-5 w-5 items-center bg-surface-primary rounded-full',
+            )}
+          >
+            <Text
+              style={[
+                tw('font-primary-600 text-on-surface-primary'),
+                { fontSize: 13 },
+              ]}
+            >
+              {currentIntervalIndex + 1}
+            </Text>
+          </View>
           <Text
             style={[
-              tw('font-primary-600 text-on-surface-primary'),
+              tw('font-primary-600 text-on-surface-secondary'),
               { fontSize: 13 },
             ]}
           >
-            {currentIntervalIndex + 1}
+            {currentRemainingDistanceMeter !== null
+              ? formatDistanceAdaptive(currentRemainingDistanceMeter)
+              : '계산중'}
           </Text>
         </View>
-        <Text
-          style={[
-            tw(
-              'font-primary-600 text-on-surface-secondary text-center rounded-xl bg-brand-primary px-2 py-1',
-            ),
-            { fontSize: 13 },
-          ]}
-        >
-          {currentRemainingDistanceMeter !== null
-            ? formatDistanceAdaptive(currentRemainingDistanceMeter)
-            : '계산중'}
-        </Text>
       </View>
       <Image
         source={

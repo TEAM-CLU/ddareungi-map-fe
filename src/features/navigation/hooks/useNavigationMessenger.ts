@@ -1,5 +1,12 @@
 import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
-import { ReplaceMyLocationMarker } from '@/shared/model/map.webview.types';
+import {
+  ReplaceMyLocationMarker,
+  DrawNavigationPathMessage,
+  UpdateNavigationCurrentIntervalMessage,
+  ClearNavigationPathMessage,
+  FocusOnNavigationPathMessage,
+  NavigationPathData,
+} from '@/shared/model/map.webview.types';
 import { useCallback } from 'react';
 
 export const useNavigationMessenger = () => {
@@ -16,7 +23,53 @@ export const useNavigationMessenger = () => {
     [sendMessage],
   );
 
+  const drawNavigationPath = useCallback(
+    (navigationPathData: NavigationPathData) => {
+      const message: DrawNavigationPathMessage = {
+        type: 'drawNavigationPath',
+        navigationPathData,
+      };
+      sendMessage(message);
+    },
+    [sendMessage],
+  );
+
+  const updateNavigationCurrentInterval = useCallback(
+    (
+      currentIntervalIndex: number,
+      intervals: [number, number][],
+      fullPathCoordinateList: [number, number][],
+    ) => {
+      const message: UpdateNavigationCurrentIntervalMessage = {
+        type: 'updateNavigationCurrentInterval',
+        currentIntervalIndex,
+        intervals,
+        fullPathCoordinateList,
+      };
+      sendMessage(message);
+    },
+    [sendMessage],
+  );
+
+  const clearNavigationPath = useCallback(() => {
+    const message: ClearNavigationPathMessage = {
+      type: 'clearNavigationPath',
+    };
+    sendMessage(message);
+  }, [sendMessage]);
+
+  const focusOnNavigationPath = useCallback(() => {
+    const message: FocusOnNavigationPathMessage = {
+      type: 'focusOnNavigationPath',
+    };
+    sendMessage(message);
+  }, [sendMessage]);
+
   return {
     replaceMyLocationMarker,
+    drawNavigationPath,
+    updateNavigationCurrentInterval,
+    clearNavigationPath,
+    focusOnNavigationPath,
   };
 };

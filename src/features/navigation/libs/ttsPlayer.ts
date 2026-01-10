@@ -30,6 +30,7 @@ const now = () => Date.now();
 const getCooldownKey = (key: string) => {
   if (key.startsWith('tts-preview')) return 'tts-preview';
   if (key.startsWith('tts-turn')) return 'tts-turn';
+  if (key.startsWith('tts-tap')) return 'tts-tap';
   return key;
 };
 
