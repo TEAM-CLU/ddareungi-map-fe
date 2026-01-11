@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import EditProfile from '@/features/mypage/components/EditProfile';
 import MypageMain from '@/features/mypage/components/main/MypageMain';
-import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
+import OnboardingScreen from './OnboardingScreen';
 
 type PageType = 'main' | 'updateInfo' | 'updatePassword' | 'help';
 
@@ -14,8 +14,10 @@ const MyPageScreen = () => {
       case 'updateInfo':
         return <EditProfile onBack={() => setPage('main')} />;
       // case 'updatePassword':
-        // return <ChangePassword onBack={() => setPage('main')} />;
-        // return <PwdResetContainer />;
+      // return <ChangePassword onBack={() => setPage('main')} />;
+      // return <PwdResetContainer />;
+      case 'help':
+        return <OnboardingScreen />;
       default:
         return <MypageMain onNavigate={setPage} />;
     }

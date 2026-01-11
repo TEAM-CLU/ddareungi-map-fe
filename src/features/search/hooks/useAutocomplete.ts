@@ -31,22 +31,19 @@ export const useAutocomplete = () => {
   // ----------------------------------------------------
   const searchOptions: SearchOptions = useMemo(() => {
     // 검색어가 너무 짧으면 API 요청 안 함
-    if (debouncedQuery.trim().length < 1) {
-      return {}; 
+    if (!debouncedQuery.trim()) return {};
+
+    if (myPosition) {
+      return {
+        x: myPosition.lng, // 경도
+        y: myPosition.lat, // 위도
+        radius: 10000, // 10km 반경
+        sort: 'distance', // 거리순
+        size: 15, // 한 번에 15개씩
+      };
     }
 
-    return myPosition
-      ? {
-          x: myPosition.lng,
-          y: myPosition.lat,
-          radius: 10000, // 10km
-          sort: 'distance',
-          size: 15, // 자동완성 15개
-        }
-      : {
-          sort: 'accuracy',
-          size: 15,
-        };
+    return { sort: 'accuracy', size: 15 };
   }, [debouncedQuery, myPosition]);
 
   // ----------------------------------------------------
@@ -55,15 +52,15 @@ export const useAutocomplete = () => {
   // ----------------------------------------------------
   const {
     data,
-    isLoading: isQueryLoading, // 로딩 상태
+    isLoading: isQueryLoading, 
     isError,
-    error: queryError,         // 에러 객체 (메시지 포함)
+    error: queryError,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   } = useInfinitePlaceSearch(debouncedQuery, searchOptions);
-  
-// ----------------------------------------------------
+
+  // ----------------------------------------------------
   // [결과 데이터 가공]
   // 쿼리 데이터(pages)를 하나의 배열로 평탄화
   // ----------------------------------------------------
@@ -84,22 +81,24 @@ export const useAutocomplete = () => {
     setDebouncedQuery('');
   }, []);
 
+  // 타이핑 중(디바운스 대기)이거나, API 로딩 중이면 '로딩 중'으로 취급
+  // 이렇게 하면 타자 칠 때 즉시 로딩바가 떠서 반응이 빨라 보임
+  const isTyping = query !== debouncedQuery;
+  const showLoading = isTyping || isQueryLoading;
+
   return {
-    // 상태
     query,
     results,
-    isLoading: isQueryLoading,
-    error: isError ? queryError?.message: null,
+    isLoading: showLoading,
+    isFetchingNextPage,
+    error: queryError?.message || null, // 인터셉터가 가공한 메시지
 
-    // 액션
     setQuery: handleQueryChange,
     clearSearch,
+    fetchNextPage,
 
-    // 유틸리티
     hasQuery: query.trim().length > 0,
     hasResults: results.length > 0,
-    fetchNextPage,
     hasNextPage,
-    isFetchingNextPage,
   };
 };

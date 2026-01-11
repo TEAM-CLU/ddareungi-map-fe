@@ -1,5 +1,5 @@
-import React, { use, useEffect, useRef, useState } from 'react';
-import { Alert, Keyboard, Platform, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Keyboard, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StepIndicator from '@/shared/components/StepIndicator';
@@ -9,23 +9,16 @@ import SignUpProfileStep from '@/features/auth/components/signUp/SignUpProfileSt
 import { TouchableWithoutFeedback } from 'react-native';
 import SignUpPermissionStep from '@/features/auth/components/signUp/SignUpPermissionStep';
 import { useCreateUserMutation } from '@/features/auth/services/user.queries';
-import {
-  CreateUserPayload,
-  CreateUserResponse,
-} from '@/features/auth/model/auth.types';
+import { CreateUserPayload } from '@/features/auth/model/auth.types';
 import RoundButton from '@/shared/components/button/RoundButton';
 import IconBicycle from '@/shared/components/icons/IconBicycle';
 import SimpleLoading from '@/shared/components/SimpleLoading';
-import { useAuth } from '@/app/providers';
-import axios from 'axios';
 import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 const RegisterScreen = () => {
-  const { mutateAsync: signUp } = useCreateUserMutation();
-  const { setToken } = useAuth();
+  const { mutate: signUp, isPending } = useCreateUserMutation();
 
-  const [isLoading, setIsLoading] = useState(false);
   const [signUpStep, setSignUpStep] = useState<1 | 2 | 3 | 4>(1);
 
   const [isConsentOptionalAgreed, setIsConsentOptionalAgreed] = useState(false);
@@ -47,7 +40,7 @@ const RegisterScreen = () => {
 
   const { navigation } = useAppNavigation();
 
-  const handleSignUpButtonPress = async () => {
+  const handleSignUpButtonPress = () => {
     if (
       !email ||
       !pwd ||
@@ -89,42 +82,19 @@ const RegisterScreen = () => {
     };
 
     if (signUpStep === 4 && isReadyToSignUp) {
-      try {
-        const response: CreateUserResponse = await signUp(payload);
-        Alert.alert('회원가입 성공', response.message);
-        // 성공시
-        setIsLoading(true);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 2000);
-        navigation.navigate('Login');
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          Alert.alert(
-            '오류',
-            error.response?.data?.message ?? '회원가입 중 오류가 발생했습니다.',
-          );
-        }
-
-        setSignUpStep(1);
-        setEmail('');
-        setPwd('');
-        setConfirmPwd('');
-        setName('');
-        setBirthDate('');
-        setGender(undefined);
-        setAddress('');
-        setIsReadyToSignUp(false);
-        setIsConsentOptionalAgreed(false);
-        setIsConsentRequiredAgreed(false);
-        setConsentedAt(null);
-        navigation.navigate('Login');
-        return;
-      }
+      signUp(payload, {
+        onSuccess: data => {
+          navigation.navigate('Login');
+          Alert.alert('알림', data.message);
+        },
+        onError: error => {
+          Alert.alert('오류', error.message);
+        },
+      });
     }
   };
 
-  if (isLoading) return <SimpleLoading title="" />;
+  if (isPending) return <SimpleLoading title="" />;
 
   if (isReadyToSignUp)
     return (

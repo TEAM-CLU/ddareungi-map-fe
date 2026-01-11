@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { Coordinates } from '@/features/map/model/map.types';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
@@ -7,129 +7,112 @@ import {
   useStationDataListQuery,
 } from '@/features/station/services/station.queries';
 import {
-  MapAreaQueryPayload,
   StationLatestBikeCountData,
   UseStationsOptions,
 } from '@/features/station/model/station.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useStationStore } from '../stores/useStationStore';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
-import {
-  ChangeMapCenterMessage,
-  ClickStationMarkerMessage,
-  NeedUpdateStationBikeCountListMessage,
-} from '@/shared/model/map.webview.types';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
+  const { isNavigationMode } = useNavigationStore();
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore();
   const { setStationMetaData } = useStationStore();
 
-  const [mapCenterCoord, setMapCenterCoord] = useState<Coordinates | null>(
-    null,
-  );
-  const [isIdleEventOccurred, setIsIdleEventOccurred] = useState(false);
+
+  // 쿼리를 트리거하기 위한 "현재 보고 있는 지도 중심점"
+  const [currentMapCenterCoord, setCurrentMapCenterCoord] =
+    useState<Coordinates | null>(null);
+
+  // 거리 계산을 위해 "직전에 로딩했던 좌표" 기억용
   const prevMapCenterCoord = useRef<Coordinates | null>(null);
 
-  // 범위 내 대여소 데이터 조회 쿼리 파라미터
-  const stationDataListQueryPayload: MapAreaQueryPayload = {
-    lat: mapCenterCoord?.lat ?? null,
-    lng: mapCenterCoord?.lng ?? null,
-    radius: 1500,
-    enable: isIdleEventOccurred,
-  };
+  // 조건: 지도 로딩 완료 + 네비 모드 아님 + 경로 상세 모달 아님
+  const enableQuery =
+    isMapReady && !isNavigationMode && !showSelectedRouteDetailModal;
 
-  const { data: stationDataList, refetch: refetchStationDataList } =
-    useStationDataListQuery(stationDataListQueryPayload);
+  const { data: stationDataList } = useStationDataListQuery({
+    lat: currentMapCenterCoord?.lat,
+    lng: currentMapCenterCoord?.lng,
+    radius: 1500,
+    enable: enableQuery,
+  });
 
   const { mutateAsync: getLatestBikeCountList } =
     useGetStationsLatestBikeCountMutation();
 
-  const handleMapCenterIdle = (event: WebViewMessageEvent) => {
-    try {
-      const data: ChangeMapCenterMessage = JSON.parse(event.nativeEvent.data);
+  // 메세지 핸들러
+  // 웹뷰에서 오는 메세지 한 곳에서 처리
+  const handleStationMessage = useCallback(
+    async (event: WebViewMessageEvent) => {
+      try {
+        const data = JSON.parse(event.nativeEvent.data);
 
-      if (data.type !== 'changeMapCenter') return;
+        switch (data.type) {
+          // 1. 지도 이동 멈춤 (Idle)
+          // 일정 거리 이상 움직였을 때만 상태 업데이트 -> 쿼리 자동 실행
+          case 'changeMapCenter': {
+            const next: Coordinates = { lat: data.lat, lng: data.lng };
+            const prev = prevMapCenterCoord.current;
+            const isMovedEnough = prev
+              ? getDistanceBetweenCoords(prev, next) >= 1000
+              : true;
 
-      const next: Coordinates = { lat: data.lat, lng: data.lng };
-      const prev = prevMapCenterCoord.current;
-      const isMovedEnough = prev
-        ? getDistanceBetweenCoords(prev, next) >= 1000
-        : true;
+            if (isMovedEnough) {
+              setCurrentMapCenterCoord(next);
+              prevMapCenterCoord.current = next;
+            }
+            break;
+          }
 
-      if (isMovedEnough) {
-        setIsIdleEventOccurred(true);
-        setMapCenterCoord(next);
-        prevMapCenterCoord.current = next;
+          // 2. 특정 대여소 실시간 재고 조회 요청
+          case 'needUpdateStationBikeCountList': {
+            const { stationNumbers } = data;
+            if (stationNumbers.length === 0) return;
+
+            const response: StationLatestBikeCountData[] =
+              await getLatestBikeCountList({
+                stationNumbers,
+              });
+            updateTargetedStationBikeCountListMessage(response);
+            break;
+          }
+
+          // 3. 대여소 마커 클릭
+          case 'clickStationMarker': {
+            if (setStationMetaData) {
+              setStationMetaData(data.stationData);
+            }
+            setShowStationDetailModal(true);
+            break;
+          }
+
+          default:
+            break;
+        }
+      } catch (error) {
+        console.error('Invalid JSON from WebView:', error);
       }
-      return;
-    } catch (error) {
-      console.error('Invalid JSON from WebView:', error);
-    }
-  };
+    },
+    [
+      getLatestBikeCountList,
+      setShowStationDetailModal,
+      setStationMetaData,
+      updateTargetedStationBikeCountListMessage,
+    ],
+  );
 
-  // 스테이션 재고정보 요청이 오면 최신정보 조회후 웹뷰에 전달
-  const handleStationBikeCountListUpdate = async (
-    event: WebViewMessageEvent,
-  ) => {
-    try {
-      const data: NeedUpdateStationBikeCountListMessage = JSON.parse(
-        event.nativeEvent.data,
-      );
-      if (data.type !== 'needUpdateStationBikeCountList') return;
-      const targetedStationNumberList = data.stationNumbers;
-
-      if (targetedStationNumberList.length === 0) return;
-      const response: StationLatestBikeCountData[] =
-        await getLatestBikeCountList({
-          stationNumbers: targetedStationNumberList,
-        });
-
-      updateTargetedStationBikeCountListMessage(response);
-    } catch (error) {
-      console.error('Invalid JSON from WebView:', error);
-    }
-  };
-
-  // 클릭이벤트로 스테이션 상세정보 요청이 오면 모달 오픈
-  const handleStationMarkerClick = (event: WebViewMessageEvent) => {
-    try {
-      const data: ClickStationMarkerMessage = JSON.parse(
-        event.nativeEvent.data,
-      );
-      if (data.type !== 'clickStationMarker') return;
-      // 스테이션 상세정보 모달 오픈
-      setShowStationDetailModal(true);
-
-      // 모달에 필요한 상세정보 상태에 저장
-      if (!setStationMetaData) return;
-      setStationMetaData(data.stationData);
-      return;
-    } catch (error) {
-      console.error('Invalid JSON from WebView:', error);
-    }
-  };
-
-  // 스테이션 데이터가 갱신되면 웹뷰에 전달
+  // 쿼리 데이터가 갱신되면 웹뷰에 전달
   useEffect(() => {
-    if (showSelectedRouteDetailModal) return;
-    if (!isMapReady || !stationDataList) return;
+    if (!enableQuery || !stationDataList) return;
     updateStationDataList(stationDataList);
-  }, [stationDataList, isMapReady, updateStationDataList, isIdleEventOccurred]);
-
-  // set함수의 비동기 반영 문제 해결을 위한 조치(센터좌표가 한발자국씩 늦게 따라오는 점 해소)
-  useEffect(() => {
-    if (!mapCenterCoord) return;
-    if (isIdleEventOccurred) {
-      refetchStationDataList({ cancelRefetch: true });
-    }
-  }, [mapCenterCoord, isIdleEventOccurred, refetchStationDataList]);
+  }, [stationDataList, updateStationDataList, enableQuery]);
 
   return {
-    handleMapCenterIdle,
-    handleStationBikeCountListUpdate,
-    handleStationMarkerClick,
+    handleStationMessage,
   };
 };

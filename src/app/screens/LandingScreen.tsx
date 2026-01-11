@@ -2,15 +2,19 @@ import { tw } from '@/shared/libs/tw-helper';
 import { useEffect } from 'react';
 import { View, Text, Image, ImageStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
-const LandingScreen = () => {
-  const { navigation } = useAppNavigation();
+type LandingScreenProps = {
+  navigation?: any;
+};
 
+const LandingScreen = ({ navigation }: LandingScreenProps) => {
   useEffect(() => {
+    if (!navigation) return;
+
     const timer = setTimeout(() => {
-      navigation.navigate('Onboarding');
+      navigation.replace('Onboarding');
     }, 3000);
+
     return () => clearTimeout(timer);
   }, [navigation]);
 

@@ -1,5 +1,5 @@
 import Input from '@/shared/components/Input/Input';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 
 import { Alert, Text, View } from 'react-native';
@@ -11,16 +11,9 @@ import {
 } from '@/features/auth/services/auth.queries';
 import {
   CheckEmailPayload,
-  CheckEmailResponse,
-  SendVerificationEmailResponse,
   VerifyEmailPayload,
-  VerifyEmailResponse,
 } from '@/features/auth/model/auth.types';
 import { useCheckEmailMutation } from '@/features/auth/services/user.queries';
-import axios from 'axios';
-import SlideModal from '@/shared/components/modal/SlideModal';
-import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 interface SignUpEmailStepProps {
   email: string;
@@ -32,10 +25,9 @@ const SignUpEmailStep = ({
   setEmail,
   setSignUpStep,
 }: SignUpEmailStepProps) => {
-  const { mutateAsync: checkEmailRedundancy } = useCheckEmailMutation();
-  const { mutateAsync: sendVerificationCode } =
-    useSendVerificationEmailMutation();
-  const { mutateAsync: verifyCode } = useVerifyEmailMutation();
+  const { mutate: checkEmailRedundancy } = useCheckEmailMutation();
+  const { mutate: sendVerificationCode } = useSendVerificationEmailMutation();
+  const { mutate: verifyCode } = useVerifyEmailMutation();
 
   const [code, setCode] = useState<string>('');
   const [isValidEmail, setIsValidEmail] = useState<boolean>(true); // true: 유효한 이메일 | 초기값, false: 유효하지 않은 이메일
@@ -56,7 +48,7 @@ const SignUpEmailStep = ({
   const [canGoNextStep, setCanGoNextStep] = useState(false); // 다음 단계로 넘어갈 수 있는지 여부
 
   // 이메일 중복 확인
-  const handleCheckEmailRedundancyButtonPress = async () => {
+  const handleCheckEmailRedundancyButtonPress = () => {
     //이메일 입력 확인
     if (email.trim() === '') {
       setEmailSuccessDescription('');
@@ -77,49 +69,39 @@ const SignUpEmailStep = ({
     // payload 생성
     const payload: CheckEmailPayload = { email: email };
 
-    // 중복확인
-    try {
-      const response: CheckEmailResponse = await checkEmailRedundancy(payload);
-
-      // 사용 가능한 이메일인 경우
-      setEmailErrorDescription('');
-      setIsValidEmail(true);
-      setEmailSuccessDescription(`${response.message}`);
-      // 인증 코드 전송
-      try {
-        const response: SendVerificationEmailResponse =
-          await sendVerificationCode(payload);
-
-        Alert.alert('인증 코드가 전송되었습니다.'); // 한번더 강조
+    // 1. 이메일 중복확인
+    checkEmailRedundancy(payload, {
+      onSuccess: data => {
+        setEmailErrorDescription('');
         setIsValidEmail(true);
-        setIsValidCode(true);
-        setShowCodeInput(true);
-        setCodeErrorDescription('');
-        setCodeSuccessDescription(`${response.message}`);
-      } catch (error) {
-        // 네트워크 또는 서버 오류 처리
-        setCodeSuccessDescription('');
-        if (axios.isAxiosError(error)) {
-          setCodeErrorDescription(
-            `${
-              error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'
-            }`,
-          );
-        }
-      }
-    } catch (error) {
-      // 네트워크 또는 서버 오류 처리
-      setEmailSuccessDescription('');
-      setIsValidEmail(false);
-      if (axios.isAxiosError(error)) {
-        setEmailErrorDescription(
-          `${error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'}`,
-        );
-      }
-    }
+        setEmailSuccessDescription(data.message);
+        Alert.alert('알림', data.message);
+
+        // 2. 인증 코드 전송
+        sendVerificationCode(payload, {
+          onSuccess: data => {
+            setIsValidEmail(true);
+            setIsValidCode(true);
+            setShowCodeInput(true);
+            setCodeErrorDescription('');
+            setCodeSuccessDescription(data.message);
+            Alert.alert('알림', data.message);
+          },
+          onError: error => {
+            setCodeSuccessDescription('');
+            setCodeErrorDescription(error.message);
+          },
+        });
+      },
+      onError: error => {
+        setEmailSuccessDescription('');
+        setIsValidEmail(false);
+        setEmailErrorDescription(error.message);
+      },
+    });
   };
 
-  const handleVerifyCodeButtonPress = async () => {
+  const handleVerifyCodeButtonPress = () => {
     // 이메일 입력 재확인
     if (email.trim() === '') {
       setEmailSuccessDescription('');
@@ -176,25 +158,20 @@ const SignUpEmailStep = ({
     };
 
     // 인증코드 확인
-    try {
-      const response: VerifyEmailResponse = await verifyCode(payload);
-
-      // 유효한 인증코드인 경우
-      setCodeErrorDescription('');
-      setIsValidCode(true);
-      setCodeSuccessDescription(`${response.message}`);
-      setCanGoNextStep(true);
-    } catch (error) {
-      // 네트워크 또는 서버 오류 처리
-      setCodeSuccessDescription('');
-      setIsValidCode(false);
-      if (axios.isAxiosError(error)) {
-        setCodeErrorDescription(
-          `${error.response?.data?.message ?? '요청 실패. 다시 시도해주세요.'}`,
-        );
-      }
-      return;
-    }
+    verifyCode(payload, {
+      onSuccess: data => {
+        setCodeErrorDescription('');
+        setIsValidCode(true);
+        setCodeSuccessDescription(data.message);
+        setCanGoNextStep(true);
+        Alert.alert('알림', data.message);
+      },
+      onError: error => {
+        setCodeSuccessDescription('');
+        setIsValidCode(false);
+        setCodeErrorDescription(error.message);
+      },
+    });
   };
 
   // 다음 단계 버튼 활성화 로직

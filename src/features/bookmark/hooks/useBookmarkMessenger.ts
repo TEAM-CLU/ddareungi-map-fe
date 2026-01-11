@@ -5,7 +5,7 @@ import {
   UpdateBookmarksMessage,
 } from '@/shared/model/map.webview.types';
 import { BookmarkItem } from '@/shared/model/index.types';
-import { useProvideWebviewMessenger } from './useProvideWebviewMessenger';
+import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 
 /**
  * 즐겨찾기 관련 WebView 통신 훅

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
@@ -12,8 +12,12 @@ import SelectedRouteDetailBadge from '@/features/routing/components/SelectedRout
 import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
 import { getCategoryText } from '@/shared/utils/formatting';
-import BookmarkMarkersToggleButton from '@/shared/components/bookmark/BookmarkMarkersToggleButton';
+import BookmarkMarkersToggleButton from '@/features/bookmark/components/BookmarkMarkersToggleButton';
 import ReturnToRouteSelectButton from '@/features/routing/components/ReturnToRouteSelectButton';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import InstructionBanner from '@/features/navigation/components/InstructionBanner';
+import NavigationController from '@/features/navigation/components/NavigationController';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const MapScreen = () => {
   const {
@@ -26,6 +30,7 @@ const MapScreen = () => {
     setIsLocalMapReady,
   } = useMapOrchestrator();
 
+  const { isNavigationMode, routeId } = useNavigationStore();
   const { showSelectedRouteDetailModal } = useModalStore();
   const { selectedRouteData } = useRouteStore();
   const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
@@ -43,37 +48,65 @@ const MapScreen = () => {
         handleMapReadyMessage={handleMapReadyMessage}
       />
 
-      {showSelectedRouteDetailModal && selectedRouteData && (
-        <View
+      {/* 네비게이션 모드 */}
+      {isNavigationMode && !!routeId && (
+        <SafeAreaView
+          edges={['top']}
           style={[
             tw(
-              'absolute top-12 left-4 flex flex-row justify-start items-center',
+              'absolute top-0 left-0 right-0 flex justify-center items-center w-full',
             ),
-            { zIndex: 10, gap: 8 },
           ]}
         >
-          <ReturnToRouteSelectButton
-            onPress={handleSelectedRouteDetailModalClose}
-          />
-          <SelectedRouteDetailBadge
-            existText={formattedRouteCategory}
-            textColor="#01DA86"
-          />
-          <SelectedRouteDetailBadge
-            value={selectedRouteData.summary.time}
-            textColor={'#414548'}
-            type="time"
-          />
-          <SelectedRouteDetailBadge
-            value={selectedRouteData.summary.distance}
-            textColor={'#414548'}
-            type={'distance'}
-          />
-        </View>
+          <InstructionBanner instruction="앞으로 200m 직진하세요." sign={0} />
+        </SafeAreaView>
       )}
 
-      {/* 검색 오버레이 */}
-      {!showSelectedRouteDetailModal && (
+      {isNavigationMode && !!routeId && (
+        <SafeAreaView
+          edges={['bottom']}
+          style={tw(
+            'absolute bottom-0 left-0 right-0 flex justify-center items-center w-full',
+          )}
+        >
+          <NavigationController />
+        </SafeAreaView>
+      )}
+
+      {/* 경로 선택 모드 */}
+      {showSelectedRouteDetailModal &&
+        selectedRouteData &&
+        !isNavigationMode && (
+          <View
+            style={[
+              tw(
+                'absolute top-12 left-4 flex flex-row justify-start items-center',
+              ),
+              { zIndex: 10, gap: 8 },
+            ]}
+          >
+            <ReturnToRouteSelectButton
+              onPress={handleSelectedRouteDetailModalClose}
+            />
+            <SelectedRouteDetailBadge
+              existText={formattedRouteCategory}
+              textColor="#01DA86"
+            />
+            <SelectedRouteDetailBadge
+              value={selectedRouteData.summary.time}
+              textColor={'#414548'}
+              type="time"
+            />
+            <SelectedRouteDetailBadge
+              value={selectedRouteData.summary.distance}
+              textColor={'#414548'}
+              type={'distance'}
+            />
+          </View>
+        )}
+
+      {/* 기본 모드 */}
+      {!showSelectedRouteDetailModal && !isNavigationMode && (
         <SearchOverlay
           onPress={handleSearchbarPress}
           onClose={handleSearchClose}
@@ -81,32 +114,39 @@ const MapScreen = () => {
         />
       )}
 
-      <View style={[tw('absolute right-3'), 
-        { bottom: showSelectedRouteDetailModal ? '86%' : '36%' }
-        ]}>
+      {!isNavigationMode && (
+        <Footer
+          setIsStationBtnPressed={handleOpenNearbyStationModal}
+          setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
+          setIsBookmarkBtnPressed={handleOpenBookmarkModal}
+        />
+      )}
+
+      {/* 공용 */}
+      <View
+        style={[
+          tw('absolute right-3'),
+          { bottom: showSelectedRouteDetailModal ? '86%' : '36%' },
+        ]}
+      >
         <BookmarkMarkersToggleButton />
       </View>
 
-        <View
-          style={[
-            tw('absolute right-3'),
-            { bottom: showSelectedRouteDetailModal ? '80%' : '30%' },
-          ]}
-        >
-          <MyLocationButton />
-        </View>
+      <View
+        style={[
+          tw('absolute right-3'),
+          { bottom: showSelectedRouteDetailModal ? '80%' : '30%' },
+        ]}
+      >
+        <MyLocationButton />
+      </View>
 
-      {!showSelectedRouteDetailModal && (
+      {!showSelectedRouteDetailModal && !isNavigationMode && (
         <View style={[tw('absolute right-3'), { bottom: '24%' }]}>
           <StationMarkersToggleBtn />
         </View>
       )}
-
-      <Footer
-        setIsStationBtnPressed={handleOpenNearbyStationModal}
-        setIsRouteRecommendBtnPressed={handleOpenRouteRecommendModal}
-        setIsBookmarkBtnPressed={handleOpenBookmarkModal}
-      />
+      
     </View>
   );
 };

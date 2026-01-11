@@ -1,15 +1,18 @@
 import { RootStackParamList } from '@/app/types';
-import { Route, RoutePoint } from '@/features/routing/model/routing.types';
+import { CircularJourneyPayload, Route, RoutePoint } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useAppRoute } from '@/shared/hooks/useAppRoute';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import React, { useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
+import { useCircularJourneyMutation } from '../services/routing.queries';
 
 export const useRouteRecommend = () => {
   const route = useAppRoute<'RouteSelect'>();
   const { navigation } = useAppNavigation<'Map'>();
+
+  const { mutate: searchCircularRoutes, data: routes, isPending: isLoadingRoutes, error: routeSearchError } = useCircularJourneyMutation();
 
   const { setShowRouteRecommendModal, setShowSelectedRouteDetailModal } =
     useModalStore();
@@ -25,10 +28,6 @@ export const useRouteRecommend = () => {
     setStart,
     setSelectedRouteData,
 
-    routes,
-    isLoadingRoutes,
-    routeSearchError,
-    searchCircularRoutes,
     resetAllData,
   } = useRouteStore();
 
@@ -85,7 +84,20 @@ export const useRouteRecommend = () => {
       Alert.alert('경로 검색', '출발지, 이동거리를 모두 설정해주세요.');
       return;
     }
-    searchCircularRoutes();
+    
+    const payload: CircularJourneyPayload = {
+      start: { lat: start.latitude, lng: start.longitude },
+      targetDistance: distance * 1000,
+    };
+
+    searchCircularRoutes(payload, {
+      onSuccess: data => {
+        console.log('원형 경로 추천 성공', data);
+      },
+      onError: error => {
+        Alert.alert('오류', error.message);
+      },
+    });
   }, [start, distance, searchCircularRoutes]);
 
   // 검색된 경로 클릭 핸들러

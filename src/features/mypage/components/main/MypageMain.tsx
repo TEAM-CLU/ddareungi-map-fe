@@ -9,6 +9,8 @@ import BackButton from '@/shared/components/button/BackButton';
 import { MYPAGE_MENU_ITEMS } from '../../model/mypage.constants';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { useLogoutMutation } from '@/features/auth/services/auth.queries';
+import { CommonActions } from '@react-navigation/native';
 
 const MypageMain = ({
   onNavigate,
@@ -16,6 +18,7 @@ const MypageMain = ({
   onNavigate: (page: 'updateInfo' | 'updatePassword' | 'help') => void;
 }) => {
   const { data: user } = useUserInfoQuery();
+  const { mutate: logout } = useLogoutMutation();
   const { navigation } = useAppNavigation();
 
   const handleNavigate = (page: 'updateInfo' | 'updatePassword' | 'help') => {
@@ -34,6 +37,35 @@ const MypageMain = ({
     onNavigate(page);
   };
 
+  const handleLogoutPress = () => {
+    Alert.alert(
+      '로그아웃',
+      '정말 로그아웃 하시겠어요?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '확인',
+          style: 'destructive',
+          onPress: () => {
+            logout(undefined, {
+              onSettled: () => {
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  }),
+                );
+              },
+            });
+          },
+        },
+      ],
+      {
+        cancelable: true,
+      },
+    );
+  };
+
   return (
     <SafeAreaView style={tw('flex-1 bg-surface-secondary pt-6')}>
       <ScrollView
@@ -44,9 +76,7 @@ const MypageMain = ({
           <View style={tw('w-6')}>
             <BackButton type="previous" iconColor="brand" />
           </View>
-          <Text
-            style={tw('text-xl font-primary-700 text-on-surface-primary')}
-          >
+          <Text style={tw('text-xl font-primary-700 text-on-surface-primary')}>
             마이페이지
           </Text>
         </View>
@@ -100,31 +130,41 @@ const MypageMain = ({
           </>
         ) : (
           <>
-            {/* 사용자 프로필 */}
-            <View style={tw('flex-row items-center mb-6')}>
+            {/* 비회원일 때 */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Login')} // 로그인 화면으로 이동
+              activeOpacity={0.7}
+              style={tw('flex-row items-center mb-6')}
+            >
+              {/* 프로필 아이콘 */}
               <View
                 style={[
-                  tw('bg-brand-primary rounded-full ml-5 mr-3'),
+                  tw(
+                    'bg-gray-300 rounded-full ml-5 mr-3 items-center justify-center',
+                  ),
                   { width: 50, height: 50 },
                 ]}
-              />
-              <View>
-                <View style={tw('flex-1 justify-center h-50')}>
+              ></View>
+
+              <View style={tw('flex-1 justify-center')}>
+                <View style={tw('flex-row items-center')}>
                   <Text
                     style={tw(
-                      'text-on-surface-primary font-primary-700 text-xl',
+                      'text-on-surface-primary font-primary-700 text-xl mr-2',
                     )}
                   >
                     로그인이 필요합니다.
                   </Text>
-                  <Text
-                    style={tw(
-                      'text-on-surface-primary font-primary-700 text-base',
-                    )}
-                  ></Text>
                 </View>
+                <Text
+                  style={tw(
+                    'text-on-surface-tertiary font-primary-500 text-sm mt-1',
+                  )}
+                >
+                  터치하여 로그인하기
+                </Text>
               </View>
-            </View>
+            </TouchableOpacity>
 
             {/* 이용이력 카드 */}
             <View style={tw('px-5 mb-4')}>
@@ -162,6 +202,24 @@ const MypageMain = ({
             ))}
           </View>
         </View>
+
+        {user && user.data && (
+          <View style={tw('mt-4 mb-4 items-center')}>
+            <TouchableOpacity
+              onPress={handleLogoutPress}
+              style={tw('p-2')}
+              activeOpacity={0.6}
+            >
+              <Text
+                style={tw(
+                  'text-placeholder font-primary-500 text-xs underline',
+                )}
+              >
+                로그아웃
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

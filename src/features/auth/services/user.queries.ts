@@ -1,9 +1,6 @@
-import { RootStackParamList } from '@/app/types';
+import { useAuth } from '@/app/providers';
 import {
-  CheckEmailPayload,
-  CreateUserPayload,
   GetUserInfoResponse,
-  LoginUserPayload,
   UpdateUserPayload,
   UpdateUserResponse,
 } from '@/features/auth/model/auth.types';
@@ -15,34 +12,48 @@ import {
   postLoginUser,
   updateUserInfo,
 } from '@/features/auth/services/user.api';
-import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CommonActions } from '@react-navigation/native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
 
 // 유저 회원가입
 export const useCreateUserMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: CreateUserPayload) => postCreateUser(payload),
+  return useMutation({
+    mutationFn: postCreateUser,
   });
-  return mutation;
 };
 
 // 유저 로그인
 export const useLoginUserMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: LoginUserPayload) => postLoginUser(payload),
+  const { setToken } = useAuth();
+
+  return useMutation({
+    mutationFn: postLoginUser,
+
+    // 성공 시: 토큰 저장 + 상태 업데이트
+    onSuccess: async data => {
+      const accessToken = data?.data?.accessToken;
+
+      if (accessToken) {
+        // 1. 기기에 토큰 저장 (자동 로그인용)
+        await AsyncStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+
+        // 2. 앱 전역 상태 업데이트
+        if (setToken) {
+          setToken(accessToken);
+        }
+      }
+    },
   });
-  return mutation;
 };
 
 // 유저 정보 조회
 export const useUserInfoQuery = () => {
+  const { accessToken } = useAuth();
   return useQuery<GetUserInfoResponse>({
     queryKey: ['userInfo'],
     queryFn: getUserInfo,
+    enabled: !!accessToken, // 토큰 존재할 때만 쿼리 실행
     // staleTime: Infinity,
   });
 };
@@ -61,38 +72,20 @@ export const useUpdateUserInfoMutation = () => {
 // 유저 삭제
 export const useDeleteUserMutation = () => {
   const queryClient = useQueryClient();
-  const { navigation } = useAppNavigation();
-  const mutation = useMutation({
-    mutationFn: () => deleteUser(),
-    onSuccess: async res => {
-      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+  const { removeToken } = useAuth();
+
+  return useMutation({
+    mutationFn: deleteUser,
+    onSuccess: async () => {
+      await removeToken(); // 앱 내 토큰 삭제
       queryClient.clear();
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        }),
-      );
-    },
-    onError: async () => {
-      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
-      queryClient.clear();
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        }),
-      );
-      Alert.alert('회원탈퇴 중 문제가 발생했습니다.');
     },
   });
-  return mutation;
 };
 
 // 이메일 중복 확인
 export const useCheckEmailMutation = () => {
-  const mutation = useMutation({
-    mutationFn: (payload: CheckEmailPayload) => postCheckEmail(payload),
+  return useMutation({
+    mutationFn: postCheckEmail,
   });
-  return mutation;
 };

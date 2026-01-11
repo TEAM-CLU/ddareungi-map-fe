@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -11,38 +11,32 @@ import { tw } from '@/shared/libs/tw-helper';
 import { IconBicycle } from '@/shared/components/icons';
 import { RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { useNearbyStationsMutation } from '@/features/station/services/station.queries';
-import {
-  NearbyStationData,
-  NearbyStationListPayload,
-} from '@/features/station/model/station.types';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
-import { AutocompleteResult } from '../model/search.types';
 import { getDistanceText } from '@/shared/utils/formatting';
-import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
-import StarToggle from '@/shared/components/bookmark/StarToggle';
+import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
+import StarToggle from '@/features/bookmark/components/StarToggle';
 import { BookmarkItem } from '@/shared/model/index.types';
+import { PlaceInfo } from '../model/search.types';
+import { useNearbyStationsQuery } from '@/features/station/services/station.queries';
 
 export interface PlaceDetailModalProps {
-  place: AutocompleteResult | null;
+  place: PlaceInfo | null;
   onClose?: () => void;
 }
 
-const createPlaceBookmark = (
-  place: AutocompleteResult,
-): BookmarkItem => {
+const createPlaceBookmark = (place: PlaceInfo): BookmarkItem => {
   if (place.latitude == null || place.longitude == null) {
     throw new Error('장소의 좌표 정보가 없습니다.');
   }
 
-  if (!place.placeKey || !place.name) {
+  if (!place.placeId || !place.name) {
     throw new Error('장소의 필수 정보가 없습니다.');
   }
-  
+
   return {
-    id: place.placeKey,
+    id: place.placeId,
     name: place.name,
     alias: place.name, // 별칭 기본값
     color: '#04C75B', // 색상 기본값
@@ -62,6 +56,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
       </View>
     );
   }
+
   const {
     routeType,
     setRouteType,
@@ -71,53 +66,27 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
     syncStartEndInLoopMode,
   } = useRouteStore();
 
+  const { data: nearbyStationDataList, isLoading: isStationLoading } =
+    useNearbyStationsQuery(place.latitude, place.longitude);
+
   const { globalNavigation } = useMapStore();
   const { myPosition } = useMyPositionStore();
-  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
+  const toggleBookmark = useBookmarkStore(state => state.toggleBookmark);
   const bookmarked = useBookmarkStore(state =>
-    place.placeKey
-      ? state.bookmarks.some(item => item.id === place.placeKey)
+    place.placeId
+      ? state.bookmarks.some(item => item.id === place.placeId)
       : false,
   );
 
-  const { mutateAsync: fetchNearbyStationDataList } =
-    useNearbyStationsMutation();
-  const [stationFullName, setStationFullName] = useState<string>('');
-  const [stationDistance, setStationDistance] = useState<
-    number | null | undefined
-  >(null);
+  const nearestStation = useMemo(() => {
+    if (!nearbyStationDataList || nearbyStationDataList.length === 0)
+      return null;
+    return nearbyStationDataList[0];
+  }, [nearbyStationDataList]);
+
   const [placeDistance, setPlaceDistance] = useState<number | null | undefined>(
     null,
   );
-
-  // --------------- 대여소 정보 적용 -----------------
-
-  useEffect(() => {
-    const applyStationNameAndDistance = async () => {
-      if (!place.latitude || !place.longitude) {
-        setStationDistance(undefined);
-        return;
-      }
-      setStationDistance(null); // 로딩중
-
-      try {
-        const payload: NearbyStationListPayload = {
-          latitude: place.latitude,
-          longitude: place.longitude,
-        };
-        const response: NearbyStationData[] = await fetchNearbyStationDataList(
-          payload,
-        );
-        setStationFullName(`${response[0].number}. ${response[0].name}까지`);
-        setStationDistance(response[0].distance);
-      } catch (error) {
-        console.error('Error fetching nearby stations:', error);
-        setStationDistance(undefined);
-      }
-    };
-
-    applyStationNameAndDistance();
-  }, [place]);
 
   useEffect(() => {
     if (!myPosition || !place.latitude || !place.longitude) {
@@ -138,14 +107,12 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   }, [myPosition, place]);
 
   // --------------- 토글 관련 -----------------
-  // LOOP <-> CONSTANT 토글
   const handleTogglePress = () => {
     const newRouteType =
       routeType === RouteType.CONSTANT ? RouteType.LOOP : RouteType.CONSTANT;
     setRouteType(newRouteType);
   };
 
-  // 토글 애니메이션
   const toggleAnimation = useRef(
     new Animated.Value(routeType === RouteType.LOOP ? 1 : 0),
   ).current;
@@ -166,8 +133,8 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   const handleFirstButtonPress = () => {
     onClose?.(); // 모달 닫기
 
-    const placeData: AutocompleteResult = {
-      placeKey: `start-${Date.now()}`, // 출발지는 고유 ID
+    const placeData: PlaceInfo = {
+      placeId: `start-${Date.now()}`, // 출발지는 고유 ID
       name: place.name,
       address: place.address,
       latitude: place.latitude,
@@ -189,8 +156,8 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   const handleSecondButtonPress = () => {
     onClose?.(); // 모달 닫기
 
-    const placeData: AutocompleteResult = {
-      placeKey: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
+    const placeData: PlaceInfo = {
+      placeId: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
       name: place.name,
       address: place.address,
       latitude: place.latitude,
@@ -211,12 +178,15 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
     북마크 토글 핸들러
   */
   const handleToggleBookmark = () => {
-    try {
-      const bookmarkItem = createPlaceBookmark(place);
-      toggleBookmark(bookmarkItem);
-    } catch (error) {
-      console.error(error);
-      Alert.alert('즐겨찾기 등록 실패', error instanceof Error ? error.message : '즐겨찾기 등록 중 오류가 발생했습니다.');
+    const bookmarkItem = createPlaceBookmark(place);
+    const result = toggleBookmark(bookmarkItem);
+    if (result === 'limit_reached') {
+      Alert.alert(
+        '즐겨찾기 최대 개수 초과',
+        '즐겨찾기는 최대 10개까지 등록할 수 있습니다. 기존 즐겨찾기를 삭제한 후 다시 시도해주세요.',
+      );
+    } else if (result === 'added') {
+      console.log('즐겨찾기 추가됨');
     }
   };
 
@@ -244,10 +214,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
             )}
           </View>
         </View>
-        <StarToggle
-          active={bookmarked}
-          onToggle={handleToggleBookmark}
-        />
+        <StarToggle active={bookmarked} onToggle={handleToggleBookmark} />
       </View>
 
       {/* 거리/주소 정보 */}
@@ -279,7 +246,16 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
         <IconBicycle width={30} height={30} color="#414548" />
         {/* 대여소 API 연결되면 변경 */}
         <Text style={tw('text-md font-primary-600 text-on-surface-primary')}>
-          {stationFullName} {getDistanceText(stationDistance)}
+          {isStationLoading ? (
+            '주변 대여소 찾는 중...'
+          ) : nearestStation ? (
+            <>
+              {nearestStation.number}. {nearestStation.name}까지{' '}
+              {getDistanceText(nearestStation.distance)}
+            </>
+          ) : (
+            '주변에 대여소가 없어요'
+          )}
         </Text>
       </View>
 

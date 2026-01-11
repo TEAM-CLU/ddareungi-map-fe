@@ -1,33 +1,25 @@
-import { useAuth } from '@/app/providers';
-import { RootStackParamList } from '@/app/types';
 import AccountLinks from '@/features/auth/components/AccountLinks';
 import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
-import { LoginUserResponse } from '@/features/auth/model/auth.types';
 import { useLoginUserMutation } from '@/features/auth/services/user.queries';
 import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
-import SimpleLoading from '@/shared/components/SimpleLoading';
 import { tw } from '@/shared/libs/tw-helper';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { TouchableOpacity, View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AccountFinder from '@/features/auth/components/AccountFinder';
 import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
+import { CommonActions } from '@react-navigation/native';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 interface AuthGatewayProps {
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   setLoginScreenStep: React.Dispatch<React.SetStateAction<1 | 2>>;
 }
 
-const AuthGateway = ({
-  setIsLoading,
-  setLoginScreenStep,
-}: AuthGatewayProps) => {
-  const { mutateAsync: login } = useLoginUserMutation();
-  const { setToken, hasToken } = useAuth();
+const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
+  const { mutate: login } = useLoginUserMutation();
+  const { navigation } = useAppNavigation();
 
   const [id, setId] = useState<string>('');
   const [pwd, setPwd] = useState<string>('');
@@ -37,8 +29,6 @@ const AuthGateway = ({
   const [accountFeatures, setAccountFeatures] = useState<
     'findAccount' | 'resetPwd' | null
   >(null);
-
-  const { navigation } = useAppNavigation();
 
   useEffect(() => {
     if (!!id && !!pwd) {
@@ -84,32 +74,27 @@ const AuthGateway = ({
       password: pwd,
     };
 
-    try {
-      const response: LoginUserResponse = await login(payload);
-
-      // 성공시
-      if (!!response.data.accessToken) {
-        await setToken(response.data.accessToken);
-        setIsLoading(true);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 2000);
-        navigation.navigate('Map');
-        return;
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        Alert.alert(
-          `${
-            error.response?.data?.message ??
-            '로그인 중 오류가 발생했습니다. 다시 시도해주세요.'
-          }`,
-        );
-      }
-      setIsIdValid(false);
-      setIsPwdValid(false);
-      return;
-    }
+    login(payload, {
+      onSuccess: data => {
+        const accessToken = data?.data?.accessToken;
+        if (accessToken) {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Map' }],
+            }),
+          );
+        } else {
+          // 성공했으나 토큰이 없는 경우
+          Alert.alert('로그인 실패', '토큰이 존재하지 않습니다.');
+        }
+      },
+      onError: error => {
+        Alert.alert('로그인 실패', error.message);
+        setIsIdValid(false);
+        setIsPwdValid(false);
+      },
+    });
   };
 
   useEffect(() => {
@@ -203,7 +188,7 @@ const AuthGateway = ({
               ]}
             />
           </View>
-          <SocialLoginLinks setIsLoading={setIsLoading} />
+          <SocialLoginLinks />
         </View>
         <View />
       </View>

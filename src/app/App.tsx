@@ -1,8 +1,8 @@
 import React from 'react';
-import DevHub from '@/app/routes/DevHub';
+import AppNavigator from './routes/AppNavigator';
 
 const App = () => {
-  return <DevHub />;
+  return <AppNavigator />;
 };
 
 export default App;

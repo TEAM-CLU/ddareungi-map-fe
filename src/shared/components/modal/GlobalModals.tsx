@@ -6,7 +6,7 @@ import StationDetailModal from '@/features/station/components/StationDetailModal
 import { useModalStore } from '@/shared/stores/useModalStore';
 import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import BookmarkModal from '@/shared/components/bookmark/BookmarkEditModal';
+import BookmarkEditModal from '@/features/bookmark/components/BookmarkEditModal';
 import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
 import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
 import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
@@ -104,7 +104,7 @@ const GlobalModals = () => {
         enablePanDownToClose={true}
         useFlexView={true}
       >
-        <BookmarkModal />
+        <BookmarkEditModal />
       </SlideModal>
       
       {/* 네비게이션 디테일 모달 */}

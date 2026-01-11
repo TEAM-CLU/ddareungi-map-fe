@@ -2,14 +2,14 @@ import { RootStackParamList } from '@/app/types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useAutocomplete } from '@/features/search/hooks/useAutocomplete';
 import { useSearchMessenger } from '@/features/search/hooks/useSearchMessenger';
-import { AutocompleteResult } from '@/features/search/model/search.types';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
-import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
+import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
-import { useBookmarkMessenger } from '../../../shared/hooks/useBookmarkMessenger';
+import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
+import { PlaceInfo } from '../model/search.types';
 
 /**
  * useSearchOrchestrator
@@ -126,7 +126,7 @@ export const useSearchOrchestrator = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'Map'>>();
 
   const handlePlaceSelectionFlow = useCallback(
-    (selectedPlace: AutocompleteResult) => {
+    (selectedPlace: PlaceInfo) => {
       // 검색 오버레이 닫기
       setShowSearchOverlay(false);
       setIsFocused(false);
@@ -134,7 +134,7 @@ export const useSearchOrchestrator = () => {
 
       // 0) 해당 장소가 즐겨찾기인지 확인
       const foundBookmark = bookmarks.find(
-        bookmark => bookmark.id === selectedPlace.placeKey,
+        bookmark => bookmark.id === selectedPlace.placeId,
       );
 
       // 1) 즐겨찾기인 경우 즐겨찾기 마커 표시, 아닌 경우 일반 장소 마커 표시

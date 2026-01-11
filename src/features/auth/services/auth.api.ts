@@ -15,22 +15,13 @@ import {
   VerifyEmailPayload,
   VerifyEmailResponse,
 } from '@/features/auth/model/auth.types';
-import { SERVER_URL } from '@/shared/model/index.constants';
-import axios from 'axios';
-
-const authApi = axios.create({
-  baseURL: `${SERVER_URL}/auth`,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import { api } from '@/shared/services/axios';
 
 // 이메일 인증 코드 발송
 export const postSendVerificationEmail = async (
   payload: SendVerificationEmailPayload,
 ): Promise<SendVerificationEmailResponse> => {
-  const response = await authApi.post('/send-verification-email', payload);
+  const response = await api.post('/auth/send-verification-email', payload);
   return response.data;
 };
 
@@ -38,7 +29,7 @@ export const postSendVerificationEmail = async (
 export const postVerifyEmail = async (
   payload: VerifyEmailPayload,
 ): Promise<VerifyEmailResponse> => {
-  const response = await authApi.post('/verify-email', payload);
+  const response = await api.post('/auth/verify-email', payload);
   return response.data;
 };
 
@@ -46,7 +37,7 @@ export const postVerifyEmail = async (
 export const postFindAccount = async (
   payload: FindAccountPayload,
 ): Promise<FindAccountResponse> => {
-  const response = await authApi.post('/find-account', payload);
+  const response = await api.post('/auth/find-account', payload);
   return response.data;
 };
 
@@ -54,7 +45,7 @@ export const postFindAccount = async (
 export const postResetPassword = async (
   payload: ResetPasswordPayload,
 ): Promise<ResetPasswordResponse> => {
-  const response = await authApi.post('/reset-password', payload);
+  const response = await api.post('/auth/reset-password', payload);
   return response.data;
 };
 
@@ -62,7 +53,7 @@ export const postResetPassword = async (
 export const getSocialAuthUrl = async (
   socialType: SocialType,
 ): Promise<SocialAuthGetUrlResponse> => {
-  const response = await authApi.get(`/${socialType}/pkce`);
+  const response = await api.get(`/auth/${socialType}/pkce`);
   return response.data;
 };
 
@@ -71,7 +62,7 @@ export const getSocialAuthCheckStatus = async (
   payload: SocialAuthCheckStatusPayload,
   signal?: AbortSignal,
 ): Promise<SocialAuthCheckStatusResponse> => {
-  const response = await authApi.get('/check-status', {
+  const response = await api.get('/auth/check-status', {
     params: payload,
     signal,
   });
@@ -82,12 +73,12 @@ export const getSocialAuthCheckStatus = async (
 export const postSocialAuthExchangeToken = async (
   payload: SocialAuthExchangeTokenPayload,
 ): Promise<SocialAuthExchangeTokenResponse> => {
-  const response = await authApi.post('/exchange-token', payload);
+  const response = await api.post('/auth/exchange-token', payload);
   return response.data;
 };
 
 // 로그아웃
 export const postLogout = async (): Promise<LogoutResponse> => {
-  const response = await authApi.post('/logout', {}, { withCredentials: true });
+  const response = await api.post('/auth/logout', {}, { withCredentials: true });
   return response.data;
 };

@@ -32,7 +32,7 @@
   };
 
   // 즐겨찾기 마커 SVG 생성 함수
-  const getBookmarkMarkerSvg = (color = '#FFC107', uniqueId) => `
+  const getBookmarkMarkerSvg = (color = '#01DA86', uniqueId) => `
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g filter="url(#filter_badge_shadow_${uniqueId})">
         <circle cx="22" cy="20" r="16" fill="white"/>

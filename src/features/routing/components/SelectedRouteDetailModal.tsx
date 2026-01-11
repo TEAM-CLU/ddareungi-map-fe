@@ -1,7 +1,6 @@
 import { ActivityIndicator, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import CalorieBadge from '@/shared/components/badge/CalorieBadge';
-import TreeBadge from '@/shared/components/badge/TreeBadge';
+import { CalorieBadge, TreeBadge } from '@/shared/components/badge';
 import { IconSpotMarker } from '@/shared/components/icons';
 import { ScrollView } from 'react-native-gesture-handler';
 import RouteProgressStepVerticalBar from '@/features/routing/components/RoutePrgressStepVerticalBar';
@@ -21,6 +20,8 @@ import { StaticPathData } from '@/shared/model/map.webview.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useLocationStore } from '@/features/location/stores/useLocationStore';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { useModalStore } from '@/shared/stores/useModalStore';
 
 interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
@@ -45,6 +46,9 @@ const SelectedRouteDetailModal = ({
     );
   }
 
+  const { isNavigationMode, routeId, setIsNavigationMode, setRouteId } =
+    useNavigationStore();
+  const { setShowSelectedRouteDetailModal } = useModalStore();
   const { totalCaloriesBurned, totalTrees, routeType, prevScreen } =
     useRouteStore();
   const { drawStaticPath, focusOnStaticPath, stopFollowingMyLocation } =
@@ -123,6 +127,16 @@ const SelectedRouteDetailModal = ({
     isMapReady,
     focusOnStaticPath,
   ]);
+
+  useEffect(() => {
+    if (!isNavigationMode || !routeId) return;
+    setShowSelectedRouteDetailModal(false);
+  }, [isNavigationMode, routeId]);
+
+  const handleNavigationStartBtnPress = () => {
+    setRouteId(selectedRouteData.routeId);
+    setIsNavigationMode(true);
+  };
 
   return (
     <ScrollView
@@ -341,8 +355,11 @@ const SelectedRouteDetailModal = ({
           </Text>
         </View>
       </View>
-
-      <RoundButton preset="lg" title="안내 시작하기" onPress={() => {}} />
+      <RoundButton
+        preset="lg"
+        title="안내 시작하기"
+        onPress={handleNavigationStartBtnPress}
+      />
     </ScrollView>
   );
 };

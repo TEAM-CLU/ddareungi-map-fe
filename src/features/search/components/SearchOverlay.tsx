@@ -1,18 +1,15 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   FlatList,
-  Animated,
   Keyboard,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import SearchBar from './SearchBar';
 import { useAutocomplete } from '../hooks/useAutocomplete';
-import { useRecentSearches } from '../hooks/useRecentSearches';
 import {
   IconPlace,
   IconSearch,
@@ -20,21 +17,21 @@ import {
   IconLocatorMark,
 } from '@/shared/components/icons';
 import { reverseGeocode } from '../services/search.api';
-import { AutocompleteResult, PlaceInfo } from '../model/search.types';
+import { PlaceInfo } from '../model/search.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import { ScaleDecorator } from 'react-native-draggable-flatlist';
 import { ScrollView } from 'react-native-gesture-handler';
-import { useBookmarkStore } from '@/shared/stores/useBookmarkStore';
+import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 import BookmarkBadge from '@/shared/components/badge/BookmarkBadge';
 import { BookmarkItem } from '@/shared/model/index.types';
 import { useSearchOrchestrator } from '../hooks/useSearchOrchestrator';
+import { useRecentSearchesQuery } from '../services/search.queries';
 
 interface SearchOverlayProps {
   onClose: () => void;
   onPress: () => void;
-  onPlaceSelect: (place: AutocompleteResult) => void;
+  onPlaceSelect: (place: PlaceInfo) => void;
 }
 
 const SearchOverlay = ({
@@ -48,10 +45,10 @@ const SearchOverlay = ({
 
   const {
     query,
+    setQuery,
     isLoading,
     error,
     results,
-    setQuery,
     clearSearch,
     hasResults,
     fetchNextPage,
@@ -64,13 +61,17 @@ const SearchOverlay = ({
     addRecentSearch,
     removeRecentSearch,
     clearRecentSearches,
-  } = useRecentSearches();
+  } = useRecentSearchesQuery();
 
   const { showSearchOverlay } = useSearchStore();
 
   const { myPosition } = useMyPositionStore();
 
   const { handlePlaceSelectionFlow } = useSearchOrchestrator();
+
+  // ----------------------------------------------------
+  // Handlers
+  // ----------------------------------------------------
 
   // 검색어가 변경될 때 useAutocomplete에 반영
   const handleSearchTextChange = useCallback(
@@ -82,20 +83,9 @@ const SearchOverlay = ({
   );
 
   const handleSearchResultSelect = useCallback(
-    (place: PlaceInfo | AutocompleteResult) => {
-      const uniqueId = 'placeKey' in place ? place.placeKey : place.id;
-
-      const selectedPlace: AutocompleteResult = {
-        placeKey: uniqueId,
-        name: place.name,
-        address: place.address,
-        latitude: place.latitude,
-        longitude: place.longitude,
-        distance: place.distance || '',
-        category: place.category || '',
-      };
-      addRecentSearch(selectedPlace);
-      onPlaceSelect(selectedPlace);
+    (place: PlaceInfo) => {
+      addRecentSearch(place);
+      onPlaceSelect(place);
       setSearchText('');
       clearSearch();
       onClose();
@@ -115,11 +105,49 @@ const SearchOverlay = ({
   }, [clearSearch]);
 
   const handleRecentSelect = useCallback(
-    (recent: AutocompleteResult) => {
+    (recent: PlaceInfo) => {
       handleSearchResultSelect(recent);
     },
     [handleSearchResultSelect],
   );
+
+  // 현위치 버튼 핸들러
+  const handleCurrentLocationPress = useCallback(async () => {
+    setIsLoadingCurrentLocation(true);
+
+    try {
+      if (!myPosition) return;
+      const place = await reverseGeocode(myPosition.lat, myPosition.lng);
+      if (!place) return;
+
+      handleSearchResultSelect(place);
+    } catch (error: any) {
+      console.log('현위치 검색 실패:', error.message);
+    } finally {
+      setIsLoadingCurrentLocation(false);
+    }
+  }, [handleSearchResultSelect, myPosition]);
+
+  // 즐겨찾기 뱃지 클릭 핸들러
+  const bookmarks = useBookmarkStore(state => state.bookmarks);
+  const handleBookmarkBadgePress = useCallback(
+    (item: BookmarkItem) => {
+      const place = {
+        placeId: item.id,
+        name: item.name,
+        address: item.address ?? '',
+        latitude: item.latitude,
+        longitude: item.longitude,
+        category: item.category ?? '',
+      };
+      handlePlaceSelectionFlow(place);
+    },
+    [handlePlaceSelectionFlow],
+  );
+
+  // ----------------------------------------------------
+  // Render Items
+  // ----------------------------------------------------
 
   // 검색 결과
   const renderSearchResult = useCallback(
@@ -172,7 +200,7 @@ const SearchOverlay = ({
 
   // 최근 검색 결과
   const renderRecentResult = useCallback(
-    ({ item }: { item: AutocompleteResult }) => (
+    ({ item }: { item: PlaceInfo }) => (
       <TouchableOpacity
         style={[
           tw('flex-row items-center px-4 py-3 border-b'),
@@ -201,7 +229,7 @@ const SearchOverlay = ({
         </View>
         <TouchableOpacity
           style={tw('p-2')}
-          onPress={() => removeRecentSearch(item.placeKey)}
+          onPress={() => removeRecentSearch(item.placeId)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <IconClose width={12} height={12} color="#999" />
@@ -209,40 +237,6 @@ const SearchOverlay = ({
       </TouchableOpacity>
     ),
     [handleRecentSelect, removeRecentSearch],
-  );
-
-  // 현위치 버튼 핸들러
-  const handleCurrentLocationPress = useCallback(async () => {
-    setIsLoadingCurrentLocation(true);
-
-    try {
-      if (!myPosition) return;
-      const place = await reverseGeocode(myPosition.lat, myPosition.lng);
-      if (!place) return;
-
-      handleSearchResultSelect(place);
-    } catch (error: any) {
-      console.log('현위치 검색 실패:', error.message);
-    } finally {
-      setIsLoadingCurrentLocation(false);
-    }
-  }, [handleSearchResultSelect, myPosition]);
-
-  // 즐겨찾기 뱃지 클릭 핸들러
-  const bookmarks = useBookmarkStore(state => state.bookmarks);
-  const handleBookmarkBadgePress = useCallback(
-    (item: BookmarkItem) => {
-      const place = {
-        placeKey: item.id,
-        name: item.name,
-        address: item.address ?? '',
-        latitude: item.latitude,
-        longitude: item.longitude,
-        category: item.category ?? '',
-      };
-      handlePlaceSelectionFlow(place);
-    },
-    [handlePlaceSelectionFlow],
   );
 
   return (
@@ -351,7 +345,7 @@ const SearchOverlay = ({
                     최근 검색
                   </Text>
                   {recentSearches.length > 0 && (
-                    <TouchableOpacity onPress={clearRecentSearches}>
+                    <TouchableOpacity onPress={() => clearRecentSearches()}>
                       <Text
                         style={tw(
                           'font-primary-600 text-sm text-on-surface-tertiary',
@@ -366,7 +360,7 @@ const SearchOverlay = ({
                 <FlatList
                   data={recentSearches}
                   renderItem={renderRecentResult}
-                  keyExtractor={item => item.placeKey}
+                  keyExtractor={item => item.placeId}
                   showsVerticalScrollIndicator={false}
                   keyboardShouldPersistTaps="handled"
                   onScrollBeginDrag={() => Keyboard.dismiss()}
@@ -392,7 +386,7 @@ const SearchOverlay = ({
                   <FlatList
                     data={results}
                     renderItem={renderSearchResult}
-                    keyExtractor={(item, index) => `${item.id}-${index}`}
+                    keyExtractor={(item, index) => `${item.placeId}-${index}`}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
                     onScrollBeginDrag={() => Keyboard.dismiss()}

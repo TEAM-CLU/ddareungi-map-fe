@@ -1,4 +1,3 @@
-import { RootStackParamList } from '@/app/types';
 import RoundButton from '@/shared/components/button/RoundButton';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { tw } from '@/shared/libs/tw-helper';

@@ -1,4 +1,3 @@
-import { Coordinates } from '@/features/map/model/map.types';
 import WebView from 'react-native-webview';
 
 // useMyLocation hook 내부 상태 타입

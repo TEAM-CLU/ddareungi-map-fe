@@ -2,6 +2,7 @@ import { DIRECTION_ICONS } from '@/features/navigation/model/navigation.constant
 import { tw } from '@/shared/libs/tw-helper';
 import { useEffect, useState } from 'react';
 import { Image, ImageStyle, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface InstructionBannerProps {
   instruction: string;

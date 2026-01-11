@@ -1,4 +1,4 @@
-import { AutocompleteResult } from '@/features/search/model/search.types';
+import { PlaceInfo } from "@/features/search/model/search.types";
 
 export enum RouteType {
   CONSTANT = 'constant',
@@ -24,12 +24,12 @@ export interface DraggableItem {
   point: RoutePoint;
 }
 
-export type RouteData = { [key: string]: AutocompleteResult };
+export type RouteData = { [key: string]: PlaceInfo };
 
 /********** API 타입 **********/
 export interface Coordinate {
-  lat: number;
-  lng: number;
+  lat: number | undefined;
+  lng: number | undefined;
 }
 
 // 경로 요약 (전체 요약 정보)
@@ -131,16 +131,16 @@ export interface Route {
 /**
  * 경유지(Waypoint) 데이터 구조
  * - id: 리스트 렌더링을 위한 고유 키 (예: 'waypoint-0')
- * - place: 실제 장소 데이터 (AutocompleteResult)
+ * - place: 실제 장소 데이터
  */
 export interface Waypoint {
   waypointKey: string;
-  place: AutocompleteResult | null;
+  place: PlaceInfo | null;
 }
 
 export interface RouteItem {
   key: string;
-  place: AutocompleteResult | null;
+  place: PlaceInfo | null;
 }
 
 // ---------------- 스토어 ------------------
@@ -148,8 +148,8 @@ export interface RouteItem {
 export interface RouteState {
   // --- [Data State] 기본 경로 데이터 ---
   routeType: RouteType; // 경로 모드 (LOOP / CONSTANT)
-  start: AutocompleteResult | null; // 출발지
-  end: AutocompleteResult | null; // 도착지
+  start: PlaceInfo | null; // 출발지
+  end: PlaceInfo | null; // 도착지
   waypoints: Waypoint[]; // 경유지 목록
   distance: number | null; // 목표 거리 (왕복 모드용)
   getItems: () => RouteItem[];
@@ -164,15 +164,15 @@ export interface RouteState {
   prevScreen: 'RouteSelect' | 'RouteRecommend' | null; // 이전 화면 정보 판정을 통한 뒤로가기 버튼 누를시 돌아갈 화면 지정
 
   // --- [API State] 비동기 통신 상태 ---
-  routes: RouteResponse | null; // 서버로부터 받은 검색된 경로 결과
+  // routes: RouteResponse | null; // 서버로부터 받은 검색된 경로 결과
   selectedRouteData: Route | null; // 사용자가 선택한 경로 데이터
-  isLoadingRoutes: boolean; // 로딩 중 여부
-  routeSearchError: string | null; // 에러 메시지
+  // isLoadingRoutes: boolean; // 로딩 중 여부
+  // routeSearchError: string | null; // 에러 메시지
 
   // --- [Basic Actions] 기본 설정 액션 ---
   setRouteType: (type: RouteType) => void;
-  setStart: (place: AutocompleteResult | null) => void;
-  setEnd: (place: AutocompleteResult | null) => void;
+  setStart: (place: PlaceInfo | null) => void;
+  setEnd: (place: PlaceInfo | null) => void;
   setDistance: (distance: number) => void;
   setSelectedRouteData: (route: Route | null) => void;
   setPrevScreen: (screen: 'RouteSelect' | 'RouteRecommend' | null) => void;
@@ -182,13 +182,13 @@ export interface RouteState {
   setTotalTrees: (trees: number | null) => void;
 
   // --- [Waypoint Actions] 경유지 조작 액션 ---
-  addWaypoint: (place: AutocompleteResult) => void;
+  addWaypoint: (place: PlaceInfo) => void;
   removeWaypoint: (id: string) => void;
-  updateWaypoint: (id: string, place: AutocompleteResult) => void;
+  updateWaypoint: (id: string, place: PlaceInfo) => void;
   reorderWaypoints: (newWaypoints: Waypoint[]) => void; // 드래그 후 전체 경유지 배열을 통째로 교체하는 함수
   updateRouteFromDrag: (
-    newStart: AutocompleteResult | null,
-    newEnd: AutocompleteResult | null,
+    newStart: PlaceInfo | null,
+    newEnd: PlaceInfo | null,
     newWaypoints: Waypoint[],
   ) => void; // ✅ 추가: 드래그 완료 후 start/end/waypoints를 한 번에 업데이트
 
@@ -204,7 +204,7 @@ export interface RouteState {
 
   // --- [Utility Actions] 편의 기능 ---
   syncStartEndInLoopMode: (
-    newPlace: AutocompleteResult,
+    newPlace: PlaceInfo,
     fieldType: 'start' | 'end',
   ) => void;
   resetAllData: () => void; // 스토어 전체 초기화

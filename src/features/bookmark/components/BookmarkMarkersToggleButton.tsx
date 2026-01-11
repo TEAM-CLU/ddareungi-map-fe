@@ -2,7 +2,7 @@ import { ToggleBookmarkMarkersMessage } from '@/shared/model/map.webview.types';
 import { tw } from '@/shared/libs/tw-helper';
 import { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
-import { IconStar } from '../icons';
+import { IconStar } from '@/shared/components/icons';
 import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 
 const BookmarkMarkersToggleButton = () => {

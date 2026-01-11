@@ -1,8 +1,5 @@
 import RouteProgressStepBar from '@/features/routing/components/RouteProgressStepBar';
-import CalorieBadge from '@/shared/components/badge/CalorieBadge';
-import StationBadge from '@/shared/components/badge/StationBadge';
-import TreeBadge from '@/shared/components/badge/TreeBadge';
-import WalkTimeBadge from '@/shared/components/badge/WalkTimeBadge';
+import { CalorieBadge, StationBadge, TreeBadge, WalkTimeBadge } from '@/shared/components/badge';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import type { Route, RouteResponse } from '../model/routing.types';
@@ -24,7 +21,7 @@ import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
   isLoading?: boolean;
-  error?: string | null;
+  error?: Error | null;
   baseTime: Date;
   onRoutePress: (
     route: Route,
@@ -72,7 +69,7 @@ const RouteSelectContainer = ({
         ]}
       >
         <Text style={tw('text-error font-primary-500 text-center')}>
-          {error}
+          {error.message}
         </Text>
       </View>
     );
