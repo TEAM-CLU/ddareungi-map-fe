@@ -86,12 +86,26 @@ export const getTimeText = (
   return `${hourText}:${minuteText}${period}`;
 };
 
+// 태그 최대 3개로 제한
+export const clampTags = (tags: string[]) =>
+  tags
+    .map(t => t.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+
 // 거리 포맷팅 (미터 → km)
-export const formatDistance = (meters: number): string => {
+export const formatDistance = (
+  meters: number,
+  decimalPlaces: number = 1,
+): string => {
   const distanceInKm = meters / 1000;
-  return distanceInKm % 1 === 0
-    ? `${distanceInKm.toFixed(0)}km`
-    : `${distanceInKm.toFixed(1)}km`;
+
+  // 정수 km면 소수점 제거
+  if (distanceInKm % 1 === 0) {
+    return `${distanceInKm.toFixed(0)}km`;
+  }
+
+  return `${distanceInKm.toFixed(decimalPlaces)}km`;
 };
 
 // 거리 포맷팅 (1000m 이상일 때 km, 미만일 때 m)

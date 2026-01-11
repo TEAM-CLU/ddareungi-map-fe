@@ -20,10 +20,12 @@ import {
   formatTimeWithSeconds,
 } from '@/shared/utils/formatting';
 import { convertToTrees } from '@/shared/utils/measure';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
+import IconShared from '@/shared/components/icons/IconShared';
+import StoryShareScreen from '@/features/navigation/components/StoryShareScreen';
 interface NavigationEndModalProps {
   modalRef: React.RefObject<Modal | null>;
   setShowNavigationEndModal: (show: boolean) => void;
@@ -116,112 +118,148 @@ const NavigationEndModal = ({
     }
   };
 
+  const [isOpenStoryShareScreen, setIsOpenStoryShareScreen] =
+    useState<boolean>(false);
+
   return (
-    <Modal
-      ref={modalRef}
-      isVisible={true}
-      backdropOpacity={0.3}
-      animationIn={'fadeInUp'}
-      animationOut={'fadeOutDown'}
-      useNativeDriver={true}
-      style={tw('justify-center items-center flex')}
-    >
-      {isLoading ? (
-        <SimpleLoading title="사용자 정보 조회중" />
+    <>
+      {isOpenStoryShareScreen ? (
+        <StoryShareScreen
+          traveledDistance={traveledDistanceMeter ?? 0}
+          seconds={seconds}
+          calories={totalCaloriesBurned}
+          onClose={() => setIsOpenStoryShareScreen(false)}
+        />
       ) : (
-        <View
-          style={[
-            tw(
-              'relative w-full flex flex-col items-start justify-between px-6 border border-brand-primary shadow-md rounded-xl bg-surface-primary',
-            ),
-            { gap: 50, maxWidth: 273, paddingVertical: 45 },
-          ]}
+        <Modal
+          ref={modalRef}
+          isVisible={true}
+          backdropOpacity={0.3}
+          animationIn={'fadeInUp'}
+          animationOut={'fadeOutDown'}
+          useNativeDriver={true}
+          style={[tw('justify-center items-center flex'), { gap: 16 }]}
         >
-          <TouchableOpacity
-            onPress={handleCloseEndModalPress}
-            style={[tw('absolute top-3 right-3')]}
-          >
-            <IconClose color="#01DA86" />
-          </TouchableOpacity>
-          <View
-            style={[tw('flex flex-col items-start justify-center'), { gap: 8 }]}
-          >
-            <Text
+          {isLoading ? (
+            <SimpleLoading title="사용자 정보 조회중" />
+          ) : (
+            <View
               style={[
-                tw('font-primary-700 text-on-surface-primary'),
-                { fontSize: 24 },
+                tw('flex flex-col items-center justify-center w-full'),
+                { gap: 16 },
               ]}
             >
-              {'안내를\u00A0'}
-              <Text
+              <View
                 style={[
-                  tw('font-primary-700 text-brand-primary'),
-                  { fontSize: 24 },
+                  tw(
+                    'relative w-full flex flex-col items-start justify-between px-6 border border-brand-primary shadow-md rounded-xl bg-surface-primary',
+                  ),
+                  { gap: 50, maxWidth: 273, paddingVertical: 45 },
                 ]}
               >
-                종료
-              </Text>
-            </Text>
-            <Text
-              style={[
-                tw('font-primary-700 text-on-surface-primary'),
-                { fontSize: 24 },
-              ]}
-            >
-              하였습니다.
-            </Text>
-          </View>
-          <View
-            style={[tw('flex flex-col items-start justify-start'), { gap: 6 }]}
-          >
-            <Text
-              style={[
-                tw('font-primary-600 text-on-surface-primary'),
-                { fontSize: 16 },
-              ]}
-            >
-              소요시간: {formatTimeWithSeconds(seconds)}
-            </Text>
-            <Text
-              style={[
-                tw('font-primary-600 text-on-surface-primary'),
-                { fontSize: 16 },
-              ]}
-            >
-              탄소 저감량: {convertToTrees(totalCarbonSaved)}그루
-            </Text>
-            <Text
-              style={[
-                tw('font-primary-600 text-on-surface-primary'),
-                { fontSize: 16 },
-              ]}
-            >
-              소모 칼로리: {formatCalories(totalCaloriesBurned)}
-            </Text>
-          </View>
-          <Text
-            style={[
-              tw('font-primary-600 text-brand-primary'),
-              { fontSize: 20 },
-            ]}
-          >
-            총 {formatDistanceAdaptive(traveledDistanceMeter ?? 0)} 이동했어요!
-          </Text>
-          <Image
-            source={require('@/assets/imgs/finishFlag.png')}
-            style={
-              {
-                position: 'absolute',
-                left: 110,
-                bottom: 17,
-                zIndex: -1,
-              } as ImageStyle
-            }
-            resizeMode="cover"
-          />
-        </View>
+                <TouchableOpacity
+                  onPress={handleCloseEndModalPress}
+                  style={[tw('absolute top-3 right-3')]}
+                >
+                  <IconClose color="#01DA86" />
+                </TouchableOpacity>
+                <View
+                  style={[
+                    tw('flex flex-col items-start justify-center'),
+                    { gap: 8 },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      tw('font-primary-700 text-on-surface-primary'),
+                      { fontSize: 24 },
+                    ]}
+                  >
+                    {'안내를\u00A0'}
+                    <Text
+                      style={[
+                        tw('font-primary-700 text-brand-primary'),
+                        { fontSize: 24 },
+                      ]}
+                    >
+                      종료
+                    </Text>
+                  </Text>
+                  <Text
+                    style={[
+                      tw('font-primary-700 text-on-surface-primary'),
+                      { fontSize: 24 },
+                    ]}
+                  >
+                    하였습니다.
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    tw('flex flex-col items-start justify-start'),
+                    { gap: 6 },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      tw('font-primary-600 text-on-surface-primary'),
+                      { fontSize: 16 },
+                    ]}
+                  >
+                    소요시간: {formatTimeWithSeconds(seconds)}
+                  </Text>
+                  <Text
+                    style={[
+                      tw('font-primary-600 text-on-surface-primary'),
+                      { fontSize: 16 },
+                    ]}
+                  >
+                    탄소 저감량: {convertToTrees(totalCarbonSaved)}그루
+                  </Text>
+                  <Text
+                    style={[
+                      tw('font-primary-600 text-on-surface-primary'),
+                      { fontSize: 16 },
+                    ]}
+                  >
+                    소모 칼로리: {formatCalories(totalCaloriesBurned)}
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    tw('font-primary-600 text-brand-primary'),
+                    { fontSize: 20 },
+                  ]}
+                >
+                  총 {formatDistanceAdaptive(traveledDistanceMeter ?? 0)}{' '}
+                  이동했어요!
+                </Text>
+                <Image
+                  source={require('@/assets/imgs/finishFlag.png')}
+                  style={
+                    {
+                      position: 'absolute',
+                      left: 110,
+                      bottom: 17,
+                      zIndex: -1,
+                    } as ImageStyle
+                  }
+                  resizeMode="cover"
+                />
+              </View>
+              <TouchableOpacity
+                onPress={() => setIsOpenStoryShareScreen(true)}
+                style={tw(
+                  'rounded-full w-10 h-10 flex justify-center items-center shadow-md bg-surface-primary',
+                )}
+              >
+                <IconShared color="#77838F" width={22} height={22} />
+              </TouchableOpacity>
+            </View>
+          )}
+        </Modal>
       )}
-    </Modal>
+    </>
   );
 };
 export default NavigationEndModal;

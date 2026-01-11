@@ -721,10 +721,7 @@
         const intervalStartInBike = actualStart - bikeStartIdx;
 
         // interval 시작점 좌표
-        if (
-          intervalStartInBike < fullBikeKakaoPath.length &&
-          intervalIdx > 0
-        ) {
+        if (intervalStartInBike < fullBikeKakaoPath.length && intervalIdx > 0) {
           const markerPos = fullBikeKakaoPath[intervalStartInBike];
           // CustomOverlay로 interval 경계 표시
           createIntervalBoundaryMarker(markerPos, intervalIdx);
@@ -758,8 +755,7 @@
 
     // 지나온 마지막 interval의 끝 인덱스 찾기
     let passedEndIdx = 0;
-    const bikeEndIdx =
-      cachedBikeStartIdx + cachedFullBikeKakaoPath.length - 1;
+    const bikeEndIdx = cachedBikeStartIdx + cachedFullBikeKakaoPath.length - 1;
 
     for (let i = 0; i < currentIntervalIndex; i++) {
       const [intervalStart, intervalEnd] = cachedIntervals[i];
