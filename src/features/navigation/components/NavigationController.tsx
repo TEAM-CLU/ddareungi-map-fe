@@ -63,6 +63,7 @@ const NavigationController = ({
       ]}
     >
       <TouchableOpacity
+        testID="playback-button"
         onPress={handlePlayBackTogglePress}
         style={tw(
           'bg-brand-primary flex items-center justify-center w-12 h-12 rounded-full relative',
@@ -100,7 +101,10 @@ const NavigationController = ({
           >
             예상 도착시간: {getTimeText(estimatedArrivalTime)}
           </Text>
-          <TouchableOpacity onPress={() => setShowNavigationDetailModal(true)}>
+          <TouchableOpacity
+            testID="hamburger-button"
+            onPress={() => setShowNavigationDetailModal(true)}
+          >
             <IconHamburger />
           </TouchableOpacity>
         </View>
