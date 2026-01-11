@@ -225,7 +225,7 @@
 
     if (!intervals || intervals.length === 0) return;
 
-    // 모든 interval의 시작점에 마커 생성 (0부터 시작)
+    // 모든 interval의 시작점에 마커 생성 (1부터 시작)
     intervals.forEach((interval, idx) => {
       const boundaryIdx = interval[0]; // interval 시작 인덱스
       if (boundaryIdx >= 0 && boundaryIdx < fullPathCoordinateList.length) {
@@ -234,7 +234,7 @@
 
         const boundaryMarker = new kakaoRef.maps.CustomOverlay({
           position: boundaryPos,
-          content: getIntervalBoundaryMarkerSvg(idx), // 0부터 시작
+          content: getIntervalBoundaryMarkerSvg(idx + 1), // 1부터 시작
           yAnchor: 0.5,
           xAnchor: 0.5,
           zIndex: 15,
@@ -244,28 +244,6 @@
         intervalBoundaryMarkers.push(boundaryMarker);
       }
     });
-
-    // 마지막 interval의 끝점에도 마커 추가 (intervals.length)
-    const lastInterval = intervals[intervals.length - 1];
-    const lastBoundaryIdx = lastInterval[1]; // 마지막 interval의 끝 인덱스
-    if (
-      lastBoundaryIdx >= 0 &&
-      lastBoundaryIdx < fullPathCoordinateList.length
-    ) {
-      const [lng, lat] = fullPathCoordinateList[lastBoundaryIdx];
-      const boundaryPos = new kakaoRef.maps.LatLng(lat, lng);
-
-      const lastBoundaryMarker = new kakaoRef.maps.CustomOverlay({
-        position: boundaryPos,
-        content: getIntervalBoundaryMarkerSvg(intervals.length), // 총 interval 개수
-        yAnchor: 0.5,
-        xAnchor: 0.5,
-        zIndex: 15,
-      });
-
-      lastBoundaryMarker.setMap(mapRef);
-      intervalBoundaryMarkers.push(lastBoundaryMarker);
-    }
   };
 
   // 단순 좌표 배열 -> kakao.maps.LatLng 배열 변환 함수
