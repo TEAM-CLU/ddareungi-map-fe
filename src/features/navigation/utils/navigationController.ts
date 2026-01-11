@@ -173,6 +173,8 @@ export const calculateIntervalDistanceByMyPosition = (
    - 정지 판정 시 변화 억제
 */
 
+const { MAX_PHYSICAL_SPEED_MPS, DT_SEC_CAP } = MOTION_COMMON_OPTIONS;
+
 export const calculateRemainingDistance = (
   myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
@@ -185,15 +187,15 @@ export const calculateRemainingDistance = (
   prevTimestampForRemaining: number | null,
   currentTimestamp: number,
 ) => {
-  const { MAX_PHYSICAL_SPEED_MPS } = MOTION_COMMON_OPTIONS;
-
   // =========================
   // 0) dtSec 계산 (물리적 증가 제한에 필요)
   // =========================
-  const dtSec =
+  const rawDtSec =
     prevTimestampForRemaining !== null
       ? Math.max(0.001, (currentTimestamp - prevTimestampForRemaining) / 1000)
       : null;
+
+  const dtSec = rawDtSec !== null ? Math.min(rawDtSec, DT_SEC_CAP) : null;
 
   // =========================
   // 0-1) GPS 점프 판정 (강한 컷)
@@ -367,16 +369,15 @@ export const calculateTraveledDistance = (
   prevTimestampForTravel: number | null, // 이전 타임스탬프(ms)
   currentTimestamp: number, // 현재 타임스탬프(ms)
 ) => {
-  const { MAX_PHYSICAL_SPEED_MPS } = MOTION_COMMON_OPTIONS;
-
   // =========================
   // 0) dtSec 계산 (물리적 증가 제한에 필요)
   // =========================
-  const dtSec =
+  const rawDtSec =
     prevTimestampForTravel !== null
       ? Math.max(0.001, (currentTimestamp - prevTimestampForTravel) / 1000)
       : null;
 
+  const dtSec = rawDtSec !== null ? Math.min(rawDtSec, DT_SEC_CAP) : null;
   // =========================
   // 0-1) GPS 점프 판정 (강한 컷)
   // =========================
@@ -465,10 +466,12 @@ export const stabilizeDistance = ({
   // =========================
   // 0) dtSec 계산
   // =========================
-  const dtSec =
+  const rawDtSec =
     prevTimestamp !== null
       ? Math.max(0.001, (currentTimestamp - prevTimestamp) / 1000)
       : null;
+
+  const dtSec = rawDtSec !== null ? Math.min(rawDtSec, DT_SEC_CAP) : null;
 
   // =========================
   // 1) type별 "단조성(monotonic)" 보장
