@@ -27,6 +27,12 @@ export const DIRECTION_ICONS: Record<string, any> = {
   // KEEP_RIGHT
   '7': require('@/assets/imgs/instruction/arrow_keep_right.png'),
 };
+export const BIKING_POLYLINE_COLORS = [
+  '#00E676', // 0 Green
+  '#00B0FF', // 1 Blue
+  '#FF9100', // 2 Orange
+  '#FF4081', // 3 Pink
+] as const;
 
 export const THROTTLE_WAIT_MS = 2000;
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
@@ -21,6 +21,9 @@ import { useNavigationOrchestrator } from '@/features/navigation/hooks/useNaviga
 import NavVolumeToggleButton from '@/features/navigation/components/NavVolumeToggleButton';
 import NorthIndicator from '@/features/navigation/components/NorthIndicator';
 import SimpleLoading from '@/shared/components/SimpleLoading';
+import { RouteType } from '@/features/routing/model/routing.types';
+import { BIKING_POLYLINE_COLORS } from '@/features/navigation/model/navigation.constants';
+import { makeSegmentColors } from '@/features/navigation/utils/makeSegmentColors';
 
 const MapScreen = () => {
   const {
@@ -52,6 +55,8 @@ const MapScreen = () => {
   const showSelectedRouteDetailModal = useModalStore(
     state => state.showSelectedRouteDetailModal,
   );
+
+  const routeType = useRouteStore(state => state.routeType);
   const selectedRouteData = useRouteStore(state => state.selectedRouteData);
   const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
     useSearchOrchestrator();
@@ -59,6 +64,9 @@ const MapScreen = () => {
   const formattedRouteCategory = getCategoryText(
     selectedRouteData?.routeCategory ?? '',
   );
+
+  const waypointCount = selectedRouteData?.waypoints?.length ?? 0;
+  const segmentColors = makeSegmentColors(waypointCount);
 
   return (
     <View style={tw('flex-1 relative w-full')}>
@@ -91,6 +99,89 @@ const MapScreen = () => {
             previewSign={previewSign}
             isLoading={isLoadingForOffRoute}
           />
+          <View
+            style={[
+              tw('absolute flex flex-row items-center justify-start'),
+              { top: 150, left: 120, gap: 8 },
+            ]}
+          >
+            {routeType === RouteType.CONSTANT ? (
+              <>
+                <TouchableOpacity
+                  style={[
+                    tw(
+                      'w-8 h-8 rounded-full flex justify-center items-center p-1',
+                    ),
+                    { backgroundColor: '#006AFF' },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      tw('font-primary-600 text-on-surface-secondary'),
+                      { fontSize: 11 },
+                    ]}
+                  >
+                    출발
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    tw(
+                      'w-8 h-8 rounded-full flex justify-center items-center p-1',
+                    ),
+                    { backgroundColor: '#FF0000' },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      tw('font-primary-600 text-on-surface-secondary'),
+                      { fontSize: 11 },
+                    ]}
+                  >
+                    도착
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <View
+                style={[
+                  tw(
+                    'w-8 h-8 rounded-full flex justify-center items-center p-1',
+                  ),
+                  { backgroundColor: '#000000' },
+                ]}
+              >
+                <Text
+                  style={[
+                    tw('font-primary-600 text-on-surface-secondary'),
+                    { fontSize: 11 },
+                  ]}
+                >
+                  원점
+                </Text>
+              </View>
+            )}
+            {segmentColors.map((color, segIdx) => (
+              <TouchableOpacity
+                key={segIdx}
+                style={[
+                  tw(
+                    'w-8 h-8 rounded-full flex justify-center items-center p-1',
+                  ),
+                  { backgroundColor: color },
+                ]}
+              >
+                <Text
+                  style={[
+                    tw('font-primary-600 text-on-surface-secondary'),
+                    { fontSize: 11 },
+                  ]}
+                >
+                  {segIdx + 1}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </SafeAreaView>
       )}
 
