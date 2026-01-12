@@ -121,15 +121,6 @@
       zIndex: 6,
     });
 
-    kakaoRef.maps.event.addListener(navigationWalkingToStartDot, 'click', () => {
-      navigationWalkingToStartDot.setOptions({ zIndex: 20 });
-    });
-    kakaoRef.maps.event.addListener(navigationWalkingToEndDot, 'click', () => {
-      navigationWalkingToEndDot.setOptions({ zIndex: 20 });
-    });
-    kakaoRef.maps.event.addListener(navigationWalkingToOriginDot, 'click', () => {
-      navigationWalkingToOriginDot.setOptions({ zIndex: 20 });
-    });
   };
 
   // 대여소 마커 svg 생성 함수
@@ -418,32 +409,41 @@
     }
   };
 
-  const resetBikeRouteZIndex = () => {
-    navigationBikeRouteOutlineList.forEach((polyline, idx) =>
-      polyline.setOptions({ zIndex: 5 + idx }),
-    );
-    navigationBikeRouteMainList.forEach((polyline, idx) =>
-      polyline.setOptions({ zIndex: 5 + idx }),
-    );
+  const resetBikeRouteSegmentZIndex = idx => {
+    if (idx < 0) return;
+    const baseZIndex = 5 + idx;
+    const mainLine = navigationBikeRouteMainList[idx];
+    const outlineLine = navigationBikeRouteOutlineList[idx];
+    if (mainLine) {
+      mainLine.setOptions({ zIndex: baseZIndex });
+    }
+    if (outlineLine) {
+      outlineLine.setOptions({ zIndex: baseZIndex });
+    }
   };
 
-  const clearBikeRouteSelection = () => {
+  const clearBikeRouteSelection = (shouldUpdateArrow = true) => {
     if (navigationBikeRouteHighlightLine) {
       navigationBikeRouteHighlightLine.setMap(null);
       navigationBikeRouteHighlightLine = null;
     }
-    resetBikeRouteZIndex();
+    resetBikeRouteSegmentZIndex(selectedBikeSegmentIndex);
     selectedBikeSegmentIndex = -1;
-    updateArrowVisibilityByZoom();
+    if (shouldUpdateArrow) {
+      updateArrowVisibilityByZoom();
+    }
   };
 
   const setBikeRouteSelection = (segmentIndex, segmentPath, segmentColor) => {
     if (!segmentPath || !segmentColor) return;
-    if (selectedBikeSegmentIndex === segmentIndex) return;
+    if (selectedBikeSegmentIndex === segmentIndex) {
+      clearBikeRouteSelection();
+      return;
+    }
 
-    clearBikeRouteSelection();
-
-    resetBikeRouteZIndex();
+    if (selectedBikeSegmentIndex >= 0) {
+      clearBikeRouteSelection(false);
+    }
 
     const selectedLine = navigationBikeRouteMainList[segmentIndex];
     const selectedOutline = navigationBikeRouteOutlineList[segmentIndex];
@@ -877,10 +877,6 @@
           segmentLine.setMap(mapRef);
           navigationBikeRouteMainList.push(segmentLine);
 
-          kakaoRef.maps.event.addListener(segmentLine, 'click', () => {
-            setBikeRouteSelection(idx, segmentPath, segmentColor);
-          });
-
           const useAlternate =
             routeType === 'loop' && waypoints && waypoints.length === 1;
           createBikeRouteArrows(
@@ -911,10 +907,6 @@
         navigationBikeRouteOutlineList.push(bikeRouteOutline);
         bikeRouteMain.setMap(mapRef);
         navigationBikeRouteMainList.push(bikeRouteMain);
-
-        kakaoRef.maps.event.addListener(bikeRouteMain, 'click', () => {
-          setBikeRouteSelection(0, fullBikeKakaoPath, '#00E676');
-        });
 
         const useAlternate =
           routeType === 'loop' && waypoints && waypoints.length === 1;

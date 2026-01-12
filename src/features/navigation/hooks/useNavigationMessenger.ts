@@ -59,6 +59,7 @@ export const useNavigationMessenger = () => {
     sendMessage(message);
   }, [sendMessage]);
 
+
   return {
     replaceMyLocationMarker,
     drawNavigationPath,
