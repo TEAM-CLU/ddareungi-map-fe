@@ -43,9 +43,7 @@ interface InstructionBannerProps {
 const InstructionBanner = ({
   pathDataListByInterval,
   currentIntervalIndex,
-  currentInstructionText,
   currentTtsUrl,
-  currentSign,
   previewInstructionText,
   previewTtsUrl,
   previewSign,
@@ -224,32 +222,32 @@ const InstructionBanner = ({
         tw(
           'w-full flex flex-row items-center px-1 py-2 bg-brand-primary justify-start relative',
         ),
-        { borderRadius: 20, maxWidth: 348, height: 80, gap: 1 },
+        { borderRadius: 20, maxWidth: 348, height: 90, gap: 8 },
       ]}
     >
       <View
-        style={{
-          position: 'absolute',
-          top: 90,
-          width: '100%',
-          alignItems: 'flex-start',
-        }}
+        style={[tw('flex flex-col justify-center items-center'), { gap: 1 }]}
       >
+        <Image
+          source={
+            DIRECTION_ICONS[String(displaySign) as keyof typeof DIRECTION_ICONS]
+          }
+          style={{ width: 50, height: 50 } as ImageStyle}
+          resizeMode="cover"
+        />
         <View
           style={[
-            tw(
-              'flex flex-row items-center justify-between px-2 py-1 bg-brand-primary',
-            ),
+            tw('flex flex-row items-center justify-center px-2 py-1 '),
             {
               borderRadius: 20,
-              gap: 8,
+              gap: 4,
               width: 80,
             },
           ]}
         >
           <View
             style={tw(
-              'flex justify-center h-5 w-5 items-center bg-surface-primary rounded-full',
+              'flex justify-center h-5 w-5 items-center bg-surface-primary rounded-full border border-brand-primary',
             )}
           >
             <Text
@@ -273,13 +271,7 @@ const InstructionBanner = ({
           </Text>
         </View>
       </View>
-      <Image
-        source={
-          DIRECTION_ICONS[String(displaySign) as keyof typeof DIRECTION_ICONS]
-        }
-        style={{ width: 50, height: 50 } as ImageStyle}
-        resizeMode="cover"
-      />
+      <View style={[tw('bg-surface-primary'), { height: '80%', width: 1 }]} />
       <View style={[tw('flex flex-col justify-center'), { gap: 2 }]}>
         {instructionLines.map((line, idx) => (
           <Text

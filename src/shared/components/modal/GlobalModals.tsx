@@ -81,10 +81,10 @@ const GlobalModals = () => {
     state => state.selectedPlaceInfoForModal,
   );
 
-  const { totalIntervals, currentIntervalIndex } =
+  const { instructionList, currentIntervalIndex } =
     useNavigationDetailModalStore(
       useShallow(state => ({
-        totalIntervals: state.totalIntervals,
+        instructionList: state.instructionList,
         currentIntervalIndex: state.currentIntervalIndex,
       })),
     );
@@ -183,12 +183,17 @@ const GlobalModals = () => {
       {/* 네비게이션 디테일 모달 */}
       <SlideModal
         ref={navigationDetailModalRef}
-        snapPoints={['55%', '60%']}
-        initialIndex={1}
+        snapPoints={['80%']}
+        initialIndex={0}
         onDismiss={() => setShowNavigationDetailModal(false)}
+        enablePanDownToClose={false}
+        enableContentPanningGesture={true}
+        enableHandlePanningGesture={false}
+        enableOverDrag={false}
+        useFlexView={true}
       >
         <NavigationDetailModal
-          totalIntervals={totalIntervals}
+          instructionList={instructionList}
           currentIntervalIndex={currentIntervalIndex}
         />
       </SlideModal>

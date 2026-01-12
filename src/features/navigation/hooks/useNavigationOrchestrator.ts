@@ -231,10 +231,10 @@ export const useNavigationOrchestrator = () => {
   );
 
   // 네비게이션 디테일 모달 계산용
-  const { setTotalIntervals, setCurrentIntervalIndex } =
+  const { setInstructionList, setCurrentIntervalIndex } =
     useNavigationDetailModalStore(
       useShallow(state => ({
-        setTotalIntervals: state.setTotalIntervals,
+        setInstructionList: state.setInstructionList,
         setCurrentIntervalIndex: state.setCurrentIntervalIndex,
       })),
     );
@@ -341,7 +341,7 @@ export const useNavigationOrchestrator = () => {
           navigationData.instructions[0].nextTurnCoordinate;
 
         // 네비게이션 디테일 모달 상태 초기화
-        setTotalIntervals(navigationData.instructions.length);
+        setInstructionList(navigationData.instructions);
         setCurrentIntervalIndex(0);
       }
 
@@ -416,10 +416,6 @@ export const useNavigationOrchestrator = () => {
                 lng: endStation.lng,
               };
 
-        console.log('startStationPoint:', startStationPoint);
-        console.log('endStationPoint:', endStationPoint);
-        console.log('waypoints:', waypoints);
-
         drawNavigationPath({
           routeType,
           startPoint,
@@ -439,7 +435,7 @@ export const useNavigationOrchestrator = () => {
       isMapReady,
       drawNavigationPath,
       setCurrentInstruction,
-      setTotalIntervals,
+      setInstructionList,
       setCurrentIntervalIndex,
     ],
   );

@@ -107,7 +107,7 @@ const MapScreen = () => {
           <View
             style={[
               tw('absolute flex flex-row items-center justify-start'),
-              { top: 150, left: 120, gap: 8 },
+              { top: 160, left: 22.5, gap: 8 },
             ]}
           >
             {routeType === RouteType.CONSTANT ? (

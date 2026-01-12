@@ -1,5 +1,6 @@
-import IntervalProgressBar from '@/features/navigation/components/IntervalProgressBar';
+import InstructionItem from '@/features/navigation/components/InstructionItem';
 import { clearSharedTimer } from '@/features/navigation/hooks/useTimer';
+import { NavigationInstruction } from '@/features/navigation/model/navigation.types';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import CalorieBadge from '@/shared/components/badge/CalorieBadge';
@@ -13,19 +14,23 @@ import {
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { convertToTrees } from '@/shared/utils/measure';
+import {
+  BottomSheetFlatList,
+  BottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
 import Slider from '@react-native-community/slider';
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/react/shallow';
 
 interface NavigationDetailModalProps {
   currentIntervalIndex?: number;
-  totalIntervals?: number;
+  instructionList: NavigationInstruction[];
 }
 const NavigationDetailModal = ({
   currentIntervalIndex,
-  totalIntervals,
+  instructionList,
 }: NavigationDetailModalProps) => {
   const { totalCaloriesBurned, totalCarbonSaved, setIsNavigationMode } =
     useNavigationStore(
@@ -83,7 +88,7 @@ const NavigationDetailModal = ({
     <View
       style={[
         tw('w-full flex flex-col justify-start flex-1 bg-surface-primary'),
-        { gap: 16 },
+        { gap: 16, paddingHorizontal: 20 },
       ]}
     >
       <View style={tw('w-full flex flex-row justify-between items-center')}>
@@ -93,7 +98,7 @@ const NavigationDetailModal = ({
             { fontSize: 20 },
           ]}
         >
-          네비게이션 상세
+          내비게이션 상세
         </Text>
         <TouchableOpacity onPress={() => setShowNavigationDetailModal(false)}>
           <IconChevronDown color={'#77838F'} />
@@ -101,7 +106,22 @@ const NavigationDetailModal = ({
       </View>
       <View style={[tw('w-full'), { height: 1, backgroundColor: '#D8D8D8' }]} />
       <View
-        style={[tw('w-full flex flex-col grow justify-start'), { gap: 35 }]}
+        style={[
+          tw('w-full flex flex-col justify-start'),
+          {
+            gap: 15,
+            backgroundColor: '#FFFFFF',
+            borderRadius: 16,
+            padding: 12,
+            borderWidth: 1,
+            borderColor: '#EEF0F3',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 4,
+            elevation: 6,
+          },
+        ]}
       >
         <View style={[tw('flex flex-col w-full mt-3'), { gap: 15 }]}>
           <Text
@@ -117,25 +137,6 @@ const NavigationDetailModal = ({
             <TreeBadge value={convertToTrees(totalCarbonSaved)} />
           </View>
         </View>
-        {/*  */}
-        {totalIntervals !== undefined &&
-        currentIntervalIndex !== undefined &&
-        totalIntervals > 0 ? (
-          <IntervalProgressBar
-            totalIntervals={totalIntervals}
-            currentIntervalIndex={currentIntervalIndex}
-          />
-        ) : (
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-primary text-left'),
-              { fontSize: 15 },
-            ]}
-          >
-            진행 구간 정보가 없습니다.
-          </Text>
-        )}
-        {/*  */}
         <View style={[tw('flex flex-col w-full'), { gap: 15 }]}>
           <Text
             style={[
@@ -170,6 +171,35 @@ const NavigationDetailModal = ({
           preset={'lg'}
         />
       </View>
+      {instructionList.length > 0 && (
+        <View style={{ flex: 1, minHeight: 0 }}>
+          <BottomSheetFlatList
+            style={{ flex: 1 }}
+            data={instructionList}
+            keyExtractor={(item, idx) =>
+              `${idx}-${item.sign}-${item.distance}-${item.text}`
+            }
+            renderItem={({ item, index }) => (
+              <InstructionItem
+                sign={item.sign}
+                intervalIdx={index}
+                text={item.text}
+                currentIdx={currentIntervalIndex}
+                distanceMeter={item.distance}
+              />
+            )}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingTop: 12,
+              paddingBottom: 24,
+            }}
+            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+            bounces={false}
+            overScrollMode="never"
+            keyboardShouldPersistTaps="handled"
+          />
+        </View>
+      )}
     </View>
   );
 };

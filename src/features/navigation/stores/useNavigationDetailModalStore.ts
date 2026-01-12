@@ -1,11 +1,12 @@
+import { NavigationInstruction } from '@/features/navigation/model/navigation.types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 interface NavigationDetailModalState {
-  totalIntervals: number;
+  instructionList: NavigationInstruction[];
   currentIntervalIndex: number;
 
-  setTotalIntervals: (total: number) => void;
+  setInstructionList: (list: NavigationInstruction[]) => void;
   setCurrentIntervalIndex: (index: number) => void;
 }
 
@@ -13,15 +14,16 @@ export const useNavigationDetailModalStore =
   create<NavigationDetailModalState>()(
     devtools(
       set => ({
-        totalIntervals: 0,
+        instructionList: [],
         currentIntervalIndex: 0,
 
-        setTotalIntervals: (total: number) =>
+        setInstructionList: (list: NavigationInstruction[]) =>
           set(
-            { totalIntervals: total },
+            { instructionList: list },
             false,
-            'navigationDetailModal/setTotalIntervals',
+            'navigationDetailModal/setInstructionList',
           ),
+
         setCurrentIntervalIndex: (index: number) =>
           set(
             { currentIntervalIndex: index },
