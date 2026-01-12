@@ -141,7 +141,10 @@ export interface NavigationPathData {
   currentIntervalIndex: number;
   startStationPoint: Coordinate;
   endStationPoint: Coordinate;
+  walkingPolicy?: NavigationWalkingPolicy; // 도보 경로 표시 정책
 }
+
+export type NavigationWalkingPolicy = 'all' | 'only-end' | 'none';
 
 export interface DrawNavigationPathMessage {
   type: 'drawNavigationPath';

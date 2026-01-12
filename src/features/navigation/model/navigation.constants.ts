@@ -87,6 +87,16 @@ export const SPEED_THRESHOLDS = {
   BIKING_MIN_MPS: 2.8, // 대략 10km/h
 };
 
+// 주행/정지 상태 추적
+export const TRANSPORT_STATE_CONFIG = {
+  // 주행 상태 판단
+  BIKING_STATE_THRESHOLD: 3, // 3회 연속 biking 판정 시 주행 상태로 간주
+
+  // 정지 상태 판단
+  STATIONARY_THRESHOLD: 3, // 3회 연속 정지 판정 시 정지 상태로 간주
+  STATIONARY_DISTANCE_THRESHOLD: 2, // 2m 이하 이동 시 정지로 판단
+} as const;
+
 // InstructionBanner.tsx
 export const PREVIEW_CONIFG = {
   PREVIEW_THRESHOLD_METER: 50,

@@ -6,9 +6,12 @@
     waypointsMarkers = [],
     startStationMarker,
     endStationMarker;
-  let bikeRouteOutline; // 어두운 외곽선
-  let bikeRouteMain; // 메인 컬러 라인
-  let bikeRouteDash; // 위에 얇은 점선
+  let bikeRouteOutlineList = [];
+  let bikeRouteMainList = []; // 메인 컬러 라인 리스트
+  let bikeRouteHighlightLine = null;
+  let selectedBikeSegmentIndex = -1;
+  let bikeRouteArrowList = [];
+  let handleMapZoomChanged = null;
 
   let walkingToStartDot; // 출발지 -> 출발 대여소
   let walkingToEndDot; // 도착 대여소 -> 도착지
@@ -80,34 +83,6 @@
       zIndex: 9,
     });
 
-    // 자전거 경로 3중 레이어
-    bikeRouteOutline = new kakaoRef.maps.Polyline({
-      path: [],
-      strokeColor: '#006633',
-      strokeWeight: 10,
-      strokeOpacity: 0.45,
-      strokeStyle: 'solid',
-      zIndex: 3,
-    });
-
-    bikeRouteMain = new kakaoRef.maps.Polyline({
-      path: [],
-      strokeColor: '#00C267',
-      strokeWeight: 8,
-      strokeOpacity: 1,
-      strokeStyle: 'solid',
-      zIndex: 4,
-    });
-
-    bikeRouteDash = new kakaoRef.maps.Polyline({
-      path: [],
-      strokeColor: '#C8FFF1',
-      strokeWeight: 3,
-      strokeOpacity: 0.9,
-      strokeStyle: 'shortdash',
-      zIndex: 5,
-    });
-
     // 도보 경로들 (점선)
     walkingToStartDot = new kakaoRef.maps.Polyline({
       path: [],
@@ -134,6 +109,16 @@
       strokeOpacity: 1,
       strokeStyle: 'shortdot',
       zIndex: 6,
+    });
+
+    kakaoRef.maps.event.addListener(walkingToStartDot, 'click', () => {
+      walkingToStartDot.setOptions({ zIndex: 20 });
+    });
+    kakaoRef.maps.event.addListener(walkingToEndDot, 'click', () => {
+      walkingToEndDot.setOptions({ zIndex: 20 });
+    });
+    kakaoRef.maps.event.addListener(walkingToOriginDot, 'click', () => {
+      walkingToOriginDot.setOptions({ zIndex: 20 });
     });
   };
 
@@ -224,17 +209,6 @@
     });
   };
 
-  // 👉 LatLng[] 경로를 화면 좌표 기준으로 offset 시키는 헬퍼
-  const offsetLatLngPath = (latLngPath, offsetX, offsetY) => {
-    if (!mapRef || !kakaoRef || !Array.isArray(latLngPath)) return latLngPath;
-    const projection = mapRef.getProjection();
-    return latLngPath.map(latlng => {
-      const pt = projection.pointFromCoords(latlng);
-      const moved = new kakaoRef.maps.Point(pt.x + offsetX, pt.y + offsetY);
-      return projection.coordsFromPoint(moved);
-    });
-  };
-
   // 대여소와 가장 가까운 좌표 추출
   const findNearestIndexOnPath = (coords, targetLat, targetLng) => {
     if (!Array.isArray(coords) || coords.length === 0) return -1;
@@ -255,8 +229,277 @@
     return bestIdx;
   };
 
+  const findExactIndexOnPath = (coords, targetLat, targetLng) => {
+    return coords.findIndex(
+      ([lng, lat]) => lat === targetLat && lng === targetLng,
+    );
+  };
+
+  const clampColorChannel = value => Math.max(0, Math.min(255, value));
+
+  const lightenHexColor = (hex, amount = 40) => {
+    const raw = hex.replace('#', '');
+    if (raw.length !== 6) return hex;
+    const r = clampColorChannel(parseInt(raw.slice(0, 2), 16) + amount);
+    const g = clampColorChannel(parseInt(raw.slice(2, 4), 16) + amount);
+    const b = clampColorChannel(parseInt(raw.slice(4, 6), 16) + amount);
+    return `#${[r, g, b]
+      .map(v => v.toString(16).padStart(2, '0'))
+      .join('')}`;
+  };
+
+  const darkenHexColor = (hex, amount = 40) => {
+    const raw = hex.replace('#', '');
+    if (raw.length !== 6) return hex;
+    const r = clampColorChannel(parseInt(raw.slice(0, 2), 16) - amount);
+    const g = clampColorChannel(parseInt(raw.slice(2, 4), 16) - amount);
+    const b = clampColorChannel(parseInt(raw.slice(4, 6), 16) - amount);
+    return `#${[r, g, b]
+      .map(v => v.toString(16).padStart(2, '0'))
+      .join('')}`;
+  };
+
+  const BIKE_ROUTE_ARROW_SPACING_M = 60;
+  const BIKE_ROUTE_ARROW_VISIBLE_MAX_LEVEL = 5;
+
+  const getBikeRouteArrowSvg = (rotationDeg, color) => `
+  <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 12 12"
+    style="display:block; transform: rotate(${rotationDeg}deg); transform-origin: 50% 50%;">
+    <polygon points="6,1 10,11 2,11" fill="${color}" stroke="#FFFFFF" stroke-width="1"/>
+  </svg>
+`;
+
+  const toRad = deg => (deg * Math.PI) / 180;
+  const toDeg = rad => (rad * 180) / Math.PI;
+
+  const getDistanceMeters = (lat1, lng1, lat2, lng2) => {
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return 6378137 * c;
+  };
+
+  const WALKING_SAMPLE_DISTANCE_M = 15;
+
+  const samplePathByDistance = (coords, minDistanceM) => {
+    if (!Array.isArray(coords) || coords.length < 2) return coords;
+    const sampled = [coords[0]];
+    let last = coords[0];
+    let acc = 0;
+
+    for (let i = 1; i < coords.length; i++) {
+      const [lng2, lat2] = coords[i];
+      const [lng1, lat1] = last;
+      const dist = getDistanceMeters(lat1, lng1, lat2, lng2);
+      acc += dist;
+      if (acc >= minDistanceM) {
+        sampled.push(coords[i]);
+        last = coords[i];
+        acc = 0;
+      }
+    }
+
+    if (sampled[sampled.length - 1] !== coords[coords.length - 1]) {
+      sampled.push(coords[coords.length - 1]);
+    }
+
+    return sampled;
+  };
+
+  const getBearingDeg = (lat1, lng1, lat2, lng2) => {
+    const y = Math.sin(toRad(lng2 - lng1)) * Math.cos(toRad(lat2));
+    const x =
+      Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+      Math.sin(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.cos(toRad(lng2 - lng1));
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+  };
+
+  const clearBikeRouteArrows = () => {
+    if (bikeRouteArrowList.length > 0) {
+      bikeRouteArrowList.forEach(overlay => overlay.setMap(null));
+      bikeRouteArrowList = [];
+    }
+    if (mapRef && handleMapZoomChanged) {
+      kakaoRef.maps.event.removeListener(
+        mapRef,
+        'zoom_changed',
+        handleMapZoomChanged,
+      );
+      handleMapZoomChanged = null;
+    }
+  };
+
+  const setBikeRouteArrowVisibility = visible => {
+    bikeRouteArrowList.forEach(overlay =>
+      overlay.setMap(visible ? mapRef : null),
+    );
+  };
+
+  const updateArrowVisibilityByZoom = () => {
+    if (!mapRef) return;
+    const level = mapRef.getLevel();
+    setBikeRouteArrowVisibility(level <= BIKE_ROUTE_ARROW_VISIBLE_MAX_LEVEL);
+  };
+
+  const createBikeRouteArrows = (coords, color, useAlternate, zIndex) => {
+    if (!Array.isArray(coords) || coords.length < 2) return;
+    let distFromLast = 0;
+    let arrowIndex = 0;
+
+    for (let i = 0; i < coords.length - 1; i++) {
+      let [lng1, lat1] = coords[i];
+      let [lng2, lat2] = coords[i + 1];
+      let segLen = getDistanceMeters(lat1, lng1, lat2, lng2);
+      if (segLen <= 0) continue;
+
+      while (distFromLast + segLen >= BIKE_ROUTE_ARROW_SPACING_M) {
+        const remain = BIKE_ROUTE_ARROW_SPACING_M - distFromLast;
+        const t = remain / segLen;
+        const lat = lat1 + (lat2 - lat1) * t;
+        const lng = lng1 + (lng2 - lng1) * t;
+        let bearing = getBearingDeg(lat1, lng1, lat2, lng2);
+        if (useAlternate && arrowIndex % 2 === 1) {
+          bearing = (bearing + 180) % 360;
+        }
+        const arrowPos = new kakaoRef.maps.LatLng(lat, lng);
+        const arrowOverlay = new kakaoRef.maps.CustomOverlay({
+          position: arrowPos,
+          content: getBikeRouteArrowSvg(bearing, lightenHexColor(color, 30)),
+          xAnchor: 0.5,
+          yAnchor: 0.5,
+          zIndex,
+        });
+        arrowOverlay.setMap(mapRef);
+        bikeRouteArrowList.push(arrowOverlay);
+
+        arrowIndex += 1;
+        lat1 = lat;
+        lng1 = lng;
+        segLen -= remain;
+        distFromLast = 0;
+      }
+
+      distFromLast += segLen;
+    }
+    updateArrowVisibilityByZoom();
+    if (mapRef) {
+      if (handleMapZoomChanged) {
+        kakaoRef.maps.event.removeListener(
+          mapRef,
+          'zoom_changed',
+          handleMapZoomChanged,
+        );
+      }
+      handleMapZoomChanged = () => updateArrowVisibilityByZoom();
+      kakaoRef.maps.event.addListener(
+        mapRef,
+        'zoom_changed',
+        handleMapZoomChanged,
+      );
+    }
+  };
+
+  const clearBikeRouteSelection = () => {
+    if (bikeRouteHighlightLine) {
+      bikeRouteHighlightLine.setMap(null);
+      bikeRouteHighlightLine = null;
+    }
+    bikeRouteOutlineList.forEach((polyline, idx) =>
+      polyline.setOptions({ zIndex: 5 + idx }),
+    );
+    bikeRouteMainList.forEach((polyline, idx) =>
+      polyline.setOptions({ zIndex: 5 + idx }),
+    );
+    selectedBikeSegmentIndex = -1;
+    updateArrowVisibilityByZoom();
+  };
+
+  const setBikeRouteSelection = (segmentIndex, segmentPath, segmentColor) => {
+    if (!segmentPath || !segmentColor) return;
+    if (selectedBikeSegmentIndex === segmentIndex) return;
+
+    clearBikeRouteSelection();
+
+    bikeRouteOutlineList.forEach((polyline, idx) =>
+      polyline.setOptions({ zIndex: 4 + idx }),
+    );
+    bikeRouteMainList.forEach((polyline, idx) =>
+      polyline.setOptions({ zIndex: 5 + idx }),
+    );
+
+    const selectedLine = bikeRouteMainList[segmentIndex];
+    const selectedOutline = bikeRouteOutlineList[segmentIndex];
+    if (selectedLine) {
+      selectedLine.setOptions({ zIndex: 20 });
+      if (selectedOutline) {
+        selectedOutline.setOptions({ zIndex: 20 });
+      }
+      const highlightLine = new kakaoRef.maps.Polyline({
+        path: segmentPath,
+        strokeColor: lightenHexColor(segmentColor, 60),
+        strokeWeight: 16,
+        strokeOpacity: 0.6,
+        strokeStyle: 'solid',
+        zIndex: 19,
+      });
+      highlightLine.setMap(mapRef);
+      bikeRouteHighlightLine = highlightLine;
+      // 간단한 클릭 피드백 애니메이션
+      selectedLine.setOptions({ strokeWeight: 10 });
+      highlightLine.setOptions({ strokeOpacity: 0.8 });
+      setTimeout(() => {
+        selectedLine.setOptions({ strokeWeight: 8 });
+        highlightLine.setOptions({ strokeOpacity: 0.6 });
+      }, 150);
+    }
+
+    selectedBikeSegmentIndex = segmentIndex;
+    updateArrowVisibilityByZoom();
+  };
+
+  const getBikeRouteSegmentsByWaypoints = (coords, waypoints) => {
+    if (!Array.isArray(waypoints) || waypoints.length === 0) return null;
+    let lastIdx = 0;
+    const waypointIndices = [];
+
+    waypoints.forEach(wp => {
+      const exactIdx = findExactIndexOnPath(coords, wp.lat, wp.lng);
+      const nearestIdx =
+        exactIdx >= 0
+          ? exactIdx
+          : findNearestIndexOnPath(coords, wp.lat, wp.lng);
+      if (nearestIdx >= 0 && nearestIdx > lastIdx) {
+        waypointIndices.push(nearestIdx);
+        lastIdx = nearestIdx;
+      }
+    });
+
+    const splitPoints = [0, ...waypointIndices, coords.length - 1];
+    const segments = [];
+    for (let i = 0; i < splitPoints.length - 1; i++) {
+      const start = splitPoints[i];
+      const end = splitPoints[i + 1];
+      if (end <= start) continue;
+      segments.push(coords.slice(start, end + 1));
+    }
+    return segments.length > 0 ? segments : null;
+  };
+
   // startStation / endStation 기준으로 pathCoordinates를 세 구간으로 나누기
-  const splitPathByStations = (coords, startStationPoint, endStationPoint) => {
+  const splitPathByStations = (
+    coords,
+    startStationPoint,
+    endStationPoint,
+    routeType,
+  ) => {
     // 출발대여소는 항상 존재한다고 가정
     const firstIdx = findNearestIndexOnPath(
       coords,
@@ -266,6 +509,7 @@
 
     // endStation이 startStation과 같은 경우 = 대여소 1개 (원점 ↔ 대여소 ↔ 원점 루프)
     if (
+      routeType === 'loop' &&
       endStationPoint.lat === startStationPoint.lat &&
       endStationPoint.lng === startStationPoint.lng
     ) {
@@ -313,50 +557,6 @@
     };
   };
 
-  const applyRoundTripOffsetForLoop = (
-    latLngPath,
-    waypoints = null, // waypoint 좌표 배열
-    outwardOffsetX = 8, // 가는 길: 화면 기준 오른쪽으로
-    inwardOffsetX = -8, // 오는 길: 화면 기준 왼쪽으로
-  ) => {
-    if (!Array.isArray(latLngPath) || latLngPath.length < 4) {
-      // 너무 짧으면 그냥 원본 사용
-      return latLngPath;
-    }
-
-    const len = latLngPath.length;
-    let midIdx = Math.floor(len / 2); // 기본값: 배열 중간
-
-    // waypoint가 있으면 첫 번째 waypoint 좌표를 기준으로 midIdx 찾기
-    if (waypoints && waypoints.length > 0) {
-      const waypointCoord = waypoints[0];
-      let bestIdx = midIdx;
-      let bestDistance = Number.POSITIVE_INFINITY;
-
-      latLngPath.forEach((latlng, idx) => {
-        const dLat = latlng.getLat() - waypointCoord.lat;
-        const dLng = latlng.getLng() - waypointCoord.lng;
-        const dist = Math.sqrt(dLat * dLat + dLng * dLng);
-        if (dist < bestDistance) {
-          bestDistance = dist;
-          bestIdx = idx;
-        }
-      });
-      midIdx = bestIdx;
-    }
-
-    // 앞쪽: 원점 → 턴포인트 (가는 길)
-    const outwardPath = latLngPath.slice(0, midIdx + 1);
-    // 뒤쪽: 턴포인트 → 원점 (오는 길)
-    const inwardPath = latLngPath.slice(midIdx);
-
-    const outwardOffsetPath = offsetLatLngPath(outwardPath, outwardOffsetX, 0);
-    const inwardOffsetPath = offsetLatLngPath(inwardPath, inwardOffsetX, 0);
-
-    // 두 경로를 이어 붙여서 하나의 폴리라인처럼 보이게
-    return [...outwardOffsetPath, ...inwardOffsetPath];
-  };
-
   // 내 위치 마커 및 오버레이 초기화
   const clearStaticPath = () => {
     if (startMarker) startMarker.setMap(null);
@@ -368,18 +568,16 @@
 
     clearWaypointsMarkers();
 
-    if (bikeRouteOutline) {
-      bikeRouteOutline.setMap(null);
-      bikeRouteOutline.setPath([]);
+    if (bikeRouteOutlineList.length > 0) {
+      bikeRouteOutlineList.forEach(polyline => polyline.setMap(null));
+      bikeRouteOutlineList = [];
     }
-    if (bikeRouteMain) {
-      bikeRouteMain.setMap(null);
-      bikeRouteMain.setPath([]);
+    if (bikeRouteMainList.length > 0) {
+      bikeRouteMainList.forEach(polyline => polyline.setMap(null));
+      bikeRouteMainList = [];
     }
-    if (bikeRouteDash) {
-      bikeRouteDash.setMap(null);
-      bikeRouteDash.setPath([]);
-    }
+    clearBikeRouteArrows();
+    clearBikeRouteSelection();
 
     if (walkingToStartDot) {
       walkingToStartDot.setMap(null);
@@ -394,6 +592,10 @@
     if (walkingToOriginDot) {
       walkingToOriginDot.setMap(null);
       walkingToOriginDot.setPath([]);
+    }
+
+    if (mapRef) {
+      // no-op
     }
   };
 
@@ -482,47 +684,74 @@
       pathCoordinates,
       startStationPoint,
       endStationPoint,
+      routeType,
     );
 
     // --- 도보 구간: 항상 약간 offset해서, 자전거 라인과 겹쳐도 평행하게 보이도록 ---
 
     if (walkingToStartCoords && walkingToStartCoords.length > 0) {
-      const walkingToStartPath =
-        convertToKakaoLatLngArray(walkingToStartCoords);
+      const sampledWalkingToStartCoords = samplePathByDistance(
+        walkingToStartCoords,
+        WALKING_SAMPLE_DISTANCE_M,
+      );
+      const walkingToStartPath = convertToKakaoLatLngArray(
+        sampledWalkingToStartCoords,
+      );
       walkingToStartDot.setPath(walkingToStartPath);
       walkingToStartDot.setMap(mapRef);
     }
 
     if (walkingToEndCoords && walkingToEndCoords.length > 0) {
-      const walkingToEndPath = convertToKakaoLatLngArray(walkingToEndCoords);
+      const sampledWalkingToEndCoords = samplePathByDistance(
+        walkingToEndCoords,
+        WALKING_SAMPLE_DISTANCE_M,
+      );
+      const walkingToEndPath = convertToKakaoLatLngArray(
+        sampledWalkingToEndCoords,
+      );
       walkingToEndDot.setPath(walkingToEndPath);
       walkingToEndDot.setMap(mapRef);
     }
 
     if (walkingToOriginCoords && walkingToOriginCoords.length > 0) {
-      let walkingToOriginPath = convertToKakaoLatLngArray(
-        walkingToOriginCoords,
-      );
-
-      //   원점→대여소 / 대여소→원점 을 나눠서 각각 좌우로 벌려줌
-      if (routeType === 'loop' && waypoints && waypoints.length === 1) {
-        const len = walkingToOriginPath.length;
-        const midIdx = Math.floor(len / 2);
-
-        // 앞: 원점 → 대여소
-        const outward = walkingToOriginPath.slice(0, midIdx + 1);
-        // 뒤: 대여소 → 원점
-        const inward = walkingToOriginPath.slice(midIdx);
-
-        // 화면 기준: 위쪽으로 올리면서, 갈 때는 오른쪽 / 올 때는 왼쪽
-        const outwardOffset = offsetLatLngPath(outward, 3, -10);
-        const inwardOffset = offsetLatLngPath(inward, -3, -10);
-
-        walkingToOriginPath = [...outwardOffset, ...inwardOffset];
-      } else {
-        // 일반 케이스는 기존처럼 그냥 위로만 살짝 올림
-        walkingToOriginPath = offsetLatLngPath(walkingToOriginPath, 0, -10);
+      const shouldUseHalfLoopWalking = routeType === 'loop';
+      let walkingToOriginCoordsForRender = walkingToOriginCoords;
+      if (shouldUseHalfLoopWalking) {
+        const targetPoint = waypoints && waypoints.length > 0 ? waypoints[0] : null;
+        if (targetPoint) {
+          const exactIdx = findExactIndexOnPath(
+            walkingToOriginCoords,
+            targetPoint.lat,
+            targetPoint.lng,
+          );
+          const nearestIdx =
+            exactIdx >= 0
+              ? exactIdx
+              : findNearestIndexOnPath(
+                  walkingToOriginCoords,
+                  targetPoint.lat,
+                  targetPoint.lng,
+                );
+          if (nearestIdx > 0) {
+            walkingToOriginCoordsForRender = walkingToOriginCoords.slice(
+              0,
+              nearestIdx + 1,
+            );
+          }
+        } else {
+          walkingToOriginCoordsForRender = walkingToOriginCoords.slice(
+            0,
+            Math.max(1, Math.floor(walkingToOriginCoords.length / 2)),
+          );
+        }
       }
+      const sampledWalkingToOriginCoords = samplePathByDistance(
+        walkingToOriginCoordsForRender,
+        WALKING_SAMPLE_DISTANCE_M,
+      );
+      let walkingToOriginPath = convertToKakaoLatLngArray(
+        sampledWalkingToOriginCoords,
+      );
 
       walkingToOriginDot.setPath(walkingToOriginPath);
       walkingToOriginDot.setMap(mapRef);
@@ -530,32 +759,112 @@
 
     // --- 자전거 구간 ---
     if (bikeRouteCoords && bikeRouteCoords.length > 0) {
-      let bikeRouteKaKaoPath = convertToKakaoLatLngArray(bikeRouteCoords);
-
-      // ✅ 왕복 루프 + 경유지가 1개일 때:
-      //    → 가는 길은 도로 우측, 오는 길은 도로 좌측으로 살짝 벌려서 표시
-      if (routeType === 'loop' && waypoints && waypoints.length === 1) {
-        bikeRouteKaKaoPath = applyRoundTripOffsetForLoop(
-          bikeRouteKaKaoPath,
-          waypoints, // waypoint 좌표 기준으로 분할
-          4, // outward: 오른쪽으로 4px 정도
-          -4, // inward: 왼쪽으로 4px 정도
+      const shouldUseHalfLoopPath =
+        routeType === 'loop' && waypoints && waypoints.length === 1;
+      let bikeRouteCoordsForRender = bikeRouteCoords;
+      if (shouldUseHalfLoopPath) {
+        const exactIdx = findExactIndexOnPath(
+          bikeRouteCoords,
+          waypoints[0].lat,
+          waypoints[0].lng,
         );
+        const nearestIdx =
+          exactIdx >= 0
+            ? exactIdx
+            : findNearestIndexOnPath(
+                bikeRouteCoords,
+                waypoints[0].lat,
+                waypoints[0].lng,
+              );
+        if (nearestIdx > 0) {
+          bikeRouteCoordsForRender = bikeRouteCoords.slice(0, nearestIdx + 1);
+        }
       }
 
-      if (bikeRouteOutline) {
-        bikeRouteOutline.setPath(bikeRouteKaKaoPath);
-        bikeRouteOutline.setMap(mapRef);
-      }
+      const loopSegmentColors = ['#00E676', '#00B0FF', '#FF9100', '#FF4081'];
+      const hasWaypointSegments = waypoints && waypoints.length >= 1;
+      const segments = getBikeRouteSegmentsByWaypoints(
+        bikeRouteCoordsForRender,
+        waypoints,
+      );
 
-      if (bikeRouteMain) {
-        bikeRouteMain.setPath(bikeRouteKaKaoPath);
+      if (segments && segments.length > 0) {
+        segments.forEach((segmentCoords, idx) => {
+          const segmentPath = convertToKakaoLatLngArray(segmentCoords);
+          const segmentColor = hasWaypointSegments
+            ? loopSegmentColors[idx % loopSegmentColors.length]
+            : '#00E676';
+          const outlineLine = new kakaoRef.maps.Polyline({
+            path: segmentPath,
+            strokeColor: darkenHexColor(segmentColor, 70),
+            strokeWeight: 12,
+            strokeOpacity: 0.95,
+            strokeStyle: 'solid',
+            zIndex: 5 + idx,
+          });
+          outlineLine.setMap(mapRef);
+          bikeRouteOutlineList.push(outlineLine);
+          const segmentLine = new kakaoRef.maps.Polyline({
+            path: segmentPath,
+            strokeColor: segmentColor,
+            strokeWeight: 8,
+            strokeOpacity: 1,
+            strokeStyle: 'solid',
+            zIndex: 5 + idx,
+          });
+          segmentLine.setMap(mapRef);
+          bikeRouteMainList.push(segmentLine);
+
+          kakaoRef.maps.event.addListener(segmentLine, 'click', () => {
+            setBikeRouteSelection(idx, segmentPath, segmentColor);
+          });
+
+          const useAlternate =
+            routeType === 'loop' && waypoints && waypoints.length === 1;
+          createBikeRouteArrows(
+            segmentCoords,
+            segmentColor,
+            useAlternate,
+            5 + idx,
+          );
+        });
+      } else if (bikeRouteMainList.length === 0) {
+        const bikeRouteKaKaoPath = convertToKakaoLatLngArray(
+          bikeRouteCoordsForRender,
+        );
+        const outlineLine = new kakaoRef.maps.Polyline({
+          path: bikeRouteKaKaoPath,
+          strokeColor: darkenHexColor('#00E676', 70),
+          strokeWeight: 12,
+          strokeOpacity: 0.95,
+          strokeStyle: 'solid',
+          zIndex: 5,
+        });
+        outlineLine.setMap(mapRef);
+        bikeRouteOutlineList.push(outlineLine);
+        const bikeRouteMain = new kakaoRef.maps.Polyline({
+          path: bikeRouteKaKaoPath,
+          strokeColor: '#00E676',
+          strokeWeight: 8,
+          strokeOpacity: 1,
+          strokeStyle: 'solid',
+          zIndex: 5,
+        });
         bikeRouteMain.setMap(mapRef);
-      }
+        bikeRouteMainList.push(bikeRouteMain);
 
-      if (bikeRouteDash) {
-        bikeRouteDash.setPath(bikeRouteKaKaoPath);
-        bikeRouteDash.setMap(mapRef);
+        kakaoRef.maps.event.addListener(bikeRouteMain, 'click', () => {
+          setBikeRouteSelection(0, bikeRouteKaKaoPath, '#00E676');
+        });
+
+        const useAlternate =
+          routeType === 'loop' && waypoints && waypoints.length === 1;
+        createBikeRouteArrows(
+          bikeRouteCoordsForRender,
+          '#00E676',
+          useAlternate,
+          5,
+        );
       }
 
       focusOnStaticPath();

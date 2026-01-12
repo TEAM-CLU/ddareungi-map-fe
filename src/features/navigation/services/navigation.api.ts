@@ -63,6 +63,7 @@ export const postReRoute = async (
 ): Promise<ReRouteResponse> => {
   const response = await navigationApi.post(`/${payload.sessionId}/reroute`, {
     currentLocation: payload.currentLocation,
+    travelMode: payload.travelMode,
     remainingWaypoints: payload.remainingWaypoints,
   });
   return response.data;

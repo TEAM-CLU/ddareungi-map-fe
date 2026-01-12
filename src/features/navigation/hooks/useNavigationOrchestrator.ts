@@ -1,3 +1,4 @@
+import { travelMode } from './../model/navigation.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
@@ -11,6 +12,7 @@ import {
   TRAVELED_DISTANCE_OPTIONS,
   ACCURACY_OK,
   WAYPOINT_CONFIG,
+  TRANSPORT_STATE_CONFIG,
 } from '@/features/navigation/model/navigation.constants';
 
 import {
@@ -45,6 +47,7 @@ import { playTts } from '@/features/navigation/libs/playTts';
 import { Coordinate, RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
+import { NavigationWalkingPolicy } from '@/shared/model/map.webview.types';
 import {
   measureCaloriesBurned,
   measureCarbonSaved,
@@ -189,6 +192,9 @@ export const useNavigationOrchestrator = () => {
   const currentIntervalIndex = useRef<number>(0);
   const prevTimestampForDistanceRef = useRef<number | null>(null);
   const prevMyPositionForDistanceRef = useRef<Coordinate | null>(null);
+  // 정지 판정용 별도 prev refs (거리/속도 계산용 prev와 분리)
+  const prevTimestampForStationaryRef = useRef<number | null>(null);
+  const prevMyPositionForStationaryRef = useRef<Coordinate | null>(null);
   const prevTraveledDistanceMeterRef = useRef<number>(0);
   const prevRemainingDistanceMeterRef = useRef<number>(
     Number.POSITIVE_INFINITY,
@@ -201,6 +207,20 @@ export const useNavigationOrchestrator = () => {
   const prevTimestampForMeasureRef = useRef<number | null>(null);
   const prevTraveledDistanceForMeasureRef = useRef<number | null>(null);
   const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
+
+  // 주행 상태 추적용 (단순 속도가 아닌 지속적 주행 여부)
+  const isBikingStateRef = useRef<boolean>(false);
+  const bikingStateCountRef = useRef<number>(0);
+
+  // 정지 상태 추적용 (신호 대기 등 짧은 정지 감지)
+  const isStationaryRef = useRef<boolean>(false);
+  const stationaryCountRef = useRef<number>(0);
+
+  const {
+    BIKING_STATE_THRESHOLD,
+    STATIONARY_THRESHOLD,
+    STATIONARY_DISTANCE_THRESHOLD,
+  } = TRANSPORT_STATE_CONFIG;
 
   // 볼륨 상태
   const { systemVolume, setSystemVolume } = useVolumeStore(
@@ -222,9 +242,13 @@ export const useNavigationOrchestrator = () => {
   // 초기화 완료 트리거
   const [isNavigationInitialized, setIsNavigationInitialized] = useState(false);
 
+  // 틱 트리거
   const locationTick = useMyPositionStore(
     state => state.locationMetaData?.timestamp,
   );
+
+  // 이동수단 분류용
+  const travelModeRef = useRef<travelMode>('walking');
 
   // 완전초기화
   const resetAllNavigationState = () => {
@@ -258,27 +282,36 @@ export const useNavigationOrchestrator = () => {
     accumulatedTraveledDistanceRef.current = 0;
     prevTimestampForMeasureRef.current = null;
     prevTraveledDistanceForMeasureRef.current = null;
+    isBikingStateRef.current = false;
+    bikingStateCountRef.current = 0;
+    isStationaryRef.current = false;
+    stationaryCountRef.current = 0;
+    prevMyPositionForStationaryRef.current = null;
+    prevTimestampForStationaryRef.current = null;
   };
 
   // 네비게이션 데이터 적용 함수 (init과 reroute/recovery에서 공통 사용)
   const applyNavigationData = useCallback(
-    (navigationData: {
-      coordinates: [number, number][];
-      instructions: NavigationInstruction[];
-      startStation?: {
-        lat: number;
-        lng: number;
-        stationId?: string;
-        stationName?: string;
-      };
-      endStation?: {
-        lat: number;
-        lng: number;
-        stationId?: string;
-        stationName?: string;
-      };
-      waypoints?: [number, number][];
-    }) => {
+    (
+      navigationData: {
+        coordinates: [number, number][];
+        instructions: NavigationInstruction[];
+        startStation?: {
+          lat: number;
+          lng: number;
+          stationId?: string;
+          stationName?: string;
+        };
+        endStation?: {
+          lat: number;
+          lng: number;
+          stationId?: string;
+          stationName?: string;
+        };
+        waypoints?: [number, number][];
+      },
+      walkingPolicy: NavigationWalkingPolicy = 'all',
+    ) => {
       // coordinates와 instructions 적용
       fullPathCoordinateList.current = navigationData.coordinates;
       instructionList.current = navigationData.instructions;
@@ -344,10 +377,6 @@ export const useNavigationOrchestrator = () => {
         const routeType =
           storeRouteType === 'loop' ? RouteType.LOOP : RouteType.CONSTANT;
 
-        console.log('=== drawNavigationPath 호출 ===');
-        console.log('storeRouteType:', storeRouteType);
-        console.log('routeType:', routeType);
-
         // 실제 출발지/도착지 좌표
         const coordinates = navigationData.coordinates;
         const startPoint: [number, number] = coordinates[0];
@@ -401,6 +430,7 @@ export const useNavigationOrchestrator = () => {
           currentIntervalIndex: 0,
           startStationPoint,
           endStationPoint,
+          walkingPolicy,
         });
       }
     },
@@ -640,6 +670,65 @@ export const useNavigationOrchestrator = () => {
     currentLocationMetaData.current = locationMetaData;
   }, [locationTick, isNavigationMode, isNavigationInitialized]);
 
+  // 정지 상태 판정 전용 (location tick 기반으로 항상 실행)
+  useEffect(() => {
+    // 항상 실행되어야 하므로 어떤 조건에 의한 early return을 두지 않습니다.
+    const currentLocationMeta =
+      currentLocationMetaData.current ?? locationMetaData;
+
+    if (!currentLocationMeta) {
+      // 위치 정보가 아직 없으면 정지 상태 초기화
+      stationaryCountRef.current = 0;
+      isStationaryRef.current = false;
+      // 정상적으로 끝냄
+      return;
+    }
+
+    const currentCoord = (currentLocationMeta as LocationMetaData).coordinate;
+    const currentTimestamp =
+      typeof currentLocationMeta.timestamp === 'number'
+        ? currentLocationMeta.timestamp
+        : Date.now();
+
+    const prevPosition = prevMyPositionForStationaryRef.current;
+    const prevTimestamp = prevTimestampForStationaryRef.current;
+
+    // 위치 정보가 아직 없으면 정지 상태 초기화
+    if (!currentCoord) {
+      stationaryCountRef.current = 0;
+      isStationaryRef.current = false;
+      // 정상적으로 끝냄
+      return;
+    }
+
+    // 첫 샘플이면 prev로 세팅하고 정지 상태 초기화
+    if (!prevPosition || prevTimestamp == null) {
+      prevMyPositionForStationaryRef.current = currentCoord;
+      prevTimestampForStationaryRef.current = currentTimestamp;
+      stationaryCountRef.current = 0;
+      isStationaryRef.current = false;
+      return;
+    }
+
+    // 이동 거리 계산
+    const movedDistance = getDistanceBetweenCoords(prevPosition, currentCoord);
+
+    if (movedDistance <= STATIONARY_DISTANCE_THRESHOLD) {
+      stationaryCountRef.current += 1;
+      if (stationaryCountRef.current >= STATIONARY_THRESHOLD) {
+        isStationaryRef.current = true;
+      }
+    } else {
+      // 이동이 감지되면 즉시 정지 상태 해제
+      stationaryCountRef.current = 0;
+      isStationaryRef.current = false;
+    }
+
+    // prev 갱신
+    prevMyPositionForStationaryRef.current = currentCoord;
+    prevTimestampForStationaryRef.current = currentTimestamp;
+  }, [locationTick]);
+
   // 경유지 도착/지나침 감지
 
   useEffect(() => {
@@ -791,6 +880,9 @@ export const useNavigationOrchestrator = () => {
       const isOffForReroute =
         minDistanceFromMyPosToPath >= REROUTE_TRIGGER_METER;
 
+      // bestIdx가 0인지 확인 (경로 시작점 근처인지 판단)
+      const isNearByStart = bestIdx === 0;
+
       // 카운트 업데이트 + 정상 복귀 시 리셋
       const routeType =
         useRouteStore.getState().routeType === 'loop'
@@ -800,28 +892,8 @@ export const useNavigationOrchestrator = () => {
       // 카운트 업데이트 + 정상 복귀 시 리셋
       if (routeType === RouteType.LOOP) {
         // loop는 거리 상관없이 무조건 recover 카운트만 증가
-        if (isOffForRecovery || isOffForReroute) {
-          recoverTriggerCount.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            recoverTriggerCount.current + 1,
-          );
-          rerouteTriggerCount.current = Math.max(
-            0,
-            rerouteTriggerCount.current - COUNT_DECAY,
-          );
-
-          if (
-            !isHandlingOffRouteRef.current &&
-            recoverTriggerCount.current === 1
-          ) {
-            playTts(
-              'tts-offroute-warning',
-              WARNING_OFFROUTE_TTS_URL,
-              systemVolume,
-            );
-          }
-        } else {
-          // 정상 복귀
+        if (isStationaryRef.current) {
+          // 정지 상태이면 trigger를 증가시키지 않고 감쇠시킨다
           recoverTriggerCount.current = Math.max(
             0,
             recoverTriggerCount.current - COUNT_DECAY,
@@ -830,59 +902,103 @@ export const useNavigationOrchestrator = () => {
             0,
             rerouteTriggerCount.current - COUNT_DECAY,
           );
+        } else {
+          if (isOffForRecovery || isOffForReroute) {
+            recoverTriggerCount.current = Math.min(
+              MAX_TRIGGER_COUNT,
+              recoverTriggerCount.current + 1,
+            );
+            rerouteTriggerCount.current = Math.max(
+              0,
+              rerouteTriggerCount.current - COUNT_DECAY,
+            );
+
+            if (
+              !isHandlingOffRouteRef.current &&
+              recoverTriggerCount.current === 1
+            ) {
+              playTts(
+                'tts-offroute-warning',
+                WARNING_OFFROUTE_TTS_URL,
+                systemVolume,
+              );
+            }
+          } else {
+            // 정상 복귀
+            recoverTriggerCount.current = Math.max(
+              0,
+              recoverTriggerCount.current - COUNT_DECAY,
+            );
+            rerouteTriggerCount.current = Math.max(
+              0,
+              rerouteTriggerCount.current - COUNT_DECAY,
+            );
+          }
         }
       } else {
         // CONSTANT: 기존 로직 (거리에 따라 reroute vs recover 구분)
-        if (isOffForReroute) {
-          rerouteTriggerCount.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            rerouteTriggerCount.current + 1,
-          );
+        if (isStationaryRef.current) {
+          // 정지 상태이면 trigger를 증가시키지 않고 감쇠시킨다
           recoverTriggerCount.current = Math.max(
             0,
             recoverTriggerCount.current - COUNT_DECAY,
-          );
-
-          if (
-            !isHandlingOffRouteRef.current &&
-            rerouteTriggerCount.current === 1
-          ) {
-            playTts(
-              'tts-offroute-warning',
-              WARNING_OFFROUTE_TTS_URL,
-              systemVolume,
-            );
-          }
-        } else if (isOffForRecovery) {
-          recoverTriggerCount.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            recoverTriggerCount.current + 1,
           );
           rerouteTriggerCount.current = Math.max(
             0,
             rerouteTriggerCount.current - COUNT_DECAY,
           );
-
-          if (
-            !isHandlingOffRouteRef.current &&
-            recoverTriggerCount.current === 1
-          ) {
-            playTts(
-              'tts-offroute-warning',
-              WARNING_OFFROUTE_TTS_URL,
-              systemVolume,
-            );
-          }
         } else {
-          // 정상 복귀
-          recoverTriggerCount.current = Math.max(
-            0,
-            recoverTriggerCount.current - COUNT_DECAY,
-          );
-          rerouteTriggerCount.current = Math.max(
-            0,
-            rerouteTriggerCount.current - COUNT_DECAY,
-          );
+          if (isOffForReroute) {
+            rerouteTriggerCount.current = Math.min(
+              MAX_TRIGGER_COUNT,
+              rerouteTriggerCount.current + 1,
+            );
+            recoverTriggerCount.current = Math.max(
+              0,
+              recoverTriggerCount.current - COUNT_DECAY,
+            );
+
+            if (
+              !isHandlingOffRouteRef.current &&
+              rerouteTriggerCount.current === 1
+            ) {
+              playTts(
+                'tts-offroute-warning',
+                WARNING_OFFROUTE_TTS_URL,
+                systemVolume,
+              );
+            }
+          } else if (isOffForRecovery) {
+            recoverTriggerCount.current = Math.min(
+              MAX_TRIGGER_COUNT,
+              recoverTriggerCount.current + 1,
+            );
+            rerouteTriggerCount.current = Math.max(
+              0,
+              rerouteTriggerCount.current - COUNT_DECAY,
+            );
+
+            if (
+              !isHandlingOffRouteRef.current &&
+              recoverTriggerCount.current === 1
+            ) {
+              playTts(
+                'tts-offroute-warning',
+                WARNING_OFFROUTE_TTS_URL,
+                systemVolume,
+              );
+            }
+          } else {
+            // 정상 복귀
+            recoverTriggerCount.current = Math.max(
+              0,
+              recoverTriggerCount.current - COUNT_DECAY,
+            );
+            rerouteTriggerCount.current = Math.max(
+              0,
+              rerouteTriggerCount.current - COUNT_DECAY,
+            );
+          }
         }
       }
 
@@ -896,99 +1012,130 @@ export const useNavigationOrchestrator = () => {
         .filter((wp): wp is Coordinates => wp !== null);
 
       // 우선순위: reroute > recovery(원형탐색은 reroute 안 함)
+      // reroute 조건:
+      // 1. bestIdx가 0 (시작점)이고 주행 상태가 아닐 때 → 도보로 재탐색
+      // 2. 주행 상태일 때 → biking으로 재탐색
       if (
         rerouteTriggerCount.current >= MAX_TRIGGER_COUNT &&
         routeType === RouteType.CONSTANT
       ) {
-        if (isHandlingOffRouteRef.current) return;
-        isHandlingOffRouteRef.current = true;
-        setIsLoadingForOffRoute(true);
-        rerouteTriggerCount.current = 0;
-        recoverTriggerCount.current = 0;
+        // 걷기 reroute: bestIdx가 0일 때만 (시작점 근처로 돌아간 경우)
+        const shouldWalkingReroute = isNearByStart && !isBikingStateRef.current;
+        // 주행 reroute: 주행 상태일 때
+        const shouldBikingReroute = isBikingStateRef.current;
 
-        // 재탐색 직전 현재 소요거리를 누적값에 저장
-        if (
-          traveledDistanceMeter !== null &&
-          traveledDistanceMeter !== undefined
-        ) {
-          accumulatedTraveledDistanceRef.current = traveledDistanceMeter;
-        }
-
-        try {
-          // 재탐색 API 호출
-          const response = await reroute({
-            sessionId,
-            currentLocation: {
-              lat: myPosition.lat,
-              lng: myPosition.lng,
-            },
-            remainingWaypoints: remainingWaypoints?.length
-              ? remainingWaypoints
-              : [],
-          });
-
-          // 응답 데이터 추출 (API가 response.data.data를 반환하므로 response 자체가 데이터)
-          const coordinates = response.data.coordinates;
-          const instructions = response.data.instructions;
-
-          // 응답 데이터 검증
-          if (
-            !coordinates ||
-            !instructions ||
-            coordinates.length === 0 ||
-            instructions.length === 0
-          ) {
-            console.error('Invalid reroute response:', response);
-            Alert.alert('재탐색 실패', '경로 데이터를 받아오지 못했습니다.');
+        if (shouldWalkingReroute || shouldBikingReroute) {
+          // 정지 상태에서는 reroute 실행을 유예
+          if (isStationaryRef.current) {
             return;
           }
 
-          // 응답 데이터를 바로 적용 (공통 함수 사용) - 새로운 대여소/경유지 정보 포함
-          applyNavigationData({
-            coordinates,
-            instructions,
-            startStation: response.data.startStation
-              ? {
-                  lat: response.data.startStation.location.lat,
-                  lng: response.data.startStation.location.lng,
-                  stationId: response.data.startStation.stationId,
-                  stationName: response.data.startStation.stationName,
-                }
-              : undefined,
-            endStation: response.data.endStation
-              ? {
-                  lat: response.data.endStation.location.lat,
-                  lng: response.data.endStation.location.lng,
-                  stationId: response.data.endStation.stationId,
-                  stationName: response.data.endStation.stationName,
-                }
-              : undefined,
-            waypoints: response.data.waypoints
-              ? response.data.waypoints.map(
-                  wp => [wp.lng, wp.lat] as [number, number],
-                )
-              : undefined,
-          });
+          if (isHandlingOffRouteRef.current) return;
+          isHandlingOffRouteRef.current = true;
+          setIsLoadingForOffRoute(true);
+          rerouteTriggerCount.current = 0;
+          recoverTriggerCount.current = 0;
 
-          // 상태 초기화
-          setIsNavigationInitialized(true);
+          // 재탐색 직전 현재 소요거리를 누적값에 저장
+          if (
+            traveledDistanceMeter !== null &&
+            traveledDistanceMeter !== undefined
+          ) {
+            accumulatedTraveledDistanceRef.current = traveledDistanceMeter;
+          }
 
-          playTts('tts-offroute-reroute', REROUTE_TTS_URL, systemVolume);
-          playTts(
-            'tts-offroute-reroute-success',
-            SUCCESS_REROUTE_TTS_URL,
-            systemVolume,
-          );
-        } catch (error) {
-          console.error('Reroute error:', error);
-        } finally {
-          isHandlingOffRouteRef.current = false;
-          setIsLoadingForOffRoute(false);
+          // travelMode 결정: 걷기 reroute면 walking, 주행 reroute면 biking
+          const rerouteTravelMode = shouldWalkingReroute ? 'walking' : 'biking';
+
+          try {
+            // 재탐색 API 호출
+            const response = await reroute({
+              sessionId,
+              currentLocation: {
+                lat: myPosition.lat,
+                lng: myPosition.lng,
+              },
+              travelMode: rerouteTravelMode,
+              remainingWaypoints: remainingWaypoints?.length
+                ? remainingWaypoints
+                : [],
+            });
+
+            // 응답 데이터 추출 (API가 response.data.data를 반환하므로 response 자체가 데이터)
+            const coordinates = response.data.coordinates;
+            const instructions = response.data.instructions;
+
+            // 응답 데이터 검증
+            if (
+              !coordinates ||
+              !instructions ||
+              coordinates.length === 0 ||
+              instructions.length === 0
+            ) {
+              console.error('Invalid reroute response:', response);
+              Alert.alert('재탐색 실패', '경로 데이터를 받아오지 못했습니다.');
+              return;
+            }
+
+            // 응답 데이터를 바로 적용 (공통 함수 사용) - 새로운 대여소/경유지 정보 포함
+            // 주행 reroute면 도착 도보만, 도보 reroute면 전체 그리기
+            applyNavigationData(
+              {
+                coordinates,
+                instructions,
+                startStation: response.data.startStation
+                  ? {
+                      lat: response.data.startStation.location.lat,
+                      lng: response.data.startStation.location.lng,
+                      stationId: response.data.startStation.stationId,
+                      stationName: response.data.startStation.stationName,
+                    }
+                  : undefined,
+                endStation: response.data.endStation
+                  ? {
+                      lat: response.data.endStation.location.lat,
+                      lng: response.data.endStation.location.lng,
+                      stationId: response.data.endStation.stationId,
+                      stationName: response.data.endStation.stationName,
+                    }
+                  : undefined,
+                waypoints: response.data.waypoints
+                  ? response.data.waypoints.map(
+                      wp => [wp.lng, wp.lat] as [number, number],
+                    )
+                  : undefined,
+              },
+              shouldBikingReroute ? 'only-end' : 'all',
+            );
+
+            // 상태 초기화
+            setIsNavigationInitialized(true);
+
+            playTts('tts-offroute-reroute', REROUTE_TTS_URL, systemVolume);
+            playTts(
+              'tts-offroute-reroute-success',
+              SUCCESS_REROUTE_TTS_URL,
+              systemVolume,
+            );
+          } catch (error) {
+            console.error('Reroute error:', error);
+          } finally {
+            isHandlingOffRouteRef.current = false;
+            setIsLoadingForOffRoute(false);
+          }
         }
-        return;
       }
 
-      if (recoverTriggerCount.current >= MAX_TRIGGER_COUNT) {
+      // recover는 주행 상태(biking)일 때만 실행
+      if (
+        recoverTriggerCount.current >= MAX_TRIGGER_COUNT &&
+        isBikingStateRef.current
+      ) {
+        // 정지 상태에서는 recover 실행을 유예
+        if (isStationaryRef.current) {
+          return;
+        }
+
         if (isHandlingOffRouteRef.current) return;
         isHandlingOffRouteRef.current = true;
         setIsLoadingForOffRoute(true);
@@ -1030,31 +1177,35 @@ export const useNavigationOrchestrator = () => {
           }
 
           // 응답 데이터를 바로 적용 (공통 함수 사용) - 새로운 대여소/경유지 정보 포함
-          applyNavigationData({
-            coordinates,
-            instructions,
-            startStation: response.data.startStation
-              ? {
-                  lat: response.data.startStation.location.lat,
-                  lng: response.data.startStation.location.lng,
-                  stationId: response.data.startStation.stationId,
-                  stationName: response.data.startStation.stationName,
-                }
-              : undefined,
-            endStation: response.data.endStation
-              ? {
-                  lat: response.data.endStation.location.lat,
-                  lng: response.data.endStation.location.lng,
-                  stationId: response.data.endStation.stationId,
-                  stationName: response.data.endStation.stationName,
-                }
-              : undefined,
-            waypoints: response.data.waypoints
-              ? response.data.waypoints.map(
-                  wp => [wp.lng, wp.lat] as [number, number],
-                )
-              : undefined,
-          });
+          // recover는 항상 주행 상태이므로 도착 도보만 그리기
+          applyNavigationData(
+            {
+              coordinates,
+              instructions,
+              startStation: response.data.startStation
+                ? {
+                    lat: response.data.startStation.location.lat,
+                    lng: response.data.startStation.location.lng,
+                    stationId: response.data.startStation.stationId,
+                    stationName: response.data.startStation.stationName,
+                  }
+                : undefined,
+              endStation: response.data.endStation
+                ? {
+                    lat: response.data.endStation.location.lat,
+                    lng: response.data.endStation.location.lng,
+                    stationId: response.data.endStation.stationId,
+                    stationName: response.data.endStation.stationName,
+                  }
+                : undefined,
+              waypoints: response.data.waypoints
+                ? response.data.waypoints.map(
+                    wp => [wp.lng, wp.lat] as [number, number],
+                  )
+                : undefined,
+            },
+            'only-end',
+          );
 
           // 상태 초기화
           setIsNavigationInitialized(true);
@@ -1081,7 +1232,14 @@ export const useNavigationOrchestrator = () => {
         offRouteTickBusyRef.current = false;
       }
     })();
-  }, [isNavigationMode, locationTick, sessionId, isNavigationInitialized]);
+  }, [
+    isNavigationMode,
+    locationTick,
+    sessionId,
+    isNavigationInitialized,
+    systemVolume,
+    traveledDistanceMeter,
+  ]);
 
   // 소요거리/남은거리 업데이트
   useEffect(() => {
@@ -1256,10 +1414,13 @@ export const useNavigationOrchestrator = () => {
       return;
     }
 
-    const dtSec = Math.max(
+    const rawDtSec = Math.max(
       0.001,
       (currentTimestamp - prevTimestampForMeasure) / 1000,
     );
+
+    const dtSec = Math.min(rawDtSec, MOTION_COMMON_OPTIONS.DT_SEC_CAP);
+
     prevTimestampForMeasureRef.current = currentTimestamp;
 
     const currentSpeedMps = safeDeltaDistance / dtSec;
@@ -1268,6 +1429,25 @@ export const useNavigationOrchestrator = () => {
     if (currentSpeedMps > MOTION_COMMON_OPTIONS.MAX_PHYSICAL_SPEED_MPS) return;
 
     const transportationType = classifyTransportBySpeed(currentSpeedMps);
+
+    // 정지 상태 추적: 이동 거리가 매우 작으면 정지로 판단
+    // NOTE: 정지 판정 로직은 이제 별도 useEffect에서 처리합니다.
+
+    // 주행 상태 추적: 지속적으로 biking으로 판정되면 주행 상태로 간주
+    if (transportationType === 'biking') {
+      bikingStateCountRef.current += 1;
+      if (bikingStateCountRef.current >= BIKING_STATE_THRESHOLD) {
+        isBikingStateRef.current = true;
+      }
+    } else {
+      bikingStateCountRef.current = Math.max(
+        0,
+        bikingStateCountRef.current - 1,
+      );
+      if (bikingStateCountRef.current === 0) {
+        isBikingStateRef.current = false;
+      }
+    }
 
     const currentCaloriesDelta = measureCaloriesBurned(
       transportationType,

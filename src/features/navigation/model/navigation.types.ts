@@ -86,8 +86,10 @@ export interface ReturnToExistingRouteResponse {
 }
 
 // 완전 재탐색
+export type travelMode = 'walking' | 'biking';
 export interface ReRoutePayload {
   sessionId: string;
+  travelMode: travelMode;
   currentLocation: Coordinates;
   remainingWaypoints?: Coordinates[];
 }
