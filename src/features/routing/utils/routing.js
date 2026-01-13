@@ -459,6 +459,13 @@
     updateArrowVisibilityByZoom();
   };
 
+  const attachBikeRouteClick = (line, idx, segmentPath, segmentColor) => {
+    if (!line) return;
+    kakaoRef.maps.event.addListener(line, 'click', () => {
+      setBikeRouteSelection(idx, segmentPath, segmentColor);
+    });
+  };
+
   const getBikeRouteSegmentsByWaypoints = (coords, waypoints) => {
     if (!Array.isArray(waypoints) || waypoints.length === 0) return null;
     let lastIdx = 0;
@@ -810,6 +817,18 @@
           });
           segmentLine.setMap(mapRef);
           bikeRouteMainList.push(segmentLine);
+          attachBikeRouteClick(
+            segmentLine,
+            idx,
+            segmentPath,
+            segmentColor,
+          );
+          attachBikeRouteClick(
+            outlineLine,
+            idx,
+            segmentPath,
+            segmentColor,
+          );
 
           const useAlternate =
             routeType === 'loop' && waypoints && waypoints.length === 1;
@@ -844,6 +863,8 @@
         });
         bikeRouteMain.setMap(mapRef);
         bikeRouteMainList.push(bikeRouteMain);
+        attachBikeRouteClick(bikeRouteMain, 0, bikeRouteKaKaoPath, '#00E676');
+        attachBikeRouteClick(outlineLine, 0, bikeRouteKaKaoPath, '#00E676');
 
         const useAlternate =
           routeType === 'loop' && waypoints && waypoints.length === 1;
