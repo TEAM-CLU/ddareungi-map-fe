@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DragEndParams } from 'react-native-draggable-flatlist';
 import { useRouteStore } from '../stores/useRouteStore';
 import { RouteItem, RouteType, Waypoint } from '../model/routing.types';
-import { useShallow } from 'zustand/shallow';
-
+import { useShallow } from 'zustand/react/shallow';
 export const useRouteInput = () => {
   const {
     routeType,

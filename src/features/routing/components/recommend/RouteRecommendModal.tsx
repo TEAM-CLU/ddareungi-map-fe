@@ -2,11 +2,11 @@ import SquareButton from '@/shared/components/button/SquareButton';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconMinus, IconPlus } from '@/shared/components/icons';
-import React, { use } from 'react';
+import React from 'react';
 import { useRouteStore } from '../../stores/useRouteStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 
 const RouteRecommendModal = () => {
   const { distance, setDistance } = useRouteStore(

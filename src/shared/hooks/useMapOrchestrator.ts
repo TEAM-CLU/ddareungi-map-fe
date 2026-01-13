@@ -7,8 +7,8 @@ import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
 import { MapReadyMessage } from '@/shared/model/map.webview.types';
-import { useShallow } from 'zustand/shallow';
 import Modal from 'react-native-modal';
+import { useShallow } from 'zustand/react/shallow';
 
 /**
  * useMapOrchestrator

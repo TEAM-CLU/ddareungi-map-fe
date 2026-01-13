@@ -20,7 +20,7 @@ import {
   NeedUpdateStationBikeCountListMessage,
 } from '@/shared/model/map.webview.types';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =

@@ -11,7 +11,7 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState, useEffect, useCallback, use } from 'react';
 import { Alert } from 'react-native';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useRouteSelect = () => {
   const route = useAppRoute<'RouteSelect'>();
