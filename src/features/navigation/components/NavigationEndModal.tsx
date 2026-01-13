@@ -26,6 +26,7 @@ import Modal from 'react-native-modal';
 import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
 import IconShared from '@/shared/components/icons/IconShared';
 import StoryShareScreen from '@/features/navigation/components/StoryShareScreen';
+import { useBookmarkMessenger } from '@/shared/hooks/useBookmarkMessenger';
 interface NavigationEndModalProps {
   modalRef: React.RefObject<Modal | null>;
   setShowNavigationEndModal: (show: boolean) => void;
@@ -56,9 +57,11 @@ const NavigationEndModal = ({
   const { systemVolume } = useVolumeStore();
   const { replaceMyLocationMarker, clearNavigationPath } =
     useNavigationMessenger();
+  const { turnOnBookmarkMarkers } = useBookmarkMessenger();
 
   useEffect(() => {
     const terminateNavigation = async () => {
+      turnOnBookmarkMarkers();
       const endTtsKey = 'tts-navigation-end';
       const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
       playTts(endTtsKey, endTtsUrl, systemVolume);

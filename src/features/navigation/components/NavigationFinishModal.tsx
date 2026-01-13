@@ -30,6 +30,7 @@ import { useEffect } from 'react';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
+import { useBookmarkMessenger } from '@/shared/hooks/useBookmarkMessenger';
 
 interface NavigationFinishModalProps {
   modalRef: React.RefObject<Modal | null>;
@@ -61,9 +62,11 @@ const NavigationFinishModal = ({
   const { systemVolume } = useVolumeStore();
   const { replaceMyLocationMarker, clearNavigationPath } =
     useNavigationMessenger();
+  const { turnOnBookmarkMarkers } = useBookmarkMessenger();
 
   useEffect(() => {
     const terminateNavigation = async () => {
+      turnOnBookmarkMarkers();
       const finishTtsKey = 'tts-navigation-end';
       const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
       playTts(finishTtsKey, finishTtsUrl, systemVolume);

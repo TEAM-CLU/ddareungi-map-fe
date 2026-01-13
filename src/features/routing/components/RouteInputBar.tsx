@@ -40,6 +40,7 @@ const RouteInputBar = ({
     start,
     end,
     hasWaypoints,
+    handleDragBegin,
     handleDragEnd,
     handleSwap,
     handleRemove,
@@ -208,6 +209,7 @@ const RouteInputBar = ({
       <View style={tw('pl-2 pr-12')}>
         <DraggableFlatList
           data={items}
+          onDragBegin={handleDragBegin}
           onDragEnd={handleDragEnd}
           keyExtractor={item => item.key}
           renderItem={renderItem}
