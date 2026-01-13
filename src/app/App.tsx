@@ -1,25 +1,24 @@
 import React, { useEffect } from 'react';
 import DevHub from '@/app/routes/DevHub';
 import TrackPlayer from 'react-native-track-player';
-import { trackPlayerService } from '@/features/navigation/utils/trackPlayerService';
 import { registerTtsQueueHandler } from '@/features/navigation/libs/ttsPlayer';
 
 const App = () => {
-  TrackPlayer.registerPlaybackService(() => trackPlayerService);
-
   useEffect(() => {
     const setupTrackPlayer = async () => {
-      await TrackPlayer.setupPlayer();
-      await TrackPlayer.updateOptions({
-        capabilities: [],
-      });
-
-      registerTtsQueueHandler();
+      try {
+        await TrackPlayer.setupPlayer();
+        await TrackPlayer.updateOptions({
+          capabilities: [],
+        });
+        registerTtsQueueHandler();
+      } catch (error) {
+        console.warn('TrackPlayer setup failed:', error);
+      }
     };
 
     setupTrackPlayer();
   }, []);
-
   return <DevHub />;
 };
 

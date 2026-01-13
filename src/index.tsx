@@ -9,9 +9,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { WebViewRefProvider } from '@/app/providers/webview';
+import { trackPlayerService } from '@/features/navigation/utils/trackPlayerService';
+import TrackPlayer from 'react-native-track-player';
 
 const queryClient = new QueryClient();
 const Root = () => {
+  TrackPlayer.registerPlaybackService(() => trackPlayerService);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <TailwindProvider>
