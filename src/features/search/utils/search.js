@@ -7,6 +7,15 @@
     mapRef = map;
   };
 
+  const smoothPanAndZoom = (position, level) => {
+    mapRef.panTo(position);
+    if (typeof level === 'number') {
+      setTimeout(() => {
+        mapRef.setLevel(level, { animate: true, anchor: position });
+      }, 250);
+    }
+  };
+
   // 장소 마커 표시 - 검색 결과에서 장소 선택 시
   const showPlaceMarker = (lat, lng, placeName, placeInfo) => {
     // 기존 마커 제거
@@ -43,8 +52,7 @@
     currentPlaceMarker.setMap(mapRef);
 
     // 맵 중심을 해당 위치로 이동
-    mapRef.setCenter(position);
-    mapRef.setLevel(3);
+    smoothPanAndZoom(position, 3);
   };
 
   // 현재 장소 마커 제거

@@ -98,7 +98,7 @@
 
     // 최초 위치로 이동
     if (!hasMoveToMyLocationRun && !window.isSelectedRouteDetailModalOpen) {
-      mapRef.setCenter(updatedPosition);
+      mapRef.panTo(updatedPosition);
       hasMoveToMyLocationRun = true;
     }
     myLocationMarker.setPosition(updatedPosition);

@@ -8,6 +8,15 @@
     ensureNoTapHighlightCSS();
   };
 
+  const smoothPanAndZoom = (position, level) => {
+    mapRef.panTo(position);
+    if (typeof level === 'number') {
+      setTimeout(() => {
+        mapRef.setLevel(level, { animate: true, anchor: position });
+      }, 250);
+    }
+  };
+
   // 모바일 브라우저에서 탭 하이라이트, 텍스트 선택, 포커스 아웃라인 제거
   const ensureNoTapHighlightCSS = () => {
     if (document.getElementById('no-tap-style')) return;
@@ -125,11 +134,12 @@
 
     content.onclick = null;
     content.onclick = () => {
-      mapRef.setCenter(marker.getPosition());
-
+      const position = marker.getPosition();
       const currentLevel = mapRef.getLevel();
       if (currentLevel > 3) {
-        mapRef.setLevel(3, { animate: true });
+        smoothPanAndZoom(position, 3);
+      } else {
+        mapRef.panTo(position);
       }
 
       window.ReactNativeWebView?.postMessage(
@@ -194,8 +204,7 @@
   const focusOnBookmark = bookmarkId => {
     const target = bookmarkMarkers.find(bookmark => bookmark.id === bookmarkId);
     if (target) {
-      mapRef.setCenter(target.marker.getPosition());
-      mapRef.setLevel(3, { animate: true });
+      smoothPanAndZoom(target.marker.getPosition(), 3);
     }
   };
 
@@ -209,8 +218,7 @@
     if (existing) {
       // 토글 off 상태에서도 보이도록 명시적으로 setMap 호출
       existing.marker.setMap(mapRef);
-      mapRef.setCenter(existing.marker.getPosition());
-      mapRef.setLevel(3, { animate: true });
+      smoothPanAndZoom(existing.marker.getPosition(), 3);
       return;
     }
 
@@ -245,8 +253,7 @@
     bindOverlayClick(marker, bookmarkData);
 
     // 해당 마커로 포커스
-    mapRef.setCenter(position);
-    mapRef.setLevel(3, { animate: true });
+    smoothPanAndZoom(position, 3);
   };
 
   const destroyBookmark = () => {
