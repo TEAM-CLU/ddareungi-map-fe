@@ -55,13 +55,11 @@ const RouteInputBar = ({
 
       const waypointCount = items.length - 2;
 
-      const iconColor = isStart
-        ? waypointCount > 0
-          ? 'gray'
-          : 'brand'
+      const iconColorHex = isStart
+        ? '#006AFF'
         : isEnd
-        ? 'gray'
-        : 'brand';
+        ? '#FF0000'
+        : '#01DA86';
 
       const showPlus = isEnd && waypointCount < 3;
       const showMinus =
@@ -107,7 +105,7 @@ const RouteInputBar = ({
             )}
 
             <View style={tw('w-8 items-center justify-center')}>
-              <IconOval width={20} height={20} color={iconColor} />
+              <IconOval width={20} height={20} colorHex={iconColorHex} />
             </View>
 
             <TouchableOpacity
