@@ -18,7 +18,7 @@ export const useMyPositionStore = (() => {
       setMyPosition: (position: Coordinates) =>
         set({ myPosition: position }, false, 'myPosition/setMyPosition'),
 
-      locationMetaData: { timestemp: 0, coordinate: { lat: 0, lng: 0 } },
+      locationMetaData: { timestamp: 0, coordinate: { lat: 0, lng: 0 } },
       setLocationMetaData: (locationMetaData: LocationMetaData) =>
         set({ locationMetaData }, false, 'myPosition/setLocationMetaData'),
     })),
