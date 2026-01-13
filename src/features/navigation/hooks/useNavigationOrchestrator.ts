@@ -57,6 +57,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/react/shallow';
+import { useBookmarkMessenger } from '@/shared/hooks/useBookmarkMessenger';
 
 export const useNavigationOrchestrator = () => {
   const { mutateAsync: startNavigationSession } =
@@ -249,6 +250,15 @@ export const useNavigationOrchestrator = () => {
 
   // 이동수단 분류용
   const travelModeRef = useRef<travelMode>('walking');
+
+  // 즐겨찾기 마커 제거
+  const { turnOffBookmarkMarkers } = useBookmarkMessenger();
+
+  useEffect(() => {
+    if (!isNavigationMode) return;
+
+    turnOffBookmarkMarkers();
+  }, [isNavigationMode]);
 
   // 완전초기화
   const resetAllNavigationState = () => {
