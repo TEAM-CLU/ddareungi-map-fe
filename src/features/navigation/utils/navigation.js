@@ -20,7 +20,6 @@
   let navigationWalkingToEndDot; // 도착 대여소 -> 도착지
   let navigationWalkingToOriginDot; // 원점 -> 대여소 -> 원점
 
-
   let kakaoPathForFocusOnBound = [];
 
   // ✅ updateNavigationCurrentInterval에서 재사용할 데이터 저장
@@ -120,7 +119,6 @@
       strokeStyle: 'shortdot',
       zIndex: 6,
     });
-
   };
 
   // 대여소 마커 svg 생성 함수
@@ -202,7 +200,6 @@
     });
   };
 
-
   // 단순 좌표 배열 -> kakao.maps.LatLng 배열 변환 함수
   const convertToKakaoLatLngArray = coords => {
     return coords.map(coord => {
@@ -245,9 +242,7 @@
     const r = clampColorChannel(parseInt(raw.slice(0, 2), 16) + amount);
     const g = clampColorChannel(parseInt(raw.slice(2, 4), 16) + amount);
     const b = clampColorChannel(parseInt(raw.slice(4, 6), 16) + amount);
-    return `#${[r, g, b]
-      .map(v => v.toString(16).padStart(2, '0'))
-      .join('')}`;
+    return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
   };
 
   const darkenHexColor = (hex, amount = 40) => {
@@ -256,9 +251,7 @@
     const r = clampColorChannel(parseInt(raw.slice(0, 2), 16) - amount);
     const g = clampColorChannel(parseInt(raw.slice(2, 4), 16) - amount);
     const b = clampColorChannel(parseInt(raw.slice(4, 6), 16) - amount);
-    return `#${[r, g, b]
-      .map(v => v.toString(16).padStart(2, '0'))
-      .join('')}`;
+    return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
   };
 
   const BIKE_ROUTE_ARROW_SPACING_M = 60;
@@ -517,6 +510,14 @@
     endStationPoint,
     routeType,
   ) => {
+    if (!startStationPoint || !endStationPoint) {
+      return {
+        walkingToStartCoords: [],
+        bikeRouteCoords: coords,
+        walkingToEndCoords: [],
+        walkingToOriginCoords: [],
+      };
+    }
     // 출발대여소는 항상 존재한다고 가정
     const firstIdx = findNearestIndexOnPath(
       coords,
@@ -739,8 +740,9 @@
           walkingToStartCoords,
           WALKING_SAMPLE_DISTANCE_M,
         );
-        const walkingToStartPath =
-          convertToKakaoLatLngArray(sampledWalkingToStartCoords);
+        const walkingToStartPath = convertToKakaoLatLngArray(
+          sampledWalkingToStartCoords,
+        );
         navigationWalkingToStartDot.setPath(walkingToStartPath);
         navigationWalkingToStartDot.setMap(mapRef);
       }
@@ -749,7 +751,8 @@
         const shouldUseHalfLoopWalking = routeType === 'loop';
         let walkingToOriginCoordsForRender = walkingToOriginCoords;
         if (shouldUseHalfLoopWalking) {
-          const targetPoint = waypoints && waypoints.length > 0 ? waypoints[0] : null;
+          const targetPoint =
+            waypoints && waypoints.length > 0 ? waypoints[0] : null;
           if (targetPoint) {
             const exactIdx = findExactIndexOnPath(
               walkingToOriginCoords,
@@ -883,18 +886,8 @@
           });
           segmentLine.setMap(mapRef);
           navigationBikeRouteMainList.push(segmentLine);
-          attachBikeRouteClick(
-            segmentLine,
-            idx,
-            segmentPath,
-            segmentColor,
-          );
-          attachBikeRouteClick(
-            outlineLine,
-            idx,
-            segmentPath,
-            segmentColor,
-          );
+          attachBikeRouteClick(segmentLine, idx, segmentPath, segmentColor);
+          attachBikeRouteClick(outlineLine, idx, segmentPath, segmentColor);
 
           const useAlternate =
             routeType === 'loop' && waypoints && waypoints.length === 1;
@@ -926,18 +919,8 @@
         navigationBikeRouteOutlineList.push(bikeRouteOutline);
         bikeRouteMain.setMap(mapRef);
         navigationBikeRouteMainList.push(bikeRouteMain);
-        attachBikeRouteClick(
-          bikeRouteMain,
-          0,
-          fullBikeKakaoPath,
-          '#00E676',
-        );
-        attachBikeRouteClick(
-          bikeRouteOutline,
-          0,
-          fullBikeKakaoPath,
-          '#00E676',
-        );
+        attachBikeRouteClick(bikeRouteMain, 0, fullBikeKakaoPath, '#00E676');
+        attachBikeRouteClick(bikeRouteOutline, 0, fullBikeKakaoPath, '#00E676');
 
         const useAlternate =
           routeType === 'loop' && waypoints && waypoints.length === 1;
