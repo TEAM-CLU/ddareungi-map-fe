@@ -13,9 +13,9 @@ import { trackPlayerService } from '@/features/navigation/utils/trackPlayerServi
 import TrackPlayer from 'react-native-track-player';
 
 const queryClient = new QueryClient();
-const Root = () => {
-  TrackPlayer.registerPlaybackService(() => trackPlayerService);
+TrackPlayer.registerPlaybackService(() => trackPlayerService);
 
+const Root = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <TailwindProvider>
