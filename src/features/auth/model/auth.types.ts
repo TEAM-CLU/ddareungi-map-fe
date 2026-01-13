@@ -192,8 +192,7 @@ export interface CheckEmailResponse {
 }
 
 // 유저 통계 업데이트
-
-interface StatsInfo {
+export interface StatsInfo {
   totalDistance: number;
   totalTime: number;
   calories: number;
