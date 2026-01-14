@@ -21,7 +21,6 @@ import { useNavigationOrchestrator } from '@/features/navigation/hooks/useNaviga
 import NavVolumeToggleButton from '@/features/navigation/components/NavVolumeToggleButton';
 import NorthIndicator from '@/features/navigation/components/NorthIndicator';
 import SimpleLoading from '@/shared/components/SimpleLoading';
-import { RouteType } from '@/features/routing/model/routing.types';
 import { makeSegmentColors } from '@/features/navigation/utils/makeSegmentColors';
 
 const MapScreen = () => {
@@ -55,7 +54,6 @@ const MapScreen = () => {
     state => state.showSelectedRouteDetailModal,
   );
 
-  const routeType = useRouteStore(state => state.routeType);
   const selectedRouteData = useRouteStore(state => state.selectedRouteData);
   const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
     useSearchOrchestrator();
@@ -66,10 +64,12 @@ const MapScreen = () => {
 
   const waypointCount = selectedRouteData?.waypoints?.length ?? 0;
   const segmentColors = makeSegmentColors(waypointCount);
-  const indicatorStyle = (color: string) => [
-    tw('w-8 h-8 rounded-full flex justify-center items-center p-1'),
+  const indicatorStyle = () => [
+    tw('flex-row items-center px-2 py-1 rounded-full'),
     {
-      backgroundColor: color,
+      backgroundColor: '#FFFFFF',
+      borderColor: '#E5E7EB',
+      borderWidth: 1,
     },
   ];
 
@@ -107,52 +107,31 @@ const MapScreen = () => {
           <View
             style={[
               tw('absolute flex flex-row items-center justify-start'),
-              { top: 160, left: 22.5, gap: 8 },
+              {
+                top: 158,
+                left: 20,
+                gap: 6,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                backgroundColor: 'rgba(255,255,255,0.95)',
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: '#E5E7EB',
+              },
             ]}
           >
-            {routeType === RouteType.CONSTANT ? (
-              <>
-                <View style={indicatorStyle('#006AFF')}>
-                  <Text
-                    style={[
-                      tw('font-primary-600 text-on-surface-secondary'),
-                      { fontSize: 11 },
-                    ]}
-                  >
-                    출발
-                  </Text>
-                </View>
-                <View style={indicatorStyle('#FF0000')}>
-                  <Text
-                    style={[
-                      tw('font-primary-600 text-on-surface-secondary'),
-                      { fontSize: 11 },
-                    ]}
-                  >
-                    도착
-                  </Text>
-                </View>
-              </>
-            ) : (
-              <View style={indicatorStyle('#000000')}>
-                <Text
-                  style={[
-                    tw('font-primary-600 text-on-surface-secondary'),
-                    { fontSize: 11 },
-                  ]}
-                >
-                  원점
-                </Text>
-              </View>
-            )}
             {segmentColors.map((color, segIdx) => (
-              <View key={segIdx} style={indicatorStyle(color)}>
-                <Text
-                  style={[
-                    tw('font-primary-600 text-on-surface-secondary'),
-                    { fontSize: 11 },
-                  ]}
-                >
+              <View key={segIdx} style={indicatorStyle()}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 999,
+                    backgroundColor: color,
+                    marginRight: 6,
+                  }}
+                />
+                <Text style={[tw('font-primary-600'), { fontSize: 11 }]}>
                   {segIdx + 1}
                 </Text>
               </View>

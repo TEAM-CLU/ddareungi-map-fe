@@ -222,7 +222,7 @@ const InstructionBanner = ({
         tw(
           'w-full flex flex-row items-center px-1 py-2 bg-brand-primary justify-start relative',
         ),
-        { borderRadius: 20, maxWidth: 348, height: 90, gap: 8 },
+        { borderRadius: 20, maxWidth: 348, height: 90, gap: 16 },
       ]}
     >
       <View
@@ -237,7 +237,7 @@ const InstructionBanner = ({
         />
         <View
           style={[
-            tw('flex flex-row items-center justify-center px-2 py-1 '),
+            tw('flex flex-row items-center justify-center'),
             {
               borderRadius: 20,
               gap: 4,
@@ -262,7 +262,7 @@ const InstructionBanner = ({
           <Text
             style={[
               tw('font-primary-600 text-on-surface-secondary'),
-              { fontSize: 13 },
+              { fontSize: 15 },
             ]}
           >
             {currentRemainingDistanceMeter !== null
@@ -271,7 +271,6 @@ const InstructionBanner = ({
           </Text>
         </View>
       </View>
-      <View style={[tw('bg-surface-primary'), { height: '80%', width: 1 }]} />
       <View style={[tw('flex flex-col justify-center'), { gap: 2 }]}>
         {instructionLines.map((line, idx) => (
           <Text
