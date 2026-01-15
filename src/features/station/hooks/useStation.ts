@@ -23,7 +23,6 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
     useModalStore();
   const { setStationMetaData } = useStationStore();
 
-
   // 쿼리를 트리거하기 위한 "현재 보고 있는 지도 중심점"
   const [currentMapCenterCoord, setCurrentMapCenterCoord] =
     useState<Coordinates | null>(null);
@@ -49,15 +48,32 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
   // 웹뷰에서 오는 메세지 한 곳에서 처리
   const handleStationMessage = useCallback(
     async (event: WebViewMessageEvent) => {
+      // JSON 파싱만 먼저 수행하고 에러를 분리
+      let data: any;
       try {
-        const data = JSON.parse(event.nativeEvent.data);
+        data = JSON.parse(event.nativeEvent.data);
+      } catch (error) {
+        console.error(
+          'WebView Message JSON Parse Error:',
+          event.nativeEvent.data,
+        );
+        return;
+      }
 
+      // 파싱된 데이터 기반 로직 수행
+      try {
         switch (data.type) {
           // 1. 지도 이동 멈춤 (Idle)
           // 일정 거리 이상 움직였을 때만 상태 업데이트 -> 쿼리 자동 실행
           case 'changeMapCenter': {
+            if (typeof data.lat !== 'number' || typeof data.lng !== 'number') {
+              console.warn('changeMapCenter 페이로드에 잘못된 데이터:', data);
+              return;
+            }
+
             const next: Coordinates = { lat: data.lat, lng: data.lng };
             const prev = prevMapCenterCoord.current;
+
             const isMovedEnough = prev
               ? getDistanceBetweenCoords(prev, next) >= 1000
               : true;
@@ -71,19 +87,36 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
 
           // 2. 특정 대여소 실시간 재고 조회 요청
           case 'needUpdateStationBikeCountList': {
-            const { stationNumbers } = data;
-            if (stationNumbers.length === 0) return;
+            if (
+              !Array.isArray(data.stationNumbers) ||
+              data.stationNumbers.length === 0
+            ) {
+              // 빈 배열이면 리턴 (에러 X)
+              return;
+            }
 
-            const response: StationLatestBikeCountData[] =
-              await getLatestBikeCountList({
-                stationNumbers,
-              });
-            updateTargetedStationBikeCountListMessage(response);
+            try {
+              const response: StationLatestBikeCountData[] =
+                await getLatestBikeCountList({
+                  stationNumbers: data.stationNumbers,
+                });
+              updateTargetedStationBikeCountListMessage(response);
+            } catch (error) {
+              console.error('대여소 실시간 재고 조회 API 에러:', error);
+            }
             break;
           }
 
           // 3. 대여소 마커 클릭
           case 'clickStationMarker': {
+            if (!data.stationData) {
+              console.warn(
+                'clickStationMarker 페이로드에 대여소 데이터 없음:',
+                data,
+              );
+              return;
+            }
+
             if (setStationMetaData) {
               setStationMetaData(data.stationData);
             }
@@ -95,7 +128,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
             break;
         }
       } catch (error) {
-        console.error('Invalid JSON from WebView:', error);
+        console.error('Logic Error inside handleStationMessage', error);
       }
     },
     [
