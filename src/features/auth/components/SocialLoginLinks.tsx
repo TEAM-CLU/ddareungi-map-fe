@@ -1,17 +1,9 @@
-import {
-  Alert,
-  AppState,
-  Linking,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, AppState, Linking, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconGoogle, IconNaver, IconKakao } from '@/shared/components/icons';
 import { useAuth } from '@/app/providers';
 import { useEffect, useRef, useState } from 'react';
-import {
-  SocialType,
-} from '@/features/auth/model/auth.types';
+import { SocialType } from '@/features/auth/model/auth.types';
 import {
   useSocialAuthCheckStatusQuery,
   useSocialAuthExchangeTokenMutation,
@@ -35,6 +27,8 @@ const SocialLoginLinks = () => {
   const queryClient = useQueryClient();
 
   const { navigation } = useAppNavigation();
+
+  const isDisabled = isSocialLoading || waitingForAuth.current || canStartPolling;
 
   const handleSocialLoginButtonPress = (socialType: SocialType) => {
     getSocialAuthUrl(socialType, {
@@ -156,6 +150,7 @@ const SocialLoginLinks = () => {
             borderColor: '#FBE300',
           },
         ]}
+        disabled={isDisabled}
       >
         <IconKakao size={32} />
       </TouchableOpacity>
@@ -167,6 +162,7 @@ const SocialLoginLinks = () => {
           ),
           { width: 47, height: 47 },
         ]}
+        disabled={isDisabled}
       >
         <IconGoogle />
       </TouchableOpacity>
@@ -183,6 +179,7 @@ const SocialLoginLinks = () => {
             borderColor: '#03C75A',
           },
         ]}
+        disabled={isDisabled}
       >
         <IconNaver size={45} />
       </TouchableOpacity>
