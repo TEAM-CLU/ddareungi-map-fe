@@ -1,9 +1,9 @@
-import LandingScreen from '../screens/LandingScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import GlobalModals from '@/shared/components/modal/GlobalModals';
 import Toast from 'react-native-toast-message';
+import LandingScreen from '../screens/LandingScreen';
 import MapScreen from '../screens/MapScreen';
 import RouteSelectScreen from '../screens/RouteSelectScreen';
 import RouteRecommendScreen from '../screens/RouteRecommendScreen';
@@ -14,6 +14,7 @@ import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import { View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -26,7 +27,17 @@ const AppNavigator = () => {
           initialRouteName="Landing"
         >
           <Stack.Screen name="Landing" component={LandingScreen} />
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="Onboarding">
+            {props => (
+              <OnboardingScreen
+                {...props}
+                onFinish={async () => {
+                  await AsyncStorage.setItem('hasSeenOnboarding', 'YES');
+                  props.navigation.replace('Login');
+                }}
+              />
+            )}
+          </Stack.Screen>
 
           <Stack.Screen name="Map" component={MapScreen} />
           <Stack.Screen name="RouteSelect" component={RouteSelectScreen} />
