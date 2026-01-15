@@ -19,13 +19,13 @@ const Root = () => {
         <WebViewRefProvider>
           <SafeAreaProvider>
             <PaperProvider>
-              <AuthProvider>
-                <QueryClientProvider client={queryClient}>
+              <QueryClientProvider client={queryClient}>
+                <AuthProvider>
                   <BottomSheetModalProvider>
                     <App />
                   </BottomSheetModalProvider>
-                </QueryClientProvider>
-              </AuthProvider>
+                </AuthProvider>
+              </QueryClientProvider>
             </PaperProvider>
           </SafeAreaProvider>
         </WebViewRefProvider>

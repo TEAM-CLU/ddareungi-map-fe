@@ -45,14 +45,12 @@ export const useResetPasswordMutation = () => {
 
 // 로그아웃
 export const useLogoutMutation = () => {
-  const queryClient = useQueryClient();
   const { removeToken } = useAuth();
 
   return useMutation({
     mutationFn: postLogout,
     onSettled: async () => {
       await removeToken(); // 앱 내 토큰 삭제
-      queryClient.clear(); // 쿼리 캐시 초기화
     },
   });
 };

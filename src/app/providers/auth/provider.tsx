@@ -4,12 +4,15 @@ import { AuthContext } from './context';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 import { useAxiosInterceptor } from '@/shared/hooks/useAxiosInterceptor';
 import { setClientToken } from '@/shared/services/axios';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+
+  const queryClient = useQueryClient();
 
   // 앱 실행 시 저장된 토큰 있는지 확인
   useEffect(() => {
@@ -44,9 +47,15 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
 
   // 토큰 삭제
   const removeToken = useCallback(async () => {
-    setAccessTokenState(null);
-    setClientToken(null);
-    await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+    setAccessTokenState(null); // 메모리 삭제
+    setClientToken(null); // Axios 헤더 삭제
+
+    queryClient.clear(); // 쿼리 캐시 초기화
+    try {
+      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+    } catch (error) {
+      console.error('토큰 삭제 실패:', error);
+    }
   }, []);
 
   // 토큰 있는지 확인

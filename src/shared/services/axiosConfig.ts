@@ -9,7 +9,7 @@ import Toast from 'react-native-toast-message';
 
 export const commonErrorInterceptor = (
   instance: AxiosInstance,
-  onLogout?: () => Promise<void> | void,
+  handleLogout?: () => Promise<void> | void,
 ) => {
   return instance.interceptors.response.use(
     response => response,
@@ -29,7 +29,16 @@ export const commonErrorInterceptor = (
             {
               text: '확인',
               onPress: async () => {
-                if (onLogout) await onLogout();
+                // 1. handleLogout 함수 없으면 리턴
+                if (!handleLogout) return;
+
+                try {
+                  // 2. 로그아웃 시도
+                  await handleLogout();
+                } catch (logoutError) {
+                  // 3. 에러 발생 시 로그만 찍음 (사용자는 로그인 화면으로 이동됨)
+                  console.error('로그아웃 처리 중 오류 발생:', logoutError);
+                }
               },
             },
           ],
