@@ -93,13 +93,20 @@
     "metro-config": "^0.81.1",
     "metro-core": "0.81.1",
     "prettier": "2.8.8",
+    "react-native-bootsplash": "^6.3.12",
     "react-native-dotenv": "^3.4.11",
     "react-native-svg-transformer": "^1.5.1",
     "react-test-renderer": "19.1.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "3.4.13",
     "typescript": "^5.9.2"
   },
   "engines": {
     "node": ">=18"
+  },
+  "pnpm": {
+    "overrides": {
+      "sharp": "^0.34.5"
+    }
   }
 }

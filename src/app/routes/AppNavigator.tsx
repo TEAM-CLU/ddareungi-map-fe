@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import GlobalModals from '@/shared/components/modal/GlobalModals';
 import Toast from 'react-native-toast-message';
-import LandingScreen from '../screens/LandingScreen';
 import MapScreen from '../screens/MapScreen';
 import RouteSelectScreen from '../screens/RouteSelectScreen';
 import RouteRecommendScreen from '../screens/RouteRecommendScreen';
@@ -18,15 +17,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const AppNavigator = () => {
+interface AppNavigatorProps {
+  initialRouteName: string;
+}
+
+const AppNavigator = ({ initialRouteName }: AppNavigatorProps) => {
   return (
     <NavigationContainer>
       <View style={{ flex: 1 }}>
         <Stack.Navigator
           screenOptions={{ headerShown: false }}
-          initialRouteName="Landing"
+          initialRouteName={initialRouteName as keyof RootStackParamList}
         >
-          <Stack.Screen name="Landing" component={LandingScreen} />
           <Stack.Screen name="Onboarding">
             {props => (
               <OnboardingScreen
