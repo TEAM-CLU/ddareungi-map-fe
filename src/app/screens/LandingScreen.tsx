@@ -1,22 +1,31 @@
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { tw } from '@/shared/libs/tw-helper';
-import { useEffect } from 'react';
 import { View, Text, Image, ImageStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../providers';
+import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type LandingScreenProps = {
-  navigation?: any;
-};
+const LandingScreen = () => {
+  const { navigation } = useAppNavigation();
+  const { isAuthLoading, accessToken } = useAuth();
 
-const LandingScreen = ({ navigation }: LandingScreenProps) => {
   useEffect(() => {
-    if (!navigation) return;
+    if (isAuthLoading) return;
 
-    const timer = setTimeout(() => {
-      navigation.replace('Onboarding');
-    }, 3000);
+    const selectNavigation = async () => {
+      const hasSeen = await AsyncStorage.getItem('hasSeenOnboarding');
 
-    return () => clearTimeout(timer);
-  }, [navigation]);
+      if (accessToken) {
+        navigation.replace('Map');
+      } else if (hasSeen === 'YES') {
+        navigation.replace('Map');
+      } else {
+        navigation.replace('Onboarding');
+      }
+    };
+    selectNavigation();
+  }, [isAuthLoading, accessToken, navigation]);
 
   return (
     <SafeAreaView

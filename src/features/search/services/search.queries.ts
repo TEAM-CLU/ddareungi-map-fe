@@ -57,6 +57,7 @@ export const useInfinitePlaceSearch = (
 
     refetchOnWindowFocus: false, // 앱 전환했다 돌아왔을 때 깜빡임 방지
     retry: 0,
+    placeholderData: keepPreviousData, // 검색어 입력 중 깜빡임 방지
   });
 };
 

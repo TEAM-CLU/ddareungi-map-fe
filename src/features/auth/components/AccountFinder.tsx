@@ -89,7 +89,6 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
         setShowCodeInput(true);
         setEmailErrorDescription('');
         setCodeSuccessDescription(data.message);
-        Alert.alert('알림', data.message);
       },
       onError: error => {
         setCodeSuccessDescription('');
@@ -163,7 +162,6 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
         setCodeSuccessDescription(response.message);
         setCanShowRegistrationInfo(true);
         securityToken.current = response.data.securityToken;
-        Alert.alert('알림', response.message);
       },
       onError: error => {
         setCodeSuccessDescription('');

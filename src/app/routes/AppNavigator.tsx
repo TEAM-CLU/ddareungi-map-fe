@@ -1,7 +1,3 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '../providers';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import LandingScreen from '../screens/LandingScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
@@ -16,57 +12,54 @@ import TestScreenForPark from '../screens/TestScreenForPark';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import { View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const AppNavigator = () => {
-  const { isAuthLoading } = useAuth();
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(
-    null,
-  );
+interface AppNavigatorProps {
+  initialRouteName: string;
+}
 
-  // 1. 앱 시작 시 온보딩 기록 확인
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      const status = await AsyncStorage.getItem('hasSeenOnboarding');
-      setHasSeenOnboarding(status === 'YES');
-    };
-    checkOnboarding();
-  }, []);
-
-  // 2. 로딩 중일 때 처리
-  // AuthProvider가 토큰 검사 중이거나 (isAuthLoading)
-  // 온보딩 기록 검사 중이면
-  // 랜딩스크린 보여줌
-  if (isAuthLoading || hasSeenOnboarding === null) {
-    return <LandingScreen />;
-  }
-
-  // 3. 로딩 끝난 후 처리
+const AppNavigator = ({ initialRouteName }: AppNavigatorProps) => {
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{ headerShown: false }}
-        initialRouteName={!hasSeenOnboarding ? 'Landing' : 'Map'}
-      >
-        <Stack.Screen name="Landing" component={LandingScreen} />
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <View style={{ flex: 1 }}>
+        <Stack.Navigator
+          screenOptions={{ headerShown: false }}
+          initialRouteName={initialRouteName as keyof RootStackParamList}
+        >
+          <Stack.Screen name="Onboarding">
+            {props => (
+              <OnboardingScreen
+                {...props}
+                onFinish={async () => {
+                  await AsyncStorage.setItem('hasSeenOnboarding', 'YES');
+                  props.navigation.replace('Login');
+                }}
+              />
+            )}
+          </Stack.Screen>
 
-        <Stack.Screen name="Map" component={MapScreen} />
-        <Stack.Screen name="RouteSelect" component={RouteSelectScreen} />
-        <Stack.Screen name="RouteRecommend" component={RouteRecommendScreen} />
-        <Stack.Screen name="MyPage" component={MyPageScreen} />
+          <Stack.Screen name="Map" component={MapScreen} />
+          <Stack.Screen name="RouteSelect" component={RouteSelectScreen} />
+          <Stack.Screen
+            name="RouteRecommend"
+            component={RouteRecommendScreen}
+          />
+          <Stack.Screen name="MyPage" component={MyPageScreen} />
 
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
 
-        {/* 테스트용 */}
-        <Stack.Screen name="TestCho" component={TestScreenForCho} />
-        <Stack.Screen name="TestPark" component={TestScreenForPark} />
-      </Stack.Navigator>
+          {/* 테스트용 */}
+          <Stack.Screen name="TestCho" component={TestScreenForCho} />
+          <Stack.Screen name="TestPark" component={TestScreenForPark} />
+        </Stack.Navigator>
 
-      <GlobalModals />
-      <Toast />
+        <GlobalModals />
+        <Toast />
+      </View>
     </NavigationContainer>
   );
 };

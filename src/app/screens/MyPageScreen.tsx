@@ -17,7 +17,7 @@ const MyPageScreen = () => {
       // return <ChangePassword onBack={() => setPage('main')} />;
       // return <PwdResetContainer />;
       case 'help':
-        return <OnboardingScreen />;
+        return <OnboardingScreen onFinish={() => setPage('main')} buttonLabel='돌아가기' />;
       default:
         return <MypageMain onNavigate={setPage} />;
     }

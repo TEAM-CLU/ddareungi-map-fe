@@ -1,17 +1,9 @@
-import {
-  Alert,
-  AppState,
-  Linking,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, AppState, Linking, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconGoogle, IconNaver, IconKakao } from '@/shared/components/icons';
 import { useAuth } from '@/app/providers';
 import { useEffect, useRef, useState } from 'react';
-import {
-  SocialType,
-} from '@/features/auth/model/auth.types';
+import { SocialType } from '@/features/auth/model/auth.types';
 import {
   useSocialAuthCheckStatusQuery,
   useSocialAuthExchangeTokenMutation,
@@ -35,6 +27,9 @@ const SocialLoginLinks = () => {
   const queryClient = useQueryClient();
 
   const { navigation } = useAppNavigation();
+
+  const isDisabled =
+    isSocialLoading || waitingForAuth.current || canStartPolling;
 
   const handleSocialLoginButtonPress = (socialType: SocialType) => {
     getSocialAuthUrl(socialType, {
@@ -106,28 +101,38 @@ const SocialLoginLinks = () => {
     const payload = { codeVerifier: codeVerifier.current };
     exchangeToken(payload, {
       onSuccess: async response => {
-        const accesssToken = response.data.accessToken;
+        try {
+          const accessToken = response.data.accessToken;
 
-        if (!accesssToken) {
+          if (!accessToken) {
+            throw new Error('No Access Token');
+          }
+
+          // 1. 폴링 중단 및 쿼리 정리 (계속 요청하는 것 방지)
+          setCanStartPolling(false);
+          const queryKey = [
+            'auth',
+            'check-status',
+            clientState.current,
+          ] as const;
+          await queryClient.cancelQueries({ queryKey });
+          queryClient.removeQueries({ queryKey, exact: true });
+
+          // 2. 토큰 저장
+          await setToken(accessToken);
+
+          // 3. 화면 이동 (성공 시에만)
+          navigation.navigate('Map');
+
+        } catch (error) {
+          console.error('로그인 처리 중 오류 발생:', error);
           resetFlow();
+          setCanStartPolling(true); // 폴링 재시작
           Alert.alert(
             '오류',
             '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
           );
-          return;
         }
-
-        // 1. 폴링 중단 및 쿼리 정리 (계속 요청하는 것 방지)
-        setCanStartPolling(false);
-        const queryKey = ['auth', 'check-status', clientState.current] as const;
-        await queryClient.cancelQueries({ queryKey });
-        queryClient.removeQueries({ queryKey, exact: true });
-
-        // 2. 토큰 저장
-        await setToken(accesssToken);
-
-        // 3. 화면 이동
-        navigation.navigate('Map');
       },
       onError: error => {
         resetFlow();
@@ -156,6 +161,7 @@ const SocialLoginLinks = () => {
             borderColor: '#FBE300',
           },
         ]}
+        disabled={isDisabled}
       >
         <IconKakao size={32} />
       </TouchableOpacity>
@@ -167,6 +173,7 @@ const SocialLoginLinks = () => {
           ),
           { width: 47, height: 47 },
         ]}
+        disabled={isDisabled}
       >
         <IconGoogle />
       </TouchableOpacity>
@@ -183,6 +190,7 @@ const SocialLoginLinks = () => {
             borderColor: '#03C75A',
           },
         ]}
+        disabled={isDisabled}
       >
         <IconNaver size={45} />
       </TouchableOpacity>

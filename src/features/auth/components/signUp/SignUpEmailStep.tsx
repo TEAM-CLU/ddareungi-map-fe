@@ -75,7 +75,6 @@ const SignUpEmailStep = ({
         setEmailErrorDescription('');
         setIsValidEmail(true);
         setEmailSuccessDescription(data.message);
-        Alert.alert('알림', data.message);
 
         // 2. 인증 코드 전송
         sendVerificationCode(payload, {
@@ -85,7 +84,6 @@ const SignUpEmailStep = ({
             setShowCodeInput(true);
             setCodeErrorDescription('');
             setCodeSuccessDescription(data.message);
-            Alert.alert('알림', data.message);
           },
           onError: error => {
             setCodeSuccessDescription('');
@@ -164,7 +162,6 @@ const SignUpEmailStep = ({
         setIsValidCode(true);
         setCodeSuccessDescription(data.message);
         setCanGoNextStep(true);
-        Alert.alert('알림', data.message);
       },
       onError: error => {
         setCodeSuccessDescription('');

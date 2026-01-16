@@ -10,17 +10,8 @@ import {
   TerminateNavigationSessionPayload,
   TerminateNavigationSessionResponse,
 } from '@/features/navigation/model/navigation.types';
-import { SERVER_URL } from '@/shared/model/index.constants';
 import { api } from '@/shared/services/axios';
 import axios from 'axios';
-
-const navigationApi = axios.create({
-  baseURL: `${SERVER_URL}/navigation`,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
 // 내비게이션 세션 시작
 export const postStartNavigationSession = async (

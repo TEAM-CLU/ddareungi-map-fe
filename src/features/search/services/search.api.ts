@@ -44,7 +44,7 @@ kakaoClient.interceptors.response.use(
 );
 
 // [응답 인터셉터 2] 공통 에러 처리
-// * 주의: 카카오 401 에러(키 만료)가 앱 로그아웃을 유발하지 않도록 onLogout은 전달하지 않음
+// * 주의: 카카오 401 에러(키 만료)가 앱 로그아웃을 유발하지 않도록 handleLogout은 전달하지 않음
 commonErrorInterceptor(kakaoClient);
 
 // ------------------------------------------------------------------

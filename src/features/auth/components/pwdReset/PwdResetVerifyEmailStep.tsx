@@ -72,7 +72,6 @@ const PwdResetVerifyEmailStep = ({
         setShowCodeInput(true);
         setEmailErrorDescription('');
         setCodeSuccessDescription(data.message);
-        Alert.alert('알림', data.message);
       },
       onError: error => {
         setCodeSuccessDescription('');
@@ -145,7 +144,6 @@ const PwdResetVerifyEmailStep = ({
         setIsValidCode(true);
         setCodeSuccessDescription(data.message);
         setCanGoNextStep(true);
-        Alert.alert('알림', data.message);
       },
       onError: error => {
         setCodeSuccessDescription('');

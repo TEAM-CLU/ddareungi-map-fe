@@ -1,5 +1,5 @@
 import StepIndicator from '@/shared/components/StepIndicator';
-import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { tw } from '@/shared/libs/tw-helper';
@@ -10,7 +10,8 @@ interface OnboardingLayoutProps {
   text1: string;
   text2: string;
   imageSource: any;
-  onStart?: () => void;
+  onStart: () => void;
+  buttonLabel: string;
 }
 
 const OnboardingLayout = ({
@@ -20,6 +21,7 @@ const OnboardingLayout = ({
   text2,
   imageSource,
   onStart,
+  buttonLabel,
 }: OnboardingLayoutProps) => {
   return (
     <SafeAreaView
@@ -33,12 +35,15 @@ const OnboardingLayout = ({
         style={tw('absolute bottom-0 w-full h-1/3')}
       />
 
-      <View style={tw('flex-1 px-6')}>
+      {/* 1. 상단 텍스트 */}
+      <View style={tw('px-6 z-10')}>
         <View style={tw('items-center pt-10')}>
           <StepIndicator totalSteps={totalSteps} currentStep={step} />
         </View>
 
-        <View style={tw('h-[82px] items-center pt-12')}>
+        <View
+          style={[tw('items-center justify-center pt-8 pb-4'), { height: 140 }]}
+        >
           <Text
             style={[
               tw('font-primary-600 text-[#000] text-center'),
@@ -58,26 +63,57 @@ const OnboardingLayout = ({
         </View>
       </View>
 
-      <View style={[tw('absolute w-full items-center'), { bottom: 50 }]}>
+      {/* 2. 이미지 */}
+      <View
+        style={[
+          tw('flex-1 w-full justify-end items-center'),
+          { paddingBottom: 80 },
+        ]}
+      >
         <Image
           source={imageSource}
-          style={[tw('w-full'), { height: 522 }] as ImageStyle}
-          resizeMode="contain"
+          style={{
+            width: '100%',
+            height: '100%',
+            resizeMode: 'contain',
+          }}
         />
       </View>
 
-      {onStart && (
-        <View style={tw('absolute bottom-10 w-full px-6')}>
-          <TouchableOpacity
-            onPress={onStart}
-            style={tw(
-              'w-full bg-black py-4 rounded-xl items-center justify-center shadow-lg',
-            )}
+      {/* 3. 버튼 */}
+      <View
+        style={[tw('absolute w-full items-center'), { bottom: 30, zIndex: 20 }]}
+      >
+        <TouchableOpacity
+          onPress={onStart}
+          style={[
+            tw('bg-white'),
+            {
+              paddingVertical: 16,
+              paddingHorizontal: 20,
+              borderRadius: 30,
+              width: '90%',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 3.84,
+              elevation: 5,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              tw('font-primary-700 text-center'),
+              {
+                color: '#01DA86',
+                fontSize: 18,
+              },
+            ]}
           >
-            <Text style={tw('text-white font-bold text-lg')}>시작하기</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+            {buttonLabel}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };

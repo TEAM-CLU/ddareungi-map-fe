@@ -1,6 +1,5 @@
 import axios from "axios";
-import { ACCESS_TOKEN_KEY, SERVER_URL } from "../model/index.constants";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SERVER_URL } from "../model/index.constants";
 
 export const api = axios.create({
     baseURL: SERVER_URL,
@@ -10,11 +9,18 @@ export const api = axios.create({
     },
 });
 
+// 1. 메모리에 토큰 보관할 변수
+let cachedToken: string | null = null;
+
+// 2. 외부 AuthProvider에서 변수에 값을 넣어줌
+export const setClientToken = (token: string | null) => {
+  cachedToken = token;
+}
+
 api.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (cachedToken) {
+      config.headers.Authorization = `Bearer ${cachedToken}`;
     }
     return config;
   },
