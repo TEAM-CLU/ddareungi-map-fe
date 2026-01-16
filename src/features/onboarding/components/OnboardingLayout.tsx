@@ -23,6 +23,8 @@ const OnboardingLayout = ({
   onStart,
   buttonLabel,
 }: OnboardingLayoutProps) => {
+  const isLastStep = step === totalSteps;
+
   return (
     <SafeAreaView
       style={tw('flex-1 bg-surface-primary relative')}
@@ -91,7 +93,7 @@ const OnboardingLayout = ({
             {
               paddingVertical: 16,
               paddingHorizontal: 20,
-              borderRadius: 30,
+              borderRadius: isLastStep ? 30 : 5,
               width: '90%',
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 2 },

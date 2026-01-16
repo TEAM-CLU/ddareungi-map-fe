@@ -9,7 +9,7 @@ type OnboardingScreenProps = {
 };
 
 const OnboardingScreen = ({ onFinish, buttonLabel = '시작하기' }: OnboardingScreenProps) => {
-  const [onBoardingStep, setOnBoardingStep] = useState<1 | 2 | 3 | 4>(1);
+  const [onBoardingStep, setOnBoardingStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   const pagerRef = useRef<PagerView>(null);
 
   const handleButtonPress = (index: number) => {
@@ -29,7 +29,7 @@ const OnboardingScreen = ({ onFinish, buttonLabel = '시작하기' }: Onboarding
       initialPage={0}
       onPageSelected={e => {
         const { position } = e.nativeEvent;
-        setOnBoardingStep((position + 1) as 1 | 2 | 3 | 4);
+        setOnBoardingStep((position + 1) as 1 | 2 | 3 | 4 | 5 | 6);
       }}
     >
       {ONBOARDING_DATA.map((item, index) => {
