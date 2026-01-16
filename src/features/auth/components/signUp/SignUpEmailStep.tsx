@@ -2,7 +2,7 @@ import Input from '@/shared/components/Input/Input';
 import { useEffect, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
 
-import { Alert, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import SquareButton from '@/shared/components/button/SquareButton';
 import RoundButton from '@/shared/components/button/RoundButton';
 import {
@@ -78,12 +78,12 @@ const SignUpEmailStep = ({
 
         // 2. 인증 코드 전송
         sendVerificationCode(payload, {
-          onSuccess: data => {
+          onSuccess: verifyData => {
             setIsValidEmail(true);
             setIsValidCode(true);
             setShowCodeInput(true);
             setCodeErrorDescription('');
-            setCodeSuccessDescription(data.message);
+            setCodeSuccessDescription(verifyData.message);
           },
           onError: error => {
             setCodeSuccessDescription('');
