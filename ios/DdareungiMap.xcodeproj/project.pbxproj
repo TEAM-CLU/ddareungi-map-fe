@@ -19,11 +19,11 @@
 		A5887A8A6A1C4EBBB83E0471 /* Pretendard-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 499B97AB1F1847CA92265839 /* Pretendard-Bold.ttf */; };
 		BA855B8B58DE4276B4261D33 /* Pretendard-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2B8F0C7BF88546B4B29E16C9 /* Pretendard-SemiBold.ttf */; };
 		CFAB93229BC9422099F4D977 /* Pretendard-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C15AFE34D3314CAC846561C7 /* Pretendard-ExtraLight.ttf */; };
-		D4CB56103FF647938E858E37 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8592630D3B624E1EBD5DD219 /* BootSplash.storyboard */; };
 		D932E34CE8604114866931FC /* Pretendard-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C7F72E8A50E34CE5B724EB34 /* Pretendard-Black.ttf */; };
 		E831C8AAF13573911A33B403 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		F0118E84D36B4E60AA6ADDD6 /* Pretendard-Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E50A7B4DBB7C47568C942035 /* Pretendard-Thin.ttf */; };
 		F6604661D610482D8CBDACB6 /* Pretendard-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0D456868FEA74D1599F0BCE1 /* Pretendard-Medium.ttf */; };
+		8E778B69BA8241838D3EB0BA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0FE3978F20C045909B5A366B /* BootSplash.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,7 +39,6 @@
 		62D2A6B0543247FCAE383B6B /* Pretendard-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-ExtraBold.ttf"; path = "../src/assets/fonts/Pretendard-ExtraBold.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DdareungiMap/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = DdareungiMap/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		8592630D3B624E1EBD5DD219 /* BootSplash.storyboard */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = BootSplash.storyboard; path = DdareungiMap/BootSplash.storyboard; sourceTree = "<group>"; };
 		8F6530A2474B449BAC691C7A /* Pretendard-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Light.ttf"; path = "../src/assets/fonts/Pretendard-Light.ttf"; sourceTree = "<group>"; };
 		A1C160548FEEF8CB6E69F04E /* Pods-DdareungiMap.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DdareungiMap.release.xcconfig"; path = "Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap.release.xcconfig"; sourceTree = "<group>"; };
 		A563A0553FC6E9E9C8E6005E /* libPods-DdareungiMap.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DdareungiMap.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -49,6 +48,7 @@
 		DF156FFEB6AF4A438F827410 /* HSYeolumMulbit.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = HSYeolumMulbit.ttf; path = ../src/assets/fonts/HSYeolumMulbit.ttf; sourceTree = "<group>"; };
 		E50A7B4DBB7C47568C942035 /* Pretendard-Thin.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Thin.ttf"; path = "../src/assets/fonts/Pretendard-Thin.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		0FE3978F20C045909B5A366B /* BootSplash.storyboard */ = {isa = PBXFileReference; name = "BootSplash.storyboard"; path = "DdareungiMap/BootSplash.storyboard"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,8 +71,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
-				8592630D3B624E1EBD5DD219 /* BootSplash.storyboard */,
 				B7335D3287E84A109E847A26 /* Colors.xcassets */,
+				0FE3978F20C045909B5A366B /* BootSplash.storyboard */,
 			);
 			name = DdareungiMap;
 			sourceTree = "<group>";
@@ -215,8 +215,8 @@
 				A36A057D24C84236A3BBF1B4 /* Pretendard-Regular.ttf in Resources */,
 				BA855B8B58DE4276B4261D33 /* Pretendard-SemiBold.ttf in Resources */,
 				F0118E84D36B4E60AA6ADDD6 /* Pretendard-Thin.ttf in Resources */,
-				D4CB56103FF647938E858E37 /* BootSplash.storyboard in Resources */,
 				8672DBE99AE24399A5097CCD /* Colors.xcassets in Resources */,
+				8E778B69BA8241838D3EB0BA /* BootSplash.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,9 +269,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -286,9 +290,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
