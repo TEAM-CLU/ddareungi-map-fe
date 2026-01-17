@@ -16,15 +16,15 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="Image" translatesAutoresizingMaskIntoConstraints="NO" id="GEF-70-H9T">
-                                <rect key="frame" x="22" y="174.5" width="331" height="318"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="BootSplashLogo-c196f0" translatesAutoresizingMaskIntoConstraints="NO" id="qtF-67-2ES">
+                                <rect key="frame" x="97" y="242" width="180" height="183"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="GEF-70-H9T" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="2Ic-7s-2Cv"/>
-                            <constraint firstItem="GEF-70-H9T" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="4vb-ud-vWW"/>
+                            <constraint firstItem="qtF-67-2ES" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="4mR-fh-9wo"/>
+                            <constraint firstItem="qtF-67-2ES" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="BQ8-lm-dKa"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -34,7 +34,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Image" width="331" height="318"/>
+        <image name="BootSplashLogo-c196f0" width="180" height="182.5"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
