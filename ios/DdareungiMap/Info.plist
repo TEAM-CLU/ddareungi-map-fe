@@ -42,8 +42,14 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>라이딩 스토리 사진을 촬영하여 공유하기 위해 카메라 접근 권한이 필요합니다.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>현위치 기반 대여소 검색 및 길찾기 기능을 제공하기 위해 위치 정보가 필요합니다.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>라이딩 스토리 영상을 촬영하기 위해 마이크 접근 권한이 필요합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>촬영한 라이딩 스토리를 저장하기 위해 사진 라이브러리 접근 권한이 필요합니다.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>주요 공지 알림 수신 및 마케팅 이벤트 홍보를 위해 알림 권한이 필요합니다.</string>
 	<key>RCTNewArchEnabled</key>

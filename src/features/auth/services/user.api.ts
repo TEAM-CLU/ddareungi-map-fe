@@ -9,6 +9,8 @@ import {
   LoginUserResponse,
   UpdateUserPayload,
   UpdateUserResponse,
+  UpdateUserStatsPayload,
+  UpdateUserStatsResponse,
 } from '@/features/auth/model/auth.types';
 import { api } from '@/shared/services/axios';
 import { Alert } from 'react-native';
@@ -41,6 +43,27 @@ export const updateUserInfo = async (
 ): Promise<UpdateUserResponse> => {
     const response = await api.put('/user/info-update', payload);
     return response.data;
+};
+
+// 유저 통계 정보 수정
+export const updateUserStats = async (
+  payload: UpdateUserStatsPayload,
+): Promise<UpdateUserStatsResponse> => {
+  try {
+    const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+    const response = await userApi.put('/stats/update', payload.statsInfo, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    Alert.alert(
+      '유저 통계 정보 수정 실패',
+      error.response?.data?.message || error.message || '알 수 없는 오류',
+    );
+    throw error;
+  }
 };
 
 // 유저 삭제

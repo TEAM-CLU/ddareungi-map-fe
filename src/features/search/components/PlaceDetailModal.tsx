@@ -20,6 +20,7 @@ import StarToggle from '@/features/bookmark/components/StarToggle';
 import { BookmarkItem } from '@/shared/model/index.types';
 import { PlaceInfo } from '../model/search.types';
 import { useNearbyStationsQuery } from '@/features/station/services/station.queries';
+import { useShallow } from 'zustand/react/shallow';
 
 export interface PlaceDetailModalProps {
   place: PlaceInfo | null;
@@ -64,13 +65,21 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
     setEnd,
     addWaypoint,
     syncStartEndInLoopMode,
-  } = useRouteStore();
+  } = useRouteStore(
+    useShallow(state => ({
+      routeType: state.routeType,
+      setRouteType: state.setRouteType,
+      setStart: state.setStart,
+      setEnd: state.setEnd,
+      addWaypoint: state.addWaypoint,
+      syncStartEndInLoopMode: state.syncStartEndInLoopMode,
+    })),
+  );
 
   const { data: nearbyStationDataList, isLoading: isStationLoading } =
     useNearbyStationsQuery(place.latitude, place.longitude);
-
-  const { globalNavigation } = useMapStore();
-  const { myPosition } = useMyPositionStore();
+  const globalNavigation = useMapStore(state => state.globalNavigation);
+  const myPosition = useMyPositionStore(state => state.myPosition);
   const toggleBookmark = useBookmarkStore(state => state.toggleBookmark);
   const bookmarked = useBookmarkStore(state =>
     place.placeId

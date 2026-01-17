@@ -1,10 +1,11 @@
 import { IconClose } from '@/shared/components/icons';
-import { BOOKMARK_COLOR_PRESETS } from '@/shared/model/index.constants';
+
 import { BookmarkItem } from '@/shared/model/index.types';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { memo, useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
+import { BOOKMARK_COLOR_PRESETS } from '@/shared/model/index.constants';
 
 interface BookmarkEditItemProps {
   item: BookmarkItem;

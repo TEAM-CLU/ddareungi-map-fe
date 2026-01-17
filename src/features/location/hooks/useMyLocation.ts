@@ -8,11 +8,17 @@ import { useWebViewRef } from '@/app/providers/webview';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { DataSetForUpdateMyLocation } from '@/features/location/model/location.types';
 import { Coordinates } from '@/features/map/model/map.types';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
   const { updateMyLocation, rotateMyHeading } = useLocationMessenger();
   const webViewRef = useWebViewRef();
-  const { setMyPosition } = useMyPositionStore();
+  const { setMyPosition, setLocationMetaData } = useMyPositionStore(
+    useShallow(state => ({
+      setMyPosition: state.setMyPosition,
+      setLocationMetaData: state.setLocationMetaData,
+    })),
+  );
   const watchIdRef = useRef<number | null>(null);
   const lastPos = useRef<Coordinates | null>(null);
 
@@ -74,6 +80,15 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         });
+        setLocationMetaData({
+          timestamp: pos.timestamp ?? Date.now(),
+          accuracy: pos.coords.accuracy,
+          osSpeed: pos.coords.speed ?? undefined,
+          coordinate: {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          },
+        });
         sendLocation(pos, { bypassAccuracyOnce: true });
       },
       err => console.warn('getCurrentPosition error:', err?.message),
@@ -86,6 +101,15 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
         setMyPosition({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
+        });
+        setLocationMetaData({
+          timestamp: pos.timestamp ?? Date.now(),
+          accuracy: pos.coords.accuracy,
+          osSpeed: pos.coords.speed ?? undefined,
+          coordinate: {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          },
         });
         sendLocation(pos);
       },

@@ -3,17 +3,20 @@ import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 interface IconOvalProps {
   color?: 'brand' | 'gray';
+  colorHex?: string;
   width?: number;
   height?: number;
 }
 
 const IconOval: React.FC<IconOvalProps> = ({
   color = 'gray',
+  colorHex,
   width = 12,
   height = 12,
 }) => {
-  const baseColor = color === 'brand' ? '#10B981' : '#6B7280';
-  const gradientId = `gradient-${color}`;
+  const baseColor =
+    colorHex ?? (color === 'brand' ? '#10B981' : '#6B7280');
+  const gradientId = `gradient-${(colorHex ?? color).replace('#', '')}`;
 
   return (
     <Svg width={width} height={height} viewBox="0 0 12 12">

@@ -1,35 +1,41 @@
-import { useNavDetailModalStore } from '@/features/navigation/stores/useNavDetailModalStore';
+import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { IconMute, IconVolume } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
-import { useState } from 'react';
+import { useRef } from 'react';
 import { TouchableOpacity } from 'react-native';
+import { VolumeManager } from 'react-native-volume-manager';
+import { useShallow } from 'zustand/react/shallow';
 
 const NavVolumeToggleButton = () => {
-  const { soundRef, navVolume } = useNavDetailModalStore();
-  const [isMuted, setIsMuted] = useState(false);
+  const { systemVolume, setSystemVolume } = useVolumeStore(
+    useShallow(state => ({
+      systemVolume: state.systemVolume,
+      setSystemVolume: state.setSystemVolume,
+    })),
+  );
 
-  const handleVolumeToggleBtnPress = async () => {
-    if (isMuted) {
-      // 음소거 해제
-      setIsMuted(false);
-      if (!soundRef?.current) return;
-      await soundRef.current.setIsMutedAsync(false);
-      await soundRef.current.setVolumeAsync(navVolume);
+  const lastNonZeroVolumeRef = useRef(0.5);
 
+  const applySystemVolume = async (volume: number) => {
+    setSystemVolume(volume);
+    if (VolumeManager && typeof VolumeManager.setVolume === 'function') {
+      await VolumeManager.setVolume(volume);
+    }
+  };
+
+  const handleVolumeTogglePress = async () => {
+    if (systemVolume > 0) {
+      lastNonZeroVolumeRef.current = systemVolume;
+      await applySystemVolume(0);
       return;
     }
-    if (!isMuted) {
-      // 음소거
-      setIsMuted(true);
-      if (!soundRef?.current) return;
-      await soundRef.current.setIsMutedAsync(true);
-      await soundRef.current.setVolumeAsync(0);
-      return;
-    }
+
+    const restoreVolume = Math.max(0.1, lastNonZeroVolumeRef.current || 0.5);
+    await applySystemVolume(restoreVolume);
   };
   return (
     <TouchableOpacity
-      onPress={handleVolumeToggleBtnPress}
+      onPress={handleVolumeTogglePress}
       style={[
         tw(
           'bg-icon-container-secondary rounded-full w-10 h-10 flex justify-center items-center shadow-md',
@@ -37,7 +43,7 @@ const NavVolumeToggleButton = () => {
         { zIndex: 10 },
       ]}
     >
-      {isMuted ? <IconMute color="#77838F" /> : <IconVolume />}
+      {systemVolume === 0 ? <IconMute color="#77838F" /> : <IconVolume />}
     </TouchableOpacity>
   );
 };

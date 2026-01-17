@@ -4,7 +4,7 @@
     <meta name="referrer" content="origin" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=68ef2791dbc8e895c56402c868837fc3&autoload=false&libraries=services,clusterer,drawing"></script>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=bef084647eeb1fc50f7badb885708df7&autoload=false&libraries=services,clusterer,drawing"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css"
@@ -47,6 +47,7 @@
         if (
           window.MyLocation &&
           window.Route &&
+          window.Navigation &&
           window.Search &&
           window.Station &&
           window.Bookmark &&
@@ -63,6 +64,12 @@
             DEFAULT_LNG,
           );
           Route.initRouteSetting(kakao, map, DEFAULT_LAT, DEFAULT_LNG);
+          Navigation.initNavigationSetting(
+            kakao,
+            map,
+            DEFAULT_LAT,
+            DEFAULT_LNG,
+          );
           Search.initSearchSetting(kakao, map);
           Station.initStationSeting(kakao, map);
           Bookmark.initBookmarkSetting(kakao, map);
@@ -230,6 +237,35 @@
         if (data.type === 'showSingleBookmarkMarker') {
           Bookmark.showSingleBookmarkMarker(data.bookmarkData);
         }
+        // === 내비게이션 기능 ===
+        if (data.type === 'replaceMyLocationMarker') {
+          MyLocation.replaceMyLocationMarker(data.isNavigationMode);
+        }
+
+        // 21. 네비게이션 경로 그리기
+        if (data.type === 'drawNavigationPath') {
+          Navigation.drawNavigationPath(data.navigationPathData);
+        }
+
+        // 22. 네비게이션 현재 interval 업데이트
+        if (data.type === 'updateNavigationCurrentInterval') {
+          Navigation.updateNavigationCurrentInterval({
+            currentIntervalIndex: data.currentIntervalIndex,
+            intervals: data.intervals,
+            fullPathCoordinateList: data.fullPathCoordinateList,
+          });
+        }
+
+        // 23. 네비게이션 경로 지우기
+        if (data.type === 'clearNavigationPath') {
+          Navigation.clearNavigationPath();
+        }
+
+        // 24. 네비게이션 경로에 맞게 지도 bounds 조정
+        if (data.type === 'focusOnNavigationPath') {
+          Navigation.focusOnNavigationPath();
+        }
+
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }
@@ -240,6 +276,7 @@
   </script>
   <script src="./src/features/location/utils/myLocation.js" defer></script>
   <script src="./src/features/routing/utils/routing.js" defer></script>
+  <script src="./src/features/navigation/utils/navigation.js" defer></script>
   <script src="./src/features/search/utils/search.js" defer></script>
   <script src="./src/features/station/utils/station.js" defer></script>
   <script src="./src/shared/utils/bookmark.js" defer></script>

@@ -3,6 +3,7 @@
   let kakaoRef, mapRef;
   let myLocationMarker, myHeadingOverlay, outerCircle, innerCircle;
   let hasMoveToMyLocationRun = false;
+  let defaultMyLocationContent = null;
 
   // 내 위치 관련 오버레이 정의 및 생성
   const initMyLocationSetting = (kakao, map, DEFAULT_LAT, DEFAULT_LNG) => {
@@ -35,6 +36,7 @@
       yAnchor: 0.5,
       zIndex: 20,
     });
+    defaultMyLocationContent = myLocationSvg;
     myLocationMarker.setMap(mapRef);
 
     // 내 위치 방향 cone 생성 및 초기세팅
@@ -96,7 +98,7 @@
 
     // 최초 위치로 이동
     if (!hasMoveToMyLocationRun && !window.isSelectedRouteDetailModalOpen) {
-      mapRef.setCenter(updatedPosition);
+      mapRef.panTo(updatedPosition);
       hasMoveToMyLocationRun = true;
     }
     myLocationMarker.setPosition(updatedPosition);
@@ -121,11 +123,74 @@
     if (myHeadingElement) {
       myHeadingElement.style.transform = `rotate(${heading - 90}deg)`;
     }
+    const navigationMarkerArrow = document.getElementById(
+      'myNavigationMarkerArrow',
+    );
+    if (navigationMarkerArrow) {
+      navigationMarkerArrow.style.transform = `rotate(${heading}deg)`;
+    }
   };
 
   // 나침반 오버레이 보이기/숨기기
   const setMyHeadingOverlayVisible = isCompassMode => {
     myHeadingOverlay.setMap(isCompassMode ? mapRef : null);
+  };  
+
+  // 네비게이션 모드일때 내 위치 마커 변경
+  const replaceMyLocationMarker = isNavigationMode => {
+    if (!myLocationMarker) return;
+    const myLocationSvgForNavigation = `
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 23px;
+          height: 23px;
+        ">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="23"
+            height="23"
+            viewBox="0 0 24 24"
+            fill="none"
+            id="myNavigationMarkerArrow"
+            style="transform: rotate(-90deg); transform-origin: 12px 12px;"
+          >
+            <!-- 흰색 배경 (여백 채우기용) -->
+            <circle cx="12" cy="12" r="11" fill="#FFFFFF"/>
+
+            <!-- 네비게이션 아이콘 -->
+            <path
+              d="M7.975 17L12 15.175L16.025 17L16.4 16.625L12 6L7.6 16.625L7.975 17Z
+                M12 22C10.6167 22 9.31667 21.7373 8.1 21.212
+                C6.88334 20.6867 5.825 19.9743 4.925 19.075
+                C4.025 18.1757 3.31267 17.1173 2.788 15.9
+                C2.26333 14.6827 2.00067 13.3827 2 12
+                C1.99933 10.6173 2.262 9.31733 2.788 8.1
+                C3.314 6.88267 4.02633 5.82433 4.925 4.925
+                C5.82367 4.02567 6.882 3.31333 8.1 2.788
+                C9.318 2.26267 10.618 2 12 2
+                C13.382 2 14.682 2.26267 15.9 2.788
+                C17.118 3.31333 18.1763 4.02567 19.075 4.925
+                C19.9737 5.82433 20.6863 6.88267 21.213 8.1
+                C21.7397 9.31733 22.002 10.6173 22 12
+                C21.998 13.3827 21.7353 14.6827 21.212 15.9
+                C20.6887 17.1173 19.9763 18.1757 19.075 19.075
+                C18.1737 19.9743 17.1153 20.687 15.9 21.213
+                C14.6847 21.739 13.3847 22.0013 12 22Z"
+              fill="#01DA86"
+            />
+          </svg>
+        </div>
+        `;
+
+    myLocationMarker.setContent(
+      isNavigationMode ? myLocationSvgForNavigation : defaultMyLocationContent,
+    );
   };
 
   window.MyLocation = {
@@ -133,6 +198,7 @@
     updateMyLocation,
     rotateMyHeading,
     setMyHeadingOverlayVisible,
+    replaceMyLocationMarker,
   };
 
   Object.defineProperty(window.MyLocation, 'myLocationMarker', {

@@ -11,14 +11,13 @@ import {
   TerminateNavigationSessionResponse,
 } from '@/features/navigation/model/navigation.types';
 import { api } from '@/shared/services/axios';
-import axios from 'axios';
 
 // 내비게이션 세션 시작
 export const postStartNavigationSession = async (
   payload: StartNavigationSessionPayload,
 ): Promise<StartNavigationSessionResponse> => {
   const response = await api.post('/navigation/start', payload);
-  return response.data.data;
+  return response.data;
 };
 
 // 내비게이션 세션 유지, 갱신 10분
@@ -46,7 +45,7 @@ export const postReturnToExistingRoute = async (
     remainingWaypoints: payload.remainingWaypoints,
   });
 
-  return response.data.data;
+  return response.data;
 };
 
 // 완전 재탐색
@@ -55,7 +54,8 @@ export const postReRoute = async (
 ): Promise<ReRouteResponse> => {
   const response = await api.post(`/navigation/${payload.sessionId}/reroute`, {
     currentLocation: payload.currentLocation,
+    travelMode: payload.travelMode,
     remainingWaypoints: payload.remainingWaypoints,
   });
-  return response.data.data;
+  return response.data;
 };

@@ -10,7 +10,7 @@ export const useAutocomplete = () => {
   // 2. 디바운스된 검색어 (API 요청용 - 0.3초 뒤 반응)
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  const { myPosition } = useMyPositionStore();
+  const myPosition = useMyPositionStore(state => state.myPosition);
 
   // ----------------------------------------------------
   // [디바운싱 로직]
@@ -52,7 +52,7 @@ export const useAutocomplete = () => {
   // ----------------------------------------------------
   const {
     data,
-    isLoading: isQueryLoading, 
+    isLoading: isQueryLoading,
     isError,
     error: queryError,
     fetchNextPage,

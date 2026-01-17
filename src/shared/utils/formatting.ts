@@ -1,5 +1,18 @@
 import { Segment } from '@/features/routing/model/routing.types';
 
+// 시간 포맷팅 (초 → HH:MM:SS)
+export const formatTimeHHMMSS = (totalSeconds: number) => {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+};
+
 // 시간 포맷팅 (초 → n시간 n분)
 export const formatTime = (seconds: number): string => {
   const totalMinutes = Math.round(seconds / 60);
@@ -12,6 +25,20 @@ export const formatTime = (seconds: number): string => {
 export const formatMinutes = (seconds: number): string =>
   String(Math.round(seconds / 60));
 
+// 시간 포맷팅 (초 -> n시간 n분 n초)
+export const formatTimeWithSeconds = (totalSeconds: number): string => {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  const hoursPart = hours > 0 ? `${hours}시간 ` : '';
+  const minutesPart = minutes > 0 ? `${minutes}분 ` : '';
+  const secondsPart = `${seconds}초`;
+
+  return `${hoursPart}${minutesPart}${secondsPart}`.trim();
+};
 // 시간대 포맷팅 함수 (baseTime 기준 ~ 도착 예정 시간)
 export const formatTimeRange = (
   baseTime: Date,
@@ -30,6 +57,42 @@ export const formatTimeRange = (
   return `${formatHourMinute(baseTime)} - ${formatHourMinute(arrival)}`;
 };
 
+// 시간 텍스트 계산 함수
+export const getTimeText = (
+  time: Date | null | undefined,
+  options?: {
+    loadingText?: string;
+    errorText?: string;
+  },
+): string => {
+  const loading = options?.loadingText || '시간을 계산 중이에요';
+  const error = options?.errorText || '시간을 측정할 수 없어요';
+
+  if (time === null) return loading;
+  if (time === undefined) return error;
+
+  let hours = time.getHours();
+  const minutes = time.getMinutes();
+
+  const isPM = hours >= 12;
+  const period = isPM ? 'PM' : 'AM';
+
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+
+  const hourText = String(hours).padStart(2, '0');
+  const minuteText = String(minutes).padStart(2, '0');
+
+  return `${hourText}:${minuteText}${period}`;
+};
+
+// 태그 최대 3개로 제한
+export const clampTags = (tags: string[]) =>
+  tags
+    .map(t => t.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+
 // 거리 포맷팅 (미터 → km)
 export const formatDistance = (meters: number): string => {
   if (meters >= 1000) {
@@ -40,6 +103,13 @@ export const formatDistance = (meters: number): string => {
   }
   // 3. 1000m 미만은 정수로 반올림
   return `${Math.round(meters)}m`;
+};
+
+// 거리 포맷팅 (1000m 이상일 때 km, 미만일 때 m)
+export const formatDistanceAdaptive = (distanceMeter: number): string => {
+  return distanceMeter >= 1000
+    ? `${(distanceMeter / 1000).toFixed(1)}km`
+    : `${Math.round(distanceMeter)}m`;
 };
 
 // 거리 텍스트 계산 함수

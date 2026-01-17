@@ -3,10 +3,28 @@ import AppNavigator from './routes/AppNavigator';
 import { useAuth } from './providers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BootSplash from 'react-native-bootsplash';
+import { registerTtsQueueHandler } from '@/features/navigation/libs/ttsPlayer';
+import TrackPlayer from 'react-native-track-player';
 
 const App = () => {
   const { isAuthLoading, accessToken } = useAuth();
   const [initialRoute, setInitialRoute] = useState<string | null>(null);
+
+  useEffect(() => {
+    const setupTrackPlayer = async () => {
+      try {
+        await TrackPlayer.setupPlayer();
+        await TrackPlayer.updateOptions({
+          capabilities: [],
+        });
+        registerTtsQueueHandler();
+      } catch (error) {
+        console.warn('TrackPlayer setup failed:', error);
+      }
+    };
+
+    setupTrackPlayer();
+  }, []);
 
   useEffect(() => {
     const initApp = async () => {
@@ -33,7 +51,7 @@ const App = () => {
 
   if (!initialRoute) return null;
 
-  return <AppNavigator initialRouteName={initialRoute}/>;
+  return <AppNavigator initialRouteName={initialRoute} />;
 };
 
 export default App;

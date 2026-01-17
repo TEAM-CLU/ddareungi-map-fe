@@ -1,0 +1,25 @@
+import React from 'react';
+import Svg, { Path } from 'react-native-svg';
+
+interface IconFinishLineProps {
+  width?: number;
+  height?: number;
+  fillColor?: string;
+}
+
+const IconFinishLine = ({
+  width = 16,
+  height = 16,
+  fillColor = '#01DA86',
+}: IconFinishLineProps) => {
+  return (
+    <Svg width={width} height={height} viewBox="0 0 16 16" fill="none">
+      <Path
+        d="M0.71875 0.75V15.25H1.28125V12.0906C6.04063 13.0094 9.95625 13.0094 14.7188 12.0906V15.25H15.2812V0.75H14.7188V1.25H14V2.25H14.7188V3.25H14V4.25H14.7188V11.5188C9.92812 12.4531 6.07188 12.4531 1.28125 11.5188V3.25H2V2.25H1.28125V0.75H0.71875ZM2 2.25H3V1.25H2V2.25ZM3 2.25V3.25H4V2.25H3ZM4 2.25H5V1.25H4V2.25ZM5 2.25V3.25H6V2.25H5ZM6 2.25H7V1.25H6V2.25ZM7 2.25V3.25H8V2.25H7ZM8 2.25H9V1.25H8V2.25ZM9 2.25V3.25H10V2.25H9ZM10 2.25H11V1.25H10V2.25ZM11 2.25V3.25H12V2.25H11ZM12 2.25H13V1.25H12V2.25ZM13 2.25V3.25H14V2.25H13ZM13 3.25H12V4.25H13V3.25ZM11 3.25H10V4.25H11V3.25ZM9 3.25H8V4.25H9V3.25ZM7 3.25H6V4.25H7V3.25ZM5 3.25H4V4.25H5V3.25ZM3 3.25H2V4.25H3V3.25Z"
+        fill={fillColor}
+      />
+    </Svg>
+  );
+};
+
+export default React.memo(IconFinishLine);

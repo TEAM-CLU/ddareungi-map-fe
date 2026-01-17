@@ -1,11 +1,20 @@
 import { IconClose } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
-import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 
-const NavigationStartModal = () => {
+interface NavigationStartModalProps {
+  modalRef: React.RefObject<Modal | null>;
+  setShowNavigationStartModal: (show: boolean) => void;
+}
+
+const NavigationStartModal = ({
+  modalRef,
+  setShowNavigationStartModal,
+}: NavigationStartModalProps) => {
   return (
     <Modal
+      ref={modalRef}
       isVisible={true}
       backdropOpacity={0.3}
       animationIn={'fadeInUp'}
@@ -21,7 +30,10 @@ const NavigationStartModal = () => {
           { gap: 50, maxWidth: 273, paddingVertical: 45 },
         ]}
       >
-        <TouchableOpacity style={[tw('absolute top-3 right-3')]}>
+        <TouchableOpacity
+          onPress={() => setShowNavigationStartModal(false)}
+          style={[tw('absolute top-3 right-3')]}
+        >
           <IconClose color="#01DA86" />
         </TouchableOpacity>
         <View

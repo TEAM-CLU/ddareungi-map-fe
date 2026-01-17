@@ -8,11 +8,23 @@ import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import BookmarkEditModal from '@/features/bookmark/components/BookmarkEditModal';
 import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
-import { useNavDetailModal } from '@/features/navigation/hooks/useNavDetailModal';
 import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
+import { useShallow } from 'zustand/react/shallow';
+import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
+import NavigationStartModal from '@/features/navigation/components/NavigationStartModal';
+import NavigationFinishModal from '@/features/navigation/components/NavigationFinishModal';
+import NavigationEndModal from '@/features/navigation/components/NavigationEndModal';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 
 const GlobalModals = () => {
-  const { start, end, waypoints, selectedRouteData } = useRouteStore();
+  const { start, end, waypoints, selectedRouteData } = useRouteStore(
+    useShallow(state => ({
+      start: state.start,
+      end: state.end,
+      waypoints: state.waypoints,
+      selectedRouteData: state.selectedRouteData,
+    })),
+  );
   const {
     setShowNearByStationModal,
     setShowStationDetailModal,
@@ -28,11 +40,72 @@ const GlobalModals = () => {
     bookmarkModalRef,
     setShowBookmarkModal,
     navigationDetailModalRef,
-  } = useModalStore();
+    navigationStartModalRef,
+    navigationEndModalRef,
+    navigationFinishModalRef,
+    showNavigationStartModal,
+    showNavigationEndModal,
+    showNavigationFinishModal,
+    setShowNavigationStartModal,
+    setShowNavigationEndModal,
+    setShowNavigationFinishModal,
+  } = useModalStore(
+    useShallow(state => ({
+      setShowNearByStationModal: state.setShowNearByStationModal,
+      setShowStationDetailModal: state.setShowStationDetailModal,
+      setShowRouteRecommendModal: state.setShowRouteRecommendModal,
+      setShowPlaceDetailModal: state.setShowPlaceDetailModal,
+      setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
+      setShowNavigationDetailModal: state.setShowNavigationDetailModal,
+      selectedRouteDetailModalRef: state.selectedRouteDetailModalRef,
+      routeRecommendModalRef: state.routeRecommendModalRef,
+      nearbyStationModalRef: state.nearbyStationModalRef,
+      stationDetailModalRef: state.stationDetailModalRef,
+      placeDetailModalRef: state.placeDetailModalRef,
+      bookmarkModalRef: state.bookmarkModalRef,
+      setShowBookmarkModal: state.setShowBookmarkModal,
+      navigationDetailModalRef: state.navigationDetailModalRef,
+      navigationStartModalRef: state.navigationStartModalRef,
+      navigationEndModalRef: state.navigationEndModalRef,
+      navigationFinishModalRef: state.navigationFinishModalRef,
+      showNavigationEndModal: state.showNavigationEndModal,
+      showNavigationStartModal: state.showNavigationStartModal,
+      setShowNavigationStartModal: state.setShowNavigationStartModal,
+      setShowNavigationEndModal: state.setShowNavigationEndModal,
+      showNavigationFinishModal: state.showNavigationFinishModal,
+      setShowNavigationFinishModal: state.setShowNavigationFinishModal,
+    })),
+  );
 
-  const { selectedPlaceInfoForModal } = useSearchStore();
+  const selectedPlaceInfoForModal = useSearchStore(
+    state => state.selectedPlaceInfoForModal,
+  );
 
-  useNavDetailModal();
+  const { instructionList, currentIntervalIndex } =
+    useNavigationDetailModalStore(
+      useShallow(state => ({
+        instructionList: state.instructionList,
+        currentIntervalIndex: state.currentIntervalIndex,
+      })),
+    );
+
+  const {
+    seconds,
+    traveledDistanceMeter,
+    totalCaloriesBurned,
+    totalCarbonSaved,
+    sessionId,
+    resetAlldata,
+  } = useNavigationStore(
+    useShallow(state => ({
+      seconds: state.seconds,
+      traveledDistanceMeter: state.traveledDistanceMeter,
+      totalCaloriesBurned: state.totalCaloriesBurned,
+      totalCarbonSaved: state.totalCarbonSaved,
+      sessionId: state.sessionId,
+      resetAlldata: state.resetAllData,
+    })),
+  );
 
   return (
     <>
@@ -106,16 +179,60 @@ const GlobalModals = () => {
       >
         <BookmarkEditModal />
       </SlideModal>
-      
+
       {/* 네비게이션 디테일 모달 */}
       <SlideModal
         ref={navigationDetailModalRef}
-        snapPoints={['43%', '47%']}
-        initialIndex={1}
+        snapPoints={['80%']}
+        initialIndex={0}
         onDismiss={() => setShowNavigationDetailModal(false)}
+        enablePanDownToClose={false}
+        enableContentPanningGesture={true}
+        enableHandlePanningGesture={false}
+        enableOverDrag={false}
+        useFlexView={true}
       >
-        <NavigationDetailModal />
+        <NavigationDetailModal
+          instructionList={instructionList}
+          currentIntervalIndex={currentIntervalIndex}
+        />
       </SlideModal>
+
+      {/* 네비게이션 시작 모달 */}
+      {showNavigationStartModal && navigationStartModalRef && (
+        <NavigationStartModal
+          modalRef={navigationStartModalRef}
+          setShowNavigationStartModal={setShowNavigationStartModal}
+        />
+      )}
+
+      {/* 네비게이션 중간 종료 모달 */}
+      {showNavigationEndModal && navigationEndModalRef && (
+        <NavigationEndModal
+          modalRef={navigationEndModalRef}
+          setShowNavigationEndModal={setShowNavigationEndModal}
+          totalCaloriesBurned={totalCaloriesBurned}
+          totalCarbonSaved={totalCarbonSaved}
+          seconds={seconds}
+          traveledDistanceMeter={traveledDistanceMeter}
+          resetNavigationData={resetAlldata}
+          sessionId={sessionId}
+        />
+      )}
+
+      {/* 네비게이션 종료 모달 */}
+      {showNavigationFinishModal && navigationFinishModalRef && (
+        <NavigationFinishModal
+          modalRef={navigationFinishModalRef}
+          setShowNavigationFinishModal={setShowNavigationFinishModal}
+          totalCaloriesBurned={totalCaloriesBurned}
+          totalCarbonSaved={totalCarbonSaved}
+          seconds={seconds}
+          traveledDistanceMeter={traveledDistanceMeter}
+          resetNavigationData={resetAlldata}
+          sessionId={sessionId}
+        />
+      )}
     </>
   );
 };

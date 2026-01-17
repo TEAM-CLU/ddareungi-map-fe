@@ -5,7 +5,8 @@ import {
   MapAreaStationData,
   StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
-import { BookmarkItem } from './index.types';
+import { BookmarkItem } from '@/shared/model/index.types';
+
 
 // === 위치 관련 메시지 ===
 export interface UpdateMyLocationMessage {
@@ -125,6 +126,44 @@ export interface ShowSingleBookmarkMarkerMessage {
   type: 'showSingleBookmarkMarker';
   bookmarkData: BookmarkItem;
 }
+// === 내비게이션 관련 메시지 ===
+export interface ReplaceMyLocationMarker {
+  type: 'replaceMyLocationMarker';
+  isNavigationMode: boolean;
+}
+
+export interface NavigationPathData {
+  routeType: RouteType;
+  startPoint: [number, number];
+  endPoint: [number, number];
+  waypoints: Coordinate[] | null;
+  fullPathCoordinateList: [number, number][];
+  intervals: [number, number][];
+  currentIntervalIndex: number;
+  startStationPoint: Coordinate;
+  endStationPoint: Coordinate;
+  walkingPolicy?: NavigationWalkingPolicy; // 도보 경로 표시 정책
+}
+
+export type NavigationWalkingPolicy = 'all' | 'only-end' | 'none';
+
+export interface DrawNavigationPathMessage {
+  type: 'drawNavigationPath';
+  navigationPathData: NavigationPathData;
+}
+
+export interface UpdateNavigationCurrentIntervalMessage {
+  type: 'updateNavigationCurrentInterval';
+  currentIntervalIndex: number;
+}
+
+export interface ClearNavigationPathMessage {
+  type: 'clearNavigationPath';
+}
+
+export interface FocusOnNavigationPathMessage {
+  type: 'focusOnNavigationPath';
+}
 
 // 모든 메시지 타입 유니온
 export type WebViewMessageToWeb =
@@ -147,7 +186,12 @@ export type WebViewMessageToWeb =
   | FocusOnBookmarkMessage
   | ShowSingleBookmarkMarkerMessage
   | ClearBookmarksMessage
-  | StopFollowingMyLocationMessage;
+  | StopFollowingMyLocationMessage
+  | ReplaceMyLocationMarker
+  | DrawNavigationPathMessage
+  | UpdateNavigationCurrentIntervalMessage
+  | ClearNavigationPathMessage
+  | FocusOnNavigationPathMessage;
 
 /* === 웹뷰로부터 받아온 메시지 타입 === */
 

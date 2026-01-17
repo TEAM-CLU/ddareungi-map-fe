@@ -22,6 +22,8 @@ import { useLocationStore } from '@/features/location/stores/useLocationStore';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
+import { useShallow } from 'zustand/react/shallow';
+import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
 
 interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
@@ -45,17 +47,43 @@ const SelectedRouteDetailModal = ({
       </View>
     );
   }
-
   const { isNavigationMode, routeId, setIsNavigationMode, setRouteId } =
-    useNavigationStore();
-  const { setShowSelectedRouteDetailModal } = useModalStore();
+    useNavigationStore(
+      useShallow(state => ({
+        isNavigationMode: state.isNavigationMode,
+        routeId: state.routeId,
+        setIsNavigationMode: state.setIsNavigationMode,
+        setRouteId: state.setRouteId,
+      })),
+    );
+  const { setShowSelectedRouteDetailModal, setShowNavigationStartModal } =
+    useModalStore(
+      useShallow(state => ({
+        setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
+        setShowNavigationStartModal: state.setShowNavigationStartModal,
+      })),
+    );
   const { totalCaloriesBurned, totalTrees, routeType, prevScreen } =
-    useRouteStore();
-  const { drawStaticPath, focusOnStaticPath, stopFollowingMyLocation } =
-    useRoutingMessenger();
-  const { setLocationMode } = useLocationStore();
+    useRouteStore(
+      useShallow(state => ({
+        totalCaloriesBurned: state.totalCaloriesBurned,
+        totalTrees: state.totalTrees,
+        routeType: state.routeType,
+        prevScreen: state.prevScreen,
+      })),
+    );
+  const {
+    drawStaticPath,
+    focusOnStaticPath,
+    stopFollowingMyLocation,
+    clearStaticPath,
+  } = useRoutingMessenger();
+  const setLocationMode = useLocationStore(state => state.setLocationMode);
   const { myLocationCompassOff } = useLocationMessenger();
-  const { isMapReady } = useMapStore();
+  const isMapReady = useMapStore(state => state.isMapReady);
+
+  const { turnOffBookmarkMarkers } = useBookmarkMessenger();
+
   const {
     summary,
     segments,
@@ -114,6 +142,7 @@ const SelectedRouteDetailModal = ({
       };
       stopFollowingMyLocation();
       drawStaticPath(staticPathData);
+      turnOffBookmarkMarkers();
       myLocationCompassOff();
       setLocationMode('default');
     };
@@ -136,6 +165,8 @@ const SelectedRouteDetailModal = ({
   const handleNavigationStartBtnPress = () => {
     setRouteId(selectedRouteData.routeId);
     setIsNavigationMode(true);
+    setShowNavigationStartModal(true);
+    clearStaticPath();
   };
 
   return (

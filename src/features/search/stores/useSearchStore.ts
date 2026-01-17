@@ -14,6 +14,7 @@ interface SearchState {
   setSearchText: (text: string) => void;
   setIsFocused: (focused: boolean) => void;
   setSearchInputRef: (ref: React.RefObject<TextInput | null> | null) => void;
+  resetAllData: () => void;
 }
 
 export const useSearchStore = create<SearchState>()(
@@ -38,6 +39,18 @@ export const useSearchStore = create<SearchState>()(
 
       setSearchInputRef: ref =>
         set({ searchInputRef: ref }, false, 'search/setInputRef'),
+      resetAllData: () =>
+        set(
+          {
+            selectedPlaceInfoForModal: null,
+            searchText: '',
+            showSearchOverlay: false,
+            isFocused: false,
+            searchInputRef: null,
+          },
+          false,
+          'search/resetAllData',
+        ),
     }),
     { name: 'SearchStore' },
   ),

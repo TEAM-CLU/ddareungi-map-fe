@@ -1,14 +1,17 @@
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { useLocationStore } from '@/features/location/stores/useLocationStore';
-import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import IconLocatorMark from '@/shared/components/icons/IconLocatorMark';
 import { tw } from '@/shared/libs/tw-helper';
-import { useEffect } from 'react';
 import { TouchableOpacity } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
 
 const MyLocationButton = () => {
-  const { locationMode, setLocationMode } = useLocationStore();
-  const { isNavigationMode } = useNavigationStore();
+  const { locationMode, setLocationMode } = useLocationStore(
+    useShallow(state => ({
+      locationMode: state.locationMode,
+      setLocationMode: state.setLocationMode,
+    })),
+  );
   const { setCenterOnMyLocation, myLocationCompassOn, myLocationCompassOff } =
     useLocationMessenger();
 
@@ -32,16 +35,8 @@ const MyLocationButton = () => {
     }
   };
 
-  useEffect(() => {
-    if (!isNavigationMode) return;
-
-    setLocationMode('compass');
-    myLocationCompassOn();
-  }, [isNavigationMode]);
-
   return (
     <TouchableOpacity
-      disabled={isNavigationMode}
       onPress={handleMyLocationBtnPress}
       style={[
         tw('rounded-full w-10 h-10 flex justify-center items-center shadow-md'),

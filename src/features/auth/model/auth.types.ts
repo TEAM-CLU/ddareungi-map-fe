@@ -191,6 +191,23 @@ export interface CheckEmailResponse {
   data: null;
 }
 
+// 유저 통계 업데이트
+export interface StatsInfo {
+  totalDistance: number;
+  totalTime: number;
+  calories: number;
+  plantingTree: number;
+  carbonReduction: number;
+}
+export interface UpdateUserStatsPayload {
+  statsInfo: StatsInfo;
+}
+
+export interface UpdateUserStatsResponse {
+  statusCode: number;
+  message: string;
+  data: StatsInfo;
+}
 // 권한 타입
 export interface PermissionItem {
   name: string;

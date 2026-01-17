@@ -3,7 +3,6 @@ import {
   UseBookmarkOptions,
 } from '../../../shared/model/index.types';
 import { useModalStore } from '../../../shared/stores/useModalStore';
-import { useBookmarkStore } from '../stores/useBookmarkStore';
 import { useCallback, useEffect } from 'react';
 import { UpdateBookmarksMessage } from '../../../shared/model/map.webview.types';
 import { WebViewMessageEvent } from 'react-native-webview';
@@ -11,6 +10,7 @@ import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { useProvideWebviewMessenger } from '../../../shared/hooks/useProvideWebviewMessenger';
 import { Alert } from 'react-native';
 import { PlaceInfo } from '@/features/search/model/search.types';
+import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 
 export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
   const { sendMessage } = useProvideWebviewMessenger();

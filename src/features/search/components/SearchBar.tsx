@@ -5,8 +5,9 @@ import {
   IconClose,
   IconSearch,
 } from '@/shared/components/icons';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
+import { useShallow } from 'zustand/react/shallow';
 
 interface SearchBarProps {
   value: string;
@@ -33,7 +34,21 @@ const SearchBar = ({
   showBackButton = false,
   showCloseButton = false,
 }: SearchBarProps) => {
-  const { isFocused, setIsFocused, setSearchInputRef, showSearchOverlay, selectedPlaceInfoForModal } = useSearchStore();
+  const {
+    isFocused,
+    setIsFocused,
+    setSearchInputRef,
+    showSearchOverlay,
+    selectedPlaceInfoForModal,
+  } = useSearchStore(
+    useShallow(state => ({
+      isFocused: state.isFocused,
+      setIsFocused: state.setIsFocused,
+      setSearchInputRef: state.setSearchInputRef,
+      showSearchOverlay: state.showSearchOverlay,
+      selectedPlaceInfoForModal: state.selectedPlaceInfoForModal,
+    })),
+  );
   const searchInputRef = useRef<TextInput | null>(null);
 
   useEffect(() => {

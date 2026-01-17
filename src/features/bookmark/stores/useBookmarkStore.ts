@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { BookmarkItem } from '../../../shared/model/index.types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MAX_BOOKMARK_COUNT } from '../model/bookmark.constants';
+import { BookmarkItem } from '@/shared/model/index.types';
+import { MAX_BOOKMARK_COUNT } from '@/features/bookmark/model/bookmark.constants';
 
 export type toggleBookmarkResult =
   | 'added'

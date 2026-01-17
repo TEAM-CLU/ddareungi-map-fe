@@ -10,17 +10,24 @@ import { useStationMessenger } from '@/features/station/hooks/useStationMessenge
 import { useNearbyStationsQuery } from '../services/station.queries';
 import { getDistanceText } from '@/shared/utils/formatting';
 import { DISTANCE_LAMBDA } from '../model/station.constants';
+import { useShallow } from 'zustand/react/shallow';
 
 const NearbyStationModal = () => {
-  const { myPosition } = useMyPositionStore();
+  const myPosition = useMyPositionStore(state => state.myPosition);
+
   const { data: nearbyStationDataList, isLoading } = useNearbyStationsQuery(
     myPosition?.lat,
     myPosition?.lng,
   );
 
   const { setShowStationDetailModal, setShowNearByStationModal } =
-    useModalStore();
-  const { setStationMetaData } = useStationStore();
+    useModalStore(
+      useShallow(state => ({
+        setShowStationDetailModal: state.setShowStationDetailModal,
+        setShowNearByStationModal: state.setShowNearByStationModal,
+      })),
+    );
+  const setStationMetaData = useStationStore(state => state.setStationMetaData);
   const { focusOnTargetedNearbyStation } = useStationMessenger();
 
   // 리스트 클릭시 상세대여소 모달로 이동

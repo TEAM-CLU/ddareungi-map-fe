@@ -11,6 +11,7 @@ import {
   postCreateUser,
   postLoginUser,
   updateUserInfo,
+  updateUserStats,
 } from '@/features/auth/services/user.api';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -79,6 +80,17 @@ export const useDeleteUserMutation = () => {
     onSuccess: async () => {
       await removeToken(); // 앱 내 토큰 삭제
       queryClient.clear();
+    },
+  });
+};
+
+// 유저 통계 정보 수정
+export const useUpdateUserStatsMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: any) => updateUserStats(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userInfo'] });
     },
   });
 };

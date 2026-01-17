@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DragEndParams } from 'react-native-draggable-flatlist';
 import { useRouteStore } from '../stores/useRouteStore';
 import { RouteItem, RouteType, Waypoint } from '../model/routing.types';
-
+import { useShallow } from 'zustand/react/shallow';
 export const useRouteInput = () => {
   const {
     routeType,
@@ -15,11 +15,33 @@ export const useRouteInput = () => {
     removeWaypoint,
     updateRouteFromDrag,
     getItems,
-  } = useRouteStore();
+  } = useRouteStore(
+    useShallow(state => ({
+      routeType: state.routeType,
+      setRouteType: state.setRouteType,
+      start: state.start,
+      end: state.end,
+      waypoints: state.waypoints,
+      setStart: state.setStart,
+      setEnd: state.setEnd,
+      removeWaypoint: state.removeWaypoint,
+      updateRouteFromDrag: state.updateRouteFromDrag,
+      getItems: state.getItems,
+    })),
+  );
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const dragCommitIdRef = useRef(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [localItems, setLocalItems] = useState<RouteItem[] | null>(null);
 
-  const items = getItems();
+  const items = useMemo(() => getItems(), [getItems, start, end, waypoints]);
+  const renderItems = isDragging && localItems ? localItems : items;
+
+  const handleDragBegin = useCallback(() => {
+    setLocalItems(items);
+    setIsDragging(true);
+  }, [items]);
 
   // 2. 드래그 종료 핸들러
   const handleDragEnd = useCallback(
@@ -27,27 +49,29 @@ export const useRouteInput = () => {
       if (data.length < 2) return;
 
       setIsProcessing(true);
+      dragCommitIdRef.current += 1;
+      setLocalItems(data);
 
-      setTimeout(() => {
-        const newStart = data[0].place;
-        const newEnd = data[data.length - 1].place;
-        const middleItems = data.slice(1, -1);
+      const newStart = data[0].place;
+      const newEnd = data[data.length - 1].place;
+      const middleItems = data.slice(1, -1);
 
-        const newWaypoints: Waypoint[] = middleItems
-          .filter(item => item.place !== null)
-          .map((item, index) => ({
-            waypointKey: item.key.includes('waypoint')
-              ? item.key
-              : `waypoint-new-${Date.now()}-${index}`,
-            place: item.place!,
-          }));
+      const newWaypoints: Waypoint[] = middleItems
+        .filter(item => item.place !== null)
+        .map((item, index) => ({
+          waypointKey: item.key.includes('waypoint')
+            ? item.key
+            : `waypoint-new-${Date.now()}-${index}`,
+          place: item.place!,
+        }));
 
-        updateRouteFromDrag(newStart, newEnd, newWaypoints);
+      updateRouteFromDrag(newStart, newEnd, newWaypoints);
 
-        requestAnimationFrame(() => {
-          setIsProcessing(false);
-        });
-      }, 300);
+      requestAnimationFrame(() => {
+        setIsProcessing(false);
+        setIsDragging(false);
+        setLocalItems(null);
+      });
     },
     [updateRouteFromDrag],
   );
@@ -80,12 +104,13 @@ export const useRouteInput = () => {
   }, [start, end, routeType, setRouteType]);
 
   return {
-    items,
+    items: renderItems,
     isProcessing,
     routeType,
     start,
     end,
     hasWaypoints,
+    handleDragBegin,
     handleDragEnd,
     handleSwap,
     handleRemove,

@@ -7,6 +7,8 @@ import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
 import { MapReadyMessage } from '@/shared/model/map.webview.types';
+import Modal from 'react-native-modal';
+import { useShallow } from 'zustand/react/shallow';
 
 // 모달의 상태(Boolean)와 Ref를 동기화하는 훅
 const useModalSync = (
@@ -58,11 +60,21 @@ export const useMapOrchestrator = () => {
   const routeRecommendModalLocalRef = useRef<BottomSheetModal | null>(null);
   const bookmarkModalLocalRef = useRef<BottomSheetModal | null>(null);
   const navigationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
+  // 네비게이션 시작/종료 모달
+  const navigationStartModalLocalRef = useRef<Modal | null>(null);
+  const navigationEndModalLocalRef = useRef<Modal | null>(null);
+  const navigationFinishModalLocalRef = useRef<Modal | null>(null);
 
   /** ----------------------------------------
    * 3. 경로/거리 관련 상태 (routeStore)
    * ---------------------------------------- */
-  const { distance, setDistance, prevScreen } = useRouteStore();
+  const { distance, setDistance, prevScreen } = useRouteStore(
+    useShallow(state => ({
+      distance: state.distance,
+      setDistance: state.setDistance,
+      prevScreen: state.prevScreen,
+    })),
+  );
 
   /** ----------------------------------------
    * 4. 모달 show/hide 및 모달 ref 보관용 상태 (modalStore)
@@ -93,7 +105,7 @@ export const useMapOrchestrator = () => {
    * 5. 지도 전역 상태 (mapStore)
    *    - WebView ref / navigation 객체를 전역에서 재사용할 수 있도록 등록
    * ---------------------------------------- */
-  const { setGlobalNavigation } = useMapStore();
+  const setGlobalNavigation = useMapStore(state => state.setGlobalNavigation);
 
   /** ----------------------------------------
    * 6. 초기 mount 시: ref & navigation을 전역 store에 한번만 등록
@@ -112,6 +124,9 @@ export const useMapOrchestrator = () => {
       routeRecommendModalRef: routeRecommendModalLocalRef,
       bookmarkModalRef: bookmarkModalLocalRef,
       navigationDetailModalRef: navigationDetailModalLocalRef,
+      navigationStartModalRef: navigationStartModalLocalRef,
+      navigationEndModalRef: navigationEndModalLocalRef,
+      navigationFinishModalRef: navigationFinishModalLocalRef,
     });
 
     // 네비게이션 객체 전역 저장 (모달/웹뷰 이벤트에서도 navigate 가능)

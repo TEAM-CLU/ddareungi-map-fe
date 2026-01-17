@@ -9,6 +9,9 @@ interface SlideModalProps {
   initialIndex?: number; // 모달 열릴 때 기본 위치 (snapPoints 배열의 인덱스)
   onDismiss: () => void;
   enablePanDownToClose?: boolean;
+  enableContentPanningGesture?: boolean;
+  enableHandlePanningGesture?: boolean;
+  enableOverDrag?: boolean;
   useFlexView?: boolean; // 키보드 입력 있는 모달인지 여부 (true면) View(flex), false면 BottomSheetView(auto) 사용
 }
 
@@ -20,6 +23,9 @@ const SlideModal = forwardRef<BottomSheetModal, SlideModalProps>(
       initialIndex = 0,
       onDismiss,
       enablePanDownToClose = true,
+      enableContentPanningGesture = true,
+      enableHandlePanningGesture = true,
+      enableOverDrag = true,
       useFlexView = false,
     },
     ref,
@@ -33,11 +39,18 @@ const SlideModal = forwardRef<BottomSheetModal, SlideModalProps>(
         snapPoints={memoSnapPoints}
         onDismiss={onDismiss}
         enablePanDownToClose={enablePanDownToClose}
-        enableOverDrag
-        backgroundStyle={tw('bg-surface-primary rounded-t-3xl')}
+        enableOverDrag={enableOverDrag}
+        enableContentPanningGesture={enableContentPanningGesture}
+        enableHandlePanningGesture={enableHandlePanningGesture}
+        backgroundStyle={tw('bg-surface-primary rounded-3xl')}
         handleIndicatorStyle={[
-          tw('rounded-lg self-center mt-3'),
-          { backgroundColor: '#CFCCD4', width: 42, height: 5.8 },
+          tw('rounded-lg  mt-3'),
+          {
+            backgroundColor: '#CFCCD4',
+            width: 42,
+            height: 5.8,
+            alignSelf: 'center',
+          },
         ]}
         // 키보드가 올라올 때 시트 동작 설정
         keyboardBehavior="interactive"

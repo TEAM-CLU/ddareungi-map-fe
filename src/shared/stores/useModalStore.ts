@@ -13,6 +13,9 @@ export const useModalStore = create<ModalState>()(
       routeRecommendModalRef: null,
       bookmarkModalRef: null,
       navigationDetailModalRef: null,
+      navigationStartModalRef: null,
+      navigationEndModalRef: null,
+      navigationFinishModalRef: null,
 
       /* 모달 오픈 여부 초기값 */
       showPlaceDetailModal: false,
@@ -22,6 +25,9 @@ export const useModalStore = create<ModalState>()(
       showRouteRecommendModal: false,
       showBookmarkModal: false,
       showNavigationDetailModal: false,
+      showNavigationStartModal: false,
+      showNavigationEndModal: false,
+      showNavigationFinishModal: false,
 
       /* -----------------------------
                 ACTION 구현부
@@ -79,6 +85,24 @@ export const useModalStore = create<ModalState>()(
           { showNavigationDetailModal: isVisible },
           false,
           'modal/setShowNavigationDetailModal',
+        ),
+      setShowNavigationStartModal: isVisible =>
+        set(
+          { showNavigationStartModal: isVisible },
+          false,
+          'modal/setShowNavigationStartModal',
+        ),
+      setShowNavigationEndModal: isVisible =>
+        set(
+          { showNavigationEndModal: isVisible },
+          false,
+          'modal/setShowNavigationEndModal',
+        ),
+      setShowNavigationFinishModal: isVisible =>
+        set(
+          { showNavigationFinishModal: isVisible },
+          false,
+          'modal/setShowNavigationFinishModal',
         ),
     }),
     { name: 'ModalStore' },

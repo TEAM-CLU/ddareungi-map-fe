@@ -10,6 +10,15 @@
     ensureNoTapHighlightCSS();
   };
 
+  const smoothPanAndZoom = (position, level) => {
+    mapRef.panTo(position);
+    if (typeof level === 'number') {
+      setTimeout(() => {
+        mapRef.setLevel(level, { animate: true, anchor: position });
+      }, 250);
+    }
+  };
+
   // 모바일 브라우저에서 탭 하이라이트, 텍스트 선택, 포커스 아웃라인 제거
   const ensureNoTapHighlightCSS = () => {
     if (document.getElementById('no-tap-style')) return;
@@ -100,13 +109,13 @@
     targetedStationElement.onclick = null;
 
     targetedStationElement.onclick = () => {
-      // 지도 중심 이동
-      mapRef.setCenter(targetedStationMarker.marker.getPosition());
-
-      // 줌 레벨 조정
+      const position = targetedStationMarker.marker.getPosition();
+      // 지도 중심 이동 / 줌 레벨 조정
       const currentLevel = mapRef.getLevel();
       if (currentLevel > 3) {
-        mapRef.setLevel(3, { animate: true });
+        smoothPanAndZoom(position, 3);
+      } else {
+        mapRef.panTo(position);
       }
 
       // React Native로 정보 전달
@@ -237,13 +246,12 @@
       targetedStationData.longitude,
     );
 
-    // 맵 센터 이동
-    mapRef.setCenter(targetedStationPos);
-
-    // 줌 레벨 조정
+    // 맵 센터 이동 / 줌 레벨 조정
     const currentLevel = mapRef.getLevel();
     if (currentLevel > 3) {
-      mapRef.setLevel(3, { animate: true });
+      smoothPanAndZoom(targetedStationPos, 3);
+    } else {
+      mapRef.panTo(targetedStationPos);
     }
   };
 

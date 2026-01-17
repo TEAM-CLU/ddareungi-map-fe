@@ -6,11 +6,20 @@ import React from 'react';
 import { useRouteStore } from '../../stores/useRouteStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useShallow } from 'zustand/react/shallow';
 
 const RouteRecommendModal = () => {
-  const { distance, setDistance } = useRouteStore();
-  const { setShowRouteRecommendModal } = useModalStore();
-  const { globalNavigation } = useMapStore();
+  const { distance, setDistance } = useRouteStore(
+    useShallow(state => ({
+      distance: state.distance,
+      setDistance: state.setDistance,
+    })),
+  );
+
+  const setShowRouteRecommendModal = useModalStore(
+    state => state.setShowRouteRecommendModal,
+  );
+  const globalNavigation = useMapStore(state => state.globalNavigation);
 
   const handleOkBtnPress = () => {
     // 현재 화면이 RouteRecommend가 아닐 때만 navigate

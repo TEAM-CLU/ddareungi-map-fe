@@ -13,15 +13,26 @@ import {
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useStationStore } from '../stores/useStationStore';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
+import {
+  ChangeMapCenterMessage,
+  ClickStationMarkerMessage,
+  NeedUpdateStationBikeCountListMessage,
+} from '@/shared/model/map.webview.types';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useStation = ({ isMapReady }: UseStationsOptions) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
-  const { isNavigationMode } = useNavigationStore();
+  const isNavigationMode = useNavigationStore(state => state.isNavigationMode);
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
-    useModalStore();
-  const { setStationMetaData } = useStationStore();
+    useModalStore(
+      useShallow(state => ({
+        setShowStationDetailModal: state.setShowStationDetailModal,
+        showSelectedRouteDetailModal: state.showSelectedRouteDetailModal,
+      })),
+    );
+  const setStationMetaData = useStationStore(state => state.setStationMetaData);
 
   // 쿼리를 트리거하기 위한 "현재 보고 있는 지도 중심점"
   const [currentMapCenterCoord, setCurrentMapCenterCoord] =

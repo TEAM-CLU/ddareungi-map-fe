@@ -10,6 +10,8 @@ import { useRoute, RouteProp } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
 import { PlaceInfo } from '../model/search.types';
+import { useShallow } from 'zustand/react/shallow';
+import { Keyboard } from 'react-native';
 
 /**
  * useSearchOrchestrator
@@ -33,7 +35,13 @@ export const useSearchOrchestrator = () => {
    * 검색 상태 (선택된 장소)
    * --------------------------- */
   const { setSelectedPlaceInfoForModal, setIsFocused, searchInputRef } =
-    useSearchStore();
+    useSearchStore(
+      useShallow(state => ({
+        setSelectedPlaceInfoForModal: state.setSelectedPlaceInfoForModal,
+        setIsFocused: state.setIsFocused,
+        searchInputRef: state.searchInputRef,
+      })),
+    );
 
   /** 현재 검색의 목적 (출발/도착/경유 or auto) */
   const [currentPlaceType, setCurrentPlaceType] = useState<string | null>(null);
@@ -46,7 +54,14 @@ export const useSearchOrchestrator = () => {
     setShowNearByStationModal,
     setShowRouteRecommendModal,
     setShowStationDetailModal,
-  } = useModalStore();
+  } = useModalStore(
+    useShallow(state => ({
+      setShowPlaceDetailModal: state.setShowPlaceDetailModal,
+      setShowNearByStationModal: state.setShowNearByStationModal,
+      setShowRouteRecommendModal: state.setShowRouteRecommendModal,
+      setShowStationDetailModal: state.setShowStationDetailModal,
+    })),
+  );
 
   /** ---------------------------
    * WebView 메시지 (지도 마커, 위치 이동 등)
@@ -61,17 +76,24 @@ export const useSearchOrchestrator = () => {
   /** ---------------------------
    * 경로 상태 (출발/도착 중 하나라도 있는지)
    * --------------------------- */
-  const { hasAnyRouteData, resetAllData } = useRouteStore();
+  const { hasAnyRouteData, resetAllData } = useRouteStore(
+    useShallow(state => ({
+      hasAnyRouteData: state.hasAnyRouteData,
+      resetAllData: state.resetAllData,
+    })),
+  );
 
   /** ---------------------------
    * 검색 오버레이 열기/닫기
    * --------------------------- */
-  const { setShowSearchOverlay } = useSearchStore();
+  const setShowSearchOverlay = useSearchStore(
+    state => state.setShowSearchOverlay,
+  );
 
   /**
    * 북마크 데이터
    */
-  const { bookmarks } = useBookmarkStore();
+  const bookmarks = useBookmarkStore(state => state.bookmarks);
 
   const { showSingleBookmarkMarker } = useBookmarkMessenger();
 
@@ -110,9 +132,13 @@ export const useSearchOrchestrator = () => {
   const handleSearchClose = useCallback(() => {
     setShowSearchOverlay(false);
     setIsFocused(false);
-    searchInputRef?.current?.blur();
     setCurrentPlaceType(null);
-  }, [setShowSearchOverlay, setIsFocused, searchInputRef]);
+
+    requestAnimationFrame(() => {
+      searchInputRef?.current?.blur();
+      Keyboard.dismiss(); // 보험
+    });
+  }, []);
 
   /** ---------------------------
    * 장소 선택 시 전체 흐름 처리

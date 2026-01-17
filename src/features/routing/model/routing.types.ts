@@ -1,4 +1,5 @@
-import { PlaceInfo } from "@/features/search/model/search.types";
+import { Coordinates } from '@/features/map/model/map.types';
+import { PlaceInfo } from '@/features/search/model/search.types';
 
 export enum RouteType {
   CONSTANT = 'constant',
@@ -123,7 +124,7 @@ export interface Route {
   bbox: Bbox;
   startStation: Station;
   endStation?: Station;
-  waypoints?: Coordinate[];
+  waypoints?: Coordinates[];
   segments: Segment[];
   coordinates: [number, number][];
 }

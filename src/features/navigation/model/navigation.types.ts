@@ -1,36 +1,25 @@
 import { Coordinates } from '@/features/map/model/map.types';
-import { Bbox, Segment, Summary } from '@/features/routing/model/routing.types';
-import { Audio } from 'expo-av';
-export interface NavDetailModalState {
-  soundRef: React.RefObject<Audio.Sound | null> | null;
+import {
+  Bbox,
+  Coordinate,
+  Segment,
+  Summary,
+} from '@/features/routing/model/routing.types';
+export interface VolumeState {
   systemVolume: number;
   setSystemVolume: (volume: number) => void;
-  navVolume: number;
-  setNavVolume: (volume: number) => void;
-
-  setAllNavDetailModalItems: (
-    modalRefs: Partial<
-      Pick<
-        NavDetailModalState,
-        | 'soundRef'
-        | 'systemVolume'
-        | 'setSystemVolume'
-        | 'navVolume'
-        | 'setNavVolume'
-      >
-    >,
-  ) => void;
 }
 
 // API 관련 타입
 
-interface NavigationInstruction {
+export interface NavigationInstruction {
   distance: number; // in meters
   time: number; // in seconds
   text: string;
   sign: number;
   interval: [number, number]; // [startIndex, endIndex] in coordinates array
   nextTurnCoordinate: Coordinates;
+  ttsUrl: string;
 }
 export interface StartNavigationSessionPayload {
   routeId: string;
@@ -42,9 +31,9 @@ export interface StartNavigationSessionResponse {
   data: {
     sessionId: string;
     coordinates: [number, number][];
+    instructions: NavigationInstruction[];
+    segments: Segment[];
   };
-  instructions: NavigationInstruction[];
-  segments: Segment[];
 }
 
 // 내비게이션 세션 유지
@@ -97,8 +86,10 @@ export interface ReturnToExistingRouteResponse {
 }
 
 // 완전 재탐색
+export type travelMode = 'walking' | 'biking';
 export interface ReRoutePayload {
   sessionId: string;
+  travelMode: travelMode;
   currentLocation: Coordinates;
   remainingWaypoints?: Coordinates[];
 }
@@ -118,3 +109,39 @@ export interface ReRouteResponse {
     segments: Segment[];
   };
 }
+
+// useNavigationOrchestrator 내부 상태 타입
+export interface IntervalPathData {
+  intervalIndex: number;
+  interval: [number, number];
+  coordinateList: Coordinates[];
+}
+
+export interface LocationMetaData {
+  timestamp: number;
+  accuracy?: number;
+  osSpeed?: number;
+  coordinate: Coordinates;
+}
+
+export interface StabilizeDistanceInput {
+  newlyComputedDistanceMeter: number;
+  prevStableDistanceMeter: number;
+  prevMyPosition: Coordinates | null;
+  currentMyPosition: Coordinates;
+  prevTimestamp: number | null;
+  currentTimestamp: number;
+  type: DistanceType;
+}
+
+export type DistanceType = 'remaining' | 'traveled';
+
+// calculateMotionVector 결과 타입
+export type MotionVectorResult = {
+  moveMag: number; // 이동거리(m)
+  speedMps: number; // 속도(m/s)
+  dot: number; // v·u
+};
+
+// useTimer 훅에서 사용하는 타입
+export type TimerStatus = 'idle' | 'running' | 'paused';

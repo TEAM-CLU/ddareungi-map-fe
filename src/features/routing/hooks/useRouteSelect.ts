@@ -10,9 +10,10 @@ import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useAppRoute } from '@/shared/hooks/useAppRoute';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, use } from 'react';
 import { Alert } from 'react-native';
 import { useFullJourneyMutation } from '../services/routing.queries';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useRouteSelect = () => {
   const route = useAppRoute<'RouteSelect'>();
@@ -43,12 +44,38 @@ export const useRouteSelect = () => {
     isRouteComplete,
 
     resetAllData,
-  } = useRouteStore();
+  } = useRouteStore(
+    useShallow(state => ({
+      routeType: state.routeType,
+      setRouteType: state.setRouteType,
+      start: state.start,
+      end: state.end,
+      waypoints: state.waypoints,
+      setPrevScreen: state.setPrevScreen,
+      setTotalCaloriesBurned: state.setTotalCaloriesBurned,
+      setTotalTrees: state.setTotalTrees,
+      setStart: state.setStart,
+      setEnd: state.setEnd,
+      setSelectedRouteData: state.setSelectedRouteData,
+      addWaypoint: state.addWaypoint,
+      updateWaypoint: state.updateWaypoint,
+      syncStartEndInLoopMode: state.syncStartEndInLoopMode,
+      isRouteComplete: state.isRouteComplete,
+      resetAllData: state.resetAllData,
+    })),
+  );
 
   const { showSelectedRouteDetailModal, setShowSelectedRouteDetailModal } =
-    useModalStore();
+    useModalStore(
+      useShallow(state => ({
+        showSelectedRouteDetailModal: state.showSelectedRouteDetailModal,
+        setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
+      })),
+    );
 
-  const { setSelectedPlaceInfoForModal } = useSearchStore();
+  const setSelectedPlaceInfoForModal = useSearchStore(
+    state => state.setSelectedPlaceInfoForModal,
+  );
 
   // 경로 시간 계산 기준 시간 (리프레시 가능)
   const [baseTime, setBaseTime] = React.useState<Date>(new Date());

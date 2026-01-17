@@ -7,6 +7,7 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import React, { useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useCircularJourneyMutation } from '../services/routing.queries';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useRouteRecommend = () => {
   const route = useAppRoute<'RouteSelect'>();
@@ -15,7 +16,12 @@ export const useRouteRecommend = () => {
   const { mutate: searchCircularRoutes, data: routes, isPending: isLoadingRoutes, error: routeSearchError } = useCircularJourneyMutation();
 
   const { setShowRouteRecommendModal, setShowSelectedRouteDetailModal } =
-    useModalStore();
+    useModalStore(
+      useShallow(state => ({
+        setShowRouteRecommendModal: state.setShowRouteRecommendModal,
+        setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
+      })),
+    );
 
   const {
     setTotalCaloriesBurned,
@@ -29,7 +35,18 @@ export const useRouteRecommend = () => {
     setSelectedRouteData,
 
     resetAllData,
-  } = useRouteStore();
+  } = useRouteStore(
+    useShallow(state => ({
+      setTotalCaloriesBurned: state.setTotalCaloriesBurned,
+      setTotalTrees: state.setTotalTrees,
+      setPrevScreen: state.setPrevScreen,
+      start: state.start,
+      distance: state.distance,
+      setStart: state.setStart,
+      setSelectedRouteData: state.setSelectedRouteData,
+      resetAllData: state.resetAllData,
+    })),
+  );
 
   // 경로 시간 계산 기준 시간 (리프레시 가능)
   const [baseTime, setBaseTime] = React.useState<Date>(new Date());

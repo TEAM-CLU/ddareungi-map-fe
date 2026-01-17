@@ -5,20 +5,19 @@ import { useMapStore } from '../stores/useMapStore';
 import { useBookmark } from '@/features/bookmark/hooks/useBookmark';
 import { useWebViewRef } from '@/app/providers/webview';
 import { useEffect, useState } from 'react';
-import { tw } from '@/shared/libs/tw-helper';
-import { View, ActivityIndicator } from 'react-native';
-import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
+import { useShallow } from 'zustand/react/shallow';
 interface MapProps {
   isLocalMapReady: boolean;
   setIsLocalMapReady: React.Dispatch<React.SetStateAction<boolean>>;
   handleMapReadyMessage: (event: WebViewMessageEvent) => void;
 }
-const Map = ({
-  isLocalMapReady,
-  setIsLocalMapReady,
-  handleMapReadyMessage,
-}: MapProps) => {
-  const { isMapReady, setIsMapReady } = useMapStore();
+const Map = ({ isLocalMapReady, handleMapReadyMessage }: MapProps) => {
+  const { isMapReady, setIsMapReady } = useMapStore(
+    useShallow(state => ({
+      isMapReady: state.isMapReady,
+      setIsMapReady: state.setIsMapReady,
+    })),
+  );
 
   const webViewRef = useWebViewRef();
   useMyLocation({ isMapReady });
@@ -40,7 +39,7 @@ const Map = ({
   const [mapUrl] = useState(() => {
     const timestamp = new Date().getTime();
     // iOS/Android 환경에 따라 주소 분기 (ngrok 주소면 그대로 사용)
-    const baseUrl = 'https://2ecf08848c8e.ngrok-free.app/map.html';
+    const baseUrl = 'https://6b2a34c11338.ngrok-free.app/map.html';
     return `${baseUrl}?t=${timestamp}`;
   });
 
@@ -61,7 +60,9 @@ const Map = ({
       cacheEnabled={false}
       cacheMode="LOAD_NO_CACHE"
       incognito={true}
-      source={{ uri: mapUrl }}
+      source={{
+        uri: 'https://6b2a34c11338.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+      }}
       // source={{
       //   uri: 'https://3f3d893368a5.ngrok-free.app/map.html',
       // }}

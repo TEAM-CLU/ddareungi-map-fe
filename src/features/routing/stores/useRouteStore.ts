@@ -63,10 +63,7 @@ export const useRouteStore = create<RouteState>()(
           place: end,
         });
 
-        return items.map((item, index) => ({
-          ...item,
-          key: item.key.startsWith('fixed') ? `${item.key}-${index}` : item.key,
-        }));
+        return items;
       },
 
       /*

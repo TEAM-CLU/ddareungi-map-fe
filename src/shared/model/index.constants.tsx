@@ -90,20 +90,44 @@ export const FOOTER_MENU: {
     name: 'bookmark',
     screen: 'Map',
     label: '즐겨찾기',
-    icon: <IconStar width={23} height={23} fillColor='#01DA86' strokeColor='white' strokeWidth={2.2}/>,
+    icon: (
+      <IconStar
+        width={23}
+        height={23}
+        fillColor="#01DA86"
+        strokeColor="white"
+        strokeWidth={2.2}
+      />
+    ),
   },
 ];
 
 // measure.ts - 평균 신체정보
-export const MEAN_ADULT_MAN_WEIGHT_KG = 72;
-export const MEAN_ADULT_WOMAN_WEIGHT_KG = 58;
-export const MEAN_ADULT_NEUTRAL_WEIGHT_KG = 65;
-export const MEAN_WALKING_MET = 3.3;
-export const MEAN_CYCLING_MET = 6;
+export const MEAN_ADULT_PHYSICAL_INFORMATION = {
+  MEAN_ADULT_MAN_WEIGHT_KG: 72,
+  MEAN_ADULT_WOMAN_WEIGHT_KG: 58,
+  MEAN_ADULT_NEUTRAL_WEIGHT_KG: 65,
+};
+
+// 평균 활동 대사량(MET)
+export const MEAN_ACITIVITY_MET = {
+  MEAN_WALKING_MET: 3.3,
+  MEAN_BIKING_MET: 6,
+};
 
 // measure.ts - 탄소배출계수
-export const EMISSION_CAR_PER_KM = 0.21;
-export const EMISSION_WALKING_PER_KM = 0.05;
-export const EMISSION_CYCLING_PER_KM = 0.02;
+export const MEAN_CARBON_EMISSION = {
+  EMISSION_CAR_PER_KM: 0.21,
+  EMISSION_WALKING_PER_KM: 0.05,
+  EMISSION_BIKING_PER_KM: 0.02,
+};
 
-export const BOOKMARK_COLOR_PRESETS = ['#01DA86', '#FF3B30', '#FF9500', '#FFC107','#007AFF', '#5856D6', '#8E8E93'];
+export const BOOKMARK_COLOR_PRESETS = [
+  '#01DA86',
+  '#FF3B30',
+  '#FF9500',
+  '#FFC107',
+  '#007AFF',
+  '#5856D6',
+  '#8E8E93',
+];
