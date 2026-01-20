@@ -31,7 +31,7 @@ const CarbonStatusCard = ({
         {/* 상단 텍스트 */}
         <View style={tw('w-full items-start')}>
           <Text style={tw('font-primary-700 text-lg text-on-surface-primary')}>
-            이번 달 나의 탄소 발자국
+            지금까지 나의 탄소 발자국
           </Text>
         </View>
 

@@ -7,9 +7,19 @@ export const useBlockBackNavigation = (isBackBlocked: boolean) => {
 
   useEffect(() => {
     if (!isBackBlocked) return;
+
     const removeBeforeRemoveListener = navigation.addListener(
       'beforeRemove',
       e => {
+        const actionType = e?.data?.action?.type;
+        if (
+          actionType === 'RESET' ||
+          actionType === 'REPLACE' ||
+          actionType === 'NAVIGATE'
+        ) {
+          return;
+        }
+
         e.preventDefault();
       },
     );

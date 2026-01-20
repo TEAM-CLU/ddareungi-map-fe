@@ -1,37 +1,27 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View } from 'react-native';
-import EditProfile from '@/features/mypage/components/EditProfile';
-import MypageMain from '@/features/mypage/components/main/MypageMain';
-import OnboardingScreen from './OnboardingScreen';
 import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
-
-type PageType = 'main' | 'updateInfo' | 'updatePassword' | 'help';
+import { MYPAGE_SHOWING_CONTENTS } from '@/features/mypage/model/mypage.constants';
+import { MypageShowingType } from '@/features/mypage/model/mypage.types';
 
 const MyPageScreen = () => {
-  const [page, setPage] = useState<PageType>('main');
+  const [whatShowing, setWhatShowing] = useState<MypageShowingType>('main');
+
+  const mypageScreenDef = MYPAGE_SHOWING_CONTENTS[whatShowing];
 
   useBlockBackNavigation(true);
 
-  const renderContent = () => {
-    switch (page) {
-      case 'updateInfo':
-        return <EditProfile onBack={() => setPage('main')} />;
-      // case 'updatePassword':
-      // return <ChangePassword onBack={() => setPage('main')} />;
-      // return <PwdResetContainer />;
-      case 'help':
-        return (
-          <OnboardingScreen
-            onFinish={() => setPage('main')}
-            buttonLabel="돌아가기"
-          />
-        );
-      default:
-        return <MypageMain onNavigate={setPage} />;
-    }
-  };
+  const mypageRouter = useMemo(
+    () => ({
+      show: (type: MypageShowingType) => setWhatShowing(type),
+      backToMain: () => setWhatShowing('main'),
+    }),
+    [setWhatShowing],
+  );
 
-  return <View style={{ flex: 1 }}>{renderContent()}</View>;
+  return (
+    <View style={{ flex: 1 }}>{mypageScreenDef.render(mypageRouter)}</View>
+  );
 };
 
 export default MyPageScreen;

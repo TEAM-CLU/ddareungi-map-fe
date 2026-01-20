@@ -1,6 +1,10 @@
 import { tw } from '@/shared/libs/tw-helper';
 import { Text, View } from 'react-native';
-import { formatCalories, formatDistance, formatTime } from '@/shared/utils/formatting';
+import {
+  formatCalories,
+  formatDistance,
+  formatTime,
+} from '@/shared/utils/formatting';
 
 interface UsageCardProps {
   totalTime: number;
@@ -22,7 +26,7 @@ const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
       {/* 상단 헤더 */}
       <View style={tw('w-full bg-brand-primary px-5 py-3 items-start')}>
         <Text style={tw('font-primary-700 text-lg text-on-surface-secondary')}>
-          이번 달 이용이력
+          총 이용이력
         </Text>
       </View>
 

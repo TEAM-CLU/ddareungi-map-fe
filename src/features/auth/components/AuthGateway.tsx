@@ -5,7 +5,7 @@ import SquareButton from '@/shared/components/button/SquareButton';
 import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
 import { tw } from '@/shared/libs/tw-helper';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TouchableOpacity, View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AccountFinder from '@/features/auth/components/AccountFinder';
@@ -105,7 +105,12 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   if (accountFeatures === 'findAccount')
     return <AccountFinder setAccountFeatures={setAccountFeatures} />;
   if (accountFeatures === 'resetPwd')
-    return <PwdResetContainer setAccountFeatures={setAccountFeatures} />;
+    return (
+      <PwdResetContainer
+        setAccountFeatures={setAccountFeatures}
+        prevScreen="login"
+      />
+    );
 
   return (
     <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20')}>

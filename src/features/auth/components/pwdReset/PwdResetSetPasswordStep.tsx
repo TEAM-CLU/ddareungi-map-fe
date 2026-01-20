@@ -4,25 +4,28 @@ import { tw } from '@/shared/libs/tw-helper';
 import { Alert, Text, View } from 'react-native';
 import RoundButton from '@/shared/components/button/RoundButton';
 import { useResetPasswordMutation } from '@/features/auth/services/auth.queries';
-import {
-  ResetPasswordPayload,
-} from '@/features/auth/model/auth.types';
+import { ResetPasswordPayload } from '@/features/auth/model/auth.types';
+import { PrevScreenForFeatureBranch } from '@/shared/model/index.types';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 interface PwdResetSetPasswordStepProps {
   email: string;
-  setEmail: React.Dispatch<React.SetStateAction<string>>;
   setResetPwdStep: React.Dispatch<React.SetStateAction<1 | 2>>;
   setAccountFeatures: React.Dispatch<
     React.SetStateAction<'findAccount' | 'resetPwd' | null>
   >;
+  prevScreen: PrevScreenForFeatureBranch;
+  onDone: () => void;
 }
 
 const PwdResetSetPasswordStep = ({
   email,
-  setEmail,
   setResetPwdStep,
   setAccountFeatures,
+  prevScreen,
+  onDone,
 }: PwdResetSetPasswordStepProps) => {
+  const { navigation } = useAppNavigation();
   const { mutate: resetPwd } = useResetPasswordMutation();
   const [newPwd, setNewPwd] = useState<string>('');
   const [confirmNewPwd, setConfirmNewPwd] = useState<string>('');
@@ -126,10 +129,11 @@ const PwdResetSetPasswordStep = ({
 
       resetPwd(payload, {
         onSuccess: data => {
-          setAccountFeatures(null);
+          if (prevScreen === 'login') setAccountFeatures(null);
+          if (prevScreen === 'mypage') onDone();
           Alert.alert('알림', data.message);
         },
-        onError: (error) => {
+        onError: error => {
           setIsValidNewPwd(false);
           setNewPwdSuccessDescription('');
           setConfirmNewPwdSuccessDescription('');

@@ -68,23 +68,22 @@ const MypageMain = ({
 
   return (
     <SafeAreaView style={tw('flex-1 bg-surface-secondary pt-6')}>
+      <View style={tw('flex-row items-center px-5 pb-8 relative top-0')}>
+        <View style={tw('w-6')}>
+          <BackButton
+            type="custom"
+            iconColor="brand"
+            onPress={() => navigation.navigate('Map')}
+          />
+        </View>
+        <Text style={tw('text-xl font-primary-700 text-on-surface-primary')}>
+          마이페이지
+        </Text>
+      </View>
       <ScrollView
         style={tw('flex-1 bg-surface-secondary')}
         showsVerticalScrollIndicator={false}
       >
-        <View style={tw('flex-row items-center px-5 pb-8')}>
-          <View style={tw('w-6')}>
-            <BackButton
-              type="custom"
-              iconColor="brand"
-              onPress={() => navigation.navigate('Map')}
-            />
-          </View>
-          <Text style={tw('text-xl font-primary-700 text-on-surface-primary')}>
-            마이페이지
-          </Text>
-        </View>
-
         {user && user.data ? (
           <>
             {/* 사용자 프로필 */}

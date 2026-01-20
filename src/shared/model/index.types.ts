@@ -143,3 +143,5 @@ export interface ModalState {
   setShowNavigationEndModal: (isVisible: boolean) => void;
   setShowNavigationFinishModal: (isVisible: boolean) => void;
 }
+
+export type PrevScreenForFeatureBranch = 'login' | 'mypage';

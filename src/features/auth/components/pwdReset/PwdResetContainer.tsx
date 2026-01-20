@@ -2,6 +2,7 @@ import PwdResetSetPasswordStep from '@/features/auth/components/pwdReset/PwdRese
 import PwdResetVerifyEmailStep from '@/features/auth/components/pwdReset/PwdResetVerifyEmailStep';
 import IconClose from '@/shared/components/icons/IconClose';
 import { tw } from '@/shared/libs/tw-helper';
+import { PrevScreenForFeatureBranch } from '@/shared/model/index.types';
 import { useState } from 'react';
 import {
   TouchableOpacity,
@@ -15,22 +16,29 @@ interface PwdResetContainerProps {
   setAccountFeatures: React.Dispatch<
     React.SetStateAction<'findAccount' | 'resetPwd' | null>
   >;
+  prevScreen: PrevScreenForFeatureBranch;
+  onDone: () => void;
 }
 
 const PwdResetContainer = ({
   setAccountFeatures,
+  prevScreen,
+  onDone,
 }: PwdResetContainerProps) => {
   const [resetPwdStep, setResetPwdStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState<string>('');
 
-  const handleCloseButtonPress = () => setAccountFeatures(null);
+  const handleCloseBtnPress = () => {
+    if (prevScreen === 'login') setAccountFeatures(null);
+    if (prevScreen === 'mypage') onDone();
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={tw('w-full flex-1')}>
         <TouchableOpacity
-          onPress={handleCloseButtonPress}
-          style={tw('fixed top-5 left-4')}
+          onPress={handleCloseBtnPress}
+          style={tw('absolute top-20 right-4')}
         >
           <IconClose />
         </TouchableOpacity>
@@ -49,9 +57,10 @@ const PwdResetContainer = ({
           ) : resetPwdStep === 2 ? (
             <PwdResetSetPasswordStep
               email={email}
-              setEmail={setEmail}
               setResetPwdStep={setResetPwdStep}
               setAccountFeatures={setAccountFeatures}
+              prevScreen={prevScreen}
+              onDone={onDone}
             />
           ) : (
             <PwdResetVerifyEmailStep

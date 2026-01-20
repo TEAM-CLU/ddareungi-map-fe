@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import BackButton from '@/shared/components/button/BackButton';
@@ -21,8 +21,9 @@ import { useLogoutMutation } from '@/features/auth/services/auth.queries';
 import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
 import { CommonActions } from '@react-navigation/native';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import RoundButton from '@/shared/components/button/RoundButton';
 
-const EditProfile = ({ onBack }: { onBack: () => void }) => {
+const ProfileEditor = ({ onBack }: { onBack: () => void }) => {
   const { data: user, isPending } = useUserInfoQuery();
   const { mutate: updateUser } = useUpdateUserInfoMutation();
   const { mutate: logout } = useLogoutMutation();
@@ -46,6 +47,15 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
   const [consentedAt, setConsentedAt] = useState<string | null>(null);
   const [isAddressInputEnabled, setIsAddressInputEnabled] = useState(false);
 
+  // 수정 여부
+  const initialFormRef = useRef<{
+    name: string;
+    gender?: 'M' | 'F';
+    birthDate: string;
+    address: string;
+    optionalAgreed: boolean;
+  } | null>(null);
+
   useEffect(() => {
     if (user) {
       setName(user.data.name ?? '');
@@ -68,6 +78,16 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
           setGu(parts[1]);
           setDong(parts[2]);
         }
+      }
+
+      if (!initialFormRef.current) {
+        initialFormRef.current = {
+          name: user.data.name ?? '',
+          gender: user.data.gender as 'M' | 'F',
+          birthDate: user.data.birthDate ?? '',
+          address: user.data.address ?? '',
+          optionalAgreed: user.data.optionalAgreed ?? false,
+        };
       }
     }
   }, [user]);
@@ -93,7 +113,28 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
   const isValidGender = gender === 'M' || gender === 'F';
   const isValidBirthDate = !!formattedBirthDate;
 
-  const isFormReady = isValidName && isValidGender && isValidBirthDate;
+  const isDirty = useMemo(() => {
+    if (!initialFormRef.current) return false;
+
+    const initial = initialFormRef.current;
+
+    return (
+      initial.name !== name ||
+      initial.gender !== gender ||
+      initial.birthDate !== formattedBirthDate ||
+      initial.address !== formattedAddress ||
+      initial.optionalAgreed !== isConsentOptionalAgreed
+    );
+  }, [
+    name,
+    gender,
+    formattedBirthDate,
+    formattedAddress,
+    isConsentOptionalAgreed,
+  ]);
+
+  const isFormReady =
+    isValidName && isValidGender && isValidBirthDate && isDirty;
 
   const handleSavePress = () => {
     if (!isFormReady) {
@@ -327,10 +368,11 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
 
         {/* 버튼 */}
         <View style={[tw('justify-end items-center')]}>
-          <SquareButton
-            title="수정사항 저장하기"
+          <RoundButton
+            title="저장하기"
             onPress={handleSavePress}
             disabled={!isFormReady}
+            preset={'lg'}
           />
         </View>
       </View>
@@ -350,4 +392,4 @@ const EditProfile = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
-export default EditProfile;
+export default ProfileEditor;
