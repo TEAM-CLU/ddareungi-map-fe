@@ -22,6 +22,7 @@ import NavVolumeToggleButton from '@/features/navigation/components/NavVolumeTog
 import NorthIndicator from '@/features/navigation/components/NorthIndicator';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { makeSegmentColors } from '@/features/navigation/utils/makeSegmentColors';
+import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 
 const MapScreen = () => {
   const {
@@ -49,6 +50,8 @@ const MapScreen = () => {
     traveledDistanceMeter,
     isLoadingForOffRoute,
   } = useNavigationOrchestrator();
+
+  useBlockBackNavigation(true);
 
   const showSelectedRouteDetailModal = useModalStore(
     state => state.showSelectedRouteDetailModal,

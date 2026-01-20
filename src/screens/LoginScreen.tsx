@@ -4,10 +4,13 @@ import { tw } from '@/shared/libs/tw-helper';
 import AuthChoice from '@/features/auth/components/AuthChoice';
 import AuthGateway from '@/features/auth/components/AuthGateway';
 import SimpleLoading from '@/shared/components/SimpleLoading';
+import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 
 const LoginScreen = () => {
   const [loginScreenStep, setLoginScreenStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
+
+  useBlockBackNavigation(true);
 
   // 1분뒤 로딩 자동종료
   useEffect(() => {
@@ -24,9 +27,7 @@ const LoginScreen = () => {
         {loginScreenStep === 1 ? (
           <AuthChoice setLoginScreenStep={setLoginScreenStep} />
         ) : loginScreenStep === 2 ? (
-          <AuthGateway
-            setLoginScreenStep={setLoginScreenStep}
-          />
+          <AuthGateway setLoginScreenStep={setLoginScreenStep} />
         ) : (
           <AuthChoice setLoginScreenStep={setLoginScreenStep} />
         )}

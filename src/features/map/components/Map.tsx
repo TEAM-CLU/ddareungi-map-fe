@@ -61,7 +61,7 @@ const Map = ({ isLocalMapReady, handleMapReadyMessage }: MapProps) => {
       cacheMode="LOAD_NO_CACHE"
       incognito={true}
       source={{
-        uri: 'https://6b2a34c11338.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://8f591557a748.ngrok-free.app/dev/ddareungi-map-fe/map.html',
       }}
       // source={{
       //   uri: 'https://3f3d893368a5.ngrok-free.app/map.html',

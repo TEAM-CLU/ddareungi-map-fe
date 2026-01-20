@@ -2,7 +2,6 @@ import { RouteType } from '@/features/routing/model/routing.types';
 import { PlaceInfo } from '@/features/search/model/search.types';
 
 export type RootStackParamList = {
-  DevHub: undefined;
   Landing: undefined;
   Onboarding: undefined;
   Login:
@@ -32,6 +31,4 @@ export type RootStackParamList = {
       }
     | undefined;
   MyPage: undefined;
-  TestCho: undefined;
-  TestPark: undefined;
 };

@@ -2,13 +2,16 @@ import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, Image, ImageStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../providers';
 import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@/app/providers';
+import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 
 const LandingScreen = () => {
   const { navigation } = useAppNavigation();
   const { isAuthLoading, accessToken } = useAuth();
+
+  useBlockBackNavigation(true);
 
   useEffect(() => {
     if (isAuthLoading) return;

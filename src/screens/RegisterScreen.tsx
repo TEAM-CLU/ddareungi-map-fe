@@ -15,6 +15,7 @@ import IconBicycle from '@/shared/components/icons/IconBicycle';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 
 const RegisterScreen = () => {
   const { mutate: signUp, isPending } = useCreateUserMutation();
@@ -27,6 +28,8 @@ const RegisterScreen = () => {
   const [consentedAt, setConsentedAt] = useState<string | null>(null);
   const [isPrivacyConsentModalOpen, setIsPrivacyConsentModalOpen] =
     useState(true); // 개인정보 동의서 모달
+
+  useBlockBackNavigation(true);
 
   const [email, setEmail] = useState<string>('');
   const [pwd, setPwd] = useState<string>('');

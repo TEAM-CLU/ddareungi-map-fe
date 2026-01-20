@@ -2,15 +2,23 @@ import React, { useRef, useState } from 'react';
 import PagerView from 'react-native-pager-view';
 import OnboardingLayout from '@/features/onboarding/components/OnboardingLayout';
 import { ONBOARDING_DATA } from '@/features/onboarding/model/onboarding.constants';
+import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 
 type OnboardingScreenProps = {
   onFinish?: () => void;
   buttonLabel?: string;
 };
 
-const OnboardingScreen = ({ onFinish, buttonLabel = '시작하기' }: OnboardingScreenProps) => {
-  const [onBoardingStep, setOnBoardingStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+const OnboardingScreen = ({
+  onFinish,
+  buttonLabel = '시작하기',
+}: OnboardingScreenProps) => {
+  const [onBoardingStep, setOnBoardingStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(
+    1,
+  );
   const pagerRef = useRef<PagerView>(null);
+
+  useBlockBackNavigation(true);
 
   const handleButtonPress = (index: number) => {
     const isLastStep = index === ONBOARDING_DATA.length - 1;

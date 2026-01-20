@@ -1,38 +1,41 @@
 import React from 'react';
 import { View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import RouteInputBar from '@/features/routing/components/RouteInputBar';
-import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
+import RouteRecommendInputBar from '@/features/routing/components/recommend/RouteRecommendInputBar';
 import RouteTimeRefreshBar from '@/features/routing/components/RouteTimeRefreshBar';
+import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
 import RoundButton from '@/shared/components/button/RoundButton';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouteSelect } from '@/features/routing/hooks/useRouteSelect';
+import { useRouteRecommend } from '@/features/routing/hooks/useRouteRecommend';
+import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 
-const RouteSelectScreen = () => {
+const RouteRecommendScreen = () => {
   const {
-    baseTime,
-    setBaseTime,
     handleRoutePointPress,
-    handleAddNewWaypointAndEdit,
+    handleDistancePress,
     handleRouteInputBarClose,
     handleRouteSearchConfirm,
     handleRouteItemPress,
+    baseTime,
+    setBaseTime,
     routes,
     isLoadingRoutes,
     routeSearchError,
-  } = useRouteSelect();
+  } = useRouteRecommend();
+
+  useBlockBackNavigation(true);
 
   return (
     <View style={tw('flex-1 bg-surface-primary')}>
-      <SafeAreaView edges={['top']} style={tw('bg-brand-primary w-full pb-4')}>
+      <View style={tw('bg-brand-primary w-full pt-16 pb-4')}>
         <View style={tw('mx-2')}>
-          <RouteInputBar
+          <RouteRecommendInputBar
             onRoutePointPress={handleRoutePointPress}
-            onAddWaypointAndEdit={handleAddNewWaypointAndEdit}
+            onDistancePress={handleDistancePress}
             onClose={handleRouteInputBarClose}
           />
         </View>
-      </SafeAreaView>
+      </View>
+
       <View
         style={[
           tw(
@@ -62,4 +65,4 @@ const RouteSelectScreen = () => {
   );
 };
 
-export default RouteSelectScreen;
+export default RouteRecommendScreen;
