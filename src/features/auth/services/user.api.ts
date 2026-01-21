@@ -12,7 +12,9 @@ import {
   UpdateUserStatsPayload,
   UpdateUserStatsResponse,
 } from '@/features/auth/model/auth.types';
+import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 import { api } from '@/shared/services/axios';
+import AsyncStorage from '@react-native-async-storage/async-storage/lib/typescript/AsyncStorage';
 import { Alert } from 'react-native';
 
 // 유저 회원가입
@@ -41,17 +43,17 @@ export const getUserInfo = async (): Promise<GetUserInfoResponse> => {
 export const updateUserInfo = async (
   payload: UpdateUserPayload,
 ): Promise<UpdateUserResponse> => {
-    const response = await api.put('/user/info-update', payload);
-    return response.data;
+  const response = await api.put('/user/info-update', payload);
+  return response.data;
 };
 
-// 유저 통계 정보 수정
+// 유저 통계 정보 수정 - 여기수정
 export const updateUserStats = async (
   payload: UpdateUserStatsPayload,
 ): Promise<UpdateUserStatsResponse> => {
   try {
     const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
-    const response = await userApi.put('/stats/update', payload.statsInfo, {
+    const response = await api.put('/user/stats/update', payload.statsInfo, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
