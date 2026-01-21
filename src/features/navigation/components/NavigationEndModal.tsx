@@ -14,11 +14,7 @@ import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { IconClose } from '@/shared/components/icons';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { tw } from '@/shared/libs/tw-helper';
-import {
-  formatCalories,
-  formatDistanceAdaptive,
-  formatTimeWithSeconds,
-} from '@/shared/utils/formatting';
+
 import { convertToTrees } from '@/shared/utils/measure';
 import { useEffect, useState } from 'react';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
@@ -27,6 +23,11 @@ import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
 import IconShared from '@/shared/components/icons/IconShared';
 import StoryShareScreen from '@/features/navigation/components/StoryShareScreen';
 import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
+import {
+  formatTimeHMSText,
+  formatCaloriesKcalText,
+  formatDistanceAdaptiveText,
+} from '@/shared/utils/formatting';
 interface NavigationEndModalProps {
   modalRef: React.RefObject<Modal | null>;
   setShowNavigationEndModal: (show: boolean) => void;
@@ -209,7 +210,7 @@ const NavigationEndModal = ({
                       { fontSize: 16 },
                     ]}
                   >
-                    소요시간: {formatTimeWithSeconds(seconds)}
+                    소요시간: {formatTimeHMSText(seconds)}
                   </Text>
                   <Text
                     style={[
@@ -225,7 +226,7 @@ const NavigationEndModal = ({
                       { fontSize: 16 },
                     ]}
                   >
-                    소모 칼로리: {formatCalories(totalCaloriesBurned)}
+                    소모 칼로리: {formatCaloriesKcalText(totalCaloriesBurned)}
                   </Text>
                 </View>
                 <Text
@@ -234,7 +235,7 @@ const NavigationEndModal = ({
                     { fontSize: 20 },
                   ]}
                 >
-                  총 {formatDistanceAdaptive(traveledDistanceMeter ?? 0)}{' '}
+                  총 {formatDistanceAdaptiveText(traveledDistanceMeter ?? 0)}{' '}
                   이동했어요!
                 </Text>
                 <Image

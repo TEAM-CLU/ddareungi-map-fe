@@ -14,7 +14,7 @@ import {
 } from '@/features/auth/model/auth.types';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 import { api } from '@/shared/services/axios';
-import AsyncStorage from '@react-native-async-storage/async-storage/lib/typescript/AsyncStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
 // 유저 회원가입

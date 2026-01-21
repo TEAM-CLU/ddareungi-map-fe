@@ -14,13 +14,13 @@ import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
-import { getDistanceText } from '@/shared/utils/formatting';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 import StarToggle from '@/features/bookmark/components/StarToggle';
 import { BookmarkItem } from '@/shared/model/index.types';
 import { PlaceInfo } from '../model/search.types';
 import { useNearbyStationsQuery } from '@/features/station/services/station.queries';
 import { useShallow } from 'zustand/react/shallow';
+import { getDistanceGuideText } from '@/shared/utils/formatting';
 
 export interface PlaceDetailModalProps {
   place: PlaceInfo | null;
@@ -235,7 +235,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
                 'text-base font-primary-600 text-on-surface-primary mr-3',
               )}
             >
-              {getDistanceText(placeDistance)}
+              {getDistanceGuideText(placeDistance)}
             </Text>
             {place.address && (
               <Text
@@ -260,7 +260,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
           ) : nearestStation ? (
             <>
               {nearestStation.number}. {nearestStation.name}까지{' '}
-              {getDistanceText(nearestStation.distance)}
+              {getDistanceGuideText(nearestStation.distance)}
             </>
           ) : (
             '주변에 대여소가 없어요'

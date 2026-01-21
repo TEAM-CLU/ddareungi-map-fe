@@ -1,15 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import BackButton from '@/shared/components/button/BackButton';
-import { formatBirthDate } from '@/shared/utils/date';
-import { formatAddress } from '@/shared/utils/address';
 import {
   useDeleteUserMutation,
   useUpdateUserInfoMutation,
   useUserInfoQuery,
 } from '@/features/auth/services/user.queries';
-import { UpdateUserPayload } from '@/features/auth/model/auth.types';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import Input from '@/shared/components/Input/Input';
 import BirthDateInput from '@/shared/components/Input/BirthDateInput';
@@ -18,7 +15,6 @@ import AddressInput from '@/shared/components/Input/AddressInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLogoutMutation } from '@/features/auth/services/auth.queries';
 import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
-import { CommonActions } from '@react-navigation/native';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import RoundButton from '@/shared/components/button/RoundButton';
 import useProfileEdit from '@/features/mypage/hooks/useProfileEdit';

@@ -109,6 +109,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
       <PwdResetContainer
         setAccountFeatures={setAccountFeatures}
         prevScreen="login"
+        onDone={() => {}}
       />
     );
 

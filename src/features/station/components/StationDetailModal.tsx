@@ -17,8 +17,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useStationStore } from '@/features/station/stores/useStationStore';
 import { removeOverlappingPart } from '@/features/station/utils/string';
 import { tw } from '@/shared/libs/tw-helper';
-import { getDistanceText } from '@/shared/utils/formatting';
 import { PlaceInfo } from '@/features/search/model/search.types';
+import { getDistanceGuideText } from '@/shared/utils/formatting';
 
 interface StationDetailModalProps {
   onClose?: () => void;
@@ -190,7 +190,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
             { fontSize: 15 },
           ]}
         >
-          {getDistanceText(distance)}
+          {getDistanceGuideText(distance)}
         </Text>
       </View>
       <Text

@@ -132,7 +132,7 @@ export const useNavigationOrchestrator = () => {
   const isEnteredRef = useRef<boolean>(false);
   const passCountRef = useRef<number>(0);
   const lastDistanceFromMyPosToNextTurnPosRef = useRef<number | null>(null);
-  const prevMyPositionForTurnRef = useRef<Coordinate | null>(null);
+  const prevMyPositionForTurnRef = useRef<Coordinates | null>(null);
   const prevTimestampForTurnRef = useRef<number | null>(null);
   const previewInstructionText = useRef<string>('');
   const previewTtsUrl = useRef<string | null>(null);

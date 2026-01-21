@@ -20,17 +20,17 @@ import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { IconClose } from '@/shared/components/icons';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { tw } from '@/shared/libs/tw-helper';
-import {
-  formatCalories,
-  formatDistanceAdaptive,
-  formatTimeWithSeconds,
-} from '@/shared/utils/formatting';
 import { convertToTrees } from '@/shared/utils/measure';
 import { useEffect } from 'react';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
 import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
+import {
+  formatTimeHMSText,
+  formatCaloriesKcalText,
+  formatDistanceAdaptiveText,
+} from '@/shared/utils/formatting';
 
 interface NavigationFinishModalProps {
   modalRef: React.RefObject<Modal | null>;
@@ -195,7 +195,7 @@ const NavigationFinishModal = ({
                 { fontSize: 16 },
               ]}
             >
-              소요시간: {formatTimeWithSeconds(seconds)}
+              소요시간: {formatTimeHMSText(seconds)}
             </Text>
             <Text
               style={[
@@ -211,7 +211,7 @@ const NavigationFinishModal = ({
                 { fontSize: 16 },
               ]}
             >
-              소모 칼로리: {formatCalories(totalCaloriesBurned)}
+              소모 칼로리: {formatCaloriesKcalText(totalCaloriesBurned)}
             </Text>
           </View>
           <Text
@@ -220,7 +220,8 @@ const NavigationFinishModal = ({
               { fontSize: 20 },
             ]}
           >
-            총 {formatDistanceAdaptive(traveledDistanceMeter ?? 0)} 이동했어요!
+            총 {formatDistanceAdaptiveText(traveledDistanceMeter ?? 0)}{' '}
+            이동했어요!
           </Text>
           <Image
             source={require('@/assets/imgs/finishFlag.png')}

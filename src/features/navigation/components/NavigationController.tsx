@@ -3,13 +3,12 @@ import { IconHamburger, IconPause, IconPlay } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import {
-  formatTimeHHMMSS,
-  getDistanceText,
-  getTimeText,
+  getTimeGuideText,
+  formatTimeHHMMSSNumber,
+  getDistanceGuideText,
 } from '@/shared/utils/formatting';
 import { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface NavigationControllerProps {
   estimatedArrivalTime: Date | null | undefined;
@@ -100,7 +99,7 @@ const NavigationController = ({
               { fontSize: 13 },
             ]}
           >
-            예상 도착시간: {getTimeText(estimatedArrivalTime)}
+            예상 도착시간: {getTimeGuideText(estimatedArrivalTime)}
           </Text>
           <TouchableOpacity
             testID="hamburger-button"
@@ -115,7 +114,7 @@ const NavigationController = ({
             { fontSize: 24 },
           ]}
         >
-          {formatTimeHHMMSS(seconds)}
+          {formatTimeHHMMSSNumber(seconds)}
         </Text>
         <View style={[tw('w-full flex flex-col items-start'), { gap: 4 }]}>
           <Text
@@ -125,8 +124,8 @@ const NavigationController = ({
             ]}
           >
             {remainingDistance !== null && remainingDistance !== undefined
-              ? getDistanceText(remainingDistance) + ' 남음'
-              : getDistanceText(remainingDistance)}
+              ? getDistanceGuideText(remainingDistance) + ' 남음'
+              : getDistanceGuideText(remainingDistance)}
           </Text>
           <Text
             style={[
@@ -134,7 +133,7 @@ const NavigationController = ({
               { fontSize: 13 },
             ]}
           >
-            소요거리: {getDistanceText(traveledDistance)}
+            소요거리: {getDistanceGuideText(traveledDistance)}
           </Text>
         </View>
       </View>

@@ -1,15 +1,13 @@
 import RouteProgressStepBar from '@/features/routing/components/RouteProgressStepBar';
-import { CalorieBadge, StationBadge, TreeBadge, WalkTimeBadge } from '@/shared/components/badge';
+import {
+  CalorieBadge,
+  StationBadge,
+  TreeBadge,
+  WalkTimeBadge,
+} from '@/shared/components/badge';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import type { Route, RouteResponse } from '../model/routing.types';
-import {
-  calculateWalkingTime,
-  formatDistance,
-  formatTime,
-  formatTimeRange,
-  getCategoryText,
-} from '@/shared/utils/formatting';
 import {
   convertToTrees,
   measureCaloriesBurned,
@@ -17,6 +15,13 @@ import {
 } from '@/shared/utils/measure';
 import { Gender } from '@/shared/model/index.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
+import {
+  getRouteCategoryText,
+  formatTimeHMText,
+  formatDistanceAdaptiveText,
+  formatTimeRangeText,
+} from '@/shared/utils/formatting';
+import { calculateWalkingTime } from '@/features/routing/utils/calculateWalkingTime';
 
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
@@ -107,11 +112,11 @@ const RouteSelectContainer = ({
         const { routeCategory, summary, startStation, endStation, segments } =
           route;
 
-        const formattedRouteCategory = getCategoryText(routeCategory);
-        const timeText = formatTime(summary.time);
-        const distanceKm = formatDistance(summary.distance);
+        const formattedRouteCategory = getRouteCategoryText(routeCategory);
+        const timeText = formatTimeHMText(summary.time);
+        const distanceKm = formatDistanceAdaptiveText(summary.distance);
         const walkingMinutes = Math.round(calculateWalkingTime(segments) / 60);
-        const timeRange = formatTimeRange(baseTime, summary.time);
+        const timeRange = formatTimeRangeText(baseTime, summary.time);
         const firstWalkingSegment = segments.find(
           seg => seg.type === 'walking',
         );

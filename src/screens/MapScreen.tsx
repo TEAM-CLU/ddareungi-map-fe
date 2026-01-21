@@ -11,7 +11,6 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import SelectedRouteDetailBadge from '@/features/routing/components/SelectedRouteDetailBadge';
 import { useMapOrchestrator } from '@/shared/hooks/useMapOrchestrator';
 import { useSearchOrchestrator } from '@/features/search/hooks/useSearchOrchestrator';
-import { getCategoryText } from '@/shared/utils/formatting';
 import BookmarkMarkersToggleButton from '@/features/bookmark/components/BookmarkMarkersToggleButton';
 import ReturnToRouteSelectButton from '@/features/routing/components/ReturnToRouteSelectButton';
 import NavigationController from '@/features/navigation/components/NavigationController';
@@ -23,6 +22,7 @@ import NorthIndicator from '@/features/navigation/components/NorthIndicator';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { makeSegmentColors } from '@/features/navigation/utils/makeSegmentColors';
 import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
+import { getRouteCategoryText } from '@/shared/utils/formatting';
 
 const MapScreen = () => {
   const {
@@ -61,7 +61,7 @@ const MapScreen = () => {
   const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
     useSearchOrchestrator();
 
-  const formattedRouteCategory = getCategoryText(
+  const formattedRouteCategory = getRouteCategoryText(
     selectedRouteData?.routeCategory ?? '',
   );
 

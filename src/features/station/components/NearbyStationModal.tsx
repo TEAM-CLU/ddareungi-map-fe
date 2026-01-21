@@ -8,9 +8,9 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
 import { useNearbyStationsQuery } from '../services/station.queries';
-import { getDistanceText } from '@/shared/utils/formatting';
 import { DISTANCE_LAMBDA } from '../model/station.constants';
 import { useShallow } from 'zustand/react/shallow';
+import { getDistanceGuideText } from '@/shared/utils/formatting';
 
 const NearbyStationModal = () => {
   const myPosition = useMyPositionStore(state => state.myPosition);
@@ -134,7 +134,7 @@ const NearbyStationModal = () => {
               <Text
                 style={[tw('font-primary-500 text-black'), { fontSize: 15 }]}
               >
-                {getDistanceText(nearbyStationData.calculatedDistance)}
+                {getDistanceGuideText(nearbyStationData.calculatedDistance)}
               </Text>
             </View>
           </TouchableOpacity>

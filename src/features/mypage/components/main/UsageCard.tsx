@@ -1,10 +1,10 @@
 import { tw } from '@/shared/libs/tw-helper';
-import { Text, View } from 'react-native';
 import {
-  formatCalories,
-  formatDistance,
-  formatTime,
+  formatTimeHMText,
+  formatDistanceAdaptiveText,
+  formatCaloriesKcalText,
 } from '@/shared/utils/formatting';
+import { Text, View } from 'react-native';
 
 interface UsageCardProps {
   totalTime: number;
@@ -13,9 +13,9 @@ interface UsageCardProps {
 }
 
 const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
-  const time = formatTime(totalTime);
-  const distance = formatDistance(totalDistance);
-  const calorie = formatCalories(calories);
+  const timeText = formatTimeHMText(totalTime);
+  const distanceText = formatDistanceAdaptiveText(totalDistance);
+  const calorieText = formatCaloriesKcalText(calories);
 
   return (
     <View
@@ -41,7 +41,7 @@ const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
           <Text
             style={tw('text-on-surface-primary font-primary-700 text-base')}
           >
-            {time}
+            {timeText}
           </Text>
         </View>
 
@@ -54,7 +54,7 @@ const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
           <Text
             style={tw('text-on-surface-primary font-primary-700 text-base')}
           >
-            {distance}
+            {distanceText}
           </Text>
         </View>
 
@@ -67,7 +67,7 @@ const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
           <Text
             style={tw('text-on-surface-primary font-primary-700 text-base')}
           >
-            {calorie}
+            {calorieText}
           </Text>
         </View>
       </View>

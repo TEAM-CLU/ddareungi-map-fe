@@ -1,7 +1,7 @@
 import { DIRECTION_ICONS } from '@/features/navigation/model/navigation.constants';
 import { Image, ImageStyle, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { formatDistanceAdaptive } from '@/shared/utils/formatting';
+import { formatDistanceAdaptiveText } from '@/shared/utils/formatting';
 
 interface InstructionItemProps {
   sign: number;
@@ -138,7 +138,7 @@ const InstructionItem = ({
             { fontSize: 12, marginTop: 2, flexShrink: 0 },
           ]}
         >
-          {formatDistanceAdaptive(distanceMeter)}
+          {formatDistanceAdaptiveText(distanceMeter)}
         </Text>
       </View>
     </View>

@@ -16,11 +16,11 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
 import IconClose from '@/shared/components/icons/IconClose';
 import { tw } from '@/shared/libs/tw-helper';
+import { clampTagList } from '@/features/navigation/utils/clampTagList';
 import {
-  clampTags,
-  formatCalories,
-  formatDistance,
-  formatTimeHHMMSS,
+  formatDistanceAdaptiveText,
+  formatTimeHHMMSSNumber,
+  formatCaloriesKcalText,
 } from '@/shared/utils/formatting';
 
 interface StoryShareScreenProps {
@@ -64,13 +64,19 @@ const StoryShareScreen = ({
     })();
   }, []);
 
-  const clampedTags = useMemo(() => clampTags(tagList), [tagList]);
+  const clampedTags = useMemo(() => clampTagList(tagList), [tagList]);
   const distanceText = useMemo(
-    () => formatDistance(traveledDistance, 2),
+    () => formatDistanceAdaptiveText(traveledDistance),
     [traveledDistance],
   );
-  const durationText = useMemo(() => formatTimeHHMMSS(seconds), [seconds]);
-  const caloriesText = useMemo(() => formatCalories(calories), [calories]);
+  const durationText = useMemo(
+    () => formatTimeHHMMSSNumber(seconds),
+    [seconds],
+  );
+  const caloriesText = useMemo(
+    () => formatCaloriesKcalText(calories),
+    [calories],
+  );
 
   const handleClosePress = () => {
     onClose();

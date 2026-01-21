@@ -17,10 +17,10 @@ import {
 import { tw } from '@/shared/libs/tw-helper';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { calculateIntervalDistanceByMyPosition } from '@/features/navigation/utils/navigationController';
-import { formatDistanceAdaptive } from '@/shared/utils/formatting';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { playTts } from '@/features/navigation/libs/playTts';
 import { IntervalPathData } from '@/features/navigation/model/navigation.types';
+import { formatDistanceAdaptiveText } from '@/shared/utils/formatting';
 
 interface InstructionBannerProps {
   pathDataListByInterval: IntervalPathData[];
@@ -266,7 +266,7 @@ const InstructionBanner = ({
             ]}
           >
             {currentRemainingDistanceMeter !== null
-              ? formatDistanceAdaptive(currentRemainingDistanceMeter)
+              ? formatDistanceAdaptiveText(currentRemainingDistanceMeter)
               : '계산중'}
           </Text>
         </View>

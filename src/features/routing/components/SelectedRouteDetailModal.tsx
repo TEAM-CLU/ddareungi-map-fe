@@ -6,13 +6,6 @@ import { ScrollView } from 'react-native-gesture-handler';
 import RouteProgressStepVerticalBar from '@/features/routing/components/RoutePrgressStepVerticalBar';
 import RoundButton from '@/shared/components/button/RoundButton';
 import { Route, RouteType, Waypoint } from '../model/routing.types';
-import {
-  formatDistance,
-  formatMinutes,
-  formatTime,
-  formatTimeRange,
-  getCategoryText,
-} from '@/shared/utils/formatting';
 import React, { useEffect } from 'react';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
@@ -24,6 +17,13 @@ import { useNavigationStore } from '@/features/navigation/stores/useNavigationSt
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
+import {
+  formatTimeHMText,
+  formatDistanceAdaptiveText,
+  formatTimeRangeText,
+  getRouteCategoryText,
+  formatTimeMinutesNumber,
+} from '@/shared/utils/formatting';
 
 interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
@@ -94,10 +94,10 @@ const SelectedRouteDetailModal = ({
     coordinates,
   } = selectedRouteData;
 
-  const time = formatTime(summary.time);
-  const distance = formatDistance(summary.distance);
-  const timeRange = formatTimeRange(baseTime, summary.time);
-  const formattedRouteCategory = getCategoryText(routeCategory);
+  const time = formatTimeHMText(summary.time);
+  const distance = formatDistanceAdaptiveText(summary.distance);
+  const timeRange = formatTimeRangeText(baseTime, summary.time);
+  const formattedRouteCategory = getRouteCategoryText(routeCategory);
 
   const firstWalkingSegment = segments.find(seg => seg.type === 'walking');
   const lastWalkingSegment = segments
@@ -257,11 +257,13 @@ const SelectedRouteDetailModal = ({
                 ]}
               >
                 {'대여소까지 도보로 '}
-                {formatDistance(firstWalkingSegment.summary.distance)}
+                {formatDistanceAdaptiveText(
+                  firstWalkingSegment.summary.distance,
+                )}
                 <Text
                   style={[tw('font-primary-500 text-black'), { fontSize: 15 }]}
                 >
-                  {formatMinutes(firstWalkingSegment.summary.time)}분
+                  {formatTimeMinutesNumber(firstWalkingSegment.summary.time)}분
                 </Text>
               </Text>
             )}
@@ -301,7 +303,7 @@ const SelectedRouteDetailModal = ({
                   ]}
                 >
                   {'자전거로 '}
-                  {formatDistance(totalBikingDistance)}
+                  {formatDistanceAdaptiveText(totalBikingDistance)}
                   <Text
                     style={[
                       tw('font-primary-500 text-black'),
@@ -309,7 +311,7 @@ const SelectedRouteDetailModal = ({
                     ]}
                   >
                     {' '}
-                    {formatMinutes(totalBikingTime)}분
+                    {formatTimeMinutesNumber(totalBikingTime)}분
                   </Text>
                 </Text>
                 {/* 경유지가 있을 경우에만 표시 */}
@@ -356,14 +358,16 @@ const SelectedRouteDetailModal = ({
                   ]}
                 >
                   {'목적지까지 도보로 '}
-                  {formatDistance(lastWalkingSegment.summary.distance)}
+                  {formatDistanceAdaptiveText(
+                    lastWalkingSegment.summary.distance,
+                  )}
                   <Text
                     style={[
                       tw('font-primary-500 text-black'),
                       { fontSize: 15 },
                     ]}
                   >
-                    {formatMinutes(lastWalkingSegment.summary.time)}분
+                    {formatTimeMinutesNumber(lastWalkingSegment.summary.time)}분
                   </Text>
                 </Text>
               )}
