@@ -65,8 +65,8 @@ const SearchOverlay = ({
 
   const showSearchOverlay = useSearchStore(state => state.showSearchOverlay);
 
-  const myPosition = useMyPositionStore(state => state.myPosition);
-
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const myPosition = locationMetaData?.coordinate;
   const { handlePlaceSelectionFlow } = useSearchOrchestrator();
 
   // ----------------------------------------------------

@@ -10,8 +10,8 @@ export const useAutocomplete = () => {
   // 2. 디바운스된 검색어 (API 요청용 - 0.3초 뒤 반응)
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
-  const myPosition = useMyPositionStore(state => state.myPosition);
-
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const myPosition = locationMetaData?.coordinate;
   // ----------------------------------------------------
   // [디바운싱 로직]
   // 사용자가 타자를 칠 때는 query만 바뀌고,

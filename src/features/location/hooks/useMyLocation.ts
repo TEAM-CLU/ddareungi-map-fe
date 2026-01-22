@@ -13,11 +13,8 @@ import { useShallow } from 'zustand/react/shallow';
 export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
   const { updateMyLocation, rotateMyHeading } = useLocationMessenger();
   const webViewRef = useWebViewRef();
-  const { setMyPosition, setLocationMetaData } = useMyPositionStore(
-    useShallow(state => ({
-      setMyPosition: state.setMyPosition,
-      setLocationMetaData: state.setLocationMetaData,
-    })),
+  const setLocationMetaData = useMyPositionStore(
+    state => state.setLocationMetaData,
   );
   const watchIdRef = useRef<number | null>(null);
   const lastPos = useRef<Coordinates | null>(null);
@@ -76,10 +73,6 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
     // 지도 준비 직후 1회 전송 (정확도 필터 우회)
     Geolocation.getCurrentPosition(
       pos => {
-        setMyPosition({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        });
         setLocationMetaData({
           timestamp: pos.timestamp ?? Date.now(),
           accuracy: pos.coords.accuracy,
@@ -98,10 +91,6 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
     // 실시간 추적
     const watchId = Geolocation.watchPosition(
       pos => {
-        setMyPosition({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        });
         setLocationMetaData({
           timestamp: pos.timestamp ?? Date.now(),
           accuracy: pos.coords.accuracy,

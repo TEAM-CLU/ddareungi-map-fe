@@ -79,7 +79,8 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
   const { data: nearbyStationDataList, isLoading: isStationLoading } =
     useNearbyStationsQuery(place.latitude, place.longitude);
   const globalNavigation = useMapStore(state => state.globalNavigation);
-  const myPosition = useMyPositionStore(state => state.myPosition);
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const myPosition = locationMetaData?.coordinate;
   const toggleBookmark = useBookmarkStore(state => state.toggleBookmark);
   const bookmarked = useBookmarkStore(state =>
     place.placeId

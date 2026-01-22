@@ -13,7 +13,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { getDistanceGuideText } from '@/shared/utils/formatting';
 
 const NearbyStationModal = () => {
-  const myPosition = useMyPositionStore(state => state.myPosition);
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const myPosition = locationMetaData?.coordinate;
 
   const { data: nearbyStationDataList, isLoading } = useNearbyStationsQuery(
     myPosition?.lat,

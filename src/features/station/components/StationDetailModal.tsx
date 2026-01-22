@@ -43,7 +43,8 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
   );
   const globalNavigation = useMapStore(state => state.globalNavigation);
   const stationMetaData = useStationStore(state => state.stationMetaData);
-  const myPosition = useMyPositionStore(state => state.myPosition);
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const myPosition = locationMetaData?.coordinate;
 
   // RouteType 토글 함수
   const toggleRouteType = () => {

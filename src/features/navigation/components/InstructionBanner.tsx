@@ -53,7 +53,8 @@ const InstructionBanner = ({
     return null;
   }
 
-  const myPosition = useMyPositionStore(state => state.myPosition);
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const myPosition = locationMetaData?.coordinate;
   const systemVolume = useVolumeStore(state => state.systemVolume);
 
   const { PREVIEW_THRESHOLD_METER, PREVIEW_ENTER_COUNT_MIN } = PREVIEW_CONIFG;
