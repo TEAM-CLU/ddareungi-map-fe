@@ -34,7 +34,7 @@ const PwdResetContainer = ({
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={tw('w-full flex-1')}>
+      <SafeAreaView style={tw('w-full flex-1 relative')}>
         <TouchableOpacity
           onPress={handleClosePress}
           style={tw('absolute top-20 right-4')}

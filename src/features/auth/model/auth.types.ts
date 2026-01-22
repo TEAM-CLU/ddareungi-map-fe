@@ -96,5 +96,3 @@ export interface ResetPasswordResponse {
 export interface LogoutResponse {
   message: string;
 }
-
-export type AccountFeatureType = 'findAccount' | 'resetPwd' | null;

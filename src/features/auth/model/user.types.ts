@@ -1,5 +1,3 @@
-import { Permission, PermissionStatus } from 'react-native-permissions';
-
 // 유저 회원가입
 export interface CreateUserPayload {
   socialUid: string | null; // null: 일반회원가입
@@ -104,13 +102,4 @@ export interface UpdateUserStatsResponse {
   statusCode: number;
   message: string;
   data: StatsInfo;
-}
-// 권한 타입
-export interface PermissionItem {
-  name: string;
-  permission: Permission | 'NOTIFICATIONS';
-  required: boolean;
-  status: PermissionStatus;
-  icon: React.ReactNode;
-  description: string;
 }

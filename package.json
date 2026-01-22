@@ -19,7 +19,8 @@
     "test": "jest",
     "tw:gen": "sh -c 'f=$(mktemp); npx tailwindcss -c tailwind.config.js -i ./tailwind.css -o \"$f\" && npx tailwind-rn --input \"$f\" --output ./styles.json; rm -f \"$f\"'",
     "tw:watch": "sh -c 'f=$(mktemp); trap \"rm -f \\\"$f\\\"\" EXIT; npx tailwindcss -c tailwind.config.js -i ./tailwind.css -o \"$f\" --watch | while read -r _; do npx tailwind-rn --input \"$f\" --output ./styles.json; done'",
-    "link:ast": "npx react-native-asset"
+    "link:ast": "npx react-native-asset",
+    "check:types": "tsc --noEmit"
   },
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.2.6",

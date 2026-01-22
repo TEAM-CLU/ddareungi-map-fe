@@ -36,6 +36,11 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     }
   }, [id, pwd]);
 
+  useEffect(() => {
+    setIsIdValid(true);
+    setIsPwdValid(true);
+  }, [id, pwd]);
+
   const handleClosePress = () => setLoginScreenStep(1);
 
   const handleLoginPress = async () => {
@@ -97,11 +102,6 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     });
   };
 
-  useEffect(() => {
-    setIsIdValid(true);
-    setIsPwdValid(true);
-  }, [id, pwd]);
-
   if (accountFeatures === 'findAccount')
     return <AccountFinder setAccountFeatures={setAccountFeatures} />;
   if (accountFeatures === 'resetPwd')
@@ -114,10 +114,10 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     );
 
   return (
-    <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20')}>
+    <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20 relative')}>
       <TouchableOpacity
         onPress={handleClosePress}
-        style={tw('fixed top-5 left-4')}
+        style={tw('absolute top-20 right-4')}
       >
         <IconClose />
       </TouchableOpacity>

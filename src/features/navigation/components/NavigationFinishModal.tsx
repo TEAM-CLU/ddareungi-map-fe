@@ -1,9 +1,4 @@
 import {
-  UpdateUserPayload,
-  UpdateUserStatsPayload,
-} from '@/features/auth/model/auth.types';
-import {
-  useUpdateUserInfoMutation,
   useUpdateUserStatsMutation,
   useUserInfoQuery,
 } from '@/features/auth/services/user.queries';
@@ -11,10 +6,8 @@ import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigatio
 import { clearSharedTimer } from '@/features/navigation/hooks/useTimer';
 import { TTS_URL_PRESET } from '@/features/navigation/model/navigation.constants';
 import { useTerminateNavigationSessionMutation } from '@/features/navigation/services/navigation.queries';
-import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { playTts } from '@/features/navigation/libs/playTts';
-import { useRouteSelect } from '@/features/routing/hooks/useRouteSelect';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { IconClose } from '@/shared/components/icons';
@@ -31,6 +24,7 @@ import {
   formatCaloriesKcalText,
   formatDistanceAdaptiveText,
 } from '@/shared/utils/formatting';
+import { UpdateUserStatsPayload } from '@/features/auth/model/user.types';
 
 interface NavigationFinishModalProps {
   modalRef: React.RefObject<Modal | null>;

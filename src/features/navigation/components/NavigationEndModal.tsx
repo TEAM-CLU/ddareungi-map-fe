@@ -1,4 +1,3 @@
-import { UpdateUserStatsPayload } from '@/features/auth/model/auth.types';
 import {
   useUpdateUserStatsMutation,
   useUserInfoQuery,
@@ -28,6 +27,7 @@ import {
   formatCaloriesKcalText,
   formatDistanceAdaptiveText,
 } from '@/shared/utils/formatting';
+import { UpdateUserStatsPayload } from '@/features/auth/model/user.types';
 interface NavigationEndModalProps {
   modalRef: React.RefObject<Modal | null>;
   setShowNavigationEndModal: (show: boolean) => void;
@@ -110,6 +110,7 @@ const NavigationEndModal = ({
       resetRouteData();
       resetSearchData();
       replaceMyLocationMarker(false);
+      clearTtsQueue();
     } catch (error) {
       console.error('Failed to update user stats:', error);
     } finally {

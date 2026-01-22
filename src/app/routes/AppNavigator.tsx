@@ -8,10 +8,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from '@/screens/LoginScreen';
 import MapScreen from '@/screens/MapScreen';
 import OnboardingScreen from '@/screens/OnboardingScreen';
-import RegisterScreen from '@/screens/SignUpScreen';
 import RouteRecommendScreen from '@/screens/RouteRecommendScreen';
 import RouteSelectScreen from '@/screens/RouteSelectScreen';
-import MypageScreen from '@/screens/MyPageScreen';
+import MypageScreen from '@/screens/MypageScreen';
 import SignUpScreen from '@/screens/SignUpScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

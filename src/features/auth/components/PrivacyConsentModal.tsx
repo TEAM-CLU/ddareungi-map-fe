@@ -62,10 +62,10 @@ const PrivacyConsentModal = ({
         ]}
       >
         <View style={tw('flex flex-row w-full justify-between items-center')}>
+          <View />
           <TouchableOpacity onPress={handleCancelPress}>
             <IconClose />
           </TouchableOpacity>
-          <View></View>
         </View>
         <Text
           style={[
@@ -103,7 +103,7 @@ const PrivacyConsentModal = ({
               { fontSize: 14 },
             ]}
           >
-            본 서비스는 회원가입 및 맞춤형 경로 추천 제공을 위해 아래 정보를
+            본 서비스는 회원가입 및 맞춤형 기능 제공을 위해 아래 정보를
             수집·이용합니다.
           </Text>
           <Text
@@ -120,7 +120,7 @@ const PrivacyConsentModal = ({
               { fontSize: 14 },
             ]}
           >
-            이용 목적: 회원관리 및 식별, 맞춤형 경로 추천 제공
+            이용 목적: 회원관리 및 식별, 맞춤형 기능 제공
           </Text>
           <Text
             style={[

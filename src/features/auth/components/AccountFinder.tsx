@@ -58,10 +58,10 @@ const AccountFinder = ({ setAccountFeatures }: AccountFinderProps) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={tw('w-full flex-1')}>
+      <SafeAreaView style={tw('w-full flex-1 relative')}>
         <TouchableOpacity
           onPress={handleClosePress}
-          style={tw('fixed top-5 left-4')}
+          style={tw('absolute top-20 right-4')}
         >
           <IconClose />
         </TouchableOpacity>
