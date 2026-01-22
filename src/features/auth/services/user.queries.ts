@@ -1,9 +1,9 @@
 import { useAuth } from '@/app/providers';
 import {
   GetUserInfoResponse,
-  UpdateUserPayload,
   UpdateUserResponse,
-} from '@/features/auth/model/auth.types';
+  UpdateUserPayload,
+} from '@/features/auth/model/user.types';
 import {
   deleteUser,
   getUserInfo,

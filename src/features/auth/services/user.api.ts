@@ -1,17 +1,17 @@
 import {
-  CheckEmailPayload,
-  CheckEmailResponse,
   CreateUserPayload,
   CreateUserResponse,
-  DeleteUserResponse,
-  GetUserInfoResponse,
   LoginUserPayload,
   LoginUserResponse,
+  GetUserInfoResponse,
   UpdateUserPayload,
   UpdateUserResponse,
   UpdateUserStatsPayload,
   UpdateUserStatsResponse,
-} from '@/features/auth/model/auth.types';
+  DeleteUserResponse,
+  CheckEmailPayload,
+  CheckEmailResponse,
+} from '@/features/auth/model/user.types';
 import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
 import { api } from '@/shared/services/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -51,21 +51,13 @@ export const updateUserInfo = async (
 export const updateUserStats = async (
   payload: UpdateUserStatsPayload,
 ): Promise<UpdateUserStatsResponse> => {
-  try {
-    const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
-    const response = await api.put('/user/stats/update', payload.statsInfo, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error: any) {
-    Alert.alert(
-      '유저 통계 정보 수정 실패',
-      error.response?.data?.message || error.message || '알 수 없는 오류',
-    );
-    throw error;
-  }
+  const token = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+  const response = await api.put('/user/stats/update', payload.statsInfo, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
 };
 
 // 유저 삭제

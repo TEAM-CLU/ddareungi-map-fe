@@ -39,7 +39,32 @@ const SignUpPwdStep = ({
 
   const [canGoNextStep, setCanGoNextStep] = useState<boolean>(false); // 다음 단계로 넘어갈 수 있는지 여부
 
-  const handleValidatePwdButtonPress = () => {
+  // 확인 비밀번호 노출 트리거
+  useEffect(() => {
+    if (pwd !== '') setShowConfirmPwdInput(true);
+  }, [pwd]);
+
+  useEffect(() => {
+    const canProceed =
+      isValidPwd &&
+      isValidConfirmPwd &&
+      showConfirmPwdInput &&
+      !!pwd &&
+      !!confirmPwd &&
+      pwd === confirmPwd &&
+      canGoNextStep;
+
+    setIsNextStepAvailable(canProceed);
+  }, [
+    isValidPwd,
+    isValidConfirmPwd,
+    showConfirmPwdInput,
+    pwd,
+    confirmPwd,
+    canGoNextStep,
+  ]);
+
+  const handleValidatePwdPress = () => {
     // 비밀번호 입력 검사
     if (pwd === '') {
       setConfirmPwdErrorDescription('');
@@ -100,31 +125,6 @@ const SignUpPwdStep = ({
       }
     }
   };
-
-  // 확인 비밀번호 노출 트리거
-  useEffect(() => {
-    if (pwd !== '') setShowConfirmPwdInput(true);
-  }, [pwd]);
-
-  useEffect(() => {
-    const canProceed =
-      isValidPwd &&
-      isValidConfirmPwd &&
-      showConfirmPwdInput &&
-      !!pwd &&
-      !!confirmPwd &&
-      pwd === confirmPwd &&
-      canGoNextStep;
-
-    setIsNextStepAvailable(canProceed);
-  }, [
-    isValidPwd,
-    isValidConfirmPwd,
-    showConfirmPwdInput,
-    pwd,
-    confirmPwd,
-    canGoNextStep,
-  ]);
 
   return (
     <View
@@ -207,7 +207,7 @@ const SignUpPwdStep = ({
               </Text>
               <RoundButton
                 title="확인하기"
-                onPress={handleValidatePwdButtonPress}
+                onPress={handleValidatePwdPress}
                 preset="sm"
               />
             </View>

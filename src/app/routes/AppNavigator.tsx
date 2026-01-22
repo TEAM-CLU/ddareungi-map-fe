@@ -8,10 +8,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from '@/screens/LoginScreen';
 import MapScreen from '@/screens/MapScreen';
 import OnboardingScreen from '@/screens/OnboardingScreen';
-import RegisterScreen from '@/screens/RegisterScreen';
+import RegisterScreen from '@/screens/SignUpScreen';
 import RouteRecommendScreen from '@/screens/RouteRecommendScreen';
 import RouteSelectScreen from '@/screens/RouteSelectScreen';
 import MypageScreen from '@/screens/MyPageScreen';
+import SignUpScreen from '@/screens/SignUpScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -50,7 +51,7 @@ const AppNavigator = ({ initialRouteName }: AppNavigatorProps) => {
           />
           <Stack.Screen name="Mypage" component={MypageScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="SignUp" component={SignUpScreen} />
         </Stack.Navigator>
 
         <GlobalModals />

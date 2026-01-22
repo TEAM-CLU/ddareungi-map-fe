@@ -43,7 +43,7 @@ const PwdResetVerifyEmailStep = ({
   const [canGoNextStep, setCanGoNextStep] = useState(false);
 
   // 이메일 양식 확인 후 바로 코드 전송
-  const handleSendCodeButtonPress = () => {
+  const handleSendCodePress = () => {
     // 이메일 입력 확인
     if (email.trim() === '') {
       setEmailSuccessDescription('');
@@ -80,7 +80,7 @@ const PwdResetVerifyEmailStep = ({
     });
   };
 
-  const handleVerifyCodeButtonPress = () => {
+  const handleVerifyCodePress = () => {
     // 이메일 입력 재확인
     if (email.trim() === '') {
       setEmailSuccessDescription('');
@@ -219,7 +219,7 @@ const PwdResetVerifyEmailStep = ({
             </Text>
             <RoundButton
               title={showCodeInput ? '재전송' : '코드전송'}
-              onPress={handleSendCodeButtonPress}
+              onPress={handleSendCodePress}
               preset="sm"
             />
           </View>
@@ -249,7 +249,7 @@ const PwdResetVerifyEmailStep = ({
               </Text>
               <RoundButton
                 title="코드확인"
-                onPress={handleVerifyCodeButtonPress}
+                onPress={handleVerifyCodePress}
                 preset="sm"
               />
             </View>

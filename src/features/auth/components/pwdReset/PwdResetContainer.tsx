@@ -1,5 +1,6 @@
 import PwdResetSetPasswordStep from '@/features/auth/components/pwdReset/PwdResetSetPasswordStep';
 import PwdResetVerifyEmailStep from '@/features/auth/components/pwdReset/PwdResetVerifyEmailStep';
+import { AccountFeatureType } from '@/features/auth/model/common.types';
 import IconClose from '@/shared/components/icons/IconClose';
 import { tw } from '@/shared/libs/tw-helper';
 import { PrevScreenForFeatureBranch } from '@/shared/model/index.types';
@@ -13,9 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface PwdResetContainerProps {
-  setAccountFeatures: React.Dispatch<
-    React.SetStateAction<'findAccount' | 'resetPwd' | null>
-  >;
+  setAccountFeatures: React.Dispatch<React.SetStateAction<AccountFeatureType>>;
   prevScreen: PrevScreenForFeatureBranch;
   onDone: () => void;
 }
@@ -28,7 +27,7 @@ const PwdResetContainer = ({
   const [resetPwdStep, setResetPwdStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState<string>('');
 
-  const handleCloseBtnPress = () => {
+  const handleClosePress = () => {
     if (prevScreen === 'login') setAccountFeatures(null);
     if (prevScreen === 'mypage') onDone();
   };
@@ -37,7 +36,7 @@ const PwdResetContainer = ({
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={tw('w-full flex-1')}>
         <TouchableOpacity
-          onPress={handleCloseBtnPress}
+          onPress={handleClosePress}
           style={tw('absolute top-20 right-4')}
         >
           <IconClose />

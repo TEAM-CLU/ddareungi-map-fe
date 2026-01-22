@@ -12,6 +12,7 @@ import AccountFinder from '@/features/auth/components/AccountFinder';
 import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
 import { CommonActions } from '@react-navigation/native';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { AccountFeatureType } from '@/features/auth/model/common.types';
 
 interface AuthGatewayProps {
   setLoginScreenStep: React.Dispatch<React.SetStateAction<1 | 2>>;
@@ -26,9 +27,8 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   const [isIdValid, setIsIdValid] = useState<boolean>(true);
   const [isPwdValid, setIsPwdValid] = useState<boolean>(true);
   const [isAvailable, setIsAvailable] = useState<boolean>(false);
-  const [accountFeatures, setAccountFeatures] = useState<
-    'findAccount' | 'resetPwd' | null
-  >(null);
+  const [accountFeatures, setAccountFeatures] =
+    useState<AccountFeatureType>(null);
 
   useEffect(() => {
     if (!!id && !!pwd) {
@@ -36,9 +36,9 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     }
   }, [id, pwd]);
 
-  const handleCloseButtonPress = () => setLoginScreenStep(1);
+  const handleClosePress = () => setLoginScreenStep(1);
 
-  const handleLoginButtonPress = async () => {
+  const handleLoginPress = async () => {
     // 아이디 입력 검사
     if (id.trim() === '') {
       Alert.alert('아이디를 입력해주세요.');
@@ -116,7 +116,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   return (
     <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20')}>
       <TouchableOpacity
-        onPress={handleCloseButtonPress}
+        onPress={handleClosePress}
         style={tw('fixed top-5 left-4')}
       >
         <IconClose />
@@ -162,7 +162,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
           {/* loginButton */}
           <SquareButton
             title="로그인"
-            onPress={handleLoginButtonPress}
+            onPress={handleLoginPress}
             disabled={!isAvailable}
           />
           {/* relatedwithAuthFeatures */}

@@ -10,9 +10,10 @@ interface AccountLinksProps {
 
 const AccountLinks = ({ setAccountFeatures }: AccountLinksProps) => {
   const { navigation } = useAppNavigation();
-  const handleSignUpbuttonPress = () => navigation.navigate('Register');
-  const handleFindAccountButtonPress = () => setAccountFeatures('findAccount');
-  const handleFindPwdButtonPress = () => setAccountFeatures('resetPwd');
+
+  const handleSignUpPress = () => navigation.navigate('SignUp');
+  const handleFindAccountPress = () => setAccountFeatures('findAccount');
+  const handleFindPwdPress = () => setAccountFeatures('resetPwd');
 
   return (
     <View
@@ -22,7 +23,7 @@ const AccountLinks = ({ setAccountFeatures }: AccountLinksProps) => {
       ]}
     >
       <TouchableOpacity
-        onPress={handleSignUpbuttonPress}
+        onPress={handleSignUpPress}
         style={tw('flex justify-center items-center')}
       >
         <Text
@@ -43,7 +44,7 @@ const AccountLinks = ({ setAccountFeatures }: AccountLinksProps) => {
         ㅣ
       </Text>
       <TouchableOpacity
-        onPress={handleFindPwdButtonPress}
+        onPress={handleFindPwdPress}
         style={tw('flex justify-center items-center')}
       >
         <Text
@@ -64,7 +65,7 @@ const AccountLinks = ({ setAccountFeatures }: AccountLinksProps) => {
         ㅣ
       </Text>
       <TouchableOpacity
-        onPress={handleFindAccountButtonPress}
+        onPress={handleFindAccountPress}
         style={tw('flex justify-center items-center')}
       >
         <Text

@@ -10,8 +10,9 @@ interface AuthChoiceProps {
 
 const AuthChoice = ({ setLoginScreenStep }: AuthChoiceProps) => {
   const { navigation } = useAppNavigation();
-  const handleLoginButtonPress = () => setLoginScreenStep(2);
-  const handleNonMemberButtonPress = () => navigation.navigate('Map');
+
+  const handleLoginPress = () => setLoginScreenStep(2);
+  const handleStartAsNonMemberPress = () => navigation.navigate('Map');
 
   return (
     <View style={tw('w-full h-full')}>
@@ -46,11 +47,11 @@ const AuthChoice = ({ setLoginScreenStep }: AuthChoiceProps) => {
         >
           <RoundButton
             title="로그인으로 시작하기"
-            onPress={handleLoginButtonPress}
+            onPress={handleLoginPress}
             preset="lg"
           />
           <View style={[tw('border-b border-white'), { width: 81 }]}>
-            <TouchableOpacity onPress={handleNonMemberButtonPress}>
+            <TouchableOpacity onPress={handleStartAsNonMemberPress}>
               <Text
                 style={[
                   tw(

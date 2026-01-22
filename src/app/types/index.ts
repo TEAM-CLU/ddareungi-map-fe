@@ -9,7 +9,7 @@ export type RootStackParamList = {
         state?: string;
       }
     | undefined;
-  Register: undefined;
+  SignUp: undefined;
   Map:
     | {
         openSearchOverlay?: boolean; // 검색창 자동 열기 여부

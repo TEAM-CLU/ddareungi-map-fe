@@ -16,8 +16,8 @@ import {
   checkNotifications,
   requestNotifications,
 } from 'react-native-permissions';
-import { PermissionItem } from '@/features/auth/model/auth.types';
 import SquareButton from '@/shared/components/button/SquareButton';
+import { PermissionItem } from '@/features/auth/model/common.types';
 
 interface SignUpPermissionStepProps {
   setIsReadyToSignUp: React.Dispatch<React.SetStateAction<boolean>>;
@@ -52,10 +52,10 @@ const SignUpPermissionStep = ({
 
   const [hasRequestedPermissions, setHasRequestedPermissions] = useState(false);
 
-  // 초기 권한 상태 확인
-  useEffect(() => {
-    checkAllPermissions();
-  }, []);
+  const canProceed = () => {
+    const requiredPermissions = permissions.filter(p => p.required);
+    return requiredPermissions.every(p => p.status === RESULTS.GRANTED);
+  };
 
   const checkAllPermissions = async () => {
     try {
@@ -169,10 +169,10 @@ const SignUpPermissionStep = ({
     }
   };
 
-  const canProceed = () => {
-    const requiredPermissions = permissions.filter(p => p.required);
-    return requiredPermissions.every(p => p.status === RESULTS.GRANTED);
-  };
+  // 초기 권한 상태 확인
+  useEffect(() => {
+    checkAllPermissions();
+  }, []);
 
   const handleCompleteSignUp = () => {
     if (!canProceed()) {
@@ -185,6 +185,22 @@ const SignUpPermissionStep = ({
     }
     setIsReadyToSignUp(true);
   };
+
+  // 설정에서 돌아오면 권한 상태 리프레시
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        checkAllPermissions(); // ← 여기서 권한 상태 리프레시!
+      }
+      appState.current = nextAppState;
+    };
+
+    const sub = AppState.addEventListener('change', handleAppStateChange);
+    return () => sub.remove();
+  }, []);
 
   const getStatusColor = (permission: PermissionItem) => {
     if (permission.status === RESULTS.GRANTED) {
@@ -228,22 +244,6 @@ const SignUpPermissionStep = ({
   };
 
   const bottomButtonProps = getBottomButtonProps();
-
-  // 설정에서 돌아오면 권한 상태 리프레시
-  useEffect(() => {
-    const handleAppStateChange = (nextAppState: AppStateStatus) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        checkAllPermissions(); // ← 여기서 권한 상태 리프레시!
-      }
-      appState.current = nextAppState;
-    };
-
-    const sub = AppState.addEventListener('change', handleAppStateChange);
-    return () => sub.remove();
-  }, []);
 
   return (
     <View

@@ -9,11 +9,9 @@ import {
   useSendVerificationEmailMutation,
   useVerifyEmailMutation,
 } from '@/features/auth/services/auth.queries';
-import {
-  CheckEmailPayload,
-  VerifyEmailPayload,
-} from '@/features/auth/model/auth.types';
+import { VerifyEmailPayload } from '@/features/auth/model/auth.types';
 import { useCheckEmailMutation } from '@/features/auth/services/user.queries';
+import { CheckEmailPayload } from '@/features/auth/model/user.types';
 
 interface SignUpEmailStepProps {
   email: string;
@@ -48,7 +46,7 @@ const SignUpEmailStep = ({
   const [canGoNextStep, setCanGoNextStep] = useState(false); // 다음 단계로 넘어갈 수 있는지 여부
 
   // 이메일 중복 확인
-  const handleCheckEmailRedundancyButtonPress = () => {
+  const handleCheckEmailRedundancyPress = () => {
     //이메일 입력 확인
     if (email.trim() === '') {
       setEmailSuccessDescription('');
@@ -99,7 +97,7 @@ const SignUpEmailStep = ({
     });
   };
 
-  const handleVerifyCodeButtonPress = () => {
+  const handleVerifyCodePress = () => {
     // 이메일 입력 재확인
     if (email.trim() === '') {
       setEmailSuccessDescription('');
@@ -235,7 +233,7 @@ const SignUpEmailStep = ({
             </Text>
             <RoundButton
               title={showCodeInput ? '재전송' : '중복확인'}
-              onPress={handleCheckEmailRedundancyButtonPress}
+              onPress={handleCheckEmailRedundancyPress}
               preset="sm"
             />
           </View>
@@ -266,7 +264,7 @@ const SignUpEmailStep = ({
               </Text>
               <RoundButton
                 title="코드확인"
-                onPress={handleVerifyCodeButtonPress}
+                onPress={handleVerifyCodePress}
                 preset="sm"
               />
             </View>

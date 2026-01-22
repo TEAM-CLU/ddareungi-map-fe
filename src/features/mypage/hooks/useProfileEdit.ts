@@ -1,10 +1,10 @@
+import { LogoutResponse } from '@/features/auth/model/auth.types';
 import {
-  DeleteUserResponse,
   GetUserInfoResponse,
-  LogoutResponse,
-  UpdateUserPayload,
   UpdateUserResponse,
-} from '@/features/auth/model/auth.types';
+  UpdateUserPayload,
+  DeleteUserResponse,
+} from '@/features/auth/model/user.types';
 import { formatAddress } from '@/shared/utils/address';
 import { formatBirthDate } from '@/shared/utils/date';
 import { CommonActions } from '@react-navigation/native';

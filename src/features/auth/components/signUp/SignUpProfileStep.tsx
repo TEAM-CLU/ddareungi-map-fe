@@ -1,7 +1,6 @@
 import Input from '@/shared/components/Input/Input';
 import { useMemo, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
-
 import { Text, View } from 'react-native';
 import SquareButton from '@/shared/components/button/SquareButton';
 import BirthDateInput from '@/shared/components/Input/BirthDateInput';
@@ -65,7 +64,7 @@ const SignUpProfileStep = ({
   const isFormReady =
     isValidName && isValidGender && isValidBirthDate && isValidAddress;
 
-  const handleNextStepButtonPress = () => {
+  const handleJumpToNextStepPress = () => {
     if (!isFormReady) return;
     setBirthDate(formattedBirthDate);
     setAddress(isConsentOptionalAgreed ? formattedAddress : null);
@@ -193,7 +192,7 @@ const SignUpProfileStep = ({
 
       <SquareButton
         title="다음"
-        onPress={handleNextStepButtonPress}
+        onPress={handleJumpToNextStepPress}
         disabled={!isFormReady}
       />
     </View>

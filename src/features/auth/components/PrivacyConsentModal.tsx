@@ -28,7 +28,7 @@ const PrivacyConsentModal = ({
 }: PrivacyConsentModalProps) => {
   const [canProceed, setCanProceed] = useState(false);
 
-  const handleAgreeBtnPress = () => {
+  const handleAgreePress = () => {
     if (!isConsentRequiredAgreed) {
       Alert.alert('필수항목에 동의하셔야 회원가입이 가능합니다.');
       return;
@@ -37,7 +37,7 @@ const PrivacyConsentModal = ({
     setConsentedAt(new Date().toISOString());
   };
 
-  const handleCancleBtnPress = () => {
+  const handleCancelPress = () => {
     onCancel();
   };
 
@@ -62,7 +62,7 @@ const PrivacyConsentModal = ({
         ]}
       >
         <View style={tw('flex flex-row w-full justify-between items-center')}>
-          <TouchableOpacity onPress={handleCancleBtnPress}>
+          <TouchableOpacity onPress={handleCancelPress}>
             <IconClose />
           </TouchableOpacity>
           <View></View>
@@ -227,7 +227,7 @@ const PrivacyConsentModal = ({
         </View>
         <RoundButton
           title={'확인'}
-          onPress={handleAgreeBtnPress}
+          onPress={handleAgreePress}
           disabled={!canProceed}
           preset={'lg'}
         />

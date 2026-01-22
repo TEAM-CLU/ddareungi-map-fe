@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Alert, Keyboard, Text, View } from 'react-native';
+import React from 'react';
+import { Keyboard, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StepIndicator from '@/shared/components/StepIndicator';
@@ -9,95 +9,51 @@ import SignUpProfileStep from '@/features/auth/components/signUp/SignUpProfileSt
 import { TouchableWithoutFeedback } from 'react-native';
 import SignUpPermissionStep from '@/features/auth/components/signUp/SignUpPermissionStep';
 import { useCreateUserMutation } from '@/features/auth/services/user.queries';
-import { CreateUserPayload } from '@/features/auth/model/auth.types';
 import RoundButton from '@/shared/components/button/RoundButton';
 import IconBicycle from '@/shared/components/icons/IconBicycle';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
-import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { useSignUp } from '@/features/auth/hooks/useSignUp';
 
-const RegisterScreen = () => {
+const SignUpScreen = () => {
   const { mutate: signUp, isPending } = useCreateUserMutation();
-
-  const [signUpStep, setSignUpStep] = useState<1 | 2 | 3 | 4>(1);
-
-  const [isConsentOptionalAgreed, setIsConsentOptionalAgreed] = useState(false);
-  const [isConsentRequiredAgreed, setIsConsentRequiredAgreed] = useState(false);
-  // 동의한 시각
-  const [consentedAt, setConsentedAt] = useState<string | null>(null);
-  const [isPrivacyConsentModalOpen, setIsPrivacyConsentModalOpen] =
-    useState(true); // 개인정보 동의서 모달
+  const { navigation } = useAppNavigation();
 
   useBlockBackNavigation(true);
 
-  const [email, setEmail] = useState<string>('');
-  const [pwd, setPwd] = useState<string>('');
-  const [confirmPwd, setConfirmPwd] = useState<string>('');
-  const [name, setName] = useState<string>('');
-  const [birthDate, setBirthDate] = useState<string>('');
-  const [gender, setGender] = useState<'M' | 'F' | undefined>(undefined);
-  const [address, setAddress] = useState<string | null>(null);
+  const {
+    signUpStep,
+    setSignUpStep,
+    isConsentOptionalAgreed,
+    setIsConsentOptionalAgreed,
+    isConsentRequiredAgreed,
+    setIsConsentRequiredAgreed,
+    setConsentedAt,
+    isPrivacyConsentModalOpen,
+    setIsPrivacyConsentModalOpen,
+    email,
+    setEmail,
+    pwd,
+    setPwd,
+    confirmPwd,
+    setConfirmPwd,
+    name,
+    setName,
+    birthDate,
+    setBirthDate,
+    gender,
+    setGender,
+    address,
+    setAddress,
+    isReadyToSignUp,
+    setIsReadyToSignUp,
+    handleSignUpPress,
+    handleCancelPrivacyConsentPress,
+  } = useSignUp({ signUp, navigation });
 
-  const [isReadyToSignUp, setIsReadyToSignUp] = useState<boolean>(false);
-
-  const { navigation } = useAppNavigation();
-
-  const handleSignUpButtonPress = () => {
-    if (
-      !email ||
-      !pwd ||
-      !name ||
-      !birthDate ||
-      !gender ||
-      (!address && isConsentOptionalAgreed) ||
-      !isConsentRequiredAgreed ||
-      !consentedAt
-    ) {
-      Alert.alert('오류', '모든 필수 정보를 입력해주세요.');
-      setSignUpStep(1);
-      setName('');
-      setBirthDate('');
-      setGender(undefined);
-      setAddress(null);
-      setPwd('');
-      setConfirmPwd('');
-      setEmail('');
-      setIsConsentOptionalAgreed(false);
-      setIsConsentRequiredAgreed(false);
-      setConsentedAt(null);
-      setIsReadyToSignUp(false);
-      navigation.navigate('Login');
-      return;
-    }
-
-    const payload: CreateUserPayload = {
-      socialUid: null,
-      email: email,
-      password: pwd,
-      name: name,
-      gender: gender,
-      birthDate: birthDate,
-      address: isConsentOptionalAgreed && address ? address : null,
-      consentedAt: consentedAt,
-      requiredAgreed: isConsentRequiredAgreed,
-      optionalAgreed: isConsentOptionalAgreed,
-    };
-
-    if (signUpStep === 4 && isReadyToSignUp) {
-      signUp(payload, {
-        onSuccess: data => {
-          navigation.navigate('Login');
-          Alert.alert('알림', data.message);
-        },
-        onError: error => {
-          Alert.alert('오류', error.message);
-        },
-      });
-    }
-  };
-
-  if (isPending) return <SimpleLoading title="" />;
+  if (isPending) return <SimpleLoading title="회원가입 중" />;
 
   if (isReadyToSignUp)
     return (
@@ -128,7 +84,7 @@ const RegisterScreen = () => {
         </View>
         <RoundButton
           title="가입 완료"
-          onPress={handleSignUpButtonPress}
+          onPress={handleSignUpPress}
           preset="lg"
         />
       </SafeAreaView>
@@ -187,14 +143,11 @@ const RegisterScreen = () => {
           isPrivacyConsentModalOpen={isPrivacyConsentModalOpen}
           isConsentOptionalAgreed={isConsentOptionalAgreed}
           isConsentRequiredAgreed={isConsentRequiredAgreed}
-          onCancel={() => {
-            navigation.navigate('Login');
-            setIsPrivacyConsentModalOpen(false);
-          }}
+          onCancel={handleCancelPrivacyConsentPress}
         />
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 };
 
-export default RegisterScreen;
+export default SignUpScreen;
