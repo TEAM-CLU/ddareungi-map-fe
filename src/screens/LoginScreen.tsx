@@ -7,17 +7,17 @@ import SimpleLoading from '@/shared/components/SimpleLoading';
 import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 
 const LoginScreen = () => {
+  useBlockBackNavigation(true);
+
   const [loginScreenStep, setLoginScreenStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  useBlockBackNavigation(true);
-
-  // 1분뒤 로딩 자동종료
+  // 40초뒤 로딩 자동종료
   useEffect(() => {
     if (isLoading) {
       setTimeout(() => {
         setIsLoading(false);
-      }, 60000);
+      }, 40000);
     }
   }, [isLoading]);
 

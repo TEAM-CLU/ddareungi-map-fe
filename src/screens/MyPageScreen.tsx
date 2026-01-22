@@ -5,9 +5,9 @@ import { MYPAGE_SHOWING_CONTENTS } from '@/features/mypage/model/mypage.constant
 import { MypageShowingType } from '@/features/mypage/model/mypage.types';
 
 const MypageScreen = () => {
-  const [whatShowing, setWhatShowing] = useState<MypageShowingType>('main');
-
   useBlockBackNavigation(true);
+
+  const [whatShowing, setWhatShowing] = useState<MypageShowingType>('main');
 
   const mypageRouter = useMemo(
     () => ({
