@@ -7,11 +7,11 @@ import { View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginScreen from '@/screens/LoginScreen';
 import MapScreen from '@/screens/MapScreen';
-import MyPageScreen from '@/screens/MyPageScreen';
 import OnboardingScreen from '@/screens/OnboardingScreen';
 import RegisterScreen from '@/screens/RegisterScreen';
 import RouteRecommendScreen from '@/screens/RouteRecommendScreen';
 import RouteSelectScreen from '@/screens/RouteSelectScreen';
+import MypageScreen from '@/screens/MyPageScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -48,8 +48,7 @@ const AppNavigator = ({ initialRouteName }: AppNavigatorProps) => {
             name="RouteRecommend"
             component={RouteRecommendScreen}
           />
-          <Stack.Screen name="MyPage" component={MyPageScreen} />
-
+          <Stack.Screen name="Mypage" component={MypageScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
         </Stack.Navigator>

@@ -1,6 +1,6 @@
 import {
   IconBicycle,
-  IconMyPage,
+  IconMypage,
   IconRecommendedPath,
 } from '../components/icons';
 import { IconStar } from '../components/icons';
@@ -81,10 +81,10 @@ export const FOOTER_MENU: {
     icon: <IconRecommendedPath width={30} height={30} />,
   },
   {
-    name: 'myPage',
-    screen: 'MyPage',
+    name: 'mypage',
+    screen: 'Mypage',
     label: '마이 페이지',
-    icon: <IconMyPage width={30} height={30} />,
+    icon: <IconMypage width={30} height={30} />,
   },
   {
     name: 'bookmark',

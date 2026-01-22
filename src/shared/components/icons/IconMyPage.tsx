@@ -1,17 +1,17 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
 
-interface IconMyPageProps {
+interface IconMypageProps {
   color?: string;
   width?: number;
   height?: number;
 }
 
-const IconMyPage = ({
+const IconMypage = ({
   color = 'white',
   width = 32,
   height = 32,
-}: IconMyPageProps) => {
+}: IconMypageProps) => {
   return (
     <Svg width={width} height={height} viewBox="0 0 29 29" fill="none">
       <Path
@@ -22,4 +22,4 @@ const IconMyPage = ({
   );
 };
 
-export default React.memo(IconMyPage);
+export default React.memo(IconMypage);

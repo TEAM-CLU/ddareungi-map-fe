@@ -30,5 +30,5 @@ export type RootStackParamList = {
         placeType?: string; // 채워질 위치 ('start')
       }
     | undefined;
-  MyPage: undefined;
+  Mypage: undefined;
 };

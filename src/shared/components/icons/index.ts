@@ -18,7 +18,7 @@ export { default as IconLocation } from './IconLocation';
 export { default as IconLocatorMark } from './IconLocatorMark';
 export { default as IconMinus } from './IconMinus';
 export { default as IconMute } from './IconMute';
-export { default as IconMyPage } from './IconMyPage';
+export { default as IconMypage } from './IconMypage';
 export { default as IconNaver } from './IconNaver';
 export { default as IconOval } from './IconOval';
 export { default as IconPause } from './IconPause';

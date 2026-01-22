@@ -246,7 +246,6 @@ export const useProfileEdit = ({
     setIsConsentRequiredAgreed,
     isConsentOptionalAgreed,
     setIsConsentOptionalAgreed,
-    consentedAt,
     setConsentedAt,
     isAddressInputEnabled,
 

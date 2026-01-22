@@ -30,7 +30,7 @@ const Footer = ({
           key={item.name}
           style={[tw('flex-1 flex-col items-center justify-center mb-1')]}
           onPress={() => {
-            if (item.name === 'myPage') {
+            if (item.name === 'mypage') {
               navigation.navigate(item.screen);
             }
 

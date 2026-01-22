@@ -14,6 +14,7 @@ const CarbonStatusCard = ({
 }: CarbonStatusCardProps) => {
   const carbon = carbonReduction ?? 0;
   const trees = plantingTrees ?? 0;
+
   return (
     <View
       style={[

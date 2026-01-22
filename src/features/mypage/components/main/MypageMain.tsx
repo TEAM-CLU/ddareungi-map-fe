@@ -11,19 +11,29 @@ import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useLogoutMutation } from '@/features/auth/services/auth.queries';
 import { CommonActions } from '@react-navigation/native';
+import { MypageShowingType } from '@/features/mypage/model/mypage.types';
 
-const MypageMain = ({
-  onNavigate,
-}: {
-  onNavigate: (page: 'updateInfo' | 'updatePassword' | 'help') => void;
-}) => {
+interface MypageMainProps {
+  onNavigate: (
+    content: Extract<
+      MypageShowingType,
+      'updateInfo' | 'updatePassword' | 'help'
+    >,
+  ) => void;
+}
+const MypageMain = ({ onNavigate }: MypageMainProps) => {
   const { data: user } = useUserInfoQuery();
   const { mutate: logout } = useLogoutMutation();
   const { navigation } = useAppNavigation();
 
-  const handleNavigate = (page: 'updateInfo' | 'updatePassword' | 'help') => {
-    if (page === 'help') {
-      onNavigate(page);
+  const handleNavigate = (
+    content: Extract<
+      MypageShowingType,
+      'updateInfo' | 'updatePassword' | 'help'
+    >,
+  ) => {
+    if (content === 'help') {
+      onNavigate(content);
       return;
     }
     if (!user || !user.data) {
@@ -34,7 +44,7 @@ const MypageMain = ({
       return;
     }
 
-    onNavigate(page);
+    onNavigate(content);
   };
 
   const handleLogoutPress = () => {
