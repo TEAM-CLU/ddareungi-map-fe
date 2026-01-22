@@ -13,14 +13,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { getDistanceGuideText } from '@/shared/utils/formatting';
 
 const NearbyStationModal = () => {
+  const { focusOnTargetedNearbyStation } = useStationMessenger();
   const locationMetaData = useMyPositionStore(state => state.locationMetaData);
   const myPosition = locationMetaData?.coordinate;
-
   const { data: nearbyStationDataList, isLoading } = useNearbyStationsQuery(
     myPosition?.lat,
     myPosition?.lng,
   );
-
   const { setShowStationDetailModal, setShowNearByStationModal } =
     useModalStore(
       useShallow(state => ({
@@ -29,10 +28,11 @@ const NearbyStationModal = () => {
       })),
     );
   const setStationMetaData = useStationStore(state => state.setStationMetaData);
-  const { focusOnTargetedNearbyStation } = useStationMessenger();
 
   // 리스트 클릭시 상세대여소 모달로 이동
-  const handleStationItemBtnPress = (stationMetaData: MapAreaStationData) => {
+  const handleMoveToStationItemDetailsPress = (
+    stationMetaData: MapAreaStationData,
+  ) => {
     setStationMetaData(stationMetaData);
     focusOnTargetedNearbyStation(stationMetaData);
     setShowNearByStationModal(false);
@@ -86,7 +86,9 @@ const NearbyStationModal = () => {
       {stationsWithDistance.map(nearbyStationData => {
         return (
           <TouchableOpacity
-            onPress={() => handleStationItemBtnPress(nearbyStationData)}
+            onPress={() =>
+              handleMoveToStationItemDetailsPress(nearbyStationData)
+            }
             key={nearbyStationData.number}
             style={[
               tw('w-full flex flex-col justify-start border-b pb-5'),

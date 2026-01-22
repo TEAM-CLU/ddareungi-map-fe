@@ -88,12 +88,8 @@ export const useNavigationOrchestrator = () => {
       })),
     );
   // 지시 배너 업데이트 기준: 내 위치가 다음 턴 좌표에 가까워지면 다음 지시로 업데이트
-  const { myPosition, locationMetaData } = useMyPositionStore(
-    useShallow(state => ({
-      myPosition: state.myPosition,
-      locationMetaData: state.locationMetaData,
-    })),
-  );
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+
   const nextTurnCoordinate = useRef<Coordinates | null>(null);
 
   //  네비게이션 경로 생성 및 실시간 업데이트용
@@ -511,13 +507,15 @@ export const useNavigationOrchestrator = () => {
   useEffect(() => {
     if (
       !isNavigationMode ||
-      !myPosition ||
+      !locationMetaData?.coordinate ||
       !nextTurnCoordinate.current ||
       !currentInstruction ||
       !isNavigationInitialized
     ) {
       return;
     }
+
+    const myPosition = locationMetaData.coordinate;
 
     const resetTurnState = () => {
       isEnteredRef.current = false;
@@ -661,7 +659,7 @@ export const useNavigationOrchestrator = () => {
     prevMyPositionForTurnRef.current = myPosition;
     prevTimestampForTurnRef.current = Date.now();
   }, [
-    myPosition,
+    locationMetaData?.coordinate,
     isNavigationMode,
     currentInstruction,
     isNavigationInitialized,
@@ -1099,8 +1097,10 @@ export const useNavigationOrchestrator = () => {
     )
       return;
 
-    if (!isNavigationMode || !myPosition || !locationMetaData) return;
+    if (!isNavigationMode || !locationMetaData?.coordinate || !locationMetaData)
+      return;
 
+    const myPosition = locationMetaData.coordinate;
     const currentTimestamp =
       typeof locationMetaData.timestamp === 'number'
         ? locationMetaData.timestamp
@@ -1192,7 +1192,12 @@ export const useNavigationOrchestrator = () => {
     // 공통 prevPos/prevTs 갱신 (속도/정지/점프 판정 기준)
     prevMyPositionForDistanceRef.current = myPosition;
     prevTimestampForDistanceRef.current = currentTimestamp;
-  }, [myPosition, locationTick, isNavigationMode, isNavigationInitialized]);
+  }, [
+    locationMetaData?.coordinate,
+    locationTick,
+    isNavigationMode,
+    isNavigationInitialized,
+  ]);
 
   // eta 업데이트
   useEffect(() => {
@@ -1204,7 +1209,8 @@ export const useNavigationOrchestrator = () => {
       return;
 
     if (!remainingDistanceMeter) return;
-    if (!isNavigationMode || !myPosition || !locationMetaData) return;
+    if (!isNavigationMode || !locationMetaData?.coordinate || !locationMetaData)
+      return;
 
     // eta 계산
     // 1) 정확하고 보정된 속도 사용
@@ -1217,7 +1223,7 @@ export const useNavigationOrchestrator = () => {
     // 2) 남은 거리 / 속도 = 남은 시간
     setEta(calculateEta(remainingDistanceMeter, accurateSpeedMps));
   }, [
-    myPosition,
+    locationMetaData?.coordinate,
     locationTick,
     remainingDistanceMeter,
     isNavigationMode,

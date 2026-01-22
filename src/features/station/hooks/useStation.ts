@@ -6,24 +6,22 @@ import {
   useGetStationsLatestBikeCountMutation,
   useStationDataListQuery,
 } from '@/features/station/services/station.queries';
-import {
-  StationLatestBikeCountData,
-  UseStationsOptions,
-} from '@/features/station/model/station.types';
+import { StationLatestBikeCountData } from '@/features/station/model/station.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useStationStore } from '../stores/useStationStore';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
-import {
-  ChangeMapCenterMessage,
-  ClickStationMarkerMessage,
-  NeedUpdateStationBikeCountListMessage,
-} from '@/shared/model/map.webview.types';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useShallow } from 'zustand/react/shallow';
 
-export const useStation = ({ isMapReady }: UseStationsOptions) => {
+interface UseStationsParams {
+  isMapReady: boolean;
+}
+
+export const useStation = ({ isMapReady }: UseStationsParams) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
+  const { mutateAsync: getLatestBikeCountList } =
+    useGetStationsLatestBikeCountMutation();
   const isNavigationMode = useNavigationStore(state => state.isNavigationMode);
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore(
@@ -44,16 +42,12 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
   // 조건: 지도 로딩 완료 + 네비 모드 아님 + 경로 상세 모달 아님
   const enableQuery =
     isMapReady && !isNavigationMode && !showSelectedRouteDetailModal;
-
   const { data: stationDataList } = useStationDataListQuery({
     lat: currentMapCenterCoord?.lat,
     lng: currentMapCenterCoord?.lng,
     radius: 1500,
     enable: enableQuery,
   });
-
-  const { mutateAsync: getLatestBikeCountList } =
-    useGetStationsLatestBikeCountMutation();
 
   // 메세지 핸들러
   // 웹뷰에서 오는 메세지 한 곳에서 처리

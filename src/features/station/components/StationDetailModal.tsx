@@ -1,9 +1,7 @@
 import { getDistanceBetweenCoords } from '@/features/location/utils/location';
-import { useMapStore } from '@/features/map/stores/useMapStore';
 import { RouteType } from '@/features/routing/model/routing.types';
-import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
@@ -13,123 +11,41 @@ import {
   View,
 } from 'react-native';
 import { Animated } from 'react-native';
-import { useShallow } from 'zustand/react/shallow';
 import { useStationStore } from '@/features/station/stores/useStationStore';
 import { removeOverlappingPart } from '@/features/station/utils/string';
 import { tw } from '@/shared/libs/tw-helper';
-import { PlaceInfo } from '@/features/search/model/search.types';
 import { getDistanceGuideText } from '@/shared/utils/formatting';
+import { useStationRouteApplyActions } from '@/features/station/hooks/useStationRouteApplyActions';
 
 interface StationDetailModalProps {
   onClose?: () => void;
 }
 const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
-  const {
-    routeType,
-    setRouteType,
-    setStart,
-    setEnd,
-    addWaypoint,
-    syncStartEndInLoopMode,
-  } = useRouteStore(
-    useShallow(state => ({
-      routeType: state.routeType,
-      setRouteType: state.setRouteType,
-      setStart: state.setStart,
-      setEnd: state.setEnd,
-      addWaypoint: state.addWaypoint,
-      syncStartEndInLoopMode: state.syncStartEndInLoopMode,
-    })),
-  );
-  const globalNavigation = useMapStore(state => state.globalNavigation);
   const stationMetaData = useStationStore(state => state.stationMetaData);
   const locationMetaData = useMyPositionStore(state => state.locationMetaData);
   const myPosition = locationMetaData?.coordinate;
 
-  // RouteType 토글 함수
-  const toggleRouteType = () => {
-    const newRouteType =
-      routeType === RouteType.CONSTANT ? RouteType.LOOP : RouteType.CONSTANT;
-    setRouteType(newRouteType);
-  };
-
-  // 토글 애니메이션을 위한 Animated Value
-  const toggleAnimation = useRef(
-    new Animated.Value(routeType === RouteType.LOOP ? 1 : 0),
-  ).current;
-
-  // routeType이 변경될 때 애니메이션 실행
-  useEffect(() => {
-    Animated.timing(toggleAnimation, {
-      toValue: routeType === RouteType.LOOP ? 1 : 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  }, [routeType, toggleAnimation]);
-
-  // 토글 버튼 핸들러
-  const handleTogglePress = () => toggleRouteType();
-
-  // 첫 번째 버튼 (출발/원점) 핸들러
-  const handleFirstButtonPress = () => {
-    onClose?.(); // 모달 닫기
-
-    const placeData: PlaceInfo = {
-      placeId: `start-${Date.now()}`,
-      name: stationMetaData!.name,
-      address: stationMetaData!.address,
-      latitude: stationMetaData!.latitude!,
-      longitude: stationMetaData!.longitude!,
-    };
-
-    // LOOP 모드면 출발-도착 동기화
-    if (routeType === RouteType.LOOP) {
-      syncStartEndInLoopMode(placeData, 'start');
-    } else {
-      setStart(placeData);
-    }
-    // RouteSelect 화면으로 이동
-    globalNavigation.navigate('RouteSelect');
-  };
-
-  // 두 번째 버튼 (반환점/도착) 핸들러
-  const handleSecondButtonPress = () => {
-    onClose?.(); // 모달 닫기
-
-    const placeData: PlaceInfo = {
-      placeId: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`, // LOOP일 때는 addWaypoint에서 ID 생성
-      name: stationMetaData!.name,
-      address: stationMetaData!.address,
-      latitude: stationMetaData!.latitude!,
-      longitude: stationMetaData!.longitude!,
-    };
-
-    if (routeType === RouteType.LOOP) {
-      // 루프 모드: 반환점(경유지) 추가 - ID는 addWaypoint에서 자동 생성
-      addWaypoint(placeData);
-    } else {
-      // 일반 모드: 도착지 설정
-      setEnd(placeData);
-    }
-
-    // RouteSelect 화면으로 이동
-    globalNavigation.navigate('RouteSelect');
-  };
-
   // 내 위치와 대여소 간 거리 계산
-  const [distance, setDistance] = useState<number | null>(null);
-
+  const [distanceMeter, setDistanceMeter] = useState<number | null>(null);
   useEffect(() => {
     if (!myPosition || !stationMetaData) {
-      setDistance(null);
+      setDistanceMeter(null);
       return;
     }
     const distance = getDistanceBetweenCoords(
       { lat: myPosition.lat, lng: myPosition.lng },
       { lat: stationMetaData.latitude, lng: stationMetaData.longitude },
     );
-    setDistance(Math.round(distance));
+    setDistanceMeter(Math.round(distance));
   }, [myPosition, stationMetaData]);
+
+  const {
+    toggleAnimation,
+    routeType,
+    handleToggleRouteTypePress,
+    handleApplyConstantRoutePress,
+    handleApplyLoopRoutePress,
+  } = useStationRouteApplyActions({ onClose });
 
   if (!stationMetaData) {
     return (
@@ -191,7 +107,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
             { fontSize: 15 },
           ]}
         >
-          {getDistanceGuideText(distance)}
+          {getDistanceGuideText(distanceMeter)}
         </Text>
       </View>
       <Text
@@ -215,7 +131,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
               tw('px-4 py-2 bg-brand-primary'),
               { minWidth: 65, minHeight: 30, borderRadius: 20 },
             ]}
-            onPress={handleFirstButtonPress}
+            onPress={handleApplyConstantRoutePress}
           >
             <Text
               style={tw(
@@ -231,7 +147,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
               tw('px-4 py-2 bg-icon-container-primary'),
               { minWidth: 65, minHeight: 30, borderRadius: 20 },
             ]}
-            onPress={handleSecondButtonPress}
+            onPress={handleApplyLoopRoutePress}
           >
             <Text
               style={tw(
@@ -254,7 +170,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
               paddingHorizontal: 4,
             },
           ]}
-          onPress={handleTogglePress}
+          onPress={handleToggleRouteTypePress}
           activeOpacity={0.8}
         >
           <Animated.View

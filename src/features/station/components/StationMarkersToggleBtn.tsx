@@ -9,7 +9,7 @@ const StationMarkersToggleBtn = () => {
   const { turnOnStationMarkers, turnOffStationMarkers } = useStationMessenger();
   const [mode, setMode] = useState<'on' | 'off'>('on');
 
-  const handleToggleBtnPress = () => {
+  const handleToggleShowingStationMarkersPress = () => {
     if (mode === 'on') {
       setMode('off');
       turnOffStationMarkers();
@@ -25,7 +25,7 @@ const StationMarkersToggleBtn = () => {
 
   return (
     <TouchableOpacity
-      onPress={handleToggleBtnPress}
+      onPress={handleToggleShowingStationMarkersPress}
       style={[
         tw(
           'bg-icon-container-secondary rounded-full w-10 h-10 flex justify-center items-center shadow-md',
