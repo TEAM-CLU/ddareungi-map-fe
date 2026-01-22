@@ -1,1 +1,6 @@
 export const DISTANCE_LAMBDA = 1.2;
+
+export const STATION_MOTION_CONFIG = {
+  MOVE_CONFIRM_COUNT: 3,
+  STATIONARY_DISTANCE_THRESHOLD: 10,
+} as const;

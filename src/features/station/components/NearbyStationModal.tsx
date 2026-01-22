@@ -11,11 +11,12 @@ import { useNearbyStationsQuery } from '../services/station.queries';
 import { DISTANCE_LAMBDA } from '../model/station.constants';
 import { useShallow } from 'zustand/react/shallow';
 import { getDistanceGuideText } from '@/shared/utils/formatting';
+import { useStableMyPosition } from '@/features/station/hooks/useStableMyPosition';
 
 const NearbyStationModal = () => {
   const { focusOnTargetedNearbyStation } = useStationMessenger();
   const locationMetaData = useMyPositionStore(state => state.locationMetaData);
-  const myPosition = locationMetaData?.coordinate;
+  const myPosition = useStableMyPosition(locationMetaData);
   const { data: nearbyStationDataList, isLoading } = useNearbyStationsQuery(
     myPosition?.lat,
     myPosition?.lng,
@@ -46,17 +47,17 @@ const NearbyStationModal = () => {
 
     return nearbyStationDataList.map(station => {
       // 1. 직선 거리 계산
-      const rawDist = getDistanceBetweenCoords(
+      const rawDistance = getDistanceBetweenCoords(
         { lat: myPosition.lat, lng: myPosition.lng },
         { lat: station.latitude, lng: station.longitude },
       );
 
       // 2. lamda 보정 적용
-      const adjustedDist = rawDist * DISTANCE_LAMBDA;
+      const adjustedDistance = rawDistance * DISTANCE_LAMBDA;
 
       return {
         ...station,
-        calculatedDistance: adjustedDist, // 계산된 거리값 저장
+        calculatedDistance: adjustedDistance, // 계산된 거리값 저장
       };
     });
   }, [myPosition, nearbyStationDataList, DISTANCE_LAMBDA]);

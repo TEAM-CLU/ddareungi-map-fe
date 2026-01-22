@@ -12,10 +12,12 @@ import {
 } from 'react-native';
 import { Animated } from 'react-native';
 import { useStationStore } from '@/features/station/stores/useStationStore';
-import { removeOverlappingPart } from '@/features/station/utils/string';
+import { removeOverlappingPart } from '@/features/station/utils/removeOverlappingPart';
 import { tw } from '@/shared/libs/tw-helper';
 import { getDistanceGuideText } from '@/shared/utils/formatting';
 import { useStationRouteApplyActions } from '@/features/station/hooks/useStationRouteApplyActions';
+import { useStableMyPosition } from '@/features/station/hooks/useStableMyPosition';
+import { DISTANCE_LAMBDA } from '@/features/station/model/station.constants';
 
 interface StationDetailModalProps {
   onClose?: () => void;
@@ -23,7 +25,7 @@ interface StationDetailModalProps {
 const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
   const stationMetaData = useStationStore(state => state.stationMetaData);
   const locationMetaData = useMyPositionStore(state => state.locationMetaData);
-  const myPosition = locationMetaData?.coordinate;
+  const myPosition = useStableMyPosition(locationMetaData);
 
   // 내 위치와 대여소 간 거리 계산
   const [distanceMeter, setDistanceMeter] = useState<number | null>(null);
@@ -32,11 +34,12 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
       setDistanceMeter(null);
       return;
     }
-    const distance = getDistanceBetweenCoords(
-      { lat: myPosition.lat, lng: myPosition.lng },
-      { lat: stationMetaData.latitude, lng: stationMetaData.longitude },
-    );
-    setDistanceMeter(Math.round(distance));
+    const adjustedDistance =
+      getDistanceBetweenCoords(
+        { lat: myPosition.lat, lng: myPosition.lng },
+        { lat: stationMetaData.latitude, lng: stationMetaData.longitude },
+      ) * DISTANCE_LAMBDA;
+    setDistanceMeter(Math.round(adjustedDistance));
   }, [myPosition, stationMetaData]);
 
   const {
