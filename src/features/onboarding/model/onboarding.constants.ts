@@ -30,4 +30,4 @@ export const ONBOARDING_DESCRIPTION_DATA = [
     text2: '나만의 기록으로 남겨보세요.',
     imageSource: require('@/assets/imgs/onboarding/onboarding6.png'),
   },
-];
+] as const;

@@ -44,4 +44,4 @@ export const MYPAGE_SHOWING_CONTENTS: Record<
       <OnboardingScreen onFinish={backToMain} buttonLabel="돌아가기" />
     ),
   },
-};
+} as const;
