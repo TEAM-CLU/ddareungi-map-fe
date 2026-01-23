@@ -198,11 +198,6 @@ export interface RouteState {
   setCurrentSelectedPoint: (point: RoutePoint | null) => void;
   setCurrentFieldType: (type: 'start' | 'end' | 'waypoint' | null) => void;
 
-  // --- [Async Actions] API 호출 액션 ---
-  searchRoutes: () => Promise<void>; // 일반 경로 검색
-  searchCircularRoutes: () => Promise<void>; // 원형(왕복) 경로 검색
-  resetRouteSearch: () => void; // 검색 결과만 초기화
-
   // --- [Utility Actions] 편의 기능 ---
   syncStartEndInLoopMode: (
     newPlace: PlaceInfo,

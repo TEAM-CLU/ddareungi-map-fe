@@ -1,11 +1,11 @@
 import { IconClose } from '@/shared/components/icons';
-
 import { BookmarkItem } from '@/shared/model/index.types';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
-import { memo, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { BOOKMARK_COLOR_PRESETS } from '@/shared/model/index.constants';
+import BookmarkEditColorButton from './BookmarkEditColorButton';
 
 interface BookmarkEditItemProps {
   item: BookmarkItem;
@@ -33,18 +33,22 @@ const BookmarkEditItem = ({
   }, [isEditing, item.alias, item.name]);
 
   // 입력 종료 시 자동 저장
-  const handleEndEditing = () => {
+  const handleEndEditing = useCallback(() => {
     if (alias !== (item.alias || item.name)) {
       onUpdateAlias(item.id, alias);
     }
-  };
+  }, [alias, item.alias, item.name, item.id, onUpdateAlias]);
 
-  const handleResetAlias = () => {
+  const handleResetAlias = useCallback(() => {
     setAlias(item.name);
     onUpdateAlias(item.id, item.name);
-  };
+  }, [item.id, item.name, onUpdateAlias]);
 
-  const handleDeleteButtonPress = () => {
+  const handleToggleEdit = useCallback(() => {
+    onToggleEdit(item.id);
+  }, [onToggleEdit, item.id]);
+
+  const handleDeleteButtonPress = useCallback(() => {
     Alert.alert(
       '즐겨찾기 삭제',
       `'${item.alias || item.name}'을(를) 삭제하시겠습니까?`,
@@ -57,14 +61,24 @@ const BookmarkEditItem = ({
         },
       ],
     );
-  };
+  }, [item.alias, item.id, item.name, onDelete]);
+
+  const handleColorPress = useCallback(
+    (color: string) => {
+      // 이미 선택된 색상이면 업데이트 호출 안 함
+      if (item.color !== color) {
+        onUpdateColor(item.id, color);
+      }
+    },
+    [item.color, item.id, onUpdateColor],
+  );
 
   return (
     <View style={[tw('bg-white border-b'), { borderColor: '#E5E7EB' }]}>
       {/* 1. 요약 헤더 영역 (항상 보임) */}
       <TouchableOpacity
         style={tw('flex-row justify-between items-center px-6 py-5')}
-        onPress={() => onToggleEdit(item.id)}
+        onPress={handleToggleEdit}
         activeOpacity={0.6}
       >
         <View style={tw('flex-row items-center flex-1 pr-4')}>
@@ -163,32 +177,13 @@ const BookmarkEditItem = ({
           </Text>
           <View style={[tw('flex-row flex-wrap'), { gap: 10 }]}>
             {BOOKMARK_COLOR_PRESETS.map(color => {
-              const isSelected = item.color === color;
               return (
-                <TouchableOpacity
+                <BookmarkEditColorButton
                   key={color}
-                  onPress={() => onUpdateColor(item.id, color)}
-                  activeOpacity={0.8}
-                  style={[
-                    tw('items-center justify-center rounded-full'),
-                    isSelected
-                      ? {
-                          width: 40,
-                          height: 40,
-                          borderWidth: 2,
-                          borderColor: '#E5E7EB',
-                          padding: 3,
-                        }
-                      : { width: 36, height: 36 },
-                  ]}
-                >
-                  <View
-                    style={[
-                      tw('w-full h-full rounded-full'),
-                      { backgroundColor: color },
-                    ]}
-                  />
-                </TouchableOpacity>
+                  color={color}
+                  isSelected={item.color === color}
+                  onPress={handleColorPress}
+                />
               );
             })}
           </View>

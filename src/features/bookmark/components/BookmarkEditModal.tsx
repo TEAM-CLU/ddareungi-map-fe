@@ -4,6 +4,7 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useCallback, useState } from 'react';
 import BookmarkEditItem from './BookmarkEditItem';
+import { useShallow } from 'zustand/react/shallow';
 
 const BookmarkEditModal = () => {
   const {
@@ -12,7 +13,15 @@ const BookmarkEditModal = () => {
     updateBookmarkAlias,
     updateBookmarkColor,
     _hasHydrated,
-  } = useBookmarkStore();
+  } = useBookmarkStore(
+    useShallow(state => ({
+      bookmarks: state.bookmarks,
+      removeBookmark: state.removeBookmark,
+      updateBookmarkAlias: state.updateBookmarkAlias,
+      updateBookmarkColor: state.updateBookmarkColor,
+      _hasHydrated: state._hasHydrated,
+    })),
+  );
 
   // 현재 수정 중인 아이템의 ID
   const [editingId, setEditingId] = useState<string | null>(null);
