@@ -10,8 +10,8 @@ import MapScreen from '@/screens/MapScreen';
 import OnboardingScreen from '@/screens/OnboardingScreen';
 import RouteRecommendScreen from '@/screens/RouteRecommendScreen';
 import RouteSelectScreen from '@/screens/RouteSelectScreen';
-import MypageScreen from '@/screens/MypageScreen';
 import SignUpScreen from '@/screens/SignUpScreen';
+import MypageScreen from '@/screens/MypageScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

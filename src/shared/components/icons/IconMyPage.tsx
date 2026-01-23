@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import Svg, { Path } from 'react-native-svg';
 
 interface IconMypageProps {
@@ -22,4 +22,4 @@ const IconMypage = ({
   );
 };
 
-export default React.memo(IconMypage);
+export default memo(IconMypage);

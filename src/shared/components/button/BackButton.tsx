@@ -37,7 +37,10 @@ const BackButton = ({
   };
 
   return (
-    <TouchableOpacity onPress={handlePress}>
+    <TouchableOpacity
+      onPress={handlePress}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
       <IconBackArrow color={iconColor} width={iconWidth} height={iconHeight} />
     </TouchableOpacity>
   );

@@ -168,6 +168,7 @@ const StoryShareScreen = ({
             { backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10000 },
           ]}
           onPress={onClose}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <IconClose color="#FFFFFF" />
         </TouchableOpacity>
@@ -200,6 +201,7 @@ const StoryShareScreen = ({
             { backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10000 },
           ]}
           onPress={handleClosePress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <IconClose color="#FFFFFF" />
         </TouchableOpacity>
@@ -229,6 +231,7 @@ const StoryShareScreen = ({
           { zIndex: 10000, opacity: 0.7 },
         ]}
         onPress={handleClosePress}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
         <IconClose color="#FFFFFF" />
       </TouchableOpacity>
@@ -417,6 +420,7 @@ const StoryShareScreen = ({
                         </Text>
                         <TouchableOpacity
                           onPress={() => handleRemoveTagPress(idx)}
+                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                         >
                           <IconClose width={12} height={12} />
                         </TouchableOpacity>

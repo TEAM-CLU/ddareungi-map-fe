@@ -52,6 +52,7 @@ const RouteRecommendInputBar = ({
           <TouchableOpacity
             onPress={handleClosePress}
             style={tw('w-8 h-8 items-center justify-center')}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <IconClose color="#A7A7A7" />
           </TouchableOpacity>

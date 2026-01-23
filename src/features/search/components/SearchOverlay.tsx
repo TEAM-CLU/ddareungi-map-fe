@@ -230,7 +230,7 @@ const SearchOverlay = ({
         <TouchableOpacity
           style={tw('p-2')}
           onPress={() => removeRecentSearch(item.placeId)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <IconClose width={12} height={12} color="#999" />
         </TouchableOpacity>

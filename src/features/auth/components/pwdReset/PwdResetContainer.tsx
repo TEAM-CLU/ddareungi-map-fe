@@ -38,6 +38,7 @@ const PwdResetContainer = ({
         <TouchableOpacity
           onPress={handleClosePress}
           style={tw('absolute top-20 right-4')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <IconClose />
         </TouchableOpacity>

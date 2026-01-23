@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
   withSpring,
 } from 'react-native-reanimated';
 import { IconStar } from '@/shared/components/icons';
@@ -28,7 +29,10 @@ const StarToggle = ({ active = false, onToggle }: StarToggleProps) => {
   };
 
   return (
-    <Pressable onPress={handlePress}>
+    <Pressable
+      onPress={handlePress}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
       <Animated.View style={animatedStyle}>
         <IconStar
           width={24}
@@ -42,4 +46,4 @@ const StarToggle = ({ active = false, onToggle }: StarToggleProps) => {
   );
 };
 
-export default StarToggle;
+export default memo(StarToggle);

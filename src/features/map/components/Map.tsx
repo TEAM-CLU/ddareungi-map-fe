@@ -39,7 +39,7 @@ const Map = ({ isLocalMapReady, handleMapReadyMessage }: MapProps) => {
   const [mapUrl] = useState(() => {
     const timestamp = new Date().getTime();
     // iOS/Android 환경에 따라 주소 분기 (ngrok 주소면 그대로 사용)
-    const baseUrl = 'https://6b2a34c11338.ngrok-free.app/map.html';
+    const baseUrl = 'https://57ba20d69663.ngrok-free.app/map.html';
     return `${baseUrl}?t=${timestamp}`;
   });
 
@@ -60,12 +60,7 @@ const Map = ({ isLocalMapReady, handleMapReadyMessage }: MapProps) => {
       cacheEnabled={false}
       cacheMode="LOAD_NO_CACHE"
       incognito={true}
-      source={{
-        uri: 'https://8f591557a748.ngrok-free.app/dev/ddareungi-map-fe/map.html',
-      }}
-      // source={{
-      //   uri: 'https://3f3d893368a5.ngrok-free.app/map.html',
-      // }}
+      source={{ uri: 'https://57ba20d69663.ngrok-free.app/map.html' }}
     />
   );
 };

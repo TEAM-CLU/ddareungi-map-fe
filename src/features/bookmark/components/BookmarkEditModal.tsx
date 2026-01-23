@@ -2,9 +2,9 @@ import { tw } from '@/shared/libs/tw-helper';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { useCallback, useState } from 'react';
-import BookmarkEditItem from './BookmarkEditItem';
+import React, { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import BookmarkEditItem from './BookmarkEditItem';
 
 const BookmarkEditModal = () => {
   const {

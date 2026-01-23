@@ -63,7 +63,7 @@ const PrivacyConsentModal = ({
       >
         <View style={tw('flex flex-row w-full justify-between items-center')}>
           <View />
-          <TouchableOpacity onPress={handleCancelPress}>
+          <TouchableOpacity onPress={handleCancelPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <IconClose />
           </TouchableOpacity>
         </View>

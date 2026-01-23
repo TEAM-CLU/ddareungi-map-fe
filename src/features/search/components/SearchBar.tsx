@@ -108,7 +108,7 @@ const SearchBar = ({
           {/* 오른쪽 버튼 (X 버튼과 검색 버튼 토글) */}
           <View style={tw('w-8 h-8 items-center justify-center')}>
             {showXButton ? (
-              <TouchableOpacity onPress={onPressClose} style={tw('p-1')}>
+              <TouchableOpacity onPress={onPressClose} style={tw('p-1')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <IconClose color="#77838F" />
               </TouchableOpacity>
             ) : showSearchButton ? (
