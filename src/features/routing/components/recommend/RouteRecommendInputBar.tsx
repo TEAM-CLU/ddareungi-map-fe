@@ -37,81 +37,74 @@ const RouteRecommendInputBar = ({
   return (
     <View
       style={tw(
-        'bg-surface-primary rounded-xl overflow-hidden border border-line-default',
+        'relative bg-surface-primary rounded-xl overflow-hidden border border-line-default',
       )}
     >
-      {/* 메인 입력 영역 */}
-      <View style={tw('relative')}>
-        {/* 닫기 버튼 */}
-        <View
-          style={[
-            tw('absolute right-2 top-0 bottom-0 justify-center'),
-            { zIndex: 10 },
-          ]}
+      {/* 닫기 버튼 */}
+      <View style={tw('absolute right-2 top-2 z-20')}>
+        <TouchableOpacity
+          onPress={handleClosePress}
+          style={tw('w-8 h-8 items-center justify-center')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
+          <IconClose color="#A7A7A7" />
+        </TouchableOpacity>
+      </View>
+
+      {/* 인풋 영역 */}
+      <View style={tw('pl-2 pr-12')}>
+        {/* 출발지 */}
+        <View
+          style={tw(
+            'flex-row items-center h-12 px-0 border-b border-line-default',
+          )}
+        >
+          <View style={tw('w-8 items-center justify-center')}>
+            <IconOval width={20} height={20} colorHex="#006AFF" />
+          </View>
           <TouchableOpacity
-            onPress={handleClosePress}
-            style={tw('w-8 h-8 items-center justify-center')}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={tw('flex-1 justify-center h-full')}
+            onPress={() => onRoutePointPress(startPoint)}
           >
-            <IconClose color="#A7A7A7" />
+            <Text
+              numberOfLines={1}
+              style={tw(
+                `${
+                  start?.name || startPoint.value
+                    ? 'text-on-surface-primary'
+                    : 'text-on-surface-placeholder'
+                } text-base font-medium`,
+              )}
+            >
+              {start?.name || startPoint.value || startPoint.placeholder}
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* 인풋 필드 */}
-        <View style={tw('pl-12 pr-12 py-2')}>
-          {/* 출발지 */}
-          <View
-            style={tw(
-              'relative flex-row items-center py-1 border-b border-line-default',
-            )}
-          >
-            {/* 좌측 아이콘 */}
-            <View style={tw('w-6 mr-1 items-center')}>
-              <IconOval width={20} height={20} color="brand" />
-            </View>
-            {/* 입력 필드 */}
-            <TouchableOpacity
-              style={tw('flex-1')}
-              onPress={() => onRoutePointPress(startPoint)}
-            >
-              <Text
-                style={tw(
-                  start?.name || startPoint.value
-                    ? 'text-on-surface-primary font-primary-500 text-base'
-                    : 'text-on-surface-placeholder font-primary-500 text-base',
-                )}
-              >
-                {start?.name || startPoint.value || startPoint.placeholder}
-              </Text>
-            </TouchableOpacity>
+        {/* 이동 거리 */}
+        <View style={tw('flex-row items-center h-12 px-0')}>
+          <View style={tw('w-8 items-center justify-center')}>
+            <IconOval width={20} height={20} colorHex="#6B7280" />
           </View>
-
-          {/* 이동 거리 */}
-          <View
-            style={tw(
-              'relative flex-row items-center py-1 border-line-default',
-            )}
+          <TouchableOpacity
+            style={tw('flex-1 justify-center h-full')}
+            onPress={onDistancePress}
           >
-            {/* 좌측 아이콘 */}
-            <View style={tw('w-6 mr-1 items-center')}>
-              <IconOval width={20} height={20} color="gray" />
-            </View>
-            {/* 입력 필드 */}
-            <TouchableOpacity style={tw('flex-1')} onPress={onDistancePress}>
-              <Text
-                style={tw(
+            <Text
+              numberOfLines={1}
+              style={tw(
+                `${
                   distance !== null && distance > 0
-                    ? 'text-on-surface-primary font-primary-500 text-base'
-                    : 'text-on-surface-placeholder font-primary-500 text-base',
-                )}
-              >
-                {distance !== null && distance > 0
-                  ? `${distance}km`
-                  : '이동 거리를 선택하세요'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+                    ? 'text-on-surface-primary'
+                    : 'text-on-surface-placeholder'
+                } text-base font-medium`,
+              )}
+            >
+              {distance !== null && distance > 0
+                ? `${distance}km`
+                : '이동 거리를 선택하세요'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

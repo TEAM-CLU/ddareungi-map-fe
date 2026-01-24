@@ -7,6 +7,7 @@ import RouteSelectContainer from '@/features/routing/components/RouteSelectConta
 import RoundButton from '@/shared/components/button/RoundButton';
 import { useRouteRecommend } from '@/features/routing/hooks/useRouteRecommend';
 import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const RouteRecommendScreen = () => {
   const {
@@ -26,7 +27,7 @@ const RouteRecommendScreen = () => {
 
   return (
     <View style={tw('flex-1 bg-surface-primary')}>
-      <View style={tw('bg-brand-primary w-full pt-16 pb-4')}>
+      <SafeAreaView edges={['top']} style={tw('bg-brand-primary w-full pb-4')}>
         <View style={tw('mx-2')}>
           <RouteRecommendInputBar
             onRoutePointPress={handleSetStartPointPress}
@@ -34,7 +35,7 @@ const RouteRecommendScreen = () => {
             onClose={handleCloseRouteInputBarPress}
           />
         </View>
-      </View>
+      </SafeAreaView>
 
       <View
         style={[
