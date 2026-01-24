@@ -1,10 +1,5 @@
 import { Coordinates } from '@/features/map/model/map.types';
-import {
-  Bbox,
-  Coordinate,
-  Segment,
-  Summary,
-} from '@/features/routing/model/routing.types';
+import { Bbox, Segment, Summary } from '@/features/routing/model/routing.types';
 export interface VolumeState {
   systemVolume: number;
   setSystemVolume: (volume: number) => void;

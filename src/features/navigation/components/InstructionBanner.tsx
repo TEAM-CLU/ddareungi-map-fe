@@ -57,9 +57,6 @@ const InstructionBanner = ({
   const myPosition = locationMetaData?.coordinate;
   const systemVolume = useVolumeStore(state => state.systemVolume);
 
-  const { PREVIEW_THRESHOLD_METER, PREVIEW_ENTER_COUNT_MIN } = PREVIEW_CONIFG;
-  const { FALLBACK_TTS_URL, START_TTS_URL, CURRENT_FIXED_TTS_URL } =
-    TTS_URL_PRESET;
   const hasPlayedStartTtsRef = useRef(false);
 
   // ----------------------------
@@ -72,6 +69,10 @@ const InstructionBanner = ({
 
   const [currentRemainingDistanceMeter, setCurrentRemainingDistanceMeter] =
     useState<number | null>(null);
+
+  const { PREVIEW_THRESHOLD_METER, PREVIEW_ENTER_COUNT_MIN } = PREVIEW_CONIFG;
+  const { FALLBACK_TTS_URL, START_TTS_URL, CURRENT_FIXED_TTS_URL } =
+    TTS_URL_PRESET;
 
   // 인터벌 바뀌면 남은거리 계산값 리셋
   useEffect(() => {

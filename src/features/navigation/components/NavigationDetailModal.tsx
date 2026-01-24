@@ -16,7 +16,6 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import { convertToTrees } from '@/shared/utils/measure';
 import {
   BottomSheetFlatList,
-  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import Slider from '@react-native-community/slider';
 import { useEffect, useRef, useState } from 'react';

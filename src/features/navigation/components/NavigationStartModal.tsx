@@ -46,7 +46,7 @@ const NavigationStartModal = ({
               { fontSize: 24 },
             ]}
           >
-            오늘도
+            음주운전 금지!!
           </Text>
           <Text
             style={[

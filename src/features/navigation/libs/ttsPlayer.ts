@@ -11,6 +11,8 @@ import TrackPlayer, { Event, State } from 'react-native-track-player';
 // =========================
 const queue: TtsItem[] = [];
 let isConsuming = false;
+let currentPlayingKey: string | null = null;
+let suppressIntervalGuidanceTts = false;
 
 // =========================
 // Dedupe & cooldown policy
@@ -44,6 +46,30 @@ const isKeyAlreadyQueued = (key: string) => {
   return queue.some(item => getCooldownKey(item.key) === cooldownKey);
 };
 
+const isIntervalGuidanceKey = (key: string) => {
+  return (
+    key.startsWith('tts-turn') ||
+    key.startsWith('tts-preview') ||
+    key.startsWith('tts-actual')
+  );
+};
+
+const removeQueuedByKey = (key: string) => {
+  for (let i = queue.length - 1; i >= 0; i -= 1) {
+    if (queue[i].key === key) {
+      queue.splice(i, 1);
+    }
+  }
+};
+
+const removeQueuedByPredicate = (predicate: (item: TtsItem) => boolean) => {
+  for (let i = queue.length - 1; i >= 0; i -= 1) {
+    if (predicate(queue[i])) {
+      queue.splice(i, 1);
+    }
+  }
+};
+
 const isPlayingState = (s: State) => {
   return s === State.Playing || s === State.Buffering;
 };
@@ -55,6 +81,17 @@ const getPlaybackStateSafe = async () => {
     return st;
   } catch {
     return State.None;
+  }
+};
+
+const stopCurrentIfKeyMatches = async (predicate: (key: string) => boolean) => {
+  if (!currentPlayingKey || !predicate(currentPlayingKey)) return;
+  try {
+    await TrackPlayer.reset();
+  } catch {
+    // ignore
+  } finally {
+    currentPlayingKey = null;
   }
 };
 
@@ -70,6 +107,31 @@ const getPlaybackStateSafe = async () => {
 export const enqueueTts = (key: string, url: string, volume: number) => {
   const t = now();
   const cooldownKey = getCooldownKey(key);
+  const shouldPreemptOffRouteWarning =
+    key === 'tts-offroute-reroute' || key === 'tts-offroute-recover';
+
+  if (shouldPreemptOffRouteWarning) {
+    suppressIntervalGuidanceTts = true;
+    removeQueuedByKey('tts-offroute-warning');
+    removeQueuedByPredicate(item => isIntervalGuidanceKey(item.key));
+    void stopCurrentIfKeyMatches(
+      currentKey =>
+        currentKey === 'tts-offroute-warning' ||
+        isIntervalGuidanceKey(currentKey),
+    );
+  }
+
+  if (suppressIntervalGuidanceTts) {
+    const isStartKey = key === 'tts-navigation-start';
+    const isFirstActualKey = key.startsWith('tts-actual');
+    if (isIntervalGuidanceKey(key) && !isFirstActualKey) return;
+    if (isFirstActualKey) {
+      suppressIntervalGuidanceTts = false;
+    }
+    if (isStartKey) {
+      // allow start without changing suppression
+    }
+  }
 
   // ✅ (2) 같은 "정책 key(prefix)"가 이미 큐에 대기 중이면 또 넣지 않는다(난사 방지)
   if (isKeyAlreadyQueued(key)) return;
@@ -90,6 +152,8 @@ export const enqueueTts = (key: string, url: string, volume: number) => {
 export const clearTtsQueue = async () => {
   queue.length = 0;
   isConsuming = false;
+  currentPlayingKey = null;
+  suppressIntervalGuidanceTts = false;
   try {
     await TrackPlayer.reset();
   } catch {
@@ -103,11 +167,13 @@ export const clearTtsQueue = async () => {
  */
 export const registerTtsQueueHandler = () => {
   TrackPlayer.addEventListener(Event.PlaybackQueueEnded, () => {
+    currentPlayingKey = null;
     void consumeQueue();
   });
 
   TrackPlayer.addEventListener(Event.PlaybackState, async ({ state }) => {
     if (state === State.Stopped || state === State.Paused) {
+      currentPlayingKey = null;
       void consumeQueue();
     }
   });
@@ -130,6 +196,7 @@ const consumeQueue = async () => {
       const item = queue.shift()!;
       // ✅ (1) "이 prefix(key)를 재생 시작했다"를 기록 (쿨다운 기준점)
       lastSpokenAtByCooldownKey.set(getCooldownKey(item.key), now());
+      currentPlayingKey = item.key;
 
       await TrackPlayer.reset();
       await TrackPlayer.setVolume(item.volume);
