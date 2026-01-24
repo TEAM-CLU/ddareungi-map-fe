@@ -12,7 +12,7 @@ import {
   CheckEmailPayload,
   CheckEmailResponse,
 } from '@/features/auth/model/user.types';
-import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
+import { ACCESS_TOKEN_KEY } from '@/shared/model/shared.constants';
 import { api } from '@/shared/services/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';

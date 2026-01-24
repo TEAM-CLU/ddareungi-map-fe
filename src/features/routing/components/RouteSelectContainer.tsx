@@ -12,7 +12,7 @@ import {
   measureCaloriesBurned,
   measureCarbonSaved,
 } from '@/shared/utils/measure';
-import { Gender } from '@/shared/model/index.types';
+import { Gender } from '@/shared/model/shared.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import {
   getRouteCategoryText,

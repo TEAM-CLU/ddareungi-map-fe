@@ -2,11 +2,12 @@ import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useCallback, useEffect } from 'react';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { useModalStore } from '../stores/useModalStore';
-import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
 import { MapReadyMessage } from '@/shared/model/map.webview.types';
 import { useShallow } from 'zustand/react/shallow';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '@/app/types';
 
 /**
  * useMapOrchestrator
@@ -18,11 +19,13 @@ import { useShallow } from 'zustand/react/shallow';
  * - 지도 관련 전역 navigation / ref를 mapStore에 주입
  * - 거리 값, 경로 추천 관련 라우팅 핸들러 제공
  */
-export const useMapOrchestrator = () => {
-  /** ----------------------------------------
-   * 1. Navigation 객체 (화면 이동용)
-   * ---------------------------------------- */
-  const { navigation } = useAppNavigation();
+interface UseMapOrchestratorParams {
+  navigation: StackNavigationProp<RootStackParamList>;
+}
+
+export const useMapOrchestrator = ({
+  navigation,
+}: UseMapOrchestratorParams) => {
   const { clearStaticPath } = useRoutingMessenger();
 
   const { setIsMapReady, bumpMapReadyVersion } = useMapStore(
@@ -88,7 +91,7 @@ export const useMapOrchestrator = () => {
   }, [distance, setDistance, setShowRouteRecommendModal]);
 
   /** 선택된 경로 상세 모달 닫기 + 경로 선택 화면으로 이동 */
-  const handleSelectedRouteDetailModalClose = useCallback(() => {
+  const handleCloseSelectedRouteDetailModal = useCallback(() => {
     clearStaticPath();
     setShowSelectedRouteDetailModal(false);
     navigation.navigate(prevScreen ?? 'RouteSelect');
@@ -121,7 +124,7 @@ export const useMapOrchestrator = () => {
     // 이벤트 핸들러
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
-    handleSelectedRouteDetailModalClose,
+    handleCloseSelectedRouteDetailModal,
     handleOpenBookmarkModal,
     handleMapReadyMessage,
   };

@@ -4,7 +4,7 @@ import {
   IconRecommendedPath,
 } from '../components/icons';
 import { IconStar } from '../components/icons';
-import { FooterRoutes } from './index.types';
+import { FooterRoutes } from './shared.types';
 
 export const BUTTON_PRESETS = {
   // 가장 큰 버튼
@@ -121,13 +121,3 @@ export const MEAN_CARBON_EMISSION = {
   EMISSION_WALKING_PER_KM: 0.05,
   EMISSION_BIKING_PER_KM: 0.02,
 };
-
-export const BOOKMARK_COLOR_PRESETS = [
-  '#01DA86',
-  '#FF3B30',
-  '#FF9500',
-  '#FFC107',
-  '#007AFF',
-  '#5856D6',
-  '#8E8E93',
-];

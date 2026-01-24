@@ -3,8 +3,8 @@ import {
   MEAN_ACITIVITY_MET,
   MEAN_ADULT_PHYSICAL_INFORMATION,
   MEAN_CARBON_EMISSION,
-} from '@/shared/model/index.constants';
-import { TransportationType, Gender } from '@/shared/model/index.types';
+} from '@/shared/model/shared.constants';
+import { TransportationType, Gender } from '@/shared/model/shared.types';
 
 // 좌표 두개 비교하여 거리 계산
 export const getDistanceBetweenCoords = (

@@ -13,7 +13,7 @@ import {
   updateUserInfo,
   updateUserStats,
 } from '@/features/auth/services/user.api';
-import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
+import { ACCESS_TOKEN_KEY } from '@/shared/model/shared.constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 

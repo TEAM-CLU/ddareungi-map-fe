@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '../libs/tw-helper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { FOOTER_MENU } from '../model/index.constants';
+import { FOOTER_MENU } from '../model/shared.constants';
 import { useAppNavigation } from '../hooks/useAppNavigation';
 
 interface FooterProps {

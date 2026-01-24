@@ -10,9 +10,7 @@ interface TreeBadgeProps {
 const TreeBadge = ({ value }: TreeBadgeProps) => (
   <View
     style={[
-      tw(
-        'h-7 flex-row justify-center items-center bg-icon-container-primary',
-      ),
+      tw('h-7 flex-row justify-center items-center bg-icon-container-primary'),
       {
         maxWidth: '70%',
         borderRadius: 20,

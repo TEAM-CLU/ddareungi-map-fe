@@ -1,4 +1,4 @@
-import { TW } from '@/shared/model/index.types';
+import { TW } from '@/shared/model/shared.types';
 import { Platform } from 'react-native';
 
 let _tw: TW | null = null;

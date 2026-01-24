@@ -6,7 +6,7 @@ import {
   UpdateUserPayload,
   DeleteUserResponse,
 } from '@/features/auth/model/user.types';
-import { formatAddress } from '@/shared/utils/address';
+import { formatAddress } from '@/shared/utils/formatAddress';
 import { formatBirthDate } from '@/shared/utils/date';
 import { CommonActions } from '@react-navigation/native';
 import { UseMutateFunction } from '@tanstack/react-query';

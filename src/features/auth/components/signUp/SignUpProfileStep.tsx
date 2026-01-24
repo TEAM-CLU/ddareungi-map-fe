@@ -7,7 +7,7 @@ import BirthDateInput from '@/shared/components/Input/BirthDateInput';
 import GenderButton from '@/shared/components/button/GenderButton';
 import AddressInput from '@/shared/components/Input/AddressInput';
 import { formatBirthDate } from '@/shared/utils/date';
-import { formatAddress } from '@/shared/utils/address';
+import { formatAddress } from '@/shared/utils/formatAddress';
 
 interface SignUpProfileStepProps {
   name: string;

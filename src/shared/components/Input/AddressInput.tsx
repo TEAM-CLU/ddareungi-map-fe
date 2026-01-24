@@ -1,7 +1,7 @@
 import IconChevronDown from '@/shared/components/icons/IconChevronDown';
 import IconClose from '@/shared/components/icons/IconClose';
 import { tw } from '@/shared/libs/tw-helper';
-import { dongMap, guList } from '@/shared/model/index.data';
+import { dongMap, guList } from '@/shared/model/shared.data';
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';

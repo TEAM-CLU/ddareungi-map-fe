@@ -3,9 +3,9 @@ import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { BOOKMARK_COLOR_PRESETS } from '@/shared/model/index.constants';
 import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
 import BookmarkColorEditionButton from '@/features/bookmark/components/BookmarkColorEditionButton';
+import { BOOKMARK_COLOR_PRESETS } from '@/features/bookmark/model/bookmark.constants';
 
 interface BookmarkItemForEditingProps {
   item: BookmarkItem;

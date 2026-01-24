@@ -1,7 +1,7 @@
-import { Pressable, Text, View } from "react-native";
-import { tw } from "@/shared/libs/tw-helper";
-import { IconStar } from "../icons";
-import React from "react";
+import { Pressable, Text, View } from 'react-native';
+import { tw } from '@/shared/libs/tw-helper';
+import { IconStar } from '../icons';
+import React from 'react';
 
 interface BookmarkBadgeProps {
   name: string;

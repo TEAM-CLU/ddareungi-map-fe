@@ -1,7 +1,7 @@
 import { tw } from '@/shared/libs/tw-helper';
 import React from 'react';
 import { Text, TouchableOpacity } from 'react-native';
-import { BUTTON_PRESETS } from '@/shared/model/index.constants';
+import { BUTTON_PRESETS } from '@/shared/model/shared.constants';
 
 type ButtonPresetKey = keyof typeof BUTTON_PRESETS;
 

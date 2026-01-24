@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from './context';
-import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
+import { ACCESS_TOKEN_KEY } from '@/shared/model/shared.constants';
 import { useAxiosInterceptor } from '@/shared/hooks/useAxiosInterceptor';
 import { setClientToken } from '@/shared/services/axios';
 import { useQueryClient } from '@tanstack/react-query';

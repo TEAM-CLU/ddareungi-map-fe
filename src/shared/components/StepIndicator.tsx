@@ -8,7 +8,9 @@ interface StepIndicatorProps {
 }
 const StepIndicator = ({ totalSteps, currentStep }: StepIndicatorProps) => {
   return (
-        <View style={[tw('flex flex-row items-center justify-center'), { gap: 11 }]}>
+    <View
+      style={[tw('flex flex-row items-center justify-center'), { gap: 11 }]}
+    >
       {Array.from({ length: totalSteps }, (_, index) => {
         const stepNumber = index + 1;
         return (

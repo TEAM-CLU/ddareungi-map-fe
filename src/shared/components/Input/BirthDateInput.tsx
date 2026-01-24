@@ -2,7 +2,7 @@ import IconChevronDown from '@/shared/components/icons/IconChevronDown';
 import IconClose from '@/shared/components/icons/IconClose';
 
 import { tw } from '@/shared/libs/tw-helper';
-import { monthList, yearList } from '@/shared/model/index.data';
+import { monthList, yearList } from '@/shared/model/shared.data';
 import { createDayListInMonth } from '@/shared/utils/date';
 import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';

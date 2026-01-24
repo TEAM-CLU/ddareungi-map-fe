@@ -26,13 +26,15 @@ import { getRouteCategoryText } from '@/shared/utils/formatting';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 const MapScreen = () => {
+  const { navigation } = useAppNavigation();
+
   const {
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
-    handleSelectedRouteDetailModalClose,
+    handleCloseSelectedRouteDetailModal,
     handleOpenBookmarkModal,
     handleMapReadyMessage,
-  } = useMapOrchestrator();
+  } = useMapOrchestrator({ navigation });
 
   const {
     pathDataListByInterval,
@@ -57,7 +59,6 @@ const MapScreen = () => {
   );
 
   const selectedRouteData = useRouteStore(state => state.selectedRouteData);
-  const { navigation } = useAppNavigation();
 
   const {
     handleCloseSearchPress,
@@ -184,7 +185,7 @@ const MapScreen = () => {
             ]}
           >
             <ReturnToRouteSelectButton
-              onPress={handleSelectedRouteDetailModalClose}
+              onPress={handleCloseSelectedRouteDetailModal}
             />
             <SelectedRouteDetailBadge
               existText={formattedRouteCategory}

@@ -1,5 +1,5 @@
-import { CURRENT_YEAR } from '@/shared/model/index.constants';
-import { InputType } from '@/shared/model/index.types';
+import { CURRENT_YEAR } from '@/shared/model/shared.constants';
+import { InputType } from '@/shared/model/shared.types';
 import { Platform } from 'react-native';
 
 // Input 컴포넌트 관련 맵

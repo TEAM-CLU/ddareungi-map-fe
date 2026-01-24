@@ -5,7 +5,7 @@ import { Alert, Text, View } from 'react-native';
 import RoundButton from '@/shared/components/button/RoundButton';
 import { useResetPasswordMutation } from '@/features/auth/services/auth.queries';
 import { ResetPasswordPayload } from '@/features/auth/model/auth.types';
-import { PrevScreenForFeatureBranch } from '@/shared/model/index.types';
+import { PrevScreenForFeatureBranch } from '@/shared/model/shared.types';
 
 interface PwdResetSetPasswordStepProps {
   email: string;
