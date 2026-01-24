@@ -118,9 +118,6 @@ export const useRouteRecommend = () => {
     };
 
     searchCircularRoutes(payload, {
-      onSuccess: data => {
-        console.log('원형 경로 추천 성공', data);
-      },
       onError: error => {
         Alert.alert('오류', error.message);
       },

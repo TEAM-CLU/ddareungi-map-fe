@@ -116,7 +116,6 @@
   // 내 위치 방향 업데이트
   const rotateMyHeading = heading => {
     if (!kakaoRef || !mapRef) {
-      console.error('카카오맵 초기화 실패');
       return;
     }
     const myHeadingElement = document.getElementById('myHeadingOverlay');

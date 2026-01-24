@@ -109,8 +109,6 @@ const NavigationEndModal = ({
       resetSearchData();
       replaceMyLocationMarker(false);
       clearTtsQueue();
-    } catch (error) {
-      console.error('Failed to update user stats:', error);
     } finally {
       setShowNavigationEndModal(false);
       clearSharedTimer();

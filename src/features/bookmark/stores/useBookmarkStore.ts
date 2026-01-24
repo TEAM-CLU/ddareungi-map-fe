@@ -91,8 +91,7 @@ export const useBookmarkStore = create<BookmarkState>()(
       name: 'bookmark-storage',
       storage: createJSONStorage(() => AsyncStorage),
       version: 1, // 데이터 구조 변경 대비
-      onRehydrateStorage: () => (state, error) => {
-        if (error) console.error('즐겨찾기 데이터 로드 실패:', error);
+      onRehydrateStorage: () => state => {
         state?.setHasHydrated(true);
       },
     },

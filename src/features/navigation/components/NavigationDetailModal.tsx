@@ -69,8 +69,6 @@ const NavigationDetailModal = ({
       if (VolumeManager && typeof VolumeManager.setVolume === 'function') {
         await VolumeManager.setVolume(volume);
       }
-    } catch (error) {
-      console.error('시스템 볼륨을 설정하는 중 오류 발생:', error);
     } finally {
       isSlidingRef.current = false;
     }

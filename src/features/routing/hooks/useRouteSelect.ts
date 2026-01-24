@@ -212,9 +212,6 @@ export const useRouteSelect = () => {
     if (!fullJourneyPayload) return;
 
     searchRoutes(fullJourneyPayload, {
-      onSuccess: data => {
-        console.log('경로 검색 성공:', data);
-      },
       onError: error => {
         Alert.alert('오류', error.message);
       },

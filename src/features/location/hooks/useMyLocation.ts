@@ -75,7 +75,7 @@ export const useMyLocation = ({
         });
         sendLocation(position, { bypassAccuracyOnce: true });
       },
-      error => console.error('사용자 위치 가져오기 오류:', error?.message),
+      () => {},
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
     );
 
@@ -93,7 +93,7 @@ export const useMyLocation = ({
         });
         sendLocation(position);
       },
-      error => console.error('실시간 위치 추적 오류:', error?.message),
+      () => {},
       {
         enableHighAccuracy: true,
         distanceFilter: 0,

@@ -42,7 +42,6 @@ export const useBookmark = ({
           !clickedBookmark?.latitude ||
           !clickedBookmark?.longitude
         ) {
-          console.error('유효하지 않은 즐겨찾기 데이터:', clickedBookmark);
           Alert.alert('오류', '즐겨찾기 정보를 불러올 수 없습니다.');
           return;
         }
@@ -57,9 +56,7 @@ export const useBookmark = ({
         };
         setSelectedPlaceInfoForModal(bookmarkInfoForModal);
         setShowPlaceDetailModal(true);
-      } catch (error) {
-        console.error('Bookmark Marker Click Error:', error);
-      }
+      } catch (error) {}
     },
     [setSelectedPlaceInfoForModal, setShowPlaceDetailModal],
   );

@@ -122,7 +122,6 @@ const SearchOverlay = ({
 
       handleSearchResultSelect(place);
     } catch (error) {
-      console.log('현위치 검색 실패:', error);
     } finally {
       setIsLoadingCurrentLocation(false);
     }

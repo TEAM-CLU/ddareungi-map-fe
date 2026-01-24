@@ -4,7 +4,6 @@ import { useStation } from '@/features/station/hooks/useStation';
 import { useMapStore } from '../stores/useMapStore';
 import { useBookmark } from '@/features/bookmark/hooks/useBookmark';
 import { useWebViewRef } from '@/app/providers/webview';
-import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 interface MapProps {
   handleMapReadyMessage: (event: WebViewMessageEvent) => void;
@@ -43,10 +42,7 @@ const Map = ({ handleMapReadyMessage }: MapProps) => {
       domStorageEnabled={true}
       originWhitelist={['*']}
       onMessage={handleWebViewMessage}
-      onError={e => console.log('WebView error', e.nativeEvent)}
-      cacheEnabled={false}
-      cacheMode="LOAD_NO_CACHE"
-      incognito={true}
+      onError={() => {}} 
       source={{
         uri: 'https://12b5110446eb.ngrok-free.app/map.html',
       }}

@@ -35,10 +35,7 @@ export const commonErrorInterceptor = (
                 try {
                   // 2. 로그아웃 시도
                   await handleLogout();
-                } catch (logoutError) {
-                  // 3. 에러 발생 시 로그만 찍음 (사용자는 로그인 화면으로 이동됨)
-                  console.error('로그아웃 처리 중 오류 발생:', logoutError);
-                }
+                } catch (logoutError) {}
               },
             },
           ],

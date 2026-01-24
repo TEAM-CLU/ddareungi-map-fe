@@ -107,9 +107,7 @@ export const useMapOrchestrator = ({
         console.log('✅ 지도 준비 완료');
         bumpMapReadyVersion();
       }
-    } catch (error) {
-      console.error('Invalid JSON from WebView:', event.nativeEvent.data);
-    }
+    } catch (error) {}
   };
 
   /* 즐겨찾기 모달 열기 */

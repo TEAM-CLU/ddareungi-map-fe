@@ -58,7 +58,6 @@ const StoryShareScreen = ({
         const cameraPermission = await Camera.requestCameraPermission();
         setHasPermission(cameraPermission === 'granted');
       } catch (error) {
-        console.error('Camera permission error:', error);
         setHasPermission(false);
       }
     })();
@@ -148,9 +147,7 @@ const StoryShareScreen = ({
     // 공유 후 임시 파일 삭제
     try {
       await RNFS.unlink(destPath);
-    } catch (e) {
-      console.log('Failed to delete temp file:', e);
-    }
+    } catch (e) {}
   };
 
   if (!device) {

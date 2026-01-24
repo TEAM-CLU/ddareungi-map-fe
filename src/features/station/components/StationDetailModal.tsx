@@ -77,7 +77,6 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
         await Linking.openURL(storeUrl);
       }
     } catch (error) {
-      console.error('따릉이 앱 실행 실패:', error);
       const storeUrl = Platform.OS === 'ios' ? iosStoreUrl : androidStoreUrl;
       await Linking.openURL(storeUrl);
     }

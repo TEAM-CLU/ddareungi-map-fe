@@ -14,13 +14,14 @@ const App = () => {
     const setupTrackPlayer = async () => {
       try {
         await TrackPlayer.setupPlayer();
+      } catch (error) {}
+
+      try {
         await TrackPlayer.updateOptions({
           capabilities: [],
         });
         registerTtsQueueHandler();
-      } catch (error) {
-        console.warn('TrackPlayer setup failed:', error);
-      }
+      } catch (error) {}
     };
 
     setupTrackPlayer();

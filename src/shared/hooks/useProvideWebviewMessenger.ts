@@ -10,7 +10,6 @@ export const useProvideWebviewMessenger = () => {
   const sendMessage = useCallback(
     (message: WebViewMessageToWeb) => {
       if (!webViewRef.current) {
-        console.warn('⚠️ WebView ref is null — 메시지 전송 불가');
         return;
       }
       webViewRef.current.postMessage(JSON.stringify(message));

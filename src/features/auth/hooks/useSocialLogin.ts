@@ -139,7 +139,6 @@ export const useSocialLogin = ({
           // 3. 화면 이동 (성공 시에만)
           navigation.navigate('Map');
         } catch (error) {
-          console.error('로그인 처리 중 오류 발생:', error);
           resetFlow();
           setCanStartPolling(true); // 폴링 재시작
           Alert.alert(

@@ -178,9 +178,6 @@ export const useNavigationDataApply = ({
           instruction => instruction.interval,
         );
 
-        console.log('coordinates.length:', coordinates.length);
-        console.log('intervals.length:', intervals.length);
-
         // 대여소 정보: 새로운 정보가 있으면 사용, 없으면 selectedRouteData 사용
         const startStation =
           navigationData.startStation || selectedRouteData.startStation;

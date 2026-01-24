@@ -18,7 +18,10 @@ interface UseStationParams {
   mapReadyVersion: number;
 }
 
-export const useStation = ({ isMapReady, mapReadyVersion }: UseStationParams) => {
+export const useStation = ({
+  isMapReady,
+  mapReadyVersion,
+}: UseStationParams) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
   const { mutateAsync: getLatestBikeCountList } =
@@ -54,26 +57,22 @@ export const useStation = ({ isMapReady, mapReadyVersion }: UseStationParams) =>
   // 웹뷰에서 오는 메세지 한 곳에서 처리
   const handleStationMessage = useCallback(
     async (event: WebViewMessageEvent) => {
-      // JSON 파싱만 먼저 수행하고 에러를 분리
       let data: any;
+
+      // 1. JSON 파싱 시도
       try {
         data = JSON.parse(event.nativeEvent.data);
       } catch (error) {
-        console.error(
-          'WebView Message JSON Parse Error:',
-          event.nativeEvent.data,
-        );
         return;
       }
 
-      // 파싱된 데이터 기반 로직 수행
+      // 2. 파싱된 데이터 로직 수행
       try {
         switch (data.type) {
           // 1. 지도 이동 멈춤 (Idle)
           // 일정 거리 이상 움직였을 때만 상태 업데이트 -> 쿼리 자동 실행
           case 'changeMapCenter': {
             if (typeof data.lat !== 'number' || typeof data.lng !== 'number') {
-              console.warn('changeMapCenter 페이로드에 잘못된 데이터:', data);
               return;
             }
 
@@ -97,7 +96,6 @@ export const useStation = ({ isMapReady, mapReadyVersion }: UseStationParams) =>
               !Array.isArray(data.stationNumbers) ||
               data.stationNumbers.length === 0
             ) {
-              // 빈 배열이면 리턴 (에러 X)
               return;
             }
 
@@ -107,19 +105,13 @@ export const useStation = ({ isMapReady, mapReadyVersion }: UseStationParams) =>
                   stationNumbers: data.stationNumbers,
                 });
               updateTargetedStationBikeCountListMessage(response);
-            } catch (error) {
-              console.error('대여소 실시간 재고 조회 API 에러:', error);
-            }
+            } catch (error) {}
             break;
           }
 
           // 3. 대여소 마커 클릭
           case 'clickStationMarker': {
             if (!data.stationData) {
-              console.warn(
-                'clickStationMarker 페이로드에 대여소 데이터 없음:',
-                data,
-              );
               return;
             }
 
@@ -133,9 +125,7 @@ export const useStation = ({ isMapReady, mapReadyVersion }: UseStationParams) =>
           default:
             break;
         }
-      } catch (error) {
-        console.error('Logic Error inside handleStationMessage', error);
-      }
+      } catch (error) {}
     },
     [
       getLatestBikeCountList,

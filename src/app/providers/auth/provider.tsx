@@ -24,7 +24,6 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
           setClientToken(token);
         }
       } catch (error) {
-        console.error('토큰 로드 실패:', error);
       } finally {
         setIsAuthLoading(false);
       }
@@ -53,9 +52,7 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
     queryClient.clear(); // 쿼리 캐시 초기화
     try {
       await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
-    } catch (error) {
-      console.error('토큰 삭제 실패:', error);
-    }
+    } catch (error) {}
   }, []);
 
   // 토큰 있는지 확인

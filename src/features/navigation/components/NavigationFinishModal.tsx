@@ -70,9 +70,7 @@ const NavigationFinishModal = ({
           sessionId: sessionId,
         };
         await terminateNavigationSession(payload);
-      } catch (error) {
-        console.error('Failed to terminate navigation session:', error);
-      }
+      } catch (error) {}
     };
     clearNavigationPath();
     terminateNavigation();
@@ -111,8 +109,6 @@ const NavigationFinishModal = ({
       resetSearchData();
       replaceMyLocationMarker(false);
       clearTtsQueue();
-    } catch (error) {
-      console.error('Failed to update user stats:', error);
     } finally {
       setShowNavigationFinishModal(false);
       clearSharedTimer();
