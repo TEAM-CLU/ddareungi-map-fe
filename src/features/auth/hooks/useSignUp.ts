@@ -1,8 +1,10 @@
+import { RootStackParamList } from '@/app/types';
 import {
   CreateUserPayload,
   CreateUserResponse,
 } from '@/features/auth/model/user.types';
 import { UseMutateFunction } from '@tanstack/react-query';
+import { StackNavigationProp } from 'node_modules/@react-navigation/stack/lib/typescript/src/types';
 import { useState } from 'react';
 import { Alert } from 'react-native';
 
@@ -13,7 +15,7 @@ interface UseSignUpParams {
     CreateUserPayload,
     unknown
   >;
-  navigation: any;
+  navigation: StackNavigationProp<RootStackParamList>;
 }
 
 export const useSignUp = ({ signUp, navigation }: UseSignUpParams) => {

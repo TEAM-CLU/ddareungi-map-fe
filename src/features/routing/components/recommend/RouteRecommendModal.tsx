@@ -24,9 +24,9 @@ const RouteRecommendModal = () => {
   const handleConfirmDistancePress = () => {
     // 현재 화면이 RouteRecommend가 아닐 때만 navigate
     const currentRoute =
-      globalNavigation.getState().routes[globalNavigation.getState().index];
-    if (currentRoute.name !== 'RouteRecommend') {
-      globalNavigation.navigate('RouteRecommend');
+      globalNavigation?.getState().routes[globalNavigation?.getState().index];
+    if (currentRoute?.name !== 'RouteRecommend') {
+      globalNavigation?.navigate('RouteRecommend');
     }
     setShowRouteRecommendModal(false);
   };

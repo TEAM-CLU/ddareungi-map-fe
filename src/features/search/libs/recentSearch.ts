@@ -9,50 +9,74 @@ import {
   MAX_RECENT_SEARCHE_COUNT,
 } from '@/features/search/model/search.constants';
 
-// [조회] AsyncStorage에서 가져오기
+// [조회] AsyncStorage에서 최근 검색 기록 가져오기
 export const getRecentSearches = async (): Promise<RecentSearchItem[]> => {
-  const stored = await AsyncStorage.getItem(RECENT_SEARCH_KEY);
-  if (!stored) return [];
-  const parsed = JSON.parse(stored);
-  // 최신순 정렬
-  return parsed.sort(
-    (a: RecentSearchItem, b: RecentSearchItem) => b.timestamp - a.timestamp,
+  const storedRecentSearchJson = await AsyncStorage.getItem(RECENT_SEARCH_KEY);
+
+  if (!storedRecentSearchJson) return [];
+
+  const parsedRecentSearchList: RecentSearchItem[] = JSON.parse(
+    storedRecentSearchJson,
+  );
+
+  // 최신 검색 순으로 정렬 (timestamp 기준 내림차순)
+  return parsedRecentSearchList.sort(
+    (previousItem: RecentSearchItem, nextItem: RecentSearchItem) =>
+      nextItem.timestamp - previousItem.timestamp,
   );
 };
 
-// [저장] 리스트에 추가하고 저장하기
+// [저장] 최근 검색 기록에 항목 추가 후 저장
 export const saveRecentSearch = async (
-  currentList: RecentSearchItem[],
-  place: PlaceInfo,
+  currentRecentSearchList: RecentSearchItem[],
+  selectedPlace: PlaceInfo,
 ): Promise<RecentSearchItem[]> => {
-  const newItem: RecentSearchItem = {
-    placeId: place.placeId,
-    name: place.name,
-    address: place.address,
-    latitude: place.latitude,
-    longitude: place.longitude,
+  const newRecentSearchItem: RecentSearchItem = {
+    placeId: selectedPlace.placeId,
+    name: selectedPlace.name,
+    address: selectedPlace.address,
+    latitude: selectedPlace.latitude,
+    longitude: selectedPlace.longitude,
     timestamp: Date.now(),
   };
 
-  // 중복 제거 및 갯수 제한
-  const filtered = currentList.filter(item => item.placeId !== place.placeId);
-  const updated = [newItem, ...filtered].slice(0, MAX_RECENT_SEARCHE_COUNT);
+  // 동일한 장소(placeId) 중복 제거
+  const deduplicatedSearchList = currentRecentSearchList.filter(
+    recentSearchItem => recentSearchItem.placeId !== selectedPlace.placeId,
+  );
 
-  await AsyncStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(updated));
-  return updated;
+  // 최신 항목을 맨 앞에 추가하고 최대 개수 제한
+  const updatedRecentSearchList = [
+    newRecentSearchItem,
+    ...deduplicatedSearchList,
+  ].slice(0, MAX_RECENT_SEARCHE_COUNT);
+
+  await AsyncStorage.setItem(
+    RECENT_SEARCH_KEY,
+    JSON.stringify(updatedRecentSearchList),
+  );
+
+  return updatedRecentSearchList;
 };
 
-// [삭제] 하나 지우기
+// [삭제] 특정 최근 검색 기록 하나 삭제
 export const removeRecentSearchItem = async (
-  currentList: RecentSearchItem[],
-  id: string,
+  currentRecentSearchList: RecentSearchItem[],
+  targetPlaceId: string,
 ): Promise<RecentSearchItem[]> => {
-  const updated = currentList.filter(item => item.placeId !== id);
-  await AsyncStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(updated));
-  return updated;
+  const updatedRecentSearchList = currentRecentSearchList.filter(
+    recentSearchItem => recentSearchItem.placeId !== targetPlaceId,
+  );
+
+  await AsyncStorage.setItem(
+    RECENT_SEARCH_KEY,
+    JSON.stringify(updatedRecentSearchList),
+  );
+
+  return updatedRecentSearchList;
 };
 
-// [전체 삭제]
+// [전체 삭제] 최근 검색 기록 전체 제거
 export const clearRecentSearchHistory = async (): Promise<
   RecentSearchItem[]
 > => {

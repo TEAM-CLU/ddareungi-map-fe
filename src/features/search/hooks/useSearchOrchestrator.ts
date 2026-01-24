@@ -3,7 +3,6 @@ import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useAutocomplete } from '@/features/search/hooks/useAutocomplete';
 import { useSearchMessenger } from '@/features/search/hooks/useSearchMessenger';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useRoute, RouteProp } from '@react-navigation/native';
@@ -12,6 +11,11 @@ import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMesse
 import { PlaceInfo } from '../model/search.types';
 import { useShallow } from 'zustand/react/shallow';
 import { Keyboard } from 'react-native';
+import { StackNavigationProp } from '@react-navigation/stack';
+
+interface UseSearchOrchestratorParams {
+  navigation: StackNavigationProp<RootStackParamList>;
+}
 
 /**
  * useSearchOrchestrator
@@ -25,12 +29,9 @@ import { Keyboard } from 'react-native';
  *
  * 이 훅은 "검색 관련 UX 전체를 조율하는 오케스트레이터" 역할을 한다.
  */
-export const useSearchOrchestrator = () => {
-  /** ---------------------------
-   * Navigation
-   * --------------------------- */
-  const { navigation } = useAppNavigation();
-
+export const useSearchOrchestrator = ({
+  navigation,
+}: UseSearchOrchestratorParams) => {
   /** ---------------------------
    * 검색 상태 (선택된 장소)
    * --------------------------- */
@@ -42,9 +43,6 @@ export const useSearchOrchestrator = () => {
         searchInputRef: state.searchInputRef,
       })),
     );
-
-  /** 현재 검색의 목적 (출발/도착/경유 or auto) */
-  const [currentPlaceType, setCurrentPlaceType] = useState<string | null>(null);
 
   /** ---------------------------
    * 모달 상태
@@ -103,9 +101,11 @@ export const useSearchOrchestrator = () => {
    * - 검색 오버레이 표시
    */
 
+  /** 현재 검색의 목적 (출발/도착/경유 or auto) */
+  const [currentPlaceType, setCurrentPlaceType] = useState<string | null>(null);
   const route = useRoute<RouteProp<RootStackParamList, 'Map'>>();
 
-  const handleSearchbarPress = useCallback(() => {
+  const handleSearchPlacePress = useCallback(() => {
     clearCurrentPlaceMarker();
     setSelectedPlaceInfoForModal(null);
     setShowPlaceDetailModal(false);
@@ -136,7 +136,7 @@ export const useSearchOrchestrator = () => {
    * - 검색 오버레이 숨김
    * - 현재 placeType 초기화
    */
-  const handleSearchClose = useCallback(() => {
+  const handleCloseSearchPress = useCallback(() => {
     setShowSearchOverlay(false);
     setIsFocused(false);
     setCurrentPlaceType(null);
@@ -145,7 +145,7 @@ export const useSearchOrchestrator = () => {
       searchInputRef?.current?.blur();
       Keyboard.dismiss(); // 보험
     });
-  }, []);
+  }, [setShowSearchOverlay, setIsFocused, searchInputRef]);
 
   /** ---------------------------
    * 장소 선택 시 전체 흐름 처리
@@ -259,8 +259,8 @@ export const useSearchOrchestrator = () => {
    * 외부에서 쓸 API
    * --------------------------- */
   return {
-    handleSearchbarPress,
-    handleSearchClose,
+    handleSearchPlacePress,
+    handleCloseSearchPress,
     handlePlaceSelectionFlow,
     clearSearch,
   };

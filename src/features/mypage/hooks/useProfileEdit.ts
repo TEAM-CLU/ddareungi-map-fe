@@ -1,3 +1,4 @@
+import { RootStackParamList } from '@/app/types';
 import { LogoutResponse } from '@/features/auth/model/auth.types';
 import {
   GetUserInfoResponse,
@@ -9,6 +10,7 @@ import { formatAddress } from '@/shared/utils/address';
 import { formatBirthDate } from '@/shared/utils/date';
 import { CommonActions } from '@react-navigation/native';
 import { UseMutateFunction } from '@tanstack/react-query';
+import { StackNavigationProp } from 'node_modules/@react-navigation/stack/lib/typescript/src/types';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 
@@ -22,7 +24,7 @@ interface UseProfileEditParams {
   >;
   logout: UseMutateFunction<LogoutResponse, Error, void, unknown>;
   deleteUser: UseMutateFunction<DeleteUserResponse, Error, void, unknown>;
-  navigation: any;
+  navigation: StackNavigationProp<RootStackParamList>;
 }
 
 export const useProfileEdit = ({

@@ -23,6 +23,7 @@ import SimpleLoading from '@/shared/components/SimpleLoading';
 import { makeSegmentColors } from '@/features/navigation/utils/makeSegmentColors';
 import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 import { getRouteCategoryText } from '@/shared/utils/formatting';
+import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 const MapScreen = () => {
   const {
@@ -56,8 +57,15 @@ const MapScreen = () => {
   );
 
   const selectedRouteData = useRouteStore(state => state.selectedRouteData);
-  const { handleSearchbarPress, handleSearchClose, handlePlaceSelectionFlow } =
-    useSearchOrchestrator();
+  const { navigation } = useAppNavigation();
+
+  const {
+    handleCloseSearchPress,
+    handleSearchPlacePress,
+    handlePlaceSelectionFlow,
+  } = useSearchOrchestrator({
+    navigation,
+  });
 
   const formattedRouteCategory = getRouteCategoryText(
     selectedRouteData?.routeCategory ?? '',
@@ -76,9 +84,7 @@ const MapScreen = () => {
 
   return (
     <View style={tw('flex-1 relative w-full')}>
-      <Map
-        handleMapReadyMessage={handleMapReadyMessage}
-      />
+      <Map handleMapReadyMessage={handleMapReadyMessage} />
 
       {isLoadingForOffRoute && <SimpleLoading title="경로 재탐색 중" />}
 
@@ -200,8 +206,8 @@ const MapScreen = () => {
       {/* 기본 모드 */}
       {!showSelectedRouteDetailModal && !isNavigationMode && (
         <SearchOverlay
-          onPress={handleSearchbarPress}
-          onClose={handleSearchClose}
+          onPress={handleSearchPlacePress}
+          onClose={handleCloseSearchPress}
           onPlaceSelect={handlePlaceSelectionFlow}
         />
       )}

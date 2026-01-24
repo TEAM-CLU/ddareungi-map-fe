@@ -4,16 +4,17 @@ import { useShallow } from 'zustand/react/shallow';
 import { RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { PlaceInfo } from '@/features/search/model/search.types';
-import { useStationStore } from '@/features/station/stores/useStationStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 
-interface UseStationRouteApplyActionsParams {
+interface UsePlaceRouteApplyActionsParams {
+  place: PlaceInfo | null;
   onClose?: () => void;
 }
 
-export const useStationRouteApplyActions = ({
+export const usePlaceRouteApplyActions = ({
+  place,
   onClose,
-}: UseStationRouteApplyActionsParams = {}) => {
+}: UsePlaceRouteApplyActionsParams) => {
   const {
     routeType,
     setRouteType,
@@ -31,7 +32,6 @@ export const useStationRouteApplyActions = ({
       syncStartEndInLoopMode: state.syncStartEndInLoopMode,
     })),
   );
-  const stationMetaData = useStationStore(state => state.stationMetaData);
   const navigation = useMapStore(state => state.globalNavigation);
   const toggleAnimation = useRef(
     new Animated.Value(routeType === RouteType.LOOP ? 1 : 0),
@@ -52,15 +52,17 @@ export const useStationRouteApplyActions = ({
   }, [routeType, setRouteType]);
 
   const handleApplyConstantRoutePress = useCallback(() => {
-    if (!stationMetaData) return;
+    if (!place) return;
     onClose?.();
 
     const placeData: PlaceInfo = {
       placeId: `start-${Date.now()}`,
-      name: stationMetaData.name,
-      address: stationMetaData.address,
-      latitude: stationMetaData.latitude,
-      longitude: stationMetaData.longitude,
+      name: place.name,
+      address: place.address,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      category: place.category,
+      roadAddress: place.roadAddress,
     };
 
     if (routeType === RouteType.LOOP) {
@@ -70,25 +72,20 @@ export const useStationRouteApplyActions = ({
     }
 
     navigation?.navigate('RouteSelect');
-  }, [
-    stationMetaData,
-    onClose,
-    routeType,
-    syncStartEndInLoopMode,
-    setStart,
-    navigation,
-  ]);
+  }, [place, onClose, routeType, syncStartEndInLoopMode, setStart, navigation]);
 
   const handleApplyLoopRoutePress = useCallback(() => {
-    if (!stationMetaData) return;
+    if (!place) return;
     onClose?.();
 
     const placeData: PlaceInfo = {
       placeId: routeType === RouteType.LOOP ? '' : `end-${Date.now()}`,
-      name: stationMetaData.name,
-      address: stationMetaData.address,
-      latitude: stationMetaData.latitude,
-      longitude: stationMetaData.longitude,
+      name: place.name,
+      address: place.address,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      category: place.category,
+      roadAddress: place.roadAddress,
     };
 
     if (routeType === RouteType.LOOP) {
@@ -98,7 +95,7 @@ export const useStationRouteApplyActions = ({
     }
 
     navigation?.navigate('RouteSelect');
-  }, [stationMetaData, onClose, routeType, addWaypoint, setEnd, navigation]);
+  }, [place, onClose, routeType, addWaypoint, setEnd, navigation]);
 
   return {
     toggleAnimation,

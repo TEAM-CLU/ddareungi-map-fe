@@ -1,10 +1,14 @@
+import { RootStackParamList } from '@/app/types';
+import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 interface MapState {
-  globalNavigation: any;
-  setGlobalNavigation: (navigation: any) => void;
+  globalNavigation: StackNavigationProp<RootStackParamList> | null;
+  setGlobalNavigation: (
+    navigation: StackNavigationProp<RootStackParamList> | null,
+  ) => void;
 
   isMapReady: boolean;
   setIsMapReady: (isReady: boolean) => void;

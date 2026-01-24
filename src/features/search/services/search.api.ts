@@ -5,9 +5,7 @@ import {
   PlaceInfo,
   SearchOptions,
 } from '../model/search.types';
-import {
-  KAKAO_BASE_URL,
-} from '../model/search.constants';
+import { KAKAO_BASE_URL } from '../model/search.constants';
 import axios from 'axios';
 import { commonErrorInterceptor } from '@/shared/services/axiosConfig';
 
@@ -40,7 +38,7 @@ kakaoClient.interceptors.response.use(
       error.response.data.message = error.response.data.msg;
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // [응답 인터셉터 2] 공통 에러 처리

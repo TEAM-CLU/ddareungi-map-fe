@@ -1,3 +1,4 @@
+import { RootStackParamList } from '@/app/types';
 import {
   SocialAuthExchangeTokenPayload,
   SocialAuthExchangeTokenResponse,
@@ -6,6 +7,7 @@ import {
 } from '@/features/auth/model/auth.types';
 import { useSocialAuthCheckStatusQuery } from '@/features/auth/services/auth.queries';
 import { QueryClient, UseMutateFunction } from '@tanstack/react-query';
+import { StackNavigationProp } from 'node_modules/@react-navigation/stack/lib/typescript/src/types';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, AppState, Linking } from 'react-native';
 
@@ -24,7 +26,7 @@ interface UseSocialLoginParams {
   >;
   isSocialLoading: boolean;
   setToken: (token: string) => Promise<void>;
-  navigation: any;
+  navigation: StackNavigationProp<RootStackParamList>;
   queryClient: QueryClient;
 }
 

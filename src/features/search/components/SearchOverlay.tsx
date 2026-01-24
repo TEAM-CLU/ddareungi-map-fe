@@ -25,11 +25,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
-import { useSearchOrchestrator } from '../hooks/useSearchOrchestrator';
 import { useRecentSearchesQuery } from '../services/search.queries';
 import BookmarkBadge from '@/shared/components/badge/BookmarkBadge';
 import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
-import { Icon } from 'react-native-paper';
 
 interface SearchOverlayProps {
   onClose: () => void;
@@ -70,7 +68,6 @@ const SearchOverlay = ({
 
   const locationMetaData = useMyPositionStore(state => state.locationMetaData);
   const myPosition = locationMetaData?.coordinate;
-  const { handlePlaceSelectionFlow } = useSearchOrchestrator();
 
   // ----------------------------------------------------
   // Handlers
@@ -124,8 +121,8 @@ const SearchOverlay = ({
       if (!place) return;
 
       handleSearchResultSelect(place);
-    } catch (error: any) {
-      console.log('현위치 검색 실패:', error.message);
+    } catch (error) {
+      console.log('현위치 검색 실패:', error);
     } finally {
       setIsLoadingCurrentLocation(false);
     }
@@ -143,9 +140,9 @@ const SearchOverlay = ({
         longitude: item.longitude,
         category: item.category ?? '',
       };
-      handlePlaceSelectionFlow(place);
+      onPlaceSelect(place);
     },
-    [handlePlaceSelectionFlow],
+    [onPlaceSelect],
   );
 
   // ----------------------------------------------------
