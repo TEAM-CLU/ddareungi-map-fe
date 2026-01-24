@@ -13,11 +13,11 @@ import { useNavigationStore } from '@/features/navigation/stores/useNavigationSt
 import { useShallow } from 'zustand/react/shallow';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
-interface UseStationsParams {
+interface UseStationParams {
   isMapReady: boolean;
 }
 
-export const useStation = ({ isMapReady }: UseStationsParams) => {
+export const useStation = ({ isMapReady }: UseStationParams) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
   const { mutateAsync: getLatestBikeCountList } =

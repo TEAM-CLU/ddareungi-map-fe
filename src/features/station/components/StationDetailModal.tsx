@@ -25,7 +25,7 @@ interface StationDetailModalProps {
 const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
   const stationMetaData = useStationStore(state => state.stationMetaData);
   const locationMetaData = useMyPositionStore(state => state.locationMetaData);
-  const myPosition = useStableMyPosition(locationMetaData);
+  const myPosition = useStableMyPosition({ locationMetaData });
 
   // 내 위치와 대여소 간 거리 계산
   const [distanceMeter, setDistanceMeter] = useState<number | null>(null);

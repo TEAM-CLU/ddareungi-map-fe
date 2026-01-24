@@ -4,9 +4,13 @@ import { LocationMetaData } from '@/features/navigation/model/navigation.types';
 import { STATION_MOTION_CONFIG } from '@/features/station/model/station.constants';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
-export const useStableMyPosition = (
-  locationMetaData?: LocationMetaData,
-): Coordinates | null => {
+interface UseStableMyPositionParams {
+  locationMetaData?: LocationMetaData;
+}
+
+export const useStableMyPosition = ({
+  locationMetaData,
+}: UseStableMyPositionParams) => {
   const {
     MOVE_CONFIRM_COUNT,
     STATIONARY_DISTANCE_THRESHOLD,

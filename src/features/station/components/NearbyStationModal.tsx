@@ -16,7 +16,7 @@ import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 const NearbyStationModal = () => {
   const { focusOnTargetedNearbyStation } = useStationMessenger();
   const locationMetaData = useMyPositionStore(state => state.locationMetaData);
-  const myPosition = useStableMyPosition(locationMetaData);
+  const myPosition = useStableMyPosition({ locationMetaData });
   const { data: nearbyStationDataList, isLoading } = useNearbyStationsQuery(
     myPosition?.lat,
     myPosition?.lng,
