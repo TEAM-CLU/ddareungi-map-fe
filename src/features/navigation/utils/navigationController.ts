@@ -1,4 +1,3 @@
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import {
   ACCURACY_OK,
@@ -12,6 +11,7 @@ import {
   NavigationInstruction,
   StabilizeDistanceInput,
 } from '@/features/navigation/model/navigation.types';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 /* 예상 도착 시간 계산 (예: "12:07AM"), 남은 거리 계산 (예: "1.8km")
  1. 현재 내가 속한 인터벌의 lastCoordinate와 현재 내 좌표간 거리 계산(보정 필요)

@@ -8,39 +8,21 @@ import { useWebViewRef } from '@/app/providers/webview';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { DataSetForUpdateMyLocation } from '@/features/location/model/location.types';
 import { Coordinates } from '@/features/map/model/map.types';
-import { useShallow } from 'zustand/react/shallow';
+import { smoothPosition } from '@/features/location/utils/smoothPosition';
 
-export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
+interface UseMyLocationParams {
+  isMapReady: boolean;
+}
+
+export const useMyLocation = ({ isMapReady }: UseMyLocationParams) => {
   const { updateMyLocation, rotateMyHeading } = useLocationMessenger();
-  const webViewRef = useWebViewRef();
   const setLocationMetaData = useMyPositionStore(
     state => state.setLocationMetaData,
   );
+
+  const webViewRef = useWebViewRef();
   const watchIdRef = useRef<number | null>(null);
-  const lastPos = useRef<Coordinates | null>(null);
-
-  // 보정된 방향값 추출
-  const heading = useUserHeading({
-    triggerDeg: 1,
-    updateDeg: 1,
-    throttleMs: 16,
-    smoothAlpha: 0.6,
-  });
-
-  // 위치 보정 (이전 위치와 절반씩 섞기)
-  const smoothPosition = (lat: number, lng: number) => {
-    if (!lastPos.current) {
-      lastPos.current = { lat, lng };
-      return { lat, lng };
-    }
-    const prev = lastPos.current;
-    const smoothedcoord = {
-      lat: prev.lat * 0.5 + lat * 0.5,
-      lng: prev.lng * 0.5 + lng * 0.5,
-    };
-    lastPos.current = smoothedcoord;
-    return smoothedcoord;
-  };
+  const lastPosition = useRef<Coordinates | null>(null);
 
   // 위치 전송
   const sendLocation = (
@@ -51,7 +33,11 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
     const { latitude, longitude, accuracy } = currentPosition.coords;
     if (!opts?.bypassAccuracyOnce && accuracy > 30) return;
 
-    const { lat, lng } = smoothPosition(latitude, longitude);
+    const { lat, lng } = smoothPosition(
+      latitude,
+      longitude,
+      lastPosition.current,
+    );
     const myLocationData: DataSetForUpdateMyLocation = {
       lat,
       lng,
@@ -59,6 +45,7 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
     };
 
     updateMyLocation(myLocationData);
+    lastPosition.current = { lat, lng };
   };
 
   // 위치 추적 시작
@@ -72,38 +59,37 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
 
     // 지도 준비 직후 1회 전송 (정확도 필터 우회)
     Geolocation.getCurrentPosition(
-      pos => {
+      position => {
         setLocationMetaData({
-          timestamp: pos.timestamp ?? Date.now(),
-          accuracy: pos.coords.accuracy,
-          osSpeed: pos.coords.speed ?? undefined,
+          timestamp: position.timestamp ?? Date.now(),
+          accuracy: position.coords.accuracy,
+          osSpeed: position.coords.speed ?? undefined,
           coordinate: {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
           },
         });
-        sendLocation(pos, { bypassAccuracyOnce: true });
+        sendLocation(position, { bypassAccuracyOnce: true });
       },
-      err => console.warn('getCurrentPosition error:', err?.message),
+      error => console.error('사용자 위치 가져오기 오류:', error?.message),
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
     );
 
     // 실시간 추적
     const watchId = Geolocation.watchPosition(
-      pos => {
+      position => {
         setLocationMetaData({
-          timestamp: pos.timestamp ?? Date.now(),
-          accuracy: pos.coords.accuracy,
-          osSpeed: pos.coords.speed ?? undefined,
+          timestamp: position.timestamp ?? Date.now(),
+          accuracy: position.coords.accuracy,
+          osSpeed: position.coords.speed ?? undefined,
           coordinate: {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
           },
         });
-        sendLocation(pos);
+        sendLocation(position);
       },
-      _err =>
-        Alert.alert('오류', '위치 정보를 가져오는 중 오류가 발생했습니다.'),
+      error => console.error('실시간 위치 추적 오류:', error?.message),
       {
         enableHighAccuracy: true,
         distanceFilter: 0,
@@ -121,6 +107,14 @@ export const useMyLocation = ({ isMapReady }: { isMapReady: boolean }) => {
       watchIdRef.current = null;
     }
   };
+
+  // 보정된 방향값 추출
+  const heading = useUserHeading({
+    triggerDeg: 1,
+    updateDeg: 1,
+    throttleMs: 16,
+    smoothAlpha: 0.6,
+  });
 
   // 지도 준비되면 위치 추적 시작, 언마운트시 중지
   useEffect(() => {

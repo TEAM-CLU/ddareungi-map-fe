@@ -7,7 +7,7 @@ import {
   findClosestCoordIndex,
   calculateIntervalDistanceByMyPosition,
 } from '@/features/navigation/utils/navigationController';
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 describe('navigationController 핵심 로직 검증', () => {
   const coord = (lat: number, lng: number) => ({ lat, lng });

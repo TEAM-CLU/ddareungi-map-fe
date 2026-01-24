@@ -1,9 +1,9 @@
+import { LocationMode } from '@/features/location/model/location.types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-
 interface LocationState {
-  locationMode: 'default' | 'following' | 'compass';
-  setLocationMode: (mode: 'default' | 'following' | 'compass') => void;
+  locationMode: LocationMode;
+  setLocationMode: (mode: LocationMode) => void;
 }
 
 export const useLocationStore = create<LocationState>()(

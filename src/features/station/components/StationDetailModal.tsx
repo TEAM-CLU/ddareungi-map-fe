@@ -1,4 +1,3 @@
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { RouteType } from '@/features/routing/model/routing.types';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useEffect, useState } from 'react';
@@ -18,6 +17,7 @@ import { getDistanceGuideText } from '@/shared/utils/formatting';
 import { useStationRouteApplyActions } from '@/features/station/hooks/useStationRouteApplyActions';
 import { useStableMyPosition } from '@/features/station/hooks/useStableMyPosition';
 import { DISTANCE_LAMBDA } from '@/features/station/model/station.constants';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 interface StationDetailModalProps {
   onClose?: () => void;

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Coordinates } from '@/features/map/model/map.types';
 import { LocationMetaData } from '@/features/navigation/model/navigation.types';
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { STATION_MOTION_CONFIG } from '@/features/station/model/station.constants';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 export const useStableMyPosition = (
   locationMetaData?: LocationMetaData,

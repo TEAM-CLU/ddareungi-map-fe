@@ -1,6 +1,5 @@
 import { travelMode } from './../model/navigation.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { Coordinates } from '@/features/map/model/map.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
@@ -49,6 +48,7 @@ import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { NavigationWalkingPolicy } from '@/shared/model/map.webview.types';
 import {
+  getDistanceBetweenCoords,
   measureCaloriesBurned,
   measureCarbonSaved,
 } from '@/shared/utils/measure';

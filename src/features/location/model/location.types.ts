@@ -1,10 +1,4 @@
-import WebView from 'react-native-webview';
-
-// useMyLocation hook 내부 상태 타입
-export interface UseMyLocationProps {
-  webViewRef: React.RefObject<WebView | null>;
-}
-
+export type LocationMode = 'default' | 'following' | 'compass';
 export interface DataSetForUpdateMyLocation {
   lat: number;
   lng: number;

@@ -1,4 +1,3 @@
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { MapAreaStationData } from '@/features/station/model/station.types';
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
@@ -12,6 +11,7 @@ import { DISTANCE_LAMBDA } from '../model/station.constants';
 import { useShallow } from 'zustand/react/shallow';
 import { getDistanceGuideText } from '@/shared/utils/formatting';
 import { useStableMyPosition } from '@/features/station/hooks/useStableMyPosition';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 const NearbyStationModal = () => {
   const { focusOnTargetedNearbyStation } = useStationMessenger();

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { Coordinates } from '@/features/map/model/map.types';
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import {
   useGetStationsLatestBikeCountMutation,
   useStationDataListQuery,
@@ -12,6 +11,7 @@ import { useStationStore } from '../stores/useStationStore';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useShallow } from 'zustand/react/shallow';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 interface UseStationsParams {
   isMapReady: boolean;

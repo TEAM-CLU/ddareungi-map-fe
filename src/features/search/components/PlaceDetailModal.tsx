@@ -11,7 +11,6 @@ import { tw } from '@/shared/libs/tw-helper';
 import { IconBicycle } from '@/shared/components/icons';
 import { RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
@@ -21,6 +20,7 @@ import { PlaceInfo } from '../model/search.types';
 import { useNearbyStationsQuery } from '@/features/station/services/station.queries';
 import { useShallow } from 'zustand/react/shallow';
 import { getDistanceGuideText } from '@/shared/utils/formatting';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 export interface PlaceDetailModalProps {
   place: PlaceInfo | null;
