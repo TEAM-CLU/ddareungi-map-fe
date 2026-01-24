@@ -5,25 +5,10 @@ import { IconSpotMarker } from '@/shared/components/icons';
 import { ScrollView } from 'react-native-gesture-handler';
 import RouteProgressStepVerticalBar from '@/features/routing/components/RoutePrgressStepVerticalBar';
 import RoundButton from '@/shared/components/button/RoundButton';
-import { Route, RouteType, Waypoint } from '../model/routing.types';
-import React, { useEffect } from 'react';
-import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
-import { StaticPathData } from '@/shared/model/map.webview.types';
-import { useMapStore } from '@/features/map/stores/useMapStore';
-import { useLocationStore } from '@/features/location/stores/useLocationStore';
-import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
-import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
-import { useModalStore } from '@/shared/stores/useModalStore';
-import { useShallow } from 'zustand/react/shallow';
-import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
-import {
-  formatTimeHMText,
-  formatDistanceAdaptiveText,
-  formatTimeRangeText,
-  getRouteCategoryText,
-  formatTimeMinutesNumber,
-} from '@/shared/utils/formatting';
+import { Route, Waypoint } from '../model/routing.types';
+import React from 'react';
+import { useSelectedRouteDetailModal } from '@/features/routing/hooks/useSelectedRouteDetailModal';
+import { formatDistanceAdaptiveText } from '@/shared/utils/formatting';
 
 interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
@@ -47,133 +32,30 @@ const SelectedRouteDetailModal = ({
       </View>
     );
   }
-  const { isNavigationMode, routeId, setIsNavigationMode, setRouteId } =
-    useNavigationStore(
-      useShallow(state => ({
-        isNavigationMode: state.isNavigationMode,
-        routeId: state.routeId,
-        setIsNavigationMode: state.setIsNavigationMode,
-        setRouteId: state.setRouteId,
-      })),
-    );
-  const { setShowSelectedRouteDetailModal, setShowNavigationStartModal } =
-    useModalStore(
-      useShallow(state => ({
-        setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
-        setShowNavigationStartModal: state.setShowNavigationStartModal,
-      })),
-    );
-  const { totalCaloriesBurned, totalTrees, routeType, prevScreen } =
-    useRouteStore(
-      useShallow(state => ({
-        totalCaloriesBurned: state.totalCaloriesBurned,
-        totalTrees: state.totalTrees,
-        routeType: state.routeType,
-        prevScreen: state.prevScreen,
-      })),
-    );
   const {
-    drawStaticPath,
-    focusOnStaticPath,
-    stopFollowingMyLocation,
-    clearStaticPath,
-  } = useRoutingMessenger();
-  const setLocationMode = useLocationStore(state => state.setLocationMode);
-  const { myLocationCompassOff } = useLocationMessenger();
-  const { isMapReady, mapReadyVersion } = useMapStore(
-    useShallow(state => ({
-      isMapReady: state.isMapReady,
-      mapReadyVersion: state.mapReadyVersion,
-    })),
-  );
-
-  const { turnOffBookmarkMarkers } = useBookmarkMessenger();
-
-  const {
-    summary,
-    segments,
+    totalCaloriesBurned,
+    totalTrees,
     startStation,
     endStation,
-    routeCategory,
-    waypoints: wpArr,
-    coordinates,
-  } = selectedRouteData;
-
-  const time = formatTimeHMText(summary.time);
-  const distance = formatDistanceAdaptiveText(summary.distance);
-  const timeRange = formatTimeRangeText(baseTime, summary.time);
-  const formattedRouteCategory = getRouteCategoryText(routeCategory);
-
-  const firstWalkingSegment = segments.find(seg => seg.type === 'walking');
-  const lastWalkingSegment = segments
-    .slice()
-    .reverse()
-    .find(seg => seg.type === 'walking');
-
-  const bikingSegments = segments.filter(s => s.type === 'biking');
-  const totalBikingDistance = bikingSegments.reduce(
-    (acc, seg) => acc + seg.summary.distance,
-    0,
-  );
-  const totalBikingTime = bikingSegments.reduce(
-    (acc, seg) => acc + seg.summary.time,
-    0,
-  );
-
-  const waypointsCount = waypoints ? waypoints.length : 0;
-
-  useEffect(() => {
-    if (!isMapReady) return;
-    const handleRoutePress = () => {
-      const staticPathData: StaticPathData = {
-        routeType: prevScreen === 'RouteRecommend' ? RouteType.LOOP : routeType,
-        startPoint: coordinates[0],
-        endPoint: coordinates[coordinates.length - 1],
-        waypoints: wpArr ? wpArr : null,
-        startStationPoint: {
-          lat: startStation.lat,
-          lng: startStation.lng,
-        },
-        endStationPoint: endStation
-          ? {
-              lat: endStation.lat,
-              lng: endStation.lng,
-            }
-          : {
-              lat: startStation.lat,
-              lng: startStation.lng,
-            },
-        pathCoordinates: coordinates,
-      };
-      stopFollowingMyLocation();
-      drawStaticPath(staticPathData);
-      turnOffBookmarkMarkers();
-      myLocationCompassOff();
-      setLocationMode('default');
-    };
-
-    handleRoutePress();
-  }, [
-    drawStaticPath,
-    routeType,
-    coordinates,
-    wpArr,
-    isMapReady,
-    mapReadyVersion,
-    focusOnStaticPath,
-  ]);
-
-  useEffect(() => {
-    if (!isNavigationMode || !routeId) return;
-    setShowSelectedRouteDetailModal(false);
-  }, [isNavigationMode, routeId]);
-
-  const handleNavigationStartBtnPress = () => {
-    setRouteId(selectedRouteData.routeId);
-    setIsNavigationMode(true);
-    setShowNavigationStartModal(true);
-    clearStaticPath();
-  };
+    time,
+    distance,
+    timeRange,
+    formattedRouteCategory,
+    firstWalkingSegment,
+    lastWalkingSegment,
+    bikingSegments,
+    totalBikingDistance,
+    totalBikingTime,
+    waypointsCount,
+    handleStartNavigationModePress,
+    formatTimeMinutesNumber,
+  } = useSelectedRouteDetailModal({
+    selectedRouteData,
+    startAddress,
+    endAddress,
+    waypoints,
+    baseTime,
+  });
 
   return (
     <ScrollView
@@ -262,10 +144,10 @@ const SelectedRouteDetailModal = ({
                   { fontSize: 15, marginBottom: 22 },
                 ]}
               >
-                {'대여소까지 도보로 '}
+                대여소까지 도보로{' '}
                 {formatDistanceAdaptiveText(
                   firstWalkingSegment.summary.distance,
-                )}
+                )}{' '}
                 <Text
                   style={[tw('font-primary-500 text-black'), { fontSize: 15 }]}
                 >
@@ -363,10 +245,10 @@ const SelectedRouteDetailModal = ({
                     { fontSize: 15 },
                   ]}
                 >
-                  {'목적지까지 도보로 '}
+                  목적지까지 도보로{' '}
                   {formatDistanceAdaptiveText(
                     lastWalkingSegment.summary.distance,
-                  )}
+                  )}{' '}
                   <Text
                     style={[
                       tw('font-primary-500 text-black'),
@@ -399,7 +281,7 @@ const SelectedRouteDetailModal = ({
       <RoundButton
         preset="lg"
         title="안내 시작하기"
-        onPress={handleNavigationStartBtnPress}
+        onPress={handleStartNavigationModePress}
       />
     </ScrollView>
   );

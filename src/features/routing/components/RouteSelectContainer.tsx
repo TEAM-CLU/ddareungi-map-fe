@@ -7,7 +7,6 @@ import {
 } from '@/shared/components/badge';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import type { Route, RouteResponse } from '../model/routing.types';
 import {
   convertToTrees,
   measureCaloriesBurned,
@@ -22,7 +21,13 @@ import {
   formatTimeRangeText,
 } from '@/shared/utils/formatting';
 import { calculateWalkingTime } from '@/features/routing/utils/calculateWalkingTime';
-
+import { RouteResponse } from '@/features/routing/model/routing.types';
+import { Route } from '@/features/routing/model/routing.types';
+import {
+  IconError,
+  IconRouteIndicator,
+  IconSearch,
+} from '@/shared/components/icons';
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
   isLoading?: boolean;
@@ -50,12 +55,18 @@ const RouteSelectContainer = ({
       <View
         style={[
           tw(
-            'bg-surface-primary w-full px-4 py-5 flex items-center justify-center',
+            'bg-surface-primary w-full px-4 py-5 flex flex-col items-center justify-center',
           ),
-          { height: 300 },
+          { height: 300, gap: 16 },
         ]}
       >
-        <Text style={tw('text-on-surface-placeholder font-primary-500')}>
+        <IconSearch width={80} height={80} color="#A7A7A7" />
+        <Text
+          style={[
+            tw('text-on-surface-placeholder font-primary-600'),
+            { fontSize: 15 },
+          ]}
+        >
           경로를 검색하고 있습니다...
         </Text>
       </View>
@@ -68,14 +79,30 @@ const RouteSelectContainer = ({
       <View
         style={[
           tw(
-            'bg-surface-primary w-full px-4 py-5 flex items-center justify-center',
+            'bg-surface-primary w-full px-4 py-5 flex flex-col items-center justify-center',
           ),
-          { height: 300 },
+          { height: 300, gap: 16 },
         ]}
       >
-        <Text style={tw('text-error font-primary-500 text-center')}>
-          {error.message}
-        </Text>
+        <IconError width={80} height={80} color="#A7A7A7" />
+        <View style={tw('flex flex-col justify-center items-center')}>
+          <Text
+            style={[
+              tw('text-error font-primary-600 text-center mb-1'),
+              { fontSize: 15 },
+            ]}
+          >
+            오류 발생! 잠시 후 다시 시도해주세요.
+          </Text>
+          <Text
+            style={[
+              tw('text-on-surface-placeholder font-primary-500 text-center'),
+              { fontSize: 13 },
+            ]}
+          >
+            {error.message}
+          </Text>
+        </View>
       </View>
     );
   }
@@ -86,15 +113,19 @@ const RouteSelectContainer = ({
       <View
         style={[
           tw(
-            'bg-surface-primary w-full px-4 py-5 flex items-center justify-center',
+            'bg-surface-primary w-full px-4 py-5 flex flex-col items-center justify-center',
           ),
-          { height: 300 },
+          { height: 300, gap: 16 },
         ]}
       >
+        <IconRouteIndicator width={80} height={80} color="#A7A7A7" />
         <Text
-          style={tw('text-on-surface-placeholder font-primary-500 text-center')}
+          style={[
+            tw('text-on-surface-placeholder font-primary-600 text-center'),
+            { fontSize: 15 },
+          ]}
         >
-          출발지와 도착지를 설정하면{'\n'}경로를 검색할 수 있어요
+          출발지와 도착지를 설정하면{'\n'}경로를 검색할 수 있어요.
         </Text>
       </View>
     );

@@ -18,9 +18,13 @@ import {
   IconPlus,
   IconMinus,
 } from '@/shared/components/icons';
-import { RouteItem, RoutePoint, RouteType } from '../model/routing.types';
 import IconArrowsUpDown from '@/shared/components/icons/IconArrowsUpDown';
-import { useRouteInput } from '../hooks/useRouteInput';
+import { useRouteInput } from '@/features/routing/hooks/useRouteInput';
+import {
+  RoutePoint,
+  RouteItem,
+  RouteType,
+} from '@/features/routing/model/routing.types';
 
 interface RouteInputBarProps {
   onClose: () => void;
@@ -55,11 +59,7 @@ const RouteInputBar = ({
 
       const waypointCount = items.length - 2;
 
-      const iconColorHex = isStart
-        ? '#006AFF'
-        : isEnd
-        ? '#FF0000'
-        : '#01DA86';
+      const iconColorHex = isStart ? '#006AFF' : isEnd ? '#FF0000' : '#01DA86';
 
       const showPlus = isEnd && waypointCount < 3;
       const showMinus =

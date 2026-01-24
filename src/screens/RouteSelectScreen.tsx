@@ -13,11 +13,11 @@ const RouteSelectScreen = () => {
   const {
     baseTime,
     setBaseTime,
-    handleRoutePointPress,
-    handleAddNewWaypointAndEdit,
-    handleRouteInputBarClose,
-    handleRouteSearchConfirm,
-    handleRouteItemPress,
+    handleSetPointPress,
+    handleAddNewWaypointAndEditPress,
+    handleCloseRouteInputBarPress,
+    handleSearchRoutePress,
+    handleSetRouteItemPress,
     routes,
     isLoadingRoutes,
     routeSearchError,
@@ -30,9 +30,9 @@ const RouteSelectScreen = () => {
       <SafeAreaView edges={['top']} style={tw('bg-brand-primary w-full pb-4')}>
         <View style={tw('mx-2')}>
           <RouteInputBar
-            onRoutePointPress={handleRoutePointPress}
-            onAddWaypointAndEdit={handleAddNewWaypointAndEdit}
-            onClose={handleRouteInputBarClose}
+            onRoutePointPress={handleSetPointPress}
+            onAddWaypointAndEdit={handleAddNewWaypointAndEditPress}
+            onClose={handleCloseRouteInputBarPress}
           />
         </View>
       </SafeAreaView>
@@ -50,7 +50,7 @@ const RouteSelectScreen = () => {
         />
         <RoundButton
           title={'경로 검색하기'}
-          onPress={handleRouteSearchConfirm}
+          onPress={handleSearchRoutePress}
           preset={'sm'}
         />
       </View>
@@ -59,7 +59,7 @@ const RouteSelectScreen = () => {
         isLoading={isLoadingRoutes}
         error={routeSearchError}
         baseTime={baseTime}
-        onRoutePress={handleRouteItemPress}
+        onRoutePress={handleSetRouteItemPress}
       />
     </View>
   );

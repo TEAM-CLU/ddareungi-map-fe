@@ -1,6 +1,7 @@
 // ---------------- 헬퍼 함수 ------------------
 
-import { RouteState, RouteType, Waypoint } from '../model/routing.types';
+import { RouteType, Waypoint } from '@/features/routing/model/routing.types';
+import { RouteState } from '@/features/routing/stores/useRouteStore';
 
 /*
   빈 경유지 객체 생성

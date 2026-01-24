@@ -102,6 +102,9 @@ export const useSearchOrchestrator = () => {
    * - 기존 경로정보 초기화
    * - 검색 오버레이 표시
    */
+
+  const route = useRoute<RouteProp<RootStackParamList, 'Map'>>();
+
   const handleSearchbarPress = useCallback(() => {
     clearCurrentPlaceMarker();
     setSelectedPlaceInfoForModal(null);
@@ -111,7 +114,10 @@ export const useSearchOrchestrator = () => {
     setShowStationDetailModal(false);
     setShowSearchOverlay(true);
     setIsFocused(true);
-    resetAllData();
+    // RouteSelect/Recommend에서 검색 흐름으로 들어온 경우 기존 입력을 보존
+    if (!route.params?.returnTo) {
+      resetAllData();
+    }
   }, [
     resetAllData,
     setShowSearchOverlay,
@@ -122,6 +128,7 @@ export const useSearchOrchestrator = () => {
     setShowNearByStationModal,
     setShowRouteRecommendModal,
     setShowStationDetailModal,
+    route.params?.returnTo,
   ]);
 
   /**
@@ -149,7 +156,6 @@ export const useSearchOrchestrator = () => {
    * 3) 이미 출발/도착 중 하나가 존재 → RouteSelect로 이동
    * 4) 그 외 → 장소 상세 모달 열기
    * --------------------------- */
-  const route = useRoute<RouteProp<RootStackParamList, 'Map'>>();
 
   const handlePlaceSelectionFlow = useCallback(
     (selectedPlace: PlaceInfo) => {

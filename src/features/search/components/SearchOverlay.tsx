@@ -15,6 +15,8 @@ import {
   IconSearch,
   IconClose,
   IconLocatorMark,
+  IconError,
+  IconEmpty,
 } from '@/shared/components/icons';
 import { reverseGeocode } from '../services/search.api';
 import { PlaceInfo } from '../model/search.types';
@@ -23,10 +25,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
-import { BookmarkItem } from '@/shared/model/index.types';
 import { useSearchOrchestrator } from '../hooks/useSearchOrchestrator';
 import { useRecentSearchesQuery } from '../services/search.queries';
 import BookmarkBadge from '@/shared/components/badge/BookmarkBadge';
+import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
+import { Icon } from 'react-native-paper';
 
 interface SearchOverlayProps {
   onClose: () => void;
@@ -347,9 +350,12 @@ const SearchOverlay = ({
                   {recentSearches.length > 0 && (
                     <TouchableOpacity onPress={() => clearRecentSearches()}>
                       <Text
-                        style={tw(
-                          'font-primary-600 text-sm text-on-surface-tertiary',
-                        )}
+                        style={[
+                          tw(
+                            'font-primary-600 text-sm text-on-surface-tertiary',
+                          ),
+                          { fontSize: 15 },
+                        ]}
                       >
                         전체삭제
                       </Text>
@@ -365,9 +371,24 @@ const SearchOverlay = ({
                   keyboardShouldPersistTaps="handled"
                   onScrollBeginDrag={() => Keyboard.dismiss()}
                   ListEmptyComponent={
-                    <View style={tw('flex-1 justify-center items-center py-8')}>
-                      <Text style={tw('text-on-surface-tertiary text-center')}>
-                        최근 검색 기록이 없습니다
+                    <View
+                      style={[
+                        tw(
+                          'flex-1 flex flex-col justify-center items-center py-8',
+                        ),
+                        { gap: 16 },
+                      ]}
+                    >
+                      <IconEmpty width={80} height={80} color="#A7A7A7" />
+                      <Text
+                        style={[
+                          tw(
+                            'font-primary-600 text-on-surface-placeholder text-center',
+                          ),
+                          { fontSize: 15 },
+                        ]}
+                      >
+                        최근 검색 기록이 없습니다.
                       </Text>
                     </View>
                   }
@@ -377,9 +398,20 @@ const SearchOverlay = ({
               // 검색 결과 표시
               <View style={tw('flex-1 mb-8')}>
                 {isLoading ? (
-                  <View style={tw('flex-1 justify-center items-center')}>
-                    <Text style={tw('text-on-surface-tertiary')}>
-                      검색중...
+                  <View
+                    style={[
+                      tw('flex-1 flex flex-col justify-center items-center'),
+                      { gap: 16 },
+                    ]}
+                  >
+                    <IconSearch width={80} height={80} color="#A7A7A7" />
+                    <Text
+                      style={[
+                        tw('text-on-surface-placeholder font-primary-600'),
+                        { fontSize: 15 },
+                      ]}
+                    >
+                      장소를 검색하고 있습니다...
                     </Text>
                   </View>
                 ) : hasResults ? (
@@ -408,17 +440,54 @@ const SearchOverlay = ({
                     }
                   />
                 ) : error ? (
-                  <View style={tw('flex-1 justify-center items-center px-4')}>
-                    <Text style={tw('text-red-500 text-center mb-1')}>
-                      오류 발생
-                    </Text>
-                    <Text style={tw('text-on-surface-tertiary text-center')}>
-                      {error}
-                    </Text>
+                  <View
+                    style={[
+                      tw(
+                        'flex-1 flex flex-col justify-center items-center px-4',
+                      ),
+                      { gap: 16 },
+                    ]}
+                  >
+                    <IconError width={80} height={80} color="#A7A7A7" />
+                    <View
+                      style={tw('flex flex-col justify-center items-center')}
+                    >
+                      <Text
+                        style={[
+                          tw('text-error font-primary-600 text-center mb-1'),
+                          { fontSize: 15 },
+                        ]}
+                      >
+                        오류 발생! 잠시 후 다시 시도해주세요.
+                      </Text>
+                      <Text
+                        style={[
+                          tw(
+                            'text-on-surface-placeholder font-primary-500 text-center',
+                          ),
+                          { fontSize: 13 },
+                        ]}
+                      >
+                        {error}
+                      </Text>
+                    </View>
                   </View>
                 ) : (
-                  <View style={tw('flex-1 justify-center items-center')}>
-                    <Text style={tw('text-on-surface-tertiary')}>
+                  <View
+                    style={[
+                      tw('flex-1 flex flex-col justify-center items-center'),
+                      { gap: 16 },
+                    ]}
+                  >
+                    <IconEmpty width={80} height={80} color="#A7A7A7" />
+                    <Text
+                      style={[
+                        tw(
+                          'text-on-surface-placeholder font-primary-600 text-center',
+                        ),
+                        { fontSize: 15 },
+                      ]}
+                    >
                       검색 결과가 없습니다.
                     </Text>
                   </View>

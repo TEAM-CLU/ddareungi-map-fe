@@ -19,7 +19,7 @@ const RouteTimeRefreshBar = ({
     setCurrentTime(formatTimeHMWithPeriodText(baseTime));
   }, [baseTime]);
 
-  const handleRefreshTime = () => {
+  const handleRefreshTimePress = () => {
     onRefresh();
   };
 
@@ -41,7 +41,7 @@ const RouteTimeRefreshBar = ({
         {`${currentTime}에 출발`}
       </Text>
       <TouchableOpacity
-        onPress={handleRefreshTime}
+        onPress={handleRefreshTimePress}
         style={tw('px-1 pb-1 rounded-full')}
       >
         <IconRefresh color="#414548" width={16} height={16} />

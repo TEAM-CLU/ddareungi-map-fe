@@ -1,7 +1,7 @@
+import { Route } from '@/features/routing/model/routing.types';
 import { IconBicycle, IconRun } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { Text, View } from 'react-native';
-import { Route } from '../model/routing.types';
 
 interface RouteProgressStepBarProps {
   route: Route;

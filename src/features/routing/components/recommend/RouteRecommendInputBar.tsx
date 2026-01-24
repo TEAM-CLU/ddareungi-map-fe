@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react';
-import { RoutePoint } from '../../model/routing.types';
-import { useRouteStore } from '../../stores/useRouteStore';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconClose, IconOval } from '@/shared/components/icons';
 import { createStartPoint } from '@/features/routing/utils/creatPoint';
 import { useShallow } from 'zustand/react/shallow';
+import { RoutePoint } from '@/features/routing/model/routing.types';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 
 interface RouteRecommendInputBarProps {
   onClose: () => void;
@@ -25,14 +25,14 @@ const RouteRecommendInputBar = ({
     })),
   );
 
-  const handleClosePress = useCallback(() => {
-    onClose();
-  }, [onClose]);
-
   const startPoint = useMemo(
     () => createStartPoint(start?.name || ''),
     [start],
   );
+
+  const handleClosePress = useCallback(() => {
+    onClose();
+  }, [onClose]);
 
   return (
     <View

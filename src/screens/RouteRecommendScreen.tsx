@@ -10,11 +10,11 @@ import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 
 const RouteRecommendScreen = () => {
   const {
-    handleRoutePointPress,
-    handleDistancePress,
-    handleRouteInputBarClose,
-    handleRouteSearchConfirm,
-    handleRouteItemPress,
+    handleSetStartPointPress,
+    handleSetDistanceAimedPress,
+    handleCloseRouteInputBarPress,
+    handleSearchRoutePress,
+    handleSetRouteItemPress,
     baseTime,
     setBaseTime,
     routes,
@@ -29,9 +29,9 @@ const RouteRecommendScreen = () => {
       <View style={tw('bg-brand-primary w-full pt-16 pb-4')}>
         <View style={tw('mx-2')}>
           <RouteRecommendInputBar
-            onRoutePointPress={handleRoutePointPress}
-            onDistancePress={handleDistancePress}
-            onClose={handleRouteInputBarClose}
+            onRoutePointPress={handleSetStartPointPress}
+            onDistancePress={handleSetDistanceAimedPress}
+            onClose={handleCloseRouteInputBarPress}
           />
         </View>
       </View>
@@ -50,7 +50,7 @@ const RouteRecommendScreen = () => {
         />
         <RoundButton
           title={'경로 검색하기'}
-          onPress={handleRouteSearchConfirm}
+          onPress={handleSearchRoutePress}
           preset={'sm'}
         />
       </View>
@@ -59,7 +59,7 @@ const RouteRecommendScreen = () => {
         isLoading={isLoadingRoutes}
         error={routeSearchError}
         baseTime={baseTime}
-        onRoutePress={handleRouteItemPress}
+        onRoutePress={handleSetRouteItemPress}
       />
     </View>
   );
