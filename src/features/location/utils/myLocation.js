@@ -134,7 +134,7 @@
   // 나침반 오버레이 보이기/숨기기
   const setMyHeadingOverlayVisible = isCompassMode => {
     myHeadingOverlay.setMap(isCompassMode ? mapRef : null);
-  };  
+  };
 
   // 네비게이션 모드일때 내 위치 마커 변경
   const replaceMyLocationMarker = isNavigationMode => {

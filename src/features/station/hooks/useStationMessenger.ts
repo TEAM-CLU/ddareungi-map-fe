@@ -1,7 +1,7 @@
 import {
   ToggleStationMarkersMessage,
   UpdateTargetedStationBikeCountListMessage,
-} from './../../../shared/model/map.webview.types';
+} from '@/shared/model/map.webview.types';
 import {
   MapAreaStationData,
   StationLatestBikeCountData,

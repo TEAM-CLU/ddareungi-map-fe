@@ -41,7 +41,11 @@ const BookmarkMarkersToggleButton = () => {
         { zIndex: 10 },
       ]}
     >
-      {mode === 'on' ? <IconStar fillColor='#01da86' strokeColor='#01da86'/> : <IconStar fillColor='white' strokeColor='#77838f'/>}
+      {mode === 'on' ? (
+        <IconStar fillColor="#01da86" strokeColor="#01da86" />
+      ) : (
+        <IconStar fillColor="white" strokeColor="#77838f" />
+      )}
     </TouchableOpacity>
   );
 };

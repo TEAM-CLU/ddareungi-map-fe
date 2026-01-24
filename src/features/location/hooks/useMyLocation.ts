@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { AppState, Alert } from 'react-native';
+import { AppState } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { requestLocationPermission } from '@/features/map/utils/location';
 import { useUserHeading } from '@/features/map/hooks/useCompassHeading';
