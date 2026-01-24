@@ -17,8 +17,8 @@ const Map = ({ handleMapReadyMessage }: MapProps) => {
     })),
   );
 
-  const webViewRef = useWebViewRef();
   useMyLocation({ isMapReady, mapReadyVersion });
+  const webViewRef = useWebViewRef();
 
   const { handleStationMessage } = useStation({
     isMapReady,
@@ -35,15 +35,6 @@ const Map = ({ handleMapReadyMessage }: MapProps) => {
     handleStationMessage(event);
     handleBookmarkMarkerClick(event);
   };
-
-  // 디자인 후에 삭제
-  // [수정] 컴포넌트가 처음 렌더링될 때 딱 한 번만 URL을 생성해서 state에 저장합니다.
-  const [mapUrl] = useState(() => {
-    const timestamp = new Date().getTime();
-    // iOS/Android 환경에 따라 주소 분기 (ngrok 주소면 그대로 사용)
-    const baseUrl = 'https://57ba20d69663.ngrok-free.app/map.html';
-    return `${baseUrl}?t=${timestamp}`;
-  });
 
   return (
     <WebView

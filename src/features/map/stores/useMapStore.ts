@@ -8,6 +8,7 @@ interface MapState {
 
   isMapReady: boolean;
   setIsMapReady: (isReady: boolean) => void;
+
   mapReadyVersion: number;
   bumpMapReadyVersion: () => void;
 }
