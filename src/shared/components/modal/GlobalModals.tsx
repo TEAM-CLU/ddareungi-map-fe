@@ -1,3 +1,4 @@
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
@@ -15,6 +16,9 @@ import NavigationStartModal from '@/features/navigation/components/NavigationSta
 import NavigationFinishModal from '@/features/navigation/components/NavigationFinishModal';
 import NavigationEndModal from '@/features/navigation/components/NavigationEndModal';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { useRef } from 'react';
+import Modal from 'react-native-modal';
+import { useSlideModalSync } from '@/shared/components/hooks/useSlideModalSync';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore(
@@ -32,17 +36,14 @@ const GlobalModals = () => {
     setShowPlaceDetailModal,
     setShowSelectedRouteDetailModal,
     setShowNavigationDetailModal,
-    selectedRouteDetailModalRef,
-    routeRecommendModalRef,
-    nearbyStationModalRef,
-    stationDetailModalRef,
-    placeDetailModalRef,
-    bookmarkModalRef,
+    showPlaceDetailModal,
+    showSelectedRouteDetailModal,
+    showNearByStationModal,
+    showStationDetailModal,
+    showRouteRecommendModal,
+    showBookmarkModal,
+    showNavigationDetailModal,
     setShowBookmarkModal,
-    navigationDetailModalRef,
-    navigationStartModalRef,
-    navigationEndModalRef,
-    navigationFinishModalRef,
     showNavigationStartModal,
     showNavigationEndModal,
     showNavigationFinishModal,
@@ -57,17 +58,14 @@ const GlobalModals = () => {
       setShowPlaceDetailModal: state.setShowPlaceDetailModal,
       setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
       setShowNavigationDetailModal: state.setShowNavigationDetailModal,
-      selectedRouteDetailModalRef: state.selectedRouteDetailModalRef,
-      routeRecommendModalRef: state.routeRecommendModalRef,
-      nearbyStationModalRef: state.nearbyStationModalRef,
-      stationDetailModalRef: state.stationDetailModalRef,
-      placeDetailModalRef: state.placeDetailModalRef,
-      bookmarkModalRef: state.bookmarkModalRef,
+      showPlaceDetailModal: state.showPlaceDetailModal,
+      showSelectedRouteDetailModal: state.showSelectedRouteDetailModal,
+      showNearByStationModal: state.showNearByStationModal,
+      showStationDetailModal: state.showStationDetailModal,
+      showRouteRecommendModal: state.showRouteRecommendModal,
+      showBookmarkModal: state.showBookmarkModal,
+      showNavigationDetailModal: state.showNavigationDetailModal,
       setShowBookmarkModal: state.setShowBookmarkModal,
-      navigationDetailModalRef: state.navigationDetailModalRef,
-      navigationStartModalRef: state.navigationStartModalRef,
-      navigationEndModalRef: state.navigationEndModalRef,
-      navigationFinishModalRef: state.navigationFinishModalRef,
       showNavigationEndModal: state.showNavigationEndModal,
       showNavigationStartModal: state.showNavigationStartModal,
       setShowNavigationStartModal: state.setShowNavigationStartModal,
@@ -76,6 +74,17 @@ const GlobalModals = () => {
       setShowNavigationFinishModal: state.setShowNavigationFinishModal,
     })),
   );
+
+  const selectedRouteDetailModalRef = useRef<BottomSheetModal | null>(null);
+  const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
+  const nearbyStationModalRef = useRef<BottomSheetModal | null>(null);
+  const stationDetailModalRef = useRef<BottomSheetModal | null>(null);
+  const placeDetailModalRef = useRef<BottomSheetModal | null>(null);
+  const bookmarkModalRef = useRef<BottomSheetModal | null>(null);
+  const navigationDetailModalRef = useRef<BottomSheetModal | null>(null);
+  const navigationStartModalRef = useRef<Modal | null>(null);
+  const navigationEndModalRef = useRef<Modal | null>(null);
+  const navigationFinishModalRef = useRef<Modal | null>(null);
 
   const selectedPlaceInfoForModal = useSearchStore(
     state => state.selectedPlaceInfoForModal,
@@ -106,6 +115,14 @@ const GlobalModals = () => {
       resetAlldata: state.resetAllData,
     })),
   );
+
+  useSlideModalSync(selectedRouteDetailModalRef, showSelectedRouteDetailModal);
+  useSlideModalSync(routeRecommendModalRef, showRouteRecommendModal);
+  useSlideModalSync(nearbyStationModalRef, showNearByStationModal);
+  useSlideModalSync(stationDetailModalRef, showStationDetailModal);
+  useSlideModalSync(placeDetailModalRef, showPlaceDetailModal);
+  useSlideModalSync(bookmarkModalRef, showBookmarkModal);
+  useSlideModalSync(navigationDetailModalRef, showNavigationDetailModal);
 
   return (
     <>

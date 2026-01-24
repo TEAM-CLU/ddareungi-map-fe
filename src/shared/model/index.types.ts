@@ -1,9 +1,7 @@
 import { RootStackParamList } from '@/app/types';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { RefObject } from 'react';
 import { ImageStyle, StyleProp, TextStyle, ViewStyle } from 'react-native';
 import WebView from 'react-native-webview';
-import Modal from 'react-native-modal';
 import { GetUserInfoResponse } from '@/features/auth/model/user.types';
 
 export interface WebViewRefContextValue {
@@ -71,27 +69,11 @@ export interface UseBookmarkOptions {
 /**
  * ModalState
  *
- * - "생성"은 컴포넌트 / 컨트롤러에서 하고
- * - 이 스토어는 단지 ref와 상태를 "보관"만 한다.
+ * - "생성"은 컴포넌트에서 하고
+ * - 이 스토어는 상태만 보관한다.
  */
 
 export interface ModalState {
-  /* -----------------------------
-          모달 Ref 저장소
-     - 실제 생성은 useMapController에서 하고
-     - 여기는 단지 "참조"를 들고 있음
-  ------------------------------ */
-
-  placeDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
-  selectedRouteDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
-  nearbyStationModalRef: React.RefObject<BottomSheetModal | null> | null;
-  stationDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
-  routeRecommendModalRef: React.RefObject<BottomSheetModal | null> | null;
-  bookmarkModalRef: React.RefObject<BottomSheetModal | null> | null;
-  navigationDetailModalRef: React.RefObject<BottomSheetModal | null> | null;
-  navigationStartModalRef: React.RefObject<Modal | null> | null;
-  navigationEndModalRef: React.RefObject<Modal | null> | null;
-  navigationFinishModalRef: React.RefObject<Modal | null> | null;
   /* -----------------------------
           모달 오픈 / 닫힘 상태
   ------------------------------ */
@@ -109,28 +91,6 @@ export interface ModalState {
   /* -----------------------------
                 Actions
   ------------------------------ */
-
-  /**
-   * 모달 ref들을 한 번에 저장하기 위한 헬퍼
-   * - useMapController에서 useRef로 생성 후 여기로 넘김
-   */
-  setModalRefs: (
-    modalRefs: Partial<
-      Pick<
-        ModalState,
-        | 'placeDetailModalRef'
-        | 'selectedRouteDetailModalRef'
-        | 'nearbyStationModalRef'
-        | 'stationDetailModalRef'
-        | 'routeRecommendModalRef'
-        | 'bookmarkModalRef'
-        | 'navigationDetailModalRef'
-        | 'navigationStartModalRef'
-        | 'navigationEndModalRef'
-        | 'navigationFinishModalRef'
-      >
-    >,
-  ) => void;
 
   /** 각 모달의 show/hide 토글 함수들 */
   setShowPlaceDetailModal: (isVisible: boolean) => void;
