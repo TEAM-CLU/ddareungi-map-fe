@@ -80,7 +80,12 @@ const SelectedRouteDetailModal = ({
   } = useRoutingMessenger();
   const setLocationMode = useLocationStore(state => state.setLocationMode);
   const { myLocationCompassOff } = useLocationMessenger();
-  const isMapReady = useMapStore(state => state.isMapReady);
+  const { isMapReady, mapReadyVersion } = useMapStore(
+    useShallow(state => ({
+      isMapReady: state.isMapReady,
+      mapReadyVersion: state.mapReadyVersion,
+    })),
+  );
 
   const { turnOffBookmarkMarkers } = useBookmarkMessenger();
 
@@ -154,6 +159,7 @@ const SelectedRouteDetailModal = ({
     coordinates,
     wpArr,
     isMapReady,
+    mapReadyVersion,
     focusOnStaticPath,
   ]);
 

@@ -9,7 +9,10 @@ import { Alert } from 'react-native';
 import { PlaceInfo } from '@/features/search/model/search.types';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 
-export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
+export const useBookmark = ({
+  isMapReady,
+  mapReadyVersion,
+}: UseBookmarkOptions) => {
   const { sendMessage } = useProvideWebviewMessenger();
   const { bookmarks } = useBookmarkStore();
   const { setSelectedPlaceInfoForModal } = useSearchStore();
@@ -24,7 +27,7 @@ export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
       bookmarks: bookmarks,
     };
     sendMessage(message);
-  }, [bookmarks, isMapReady, sendMessage]);
+  }, [bookmarks, isMapReady, mapReadyVersion, sendMessage]);
 
   // 즐겨찾기 마커 클릭
   const handleBookmarkMarkerClick = useCallback(

@@ -31,8 +31,6 @@ const MapScreen = () => {
     handleSelectedRouteDetailModalClose,
     handleOpenBookmarkModal,
     handleMapReadyMessage,
-    isLocalMapReady,
-    setIsLocalMapReady,
   } = useMapOrchestrator();
 
   const {
@@ -79,8 +77,6 @@ const MapScreen = () => {
   return (
     <View style={tw('flex-1 relative w-full')}>
       <Map
-        isLocalMapReady={isLocalMapReady}
-        setIsLocalMapReady={setIsLocalMapReady}
         handleMapReadyMessage={handleMapReadyMessage}
       />
 

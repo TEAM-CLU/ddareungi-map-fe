@@ -12,9 +12,13 @@ import { smoothPosition } from '@/features/location/utils/smoothPosition';
 
 interface UseMyLocationParams {
   isMapReady: boolean;
+  mapReadyVersion: number;
 }
 
-export const useMyLocation = ({ isMapReady }: UseMyLocationParams) => {
+export const useMyLocation = ({
+  isMapReady,
+  mapReadyVersion,
+}: UseMyLocationParams) => {
   const { updateMyLocation, rotateMyHeading } = useLocationMessenger();
   const setLocationMetaData = useMyPositionStore(
     state => state.setLocationMetaData,
@@ -122,13 +126,13 @@ export const useMyLocation = ({ isMapReady }: UseMyLocationParams) => {
     startLocationTracking();
     return stopLocationTracking;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMapReady]);
+  }, [isMapReady, mapReadyVersion]);
 
   // 방향은 위치와 무관하게 실시간으로 송신
   useEffect(() => {
     if (!isMapReady) return;
     rotateMyHeading(heading);
-  }, [heading, isMapReady, rotateMyHeading, webViewRef]);
+  }, [heading, isMapReady, mapReadyVersion, rotateMyHeading, webViewRef]);
 
   // 앱이 foreground로 복귀 시 추적 재시작
   useEffect(() => {
@@ -137,5 +141,5 @@ export const useMyLocation = ({ isMapReady }: UseMyLocationParams) => {
     });
     return () => sub.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMapReady]);
+  }, [isMapReady, mapReadyVersion]);
 };

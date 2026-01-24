@@ -15,9 +15,10 @@ import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 interface UseStationParams {
   isMapReady: boolean;
+  mapReadyVersion: number;
 }
 
-export const useStation = ({ isMapReady }: UseStationParams) => {
+export const useStation = ({ isMapReady, mapReadyVersion }: UseStationParams) => {
   const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
     useStationMessenger();
   const { mutateAsync: getLatestBikeCountList } =
@@ -148,7 +149,7 @@ export const useStation = ({ isMapReady }: UseStationParams) => {
   useEffect(() => {
     if (!enableQuery || !stationDataList) return;
     updateStationDataList(stationDataList);
-  }, [stationDataList, updateStationDataList, enableQuery]);
+  }, [stationDataList, updateStationDataList, enableQuery, mapReadyVersion]);
 
   return {
     handleStationMessage,

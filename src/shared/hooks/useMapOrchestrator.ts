@@ -1,5 +1,5 @@
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { RefObject, useCallback, useEffect, useRef } from 'react';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useModalStore } from '../stores/useModalStore';
@@ -37,12 +37,18 @@ const useModalSync = (
  * - 거리 값, 경로 추천 관련 라우팅 핸들러 제공
  */
 export const useMapOrchestrator = () => {
-  const [isLocalMapReady, setIsLocalMapReady] = useState(false);
   /** ----------------------------------------
    * 1. Navigation 객체 (화면 이동용)
    * ---------------------------------------- */
   const { navigation } = useAppNavigation();
   const { clearStaticPath } = useRoutingMessenger();
+
+  const { setIsMapReady, bumpMapReadyVersion } = useMapStore(
+    useShallow(state => ({
+      setIsMapReady: state.setIsMapReady,
+      bumpMapReadyVersion: state.bumpMapReadyVersion,
+    })),
+  );
 
   /** ----------------------------------------
    * 2. 화면 내부에서만 생성하는 Ref들
@@ -178,8 +184,9 @@ export const useMapOrchestrator = () => {
       const data: MapReadyMessage = JSON.parse(event.nativeEvent.data);
 
       if (data.type === 'mapReady') {
+        setIsMapReady(data.isReady);
         console.log('✅ 지도 준비 완료');
-        setIsLocalMapReady(data.isReady);
+        bumpMapReadyVersion();
       }
     } catch (error) {
       console.error('Invalid JSON from WebView:', event.nativeEvent.data);
@@ -201,7 +208,5 @@ export const useMapOrchestrator = () => {
     handleSelectedRouteDetailModalClose,
     handleOpenBookmarkModal,
     handleMapReadyMessage,
-    isLocalMapReady,
-    setIsLocalMapReady,
   };
 };

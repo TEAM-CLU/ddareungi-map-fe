@@ -4,29 +4,31 @@ import { useStation } from '@/features/station/hooks/useStation';
 import { useMapStore } from '../stores/useMapStore';
 import { useBookmark } from '@/features/bookmark/hooks/useBookmark';
 import { useWebViewRef } from '@/app/providers/webview';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 interface MapProps {
-  isLocalMapReady: boolean;
-  setIsLocalMapReady: React.Dispatch<React.SetStateAction<boolean>>;
   handleMapReadyMessage: (event: WebViewMessageEvent) => void;
 }
-const Map = ({ isLocalMapReady, handleMapReadyMessage }: MapProps) => {
-  const { isMapReady, setIsMapReady } = useMapStore(
+const Map = ({ handleMapReadyMessage }: MapProps) => {
+  const { isMapReady, mapReadyVersion } = useMapStore(
     useShallow(state => ({
       isMapReady: state.isMapReady,
-      setIsMapReady: state.setIsMapReady,
+      mapReadyVersion: state.mapReadyVersion,
     })),
   );
 
   const webViewRef = useWebViewRef();
-  useMyLocation({ isMapReady });
+  useMyLocation({ isMapReady, mapReadyVersion });
 
   const { handleStationMessage } = useStation({
     isMapReady,
+    mapReadyVersion,
   });
 
-  const { handleBookmarkMarkerClick } = useBookmark({ isMapReady });
+  const { handleBookmarkMarkerClick } = useBookmark({
+    isMapReady,
+    mapReadyVersion,
+  });
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
     handleMapReadyMessage(event);
@@ -42,11 +44,6 @@ const Map = ({ isLocalMapReady, handleMapReadyMessage }: MapProps) => {
     const baseUrl = 'https://57ba20d69663.ngrok-free.app/map.html';
     return `${baseUrl}?t=${timestamp}`;
   });
-
-  // selectedRouteDetailModal에서 쓰기 위해 zustand용 isMapReady 동기화
-  useEffect(() => {
-    setIsMapReady(isLocalMapReady);
-  }, [isLocalMapReady]);
 
   return (
     <WebView

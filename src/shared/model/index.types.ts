@@ -66,6 +66,7 @@ export interface BookmarkItem {
 
 export interface UseBookmarkOptions {
   isMapReady: boolean;
+  mapReadyVersion: number;
 }
 /**
  * ModalState
