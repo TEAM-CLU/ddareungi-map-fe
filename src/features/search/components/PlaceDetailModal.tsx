@@ -14,13 +14,13 @@ import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
-import StarToggle from '@/features/bookmark/components/StarToggle';
-import { BookmarkItem } from '@/shared/model/index.types';
 import { PlaceInfo } from '../model/search.types';
 import { useNearbyStationsQuery } from '@/features/station/services/station.queries';
 import { useShallow } from 'zustand/react/shallow';
 import { getDistanceGuideText } from '@/shared/utils/formatting';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
+import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
+import BookmarkToggle from '@/features/bookmark/components/BookmarkToggle';
 
 export interface PlaceDetailModalProps {
   place: PlaceInfo | null;
@@ -224,7 +224,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
             )}
           </View>
         </View>
-        <StarToggle active={bookmarked} onToggle={handleToggleBookmark} />
+        <BookmarkToggle active={bookmarked} onToggle={handleToggleBookmark} />
       </View>
 
       {/* 거리/주소 정보 */}

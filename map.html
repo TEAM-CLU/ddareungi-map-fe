@@ -223,11 +223,6 @@
           Bookmark.clearBookmarkMarkers();
         }
 
-        // 18. 특정 즐겨찾기로 이동
-        if (data.type === 'focusOnBookmark') {
-          Bookmark.focusOnBookmark(data.bookmarkId);
-        }
-
         // 19. 즐겨찾기 마커 표시 on/off
         if (data.type === 'toggleBookmarkMarkers') {
           Bookmark.toggleBookmarkMarkers(data.isVisible);
@@ -265,7 +260,6 @@
         if (data.type === 'focusOnNavigationPath') {
           Navigation.focusOnNavigationPath();
         }
-
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }
@@ -279,5 +273,5 @@
   <script src="./src/features/navigation/utils/navigation.js" defer></script>
   <script src="./src/features/search/utils/search.js" defer></script>
   <script src="./src/features/station/utils/station.js" defer></script>
-  <script src="./src/shared/utils/bookmark.js" defer></script>
+  <script src="./src/features/bookmark/utils/bookmark.js" defer></script>
 </html>

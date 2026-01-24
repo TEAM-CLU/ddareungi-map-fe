@@ -2,15 +2,16 @@ import { memo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 
-const BookmarkEditColorButton = ({
-  color,
-  isSelected,
-  onPress,
-}: {
+interface BookmarkEditColorButtonProps {
   color: string;
   isSelected: boolean;
   onPress: (color: string) => void;
-}) => {
+}
+const BookmarkColorEditionButton = ({
+  color,
+  isSelected,
+  onPress,
+}: BookmarkEditColorButtonProps) => {
   return (
     <TouchableOpacity
       onPress={() => onPress(color)}
@@ -35,4 +36,4 @@ const BookmarkEditColorButton = ({
   );
 };
 
-export default memo(BookmarkEditColorButton);
+export default memo(BookmarkColorEditionButton);

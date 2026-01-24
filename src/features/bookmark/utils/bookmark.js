@@ -201,13 +201,6 @@
     });
   };
 
-  const focusOnBookmark = bookmarkId => {
-    const target = bookmarkMarkers.find(bookmark => bookmark.id === bookmarkId);
-    if (target) {
-      smoothPanAndZoom(target.marker.getPosition(), 3);
-    }
-  };
-
   // 단일 즐겨찾기 마커 표시 (토글 상태와 무관하게 검색 시 사용)
   const showSingleBookmarkMarker = bookmarkData => {
     if (!bookmarkData || !bookmarkData.latitude || !bookmarkData.longitude)
@@ -264,7 +257,6 @@
     initBookmarkSetting,
     createBookmarkMarkers,
     toggleBookmarkMarkers,
-    focusOnBookmark,
     showSingleBookmarkMarker,
     destroyBookmark,
   };

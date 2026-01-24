@@ -3,24 +3,23 @@ import { Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSequence,
   withSpring,
 } from 'react-native-reanimated';
 import { IconStar } from '@/shared/components/icons';
 
-interface StarToggleProps {
+interface BookmarkToggleProps {
   active?: boolean;
   onToggle: () => void;
 }
 
-const StarToggle = ({ active = false, onToggle }: StarToggleProps) => {
+const BookmarkToggle = ({ active = false, onToggle }: BookmarkToggleProps) => {
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
-  const handlePress = () => {
+  const handleToggleStarPress = () => {
     scale.value = withSpring(1.3, {}, () => {
       scale.value = withSpring(1);
     });
@@ -30,7 +29,7 @@ const StarToggle = ({ active = false, onToggle }: StarToggleProps) => {
 
   return (
     <Pressable
-      onPress={handlePress}
+      onPress={handleToggleStarPress}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
     >
       <Animated.View style={animatedStyle}>
@@ -46,4 +45,4 @@ const StarToggle = ({ active = false, onToggle }: StarToggleProps) => {
   );
 };
 
-export default memo(StarToggle);
+export default memo(BookmarkToggle);

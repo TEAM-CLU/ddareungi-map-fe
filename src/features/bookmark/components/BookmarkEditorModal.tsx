@@ -4,9 +4,10 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import React, { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import BookmarkEditItem from './BookmarkEditItem';
+import BookmarkEditItem from '@/features/bookmark/components/BookmarkItemForEditing';
+import BookmarkItemForEditing from '@/features/bookmark/components/BookmarkItemForEditing';
 
-const BookmarkEditModal = () => {
+const BookmarkEditorModal = () => {
   const {
     bookmarks,
     removeBookmark,
@@ -77,7 +78,7 @@ const BookmarkEditModal = () => {
           </View>
         ) : (
           bookmarks.map(item => (
-            <BookmarkEditItem
+            <BookmarkItemForEditing
               key={item.id}
               item={item}
               isEditing={editingId === item.id}
@@ -92,4 +93,4 @@ const BookmarkEditModal = () => {
     </View>
   );
 };
-export default BookmarkEditModal;
+export default BookmarkEditorModal;

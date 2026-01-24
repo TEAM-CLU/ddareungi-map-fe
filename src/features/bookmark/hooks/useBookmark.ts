@@ -1,19 +1,22 @@
-import { BookmarkItem, UseBookmarkOptions } from '@/shared/model/index.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useCallback, useEffect } from 'react';
-import { UpdateBookmarksMessage } from '@/shared/model/map.webview.types';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import { useProvideWebviewMessenger } from '@/shared/hooks/useProvideWebviewMessenger';
 import { Alert } from 'react-native';
 import { PlaceInfo } from '@/features/search/model/search.types';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
+import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
+import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
 
+interface UseBookmarkParams {
+  isMapReady: boolean;
+  mapReadyVersion: number;
+}
 export const useBookmark = ({
   isMapReady,
   mapReadyVersion,
-}: UseBookmarkOptions) => {
-  const { sendMessage } = useProvideWebviewMessenger();
+}: UseBookmarkParams) => {
+  const { updateBookmarks } = useBookmarkMessenger();
   const { bookmarks } = useBookmarkStore();
   const { setSelectedPlaceInfoForModal } = useSearchStore();
   const { setShowPlaceDetailModal } = useModalStore();
@@ -21,13 +24,8 @@ export const useBookmark = ({
   // 스토어 북마크 변경되면 웹뷰로 전송
   useEffect(() => {
     if (!isMapReady) return;
-
-    const message: UpdateBookmarksMessage = {
-      type: 'updateBookmarks',
-      bookmarks: bookmarks,
-    };
-    sendMessage(message);
-  }, [bookmarks, isMapReady, mapReadyVersion, sendMessage]);
+    updateBookmarks(bookmarks);
+  }, [bookmarks, isMapReady, mapReadyVersion, updateBookmarks]);
 
   // 즐겨찾기 마커 클릭
   const handleBookmarkMarkerClick = useCallback(

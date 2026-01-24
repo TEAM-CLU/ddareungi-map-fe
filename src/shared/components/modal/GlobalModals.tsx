@@ -7,7 +7,6 @@ import StationDetailModal from '@/features/station/components/StationDetailModal
 import { useModalStore } from '@/shared/stores/useModalStore';
 import SlideModal from './SlideModal';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import BookmarkEditModal from '@/features/bookmark/components/BookmarkEditModal';
 import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
 import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
 import { useShallow } from 'zustand/react/shallow';
@@ -19,6 +18,7 @@ import { useNavigationStore } from '@/features/navigation/stores/useNavigationSt
 import { useRef } from 'react';
 import Modal from 'react-native-modal';
 import { useSlideModalSync } from '@/shared/components/hooks/useSlideModalSync';
+import BookmarkEditorModal from '@/features/bookmark/components/BookmarkEditorModal';
 
 const GlobalModals = () => {
   const { start, end, waypoints, selectedRouteData } = useRouteStore(
@@ -194,7 +194,7 @@ const GlobalModals = () => {
         enablePanDownToClose={true}
         useFlexView={true}
       >
-        <BookmarkEditModal />
+        <BookmarkEditorModal />
       </SlideModal>
 
       {/* 네비게이션 디테일 모달 */}

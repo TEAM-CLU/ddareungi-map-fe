@@ -44,11 +44,10 @@ const Map = ({ handleMapReadyMessage }: MapProps) => {
       originWhitelist={['*']}
       onMessage={handleWebViewMessage}
       onError={e => console.log('WebView error', e.nativeEvent)}
-      // 캐시 끄기 옵션도 확실하게 추가 디자인 후 삭제
       cacheEnabled={false}
       cacheMode="LOAD_NO_CACHE"
       incognito={true}
-      source={{ uri: 'https://57ba20d69663.ngrok-free.app/map.html' }}
+      source={{ uri: 'https://8f591557a748.ngrok-free.app/map.html' }}
     />
   );
 };

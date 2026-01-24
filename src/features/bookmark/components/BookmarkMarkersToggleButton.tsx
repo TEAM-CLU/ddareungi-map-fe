@@ -9,7 +9,7 @@ const BookmarkMarkersToggleButton = () => {
   const { sendMessage } = useProvideWebviewMessenger();
   const [mode, setMode] = useState<'on' | 'off'>('on');
 
-  const handleToggleBtnPress = () => {
+  const handleToggleShowingBookmarksPress = () => {
     if (mode === 'on') {
       setMode('off');
       const message: ToggleBookmarkMarkersMessage = {
@@ -33,7 +33,7 @@ const BookmarkMarkersToggleButton = () => {
 
   return (
     <TouchableOpacity
-      onPress={handleToggleBtnPress}
+      onPress={handleToggleShowingBookmarksPress}
       style={[
         tw(
           'bg-icon-container-secondary rounded-full w-10 h-10 flex justify-center items-center shadow-md',

@@ -1,13 +1,13 @@
 import { IconClose } from '@/shared/components/icons';
-import { BookmarkItem } from '@/shared/model/index.types';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import React, { memo, useCallback, useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { BOOKMARK_COLOR_PRESETS } from '@/shared/model/index.constants';
-import BookmarkEditColorButton from './BookmarkEditColorButton';
+import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
+import BookmarkColorEditionButton from '@/features/bookmark/components/BookmarkColorEditionButton';
 
-interface BookmarkEditItemProps {
+interface BookmarkItemForEditingProps {
   item: BookmarkItem;
   isEditing: boolean;
   onToggleEdit: (id: string) => void;
@@ -16,14 +16,14 @@ interface BookmarkEditItemProps {
   onUpdateColor: (id: string, color: string) => void;
 }
 
-const BookmarkEditItem = ({
+const BookmarkItemForEditing = ({
   item,
   isEditing,
   onToggleEdit,
   onDelete,
   onUpdateAlias,
   onUpdateColor,
-}: BookmarkEditItemProps) => {
+}: BookmarkItemForEditingProps) => {
   const [alias, setAlias] = useState(item.alias || item.name);
 
   useEffect(() => {
@@ -44,11 +44,11 @@ const BookmarkEditItem = ({
     onUpdateAlias(item.id, item.name);
   }, [item.id, item.name, onUpdateAlias]);
 
-  const handleToggleEdit = useCallback(() => {
+  const handleToggleEnteringEditModePress = useCallback(() => {
     onToggleEdit(item.id);
   }, [onToggleEdit, item.id]);
 
-  const handleDeleteButtonPress = useCallback(() => {
+  const handleDeleteBookmarkPress = useCallback(() => {
     Alert.alert(
       '즐겨찾기 삭제',
       `'${item.alias || item.name}'을(를) 삭제하시겠습니까?`,
@@ -63,7 +63,7 @@ const BookmarkEditItem = ({
     );
   }, [item.alias, item.id, item.name, onDelete]);
 
-  const handleColorPress = useCallback(
+  const handleChangeColorPress = useCallback(
     (color: string) => {
       // 이미 선택된 색상이면 업데이트 호출 안 함
       if (item.color !== color) {
@@ -78,7 +78,7 @@ const BookmarkEditItem = ({
       {/* 1. 요약 헤더 영역 (항상 보임) */}
       <TouchableOpacity
         style={tw('flex-row justify-between items-center px-6 py-5')}
-        onPress={handleToggleEdit}
+        onPress={handleToggleEnteringEditModePress}
         activeOpacity={0.6}
       >
         <View style={tw('flex-row items-center flex-1 pr-4')}>
@@ -130,7 +130,7 @@ const BookmarkEditItem = ({
 
         {/* 삭제 버튼 */}
         <TouchableOpacity
-          onPress={handleDeleteButtonPress}
+          onPress={handleDeleteBookmarkPress}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={tw('p-1')}
         >
@@ -178,11 +178,11 @@ const BookmarkEditItem = ({
           <View style={[tw('flex-row flex-wrap'), { gap: 10 }]}>
             {BOOKMARK_COLOR_PRESETS.map(color => {
               return (
-                <BookmarkEditColorButton
+                <BookmarkColorEditionButton
                   key={color}
                   color={color}
                   isSelected={item.color === color}
-                  onPress={handleColorPress}
+                  onPress={handleChangeColorPress}
                 />
               );
             })}
@@ -193,4 +193,4 @@ const BookmarkEditItem = ({
   );
 };
 
-export default memo(BookmarkEditItem);
+export default memo(BookmarkItemForEditing);
