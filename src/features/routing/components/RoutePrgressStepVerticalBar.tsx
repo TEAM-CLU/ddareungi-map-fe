@@ -1,5 +1,4 @@
-import IconBicycle from '@/shared/components/icons/IconBicycle';
-import IconRun from '@/shared/components/icons/IconRun';
+import { IconBicycle, IconRun } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { View } from 'react-native';
 

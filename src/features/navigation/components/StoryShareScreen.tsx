@@ -14,7 +14,6 @@ import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
 import { launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
-import IconClose from '@/shared/components/icons/IconClose';
 import { tw } from '@/shared/libs/tw-helper';
 import { clampTagList } from '@/features/navigation/utils/clampTagList';
 import {
@@ -22,6 +21,7 @@ import {
   formatTimeHHMMSSNumber,
   formatCaloriesKcalText,
 } from '@/shared/utils/formatting';
+import { IconClose } from '@/shared/components/icons';
 
 interface StoryShareScreenProps {
   traveledDistance: number;

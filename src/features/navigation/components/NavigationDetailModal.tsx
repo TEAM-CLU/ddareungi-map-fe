@@ -19,7 +19,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import Slider from '@react-native-community/slider';
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/react/shallow';
 

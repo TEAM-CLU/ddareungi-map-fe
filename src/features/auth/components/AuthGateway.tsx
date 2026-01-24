@@ -2,10 +2,9 @@ import AccountLinks from '@/features/auth/components/AccountLinks';
 import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import { useLoginUserMutation } from '@/features/auth/services/user.queries';
 import SquareButton from '@/shared/components/button/SquareButton';
-import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
 import { tw } from '@/shared/libs/tw-helper';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TouchableOpacity, View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AccountFinder from '@/features/auth/components/AccountFinder';
@@ -13,6 +12,7 @@ import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetConta
 import { CommonActions } from '@react-navigation/native';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { AccountFeatureType } from '@/features/auth/model/common.types';
+import { IconClose } from '@/shared/components/icons';
 
 interface AuthGatewayProps {
   setLoginScreenStep: React.Dispatch<React.SetStateAction<1 | 2>>;

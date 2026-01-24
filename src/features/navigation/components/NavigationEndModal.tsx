@@ -10,16 +10,14 @@ import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { playTts } from '@/features/navigation/libs/playTts';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import { IconClose } from '@/shared/components/icons';
+import { IconClose, IconShared } from '@/shared/components/icons';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { tw } from '@/shared/libs/tw-helper';
-
 import { convertToTrees } from '@/shared/utils/measure';
 import { useEffect, useState } from 'react';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
-import IconShared from '@/shared/components/icons/IconShared';
 import StoryShareScreen from '@/features/navigation/components/StoryShareScreen';
 import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
 import {

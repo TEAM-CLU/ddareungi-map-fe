@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Platform, Alert, AppState, AppStateStatus } from 'react-native';
 import RoundButton from '@/shared/components/button/RoundButton';
-import IconInfo from '@/shared/components/icons/IconInfo';
-import IconLocation from '@/shared/components/icons/IconLocation';
+
 import { tw } from '@/shared/libs/tw-helper';
 import { Text, View } from 'react-native';
 import {
@@ -18,6 +17,7 @@ import {
 } from 'react-native-permissions';
 import SquareButton from '@/shared/components/button/SquareButton';
 import { PermissionItem } from '@/features/auth/model/common.types';
+import { IconInfo, IconLocation } from '@/shared/components/icons';
 
 interface SignUpPermissionStepProps {
   setIsReadyToSignUp: React.Dispatch<React.SetStateAction<boolean>>;

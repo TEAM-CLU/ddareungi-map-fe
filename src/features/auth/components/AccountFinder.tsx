@@ -7,7 +7,7 @@ import {
 } from '@/features/auth/services/auth.queries';
 import RoundButton from '@/shared/components/button/RoundButton';
 import SquareButton from '@/shared/components/button/SquareButton';
-import IconClose from '@/shared/components/icons/IconClose';
+import { IconClose } from '@/shared/components/icons';
 import Input from '@/shared/components/Input/Input';
 import { tw } from '@/shared/libs/tw-helper';
 import {

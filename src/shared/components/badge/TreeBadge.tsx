@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import IconTree from '@/shared/components/icons/IconTree';
+import { IconTree } from '../icons';
 
 interface TreeBadgeProps {
   value: number;

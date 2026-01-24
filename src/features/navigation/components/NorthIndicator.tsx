@@ -1,6 +1,6 @@
-import IconNorthIndicator from '@/shared/components/icons/IconNorthIndicator';
 import { View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
+import { IconNorthIndicator } from '@/shared/components/icons';
 
 const NorthIndicator = () => {
   return (

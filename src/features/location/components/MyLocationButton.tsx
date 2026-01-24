@@ -1,6 +1,6 @@
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { useLocationStore } from '@/features/location/stores/useLocationStore';
-import IconLocatorMark from '@/shared/components/icons/IconLocatorMark';
+import { IconLocatorMark } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { TouchableOpacity } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';

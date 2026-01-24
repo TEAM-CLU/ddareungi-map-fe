@@ -1,6 +1,6 @@
-import IconEclipse from '@/shared/components/icons/IconEclipse';
 import { tw } from '@/shared/libs/tw-helper';
 import { View } from 'react-native';
+import { IconEclipse } from './icons';
 
 interface StepIndicatorProps {
   totalSteps: number;

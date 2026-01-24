@@ -1,9 +1,8 @@
 import { TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { useState } from 'react';
-import IconStationMarkerOn from '@/shared/components/icons/IconStationMarkerOn';
-import IconStationMarkerOff from '@/shared/components/icons/IconStationMarkerOff';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
+import { IconStationMarkerOff, IconStationMarkerOn } from '@/shared/components/icons';
 
 const StationMarkersToggleBtn = () => {
   const { turnOnStationMarkers, turnOffStationMarkers } = useStationMessenger();

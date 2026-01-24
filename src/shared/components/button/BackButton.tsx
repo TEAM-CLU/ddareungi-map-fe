@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import IconBackArrow from '@/shared/components/icons/IconBackArrow';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { IconBackArrow } from '../icons';
 
 interface BackButtonProps {
   type: 'previous' | 'custom';

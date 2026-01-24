@@ -1,7 +1,7 @@
 import PwdResetSetPasswordStep from '@/features/auth/components/pwdReset/PwdResetSetPasswordStep';
 import PwdResetVerifyEmailStep from '@/features/auth/components/pwdReset/PwdResetVerifyEmailStep';
 import { AccountFeatureType } from '@/features/auth/model/common.types';
-import IconClose from '@/shared/components/icons/IconClose';
+import { IconClose } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
 import { PrevScreenForFeatureBranch } from '@/shared/model/shared.types';
 import { useState } from 'react';

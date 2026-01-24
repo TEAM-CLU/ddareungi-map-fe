@@ -2,8 +2,8 @@ import {
   IconBicycle,
   IconMypage,
   IconRecommendedPath,
+  IconStar,
 } from '../components/icons';
-import { IconStar } from '../components/icons';
 import { FooterRoutes } from './shared.types';
 
 export const BUTTON_PRESETS = {

@@ -10,12 +10,12 @@ import { TouchableWithoutFeedback } from 'react-native';
 import SignUpPermissionStep from '@/features/auth/components/signUp/SignUpPermissionStep';
 import { useCreateUserMutation } from '@/features/auth/services/user.queries';
 import RoundButton from '@/shared/components/button/RoundButton';
-import IconBicycle from '@/shared/components/icons/IconBicycle';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import PrivacyConsentModal from '@/features/auth/components/PrivacyConsentModal';
 import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useSignUp } from '@/features/auth/hooks/useSignUp';
+import { IconBicycle } from '@/shared/components/icons';
 
 const SignUpScreen = () => {
   const { mutate: signUp, isPending } = useCreateUserMutation();

@@ -17,8 +17,8 @@ import {
   IconClose,
   IconPlus,
   IconMinus,
+  IconArrowsUpDown,
 } from '@/shared/components/icons';
-import IconArrowsUpDown from '@/shared/components/icons/IconArrowsUpDown';
 import { useRouteInput } from '@/features/routing/hooks/useRouteInput';
 import {
   RoutePoint,
