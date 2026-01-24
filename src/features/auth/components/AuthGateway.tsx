@@ -30,6 +30,8 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   const [accountFeatures, setAccountFeatures] =
     useState<AccountFeatureType>(null);
 
+  const [loginErrorMsg, setLoginErrorMsg] = useState('');
+
   useEffect(() => {
     if (!!id && !!pwd) {
       setIsAvailable(true);
@@ -46,7 +48,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   const handleLoginPress = async () => {
     // 아이디 입력 검사
     if (id.trim() === '') {
-      Alert.alert('아이디를 입력해주세요.');
+      setLoginErrorMsg('아이디를 입력해주세요.');
       setIsIdValid(false);
       return;
     }
@@ -54,14 +56,14 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     // 아이디 양식 검사(이메일 양식과 동일)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(id)) {
-      Alert.alert('올바른 이메일 형식으로 입력해주세요.');
+      setLoginErrorMsg('올바른 이메일 형식으로 입력해주세요.');
       setIsIdValid(false);
       return;
     }
 
     // 비밀번호 입력 검사
     if (pwd.trim() === '') {
-      Alert.alert('비밀번호를 입력해주세요.');
+      setLoginErrorMsg('비밀번호를 입력해주세요.');
       setIsPwdValid(false);
       return;
     }
@@ -69,7 +71,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     // 비밀번호 양식 검사 (영어, 숫자 포함 8자 이상, 특수문자 허용)
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(pwd)) {
-      Alert.alert('비밀번호는 영어, 숫자 포함 8자 이상이어야 합니다.');
+      setLoginErrorMsg('비밀번호는 영어, 숫자 포함 8자 이상이어야 합니다.');
       setIsPwdValid(false);
       return;
     }
@@ -91,11 +93,11 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
           );
         } else {
           // 성공했으나 토큰이 없는 경우
-          Alert.alert('로그인 실패', '토큰이 존재하지 않습니다.');
+          Alert.alert('오류', '서버 응답에 토큰이 없습니다.');
         }
       },
       onError: error => {
-        Alert.alert('로그인 실패', error.message);
+        setLoginErrorMsg('아이디 또는 비밀번호를 확인해주세요.');
         setIsIdValid(false);
         setIsPwdValid(false);
       },
@@ -159,7 +161,16 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
               onChangeText={setPwd}
               isValid={isPwdValid}
             />
+
+            {loginErrorMsg !== '' && (
+              <Text
+                style={[tw('font-primary-500 text-error'), { fontSize: 13 }]}
+              >
+                {loginErrorMsg}
+              </Text>
+            )}
           </View>
+
           {/* loginButton */}
           <SquareButton
             title="로그인"
