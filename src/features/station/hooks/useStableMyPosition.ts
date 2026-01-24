@@ -7,13 +7,17 @@ import { STATION_MOTION_CONFIG } from '@/features/station/model/station.constant
 export const useStableMyPosition = (
   locationMetaData?: LocationMetaData,
 ): Coordinates | null => {
-  const { MOVE_CONFIRM_COUNT, STATIONARY_DISTANCE_THRESHOLD } =
-    STATION_MOTION_CONFIG;
+  const {
+    MOVE_CONFIRM_COUNT,
+    STATIONARY_DISTANCE_THRESHOLD,
+    STABLE_UPDATE_DISTANCE_THRESHOLD,
+  } = STATION_MOTION_CONFIG;
 
   const [stablePosition, setStablePosition] = useState<Coordinates | null>(
     null,
   );
   const prevPositionRef = useRef<Coordinates | null>(null);
+  const stablePositionRef = useRef<Coordinates | null>(null);
   const stationaryPassCountRef = useRef(0);
   const movePassCountRef = useRef(0);
 
@@ -21,9 +25,14 @@ export const useStableMyPosition = (
     const currentCoord = locationMetaData?.coordinate;
     if (!currentCoord) return;
 
+    const commitStablePosition = (coord: Coordinates) => {
+      stablePositionRef.current = coord;
+      setStablePosition(coord);
+    };
+
     if (!prevPositionRef.current) {
       prevPositionRef.current = currentCoord;
-      setStablePosition(currentCoord);
+      commitStablePosition(currentCoord);
       return;
     }
 
@@ -39,8 +48,15 @@ export const useStableMyPosition = (
       movePassCountRef.current += 1;
       stationaryPassCountRef.current = 0;
       if (movePassCountRef.current >= MOVE_CONFIRM_COUNT) {
-        setStablePosition(currentCoord);
-        movePassCountRef.current = 0;
+        const currentStable = stablePositionRef.current;
+        const stableDistance = currentStable
+          ? getDistanceBetweenCoords(currentStable, currentCoord)
+          : Number.POSITIVE_INFINITY;
+
+        if (stableDistance >= STABLE_UPDATE_DISTANCE_THRESHOLD) {
+          commitStablePosition(currentCoord);
+          movePassCountRef.current = 0;
+        }
       }
     }
 
