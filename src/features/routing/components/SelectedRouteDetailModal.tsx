@@ -274,7 +274,7 @@ const SelectedRouteDetailModal = ({
             fontSize={10}
           />
           <Text style={[tw('font-primary-700 text-black'), { fontSize: 17 }]}>
-            {endAddress}
+            {endAddress ?? startAddress}
           </Text>
         </View>
       </View>
