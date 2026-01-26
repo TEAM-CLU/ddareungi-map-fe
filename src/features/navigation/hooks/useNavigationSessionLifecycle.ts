@@ -1,21 +1,14 @@
 import { useEffect, type RefObject } from 'react';
-import axios from 'axios';
 import { Alert } from 'react-native';
-
-import {
-  StartNavigationSessionPayload,
-  StartNavigationSessionResponse,
-} from '@/features/navigation/model/navigation.types';
 import { NavigationWalkingPolicy } from '@/shared/model/map.webview.types';
 import { ApplyNavigationDataInput } from '@/features/navigation/hooks/useNavigationDataApply';
+import { useStartNavigationSessionMutation } from '../services/navigation.queries';
+import { useNavigationStore } from '../stores/useNavigationStore';
 
 export type UseNavigationSessionLifecycleParams = {
   isNavigationMode: boolean;
   routeId: string | null;
   isMapReady: boolean;
-  startNavigationSession: (
-    payload: StartNavigationSessionPayload,
-  ) => Promise<StartNavigationSessionResponse>;
   resetAllNavigationState: () => void;
   applyNavigationData: (
     data: ApplyNavigationDataInput,
@@ -30,13 +23,19 @@ export const useNavigationSessionLifecycle = ({
   isNavigationMode,
   routeId,
   isMapReady,
-  startNavigationSession,
   resetAllNavigationState,
   applyNavigationData,
   setSessionId,
   setIsNavigationInitialized,
   isHandlingOffRouteRef,
 }: UseNavigationSessionLifecycleParams) => {
+  const { mutateAsync: startNavigationSession } =
+    useStartNavigationSessionMutation();
+
+  const setIsNavigationMode = useNavigationStore(
+    state => state.setIsNavigationMode,
+  );
+
   // 초기화
   useEffect(() => {
     if (!isNavigationMode || !routeId) return;
@@ -45,35 +44,50 @@ export const useNavigationSessionLifecycle = ({
 
     const initNavigation = async () => {
       try {
-        const payload: StartNavigationSessionPayload = {
-          routeId,
-        };
+        // 세션 시작 요청
+        const { data } = await startNavigationSession({ routeId });
 
-        const response: StartNavigationSessionResponse =
-          await startNavigationSession(payload);
-        setSessionId(response.data.sessionId);
+        // 성공 시 데이터 적용
+        setSessionId(data.sessionId);
 
         // 공통 데이터 적용 함수 사용
         applyNavigationData({
-          coordinates: response.data.coordinates,
-          instructions: response.data.instructions,
+          coordinates: data.coordinates,
+          instructions: data.instructions,
         });
 
         setIsNavigationInitialized(true);
         isHandlingOffRouteRef.current = false;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          Alert.alert(
-            `${
-              error.response?.data?.message ??
-              '내비게이션 세션 시작 중 오류가 발생했습니다. 다시 시도해주세요.'
-            }`,
-          );
-        }
+      } catch (error: any) {
+        const serverMessage = error.response?.data?.message;
+        const displayMessage = serverMessage
+          ? `${serverMessage}`
+          : '일시적인 네트워크 문제로 연결할 수 없습니다.\n잠시 후 다시 시도해주세요.';
+
+        Alert.alert(
+          '경로 안내를 시작할 수 없어요',
+          displayMessage,
+          [
+            {
+              text: '이전으로 돌아가기',
+              onPress: () => {
+                setIsNavigationMode(false);
+              },
+              style: 'default',
+            },
+          ],
+          { cancelable: false },
+        );
       }
     };
 
     initNavigation();
-  }, [isNavigationMode, routeId, isMapReady, applyNavigationData]);
-
+  }, [
+    isNavigationMode,
+    routeId,
+    isMapReady,
+    applyNavigationData,
+    startNavigationSession,
+    setIsNavigationMode,
+  ]);
 };

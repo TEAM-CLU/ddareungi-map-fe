@@ -259,8 +259,8 @@ importers:
         specifier: ^3.4.11
         version: 3.4.11(@babel/runtime@7.28.6)
       react-native-svg-transformer:
-        specifier: ^1.5.1
-        version: 1.5.2(react-native-svg@15.15.1(react-native@0.81.1(@babel/core@7.28.6)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.6))(@types/react@19.2.9)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.6)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.6))(@types/react@19.2.9)(react@19.1.0))(typescript@5.9.3)
+        specifier: ^1.5.3
+        version: 1.5.3(react-native-svg@15.15.1(react-native@0.81.1(@babel/core@7.28.6)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.6))(@types/react@19.2.9)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.6)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.6))(@types/react@19.2.9)(react@19.1.0))(typescript@5.9.3)
       react-test-renderer:
         specifier: 19.1.0
         version: 19.1.0(react@19.1.0)
@@ -4132,8 +4132,8 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
-  lru-cache@11.2.4:
-    resolution: {integrity: sha512-B5Y16Jr9LB9dHVkh6ZevG+vAbOsNOYCX+sXvFWFu7B3Iz5mijW3zdbMyhsh8ANd2mSWBYdJgnqi+mL7/LrOPYg==}
+  lru-cache@11.2.5:
+    resolution: {integrity: sha512-vFrFJkWtJvJnD5hg+hJvVE8Lh/TcMzKnTgCWmtBipwI5yLX/iX+5UB2tfuyODF5E7k9xEzMdYgGqaSb1c0c5Yw==}
     engines: {node: 20 || >=22}
 
   lru-cache@5.1.1:
@@ -5034,8 +5034,8 @@ packages:
     resolution: {integrity: sha512-H9q9lXcB322jMMMQ3xAg2QFux2gznJzztcNnycK4iqL/XjDGULf/MWkdwBXUfEEhl6ydnGmhP6huRMRYiyIGng==}
     engines: {node: '>=16'}
 
-  react-native-svg-transformer@1.5.2:
-    resolution: {integrity: sha512-eW4hOtrd30s4SRdN4X1XYxTCu1czsxDGQKmfQ3RFbZMN5yw4ZmiKGGr+lXbQW4uDGZvSoGd9FHL1f+rgGoKg8Q==}
+  react-native-svg-transformer@1.5.3:
+    resolution: {integrity: sha512-M4uFg5pUt35OMgjD4rWWbwd6PmxV96W7r/gQTTa+iZA5B+jO6aURhzAZGLHSrg1Kb91cKG0Rildy9q1WJvYstg==}
     peerDependencies:
       react-native: '>=0.59.0'
       react-native-svg: '>=12.0.0'
@@ -11104,7 +11104,7 @@ snapshots:
 
   lru-cache@10.4.3: {}
 
-  lru-cache@11.2.4: {}
+  lru-cache@11.2.5: {}
 
   lru-cache@5.1.1:
     dependencies:
@@ -11836,7 +11836,7 @@ snapshots:
 
   path-scurry@2.0.1:
     dependencies:
-      lru-cache: 11.2.4
+      lru-cache: 11.2.5
       minipass: 7.1.2
 
   path-type@4.0.0: {}
@@ -12211,7 +12211,7 @@ snapshots:
 
   react-native-share@12.2.4: {}
 
-  react-native-svg-transformer@1.5.2(react-native-svg@15.15.1(react-native@0.81.1(@babel/core@7.28.6)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.6))(@types/react@19.2.9)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.6)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.6))(@types/react@19.2.9)(react@19.1.0))(typescript@5.9.3):
+  react-native-svg-transformer@1.5.3(react-native-svg@15.15.1(react-native@0.81.1(@babel/core@7.28.6)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.6))(@types/react@19.2.9)(react@19.1.0))(react@19.1.0))(react-native@0.81.1(@babel/core@7.28.6)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.81.1(@babel/core@7.28.6))(@types/react@19.2.9)(react@19.1.0))(typescript@5.9.3):
     dependencies:
       '@svgr/core': 8.1.0(typescript@5.9.3)
       '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0(typescript@5.9.3))

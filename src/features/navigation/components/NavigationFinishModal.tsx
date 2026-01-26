@@ -48,8 +48,8 @@ const NavigationFinishModal = ({
   sessionId,
 }: NavigationFinishModalProps) => {
   const { data: prevUserInfo, isLoading } = useUserInfoQuery();
-  const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
-  const { mutateAsync: terminateNavigationSession } =
+  const { mutate: updateUserUsageInfo } = useUpdateUserStatsMutation();
+  const { mutate: terminateNavigationSession } =
     useTerminateNavigationSessionMutation();
 
   const { resetAllData: resetRouteData } = useRouteStore();

@@ -1,5 +1,4 @@
 import { useEffect, type RefObject } from 'react';
-
 import {
   MOTION_COMMON_OPTIONS,
   TRAVELED_DISTANCE_OPTIONS,

@@ -1,5 +1,4 @@
 import { useEffect, type RefObject } from 'react';
-
 import { LocationMetaData } from '@/features/navigation/model/navigation.types';
 
 export type UseLocationMetaHistoryParams = {

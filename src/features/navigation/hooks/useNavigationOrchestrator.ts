@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-
 import { travelMode } from './../model/navigation.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { Coordinates } from '@/features/map/model/map.types';
@@ -10,12 +9,6 @@ import {
   LocationMetaData,
   NavigationInstruction,
 } from '@/features/navigation/model/navigation.types';
-import {
-  useKeepNavigationSessionAliveMutation,
-  useReRouteMutation,
-  useReturnToExistingRouteMutation,
-  useStartNavigationSessionMutation,
-} from '@/features/navigation/services/navigation.queries';
 import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
@@ -24,7 +17,6 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { Gender } from '@/shared/model/shared.types';
 import { useShallow } from 'zustand/react/shallow';
 import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
-
 import { useNavigationSessionLifecycle } from '@/features/navigation/hooks/useNavigationSessionLifecycle';
 import { useNavigationSessionKeepAlive } from '@/features/navigation/hooks/useNavigationSessionKeepAlive';
 import { useNavigationDataApply } from '@/features/navigation/hooks/useNavigationDataApply';
@@ -37,15 +29,6 @@ import { useSystemVolumeSync } from '@/features/navigation/hooks/useSystemVolume
 import { useLocationMetaHistory } from '@/features/navigation/hooks/useLocationMetaHistory';
 
 export const useNavigationOrchestrator = () => {
-  const { mutateAsync: startNavigationSession } =
-    useStartNavigationSessionMutation();
-
-  const { mutateAsync: keepNavigationSessionAlive } =
-    useKeepNavigationSessionAliveMutation();
-
-  const { mutateAsync: recoveryRoute } = useReturnToExistingRouteMutation();
-  const { mutateAsync: reroute } = useReRouteMutation();
-
   const { data: userInfoData } = useUserInfoQuery();
   const userGender = userInfoData?.data.gender as Gender;
 
@@ -282,7 +265,6 @@ export const useNavigationOrchestrator = () => {
     isNavigationMode,
     routeId,
     isMapReady,
-    startNavigationSession,
     resetAllNavigationState,
     applyNavigationData,
     setSessionId,
@@ -375,8 +357,6 @@ export const useNavigationOrchestrator = () => {
     systemVolume,
     traveledDistanceMeter,
     selectedRouteData,
-    reroute,
-    recoveryRoute,
     applyNavigationData,
     setIsLoadingForOffRoute,
     refs: {
@@ -434,7 +414,6 @@ export const useNavigationOrchestrator = () => {
     isNavigationMode,
     sessionId,
     isNavigationInitialized,
-    keepNavigationSessionAlive,
   });
 
   return {

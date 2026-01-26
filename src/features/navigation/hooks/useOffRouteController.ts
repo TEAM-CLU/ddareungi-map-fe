@@ -1,5 +1,4 @@
 import { useEffect, type RefObject } from 'react';
-
 import {
   ACCURACY_OK,
   OFF_ROUTE_CONFIG,
@@ -17,6 +16,10 @@ import { Route, RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { ApplyNavigationDataInput } from '@/features/navigation/hooks/useNavigationDataApply';
 import { NavigationWalkingPolicy } from '@/shared/model/map.webview.types';
+import {
+  useReRouteMutation,
+  useReturnToExistingRouteMutation,
+} from '../services/navigation.queries';
 
 export type UseOffRouteControllerParams = {
   isNavigationMode: boolean;
@@ -26,17 +29,6 @@ export type UseOffRouteControllerParams = {
   systemVolume: number;
   traveledDistanceMeter: number | undefined | null;
   selectedRouteData: Route | null;
-  reroute: (payload: {
-    sessionId: string;
-    currentLocation: Coordinates;
-    travelMode: 'walking' | 'biking';
-    remainingWaypoints: Coordinates[];
-  }) => Promise<any>;
-  recoveryRoute: (payload: {
-    sessionId: string;
-    currentLocation: Coordinates;
-    remainingWaypoints: Coordinates[];
-  }) => Promise<any>;
   applyNavigationData: (
     data: ApplyNavigationDataInput,
     walkingPolicy?: NavigationWalkingPolicy,
@@ -67,12 +59,13 @@ export const useOffRouteController = ({
   systemVolume,
   traveledDistanceMeter,
   selectedRouteData,
-  reroute,
-  recoveryRoute,
   applyNavigationData,
   setIsLoadingForOffRoute,
   refs,
 }: UseOffRouteControllerParams) => {
+  const { mutateAsync: reroute } = useReRouteMutation();
+  const { mutateAsync: recoveryRoute } = useReturnToExistingRouteMutation();
+
   const {
     RECOVERY_TRIGGER_METER,
     REROUTE_TRIGGER_METER,
@@ -143,7 +136,7 @@ export const useOffRouteController = ({
           : RouteType.CONSTANT;
 
       // ===============================
-      // 1️⃣ off 카운트는 "항상" 누적
+      // 1. off 카운트는 "항상" 누적
       // ===============================
       if (routeType === RouteType.LOOP) {
         if (isOffForRecovery || isOffForReroute) {
@@ -189,17 +182,16 @@ export const useOffRouteController = ({
       }
 
       // ===============================
-      // 2️⃣ TTS (edge-trigger, 정지 아닐 때만)
+      // 2. TTS (edge-trigger, 정지 아닐 때만)
       // ===============================
-      if (!refs.isStationaryRef.current && !refs.isHandlingOffRouteRef.current) {
-        if (refs.rerouteTriggerCount.current === 1) {
-          playTts(
-            'tts-offroute-warning',
-            WARNING_OFFROUTE_TTS_URL,
-            systemVolume,
-          );
-        }
-        if (refs.recoverTriggerCount.current === 1) {
+      if (
+        !refs.isStationaryRef.current &&
+        !refs.isHandlingOffRouteRef.current
+      ) {
+        if (
+          refs.rerouteTriggerCount.current === 1 ||
+          refs.recoverTriggerCount.current === 1
+        ) {
           playTts(
             'tts-offroute-warning',
             WARNING_OFFROUTE_TTS_URL,
@@ -209,7 +201,7 @@ export const useOffRouteController = ({
       }
 
       // ===============================
-      // 3️⃣ remainingWaypoints (⚠️ 유지)
+      // 3. remainingWaypoints
       // ===============================
       const remainingWaypoints = selectedRouteData?.waypoints
         ?.map((wp, idx) =>
@@ -220,7 +212,7 @@ export const useOffRouteController = ({
         .filter((wp): wp is Coordinates => wp !== null);
 
       // ===============================
-      // 4️⃣ reroute (정지 아닐 때만 실행)
+      // 4. reroute (정지 아닐 때만 실행)
       // ===============================
       if (
         !refs.isStationaryRef.current &&
@@ -228,73 +220,75 @@ export const useOffRouteController = ({
         routeType === RouteType.CONSTANT &&
         refs.rerouteTriggerCount.current >= MAX_TRIGGER_COUNT
       ) {
-        const shouldWalkingReroute = isNearByStart && !refs.isBikingStateRef.current;
+        const shouldWalkingReroute =
+          isNearByStart && !refs.isBikingStateRef.current;
         const shouldBikingReroute = refs.isBikingStateRef.current;
 
-        if (!shouldWalkingReroute && !shouldBikingReroute) return;
+        if (shouldWalkingReroute || shouldBikingReroute) {
+          refs.isHandlingOffRouteRef.current = true;
+          setIsLoadingForOffRoute(true);
+          refs.rerouteTriggerCount.current = 0;
+          refs.recoverTriggerCount.current = 0;
 
-        refs.isHandlingOffRouteRef.current = true;
-        setIsLoadingForOffRoute(true);
-        refs.rerouteTriggerCount.current = 0;
-        refs.recoverTriggerCount.current = 0;
+          if (traveledDistanceMeter != null) {
+            refs.accumulatedTraveledDistanceRef.current = traveledDistanceMeter;
+          }
 
-        if (traveledDistanceMeter != null) {
-          refs.accumulatedTraveledDistanceRef.current = traveledDistanceMeter;
-        }
+          try {
+            const response = await reroute({
+              sessionId,
+              currentLocation: myPosition,
+              travelMode: shouldWalkingReroute ? 'walking' : 'biking',
+              remainingWaypoints: remainingWaypoints ?? [],
+            });
 
-        try {
-          const response = await reroute({
-            sessionId,
-            currentLocation: myPosition,
-            travelMode: shouldWalkingReroute ? 'walking' : 'biking',
-            remainingWaypoints: remainingWaypoints ?? [],
-          });
+            applyNavigationData(
+              {
+                coordinates: response.data.coordinates,
+                instructions: response.data.instructions,
+                startStation: response.data.startStation
+                  ? {
+                      lat: response.data.startStation.location.lat,
+                      lng: response.data.startStation.location.lng,
+                      stationId: response.data.startStation.stationId,
+                      stationName: response.data.startStation.stationName,
+                    }
+                  : undefined,
+                endStation: response.data.endStation
+                  ? {
+                      lat: response.data.endStation.location.lat,
+                      lng: response.data.endStation.location.lng,
+                      stationId: response.data.endStation.stationId,
+                      stationName: response.data.endStation.stationName,
+                    }
+                  : undefined,
+                waypoints: response.data.waypoints
+                  ? response.data.waypoints.map(
+                      (wp: { lng: number; lat: number }) =>
+                        [wp.lng, wp.lat] as [number, number],
+                    )
+                  : undefined,
+              },
+              shouldBikingReroute ? 'only-end' : 'all',
+            );
 
-          applyNavigationData(
-            {
-              coordinates: response.data.coordinates,
-              instructions: response.data.instructions,
-              startStation: response.data.startStation
-                ? {
-                    lat: response.data.startStation.location.lat,
-                    lng: response.data.startStation.location.lng,
-                    stationId: response.data.startStation.stationId,
-                    stationName: response.data.startStation.stationName,
-                  }
-                : undefined,
-              endStation: response.data.endStation
-                ? {
-                    lat: response.data.endStation.location.lat,
-                    lng: response.data.endStation.location.lng,
-                    stationId: response.data.endStation.stationId,
-                    stationName: response.data.endStation.stationName,
-                  }
-                : undefined,
-              waypoints: response.data.waypoints
-                ? response.data.waypoints.map(
-                    (wp: { lng: number; lat: number }) =>
-                      [wp.lng, wp.lat] as [number, number],
-                  )
-                : undefined,
-            },
-            shouldBikingReroute ? 'only-end' : 'all',
-          );
-
-          playTts('tts-offroute-reroute', REROUTE_TTS_URL, systemVolume);
-          playTts('tts-navigation-start', START_TTS_URL, systemVolume);
-          playTts(
-            `tts-actual-${refs.currentIntervalIndex.current}`,
-            refs.currentTtsUrl.current ?? FALLBACK_TTS_URL,
-            systemVolume,
-          );
-        } finally {
-          refs.isHandlingOffRouteRef.current = false;
-          setIsLoadingForOffRoute(false);
+            playTts('tts-offroute-reroute', REROUTE_TTS_URL, systemVolume);
+            playTts('tts-navigation-start', START_TTS_URL, systemVolume);
+            playTts(
+              `tts-actual-${refs.currentIntervalIndex.current}`,
+              refs.currentTtsUrl.current ?? FALLBACK_TTS_URL,
+              systemVolume,
+            );
+          } catch (error) {
+          } finally {
+            refs.isHandlingOffRouteRef.current = false;
+            setIsLoadingForOffRoute(false);
+          }
         }
       }
 
       // ===============================
-      // 5️⃣ recover (주행 중 + 정지 아닐 때)
+      // 5. recover (주행 중 + 정지 아닐 때)
       // ===============================
       if (
         !refs.isStationaryRef.current &&
@@ -333,6 +327,7 @@ export const useOffRouteController = ({
             refs.currentTtsUrl.current ?? FALLBACK_TTS_URL,
             systemVolume,
           );
+        } catch (error) {
         } finally {
           refs.isHandlingOffRouteRef.current = false;
           setIsLoadingForOffRoute(false);
@@ -343,6 +338,7 @@ export const useOffRouteController = ({
     (async () => {
       try {
         await judgeOffRoute();
+      } catch {
       } finally {
         refs.offRouteTickBusyRef.current = false;
       }
@@ -354,5 +350,7 @@ export const useOffRouteController = ({
     isNavigationInitialized,
     systemVolume,
     traveledDistanceMeter,
+    reroute,
+    recoveryRoute,
   ]);
 };

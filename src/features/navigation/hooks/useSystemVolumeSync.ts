@@ -4,20 +4,13 @@ import { VolumeManager } from 'react-native-volume-manager';
 export const useSystemVolumeSync = (setSystemVolume: (v: number) => void) => {
   // 시스템 볼륨 초기값 설정 및 리스너 등록
   useEffect(() => {
-    const canUseVolumeManager =
-      VolumeManager &&
-      typeof VolumeManager.getVolume === 'function' &&
-      typeof VolumeManager.addVolumeListener === 'function';
-
-    if (!canUseVolumeManager) {
+    if (!VolumeManager?.getVolume || !VolumeManager?.addVolumeListener) {
       return;
     }
 
-    try {
-      VolumeManager.getVolume().then(volumeData =>
-        setSystemVolume(volumeData.volume),
-      );
-    } catch (error) {}
+    VolumeManager.getVolume()
+      .then(volumeData => setSystemVolume(volumeData.volume))
+      .catch(() => {});
 
     const volumeListener = VolumeManager.addVolumeListener(
       (volumeData: { volume: number }) => {
@@ -28,5 +21,5 @@ export const useSystemVolumeSync = (setSystemVolume: (v: number) => void) => {
     return () => {
       volumeListener.remove();
     };
-  }, []);
+  }, [setSystemVolume]);
 };

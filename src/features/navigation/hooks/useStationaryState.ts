@@ -1,5 +1,4 @@
 import { useEffect, type RefObject } from 'react';
-
 import { LocationMetaData } from '@/features/navigation/model/navigation.types';
 import { TRANSPORT_STATE_CONFIG } from '@/features/navigation/model/navigation.constants';
 import { Coordinates } from '@/features/map/model/map.types';
@@ -29,51 +28,41 @@ export const useStationaryState = ({
 
   // 정지 상태 판정 전용 (location tick 기반으로 항상 실행)
   useEffect(() => {
-    // 항상 실행되어야 하므로 어떤 조건에 의한 early return을 두지 않습니다.
-    const currentLocationMeta = currentLocationMetaData.current ?? locationMetaData;
+    // 1. 현재 위치 정보 가져오기
+    const currentLocationMeta =
+      currentLocationMetaData.current ?? locationMetaData;
+    const currentCoord = currentLocationMeta?.coordinate ?? null;
 
+    // 2. 위치 데이터가 유효하지 않으면 리셋 후 종료
     if (!currentLocationMeta) {
-      // 위치 정보가 아직 없으면 정지 상태 초기화
       stationaryCountRef.current = 0;
       isStationaryRef.current = false;
-      // 정상적으로 끝냄
       return;
     }
 
-    const currentCoord = (currentLocationMeta as LocationMetaData).coordinate;
-    const currentTimestamp =
-      typeof currentLocationMeta.timestamp === 'number'
-        ? currentLocationMeta.timestamp
-        : Date.now();
+    const prevCoord = prevMyPositionForStationaryRef.current;
 
-    const prevPosition = prevMyPositionForStationaryRef.current;
-    const prevTimestamp = prevTimestampForStationaryRef.current;
-
-    // 위치 정보가 아직 없으면 정지 상태 초기화
-    if (!currentCoord) {
-      stationaryCountRef.current = 0;
-      isStationaryRef.current = false;
-      // 정상적으로 끝냄
-      return;
-    }
-
-    // 첫 샘플이면 prev로 세팅하고 정지 상태 초기화
-    if (!prevPosition || prevTimestamp == null) {
+    // 3. 이전 위치가 없으면 (첫 진입) 현재 위치만 저장하고 종료
+    if (!prevCoord) {
       prevMyPositionForStationaryRef.current = currentCoord;
-      prevTimestampForStationaryRef.current = currentTimestamp;
-      stationaryCountRef.current = 0;
-      isStationaryRef.current = false;
+      if (prevTimestampForStationaryRef) {
+        prevTimestampForStationaryRef.current =
+          currentLocationMeta.timestamp ?? Date.now();
+      }
       return;
     }
 
-    // 이동 거리 계산
+    // 4. 이동거리 계산
     const movedDistanceMeter = getDistanceBetweenCoords(
-      prevPosition,
-      currentCoord,
+      prevCoord as Coordinates,
+      currentCoord as Coordinates,
     );
 
+    // 5. 정지/이동 판정 로직
     if (movedDistanceMeter <= STATIONARY_DISTANCE_THRESHOLD) {
+      // 거의 안 움직이면 정지 카운트 증가
       stationaryCountRef.current += 1;
+
       if (stationaryCountRef.current >= STATIONARY_THRESHOLD) {
         isStationaryRef.current = true;
       }
@@ -83,8 +72,13 @@ export const useStationaryState = ({
       isStationaryRef.current = false;
     }
 
-    // prev 갱신
+    // 6. 다음 비교를 위해 현재 위치 저장
     prevMyPositionForStationaryRef.current = currentCoord;
-    prevTimestampForStationaryRef.current = currentTimestamp;
+
+    // 타임스탬프 업데이트
+    if (prevTimestampForStationaryRef) {
+      prevTimestampForStationaryRef.current =
+        currentLocationMeta.timestamp ?? Date.now();
+    }
   }, [locationTick]);
 };
