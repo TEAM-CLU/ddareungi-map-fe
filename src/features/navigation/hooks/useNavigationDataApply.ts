@@ -84,33 +84,29 @@ export const useNavigationDataApply = ({
       navigationData: ApplyNavigationDataInput,
       walkingPolicy: NavigationWalkingPolicy = 'all',
     ) => {
-      // coordinates와 instructions 적용
+      if (
+        !navigationData.coordinates ||
+        navigationData.coordinates.length === 0
+      ) {
+        return;
+      }
+      // Ref 데이터 업데이트 (좌표, 지시사항)
       refs.fullPathCoordinateList.current = navigationData.coordinates;
       refs.instructionList.current = navigationData.instructions;
 
       // TTS 및 preview 관련 상태 설정
-      refs.currentTtsUrl.current =
-        navigationData.instructions.length > 0
-          ? navigationData.instructions[0].ttsUrl
-          : null;
-      refs.previewInstructionText.current =
-        navigationData.instructions.length > 1
-          ? navigationData.instructions[1].text
-          : '';
-      refs.previewTtsUrl.current =
-        navigationData.instructions.length > 1
-          ? navigationData.instructions[1].ttsUrl
-          : null;
-      refs.previewSign.current =
-        navigationData.instructions.length > 1
-          ? navigationData.instructions[1].sign
-          : null;
+      const firstInst = navigationData.instructions[0];
+      const secondInst = navigationData.instructions[1];
+
+      refs.currentTtsUrl.current = firstInst?.ttsUrl ?? null;
+      refs.previewInstructionText.current = secondInst?.text ?? '';
+      refs.previewTtsUrl.current = secondInst?.ttsUrl ?? null;
+      refs.previewSign.current = secondInst?.sign ?? null;
 
       // 현재 instruction 및 turn 좌표 설정
-      if (navigationData.instructions.length > 0) {
-        setCurrentInstruction(navigationData.instructions[0]);
-        refs.nextTurnCoordinate.current =
-          navigationData.instructions[0].nextTurnCoordinate;
+      if (firstInst) {
+        setCurrentInstruction(firstInst);
+        refs.nextTurnCoordinate.current = firstInst.nextTurnCoordinate;
 
         // 네비게이션 디테일 모달 상태 초기화
         setInstructionList(navigationData.instructions);
@@ -122,17 +118,18 @@ export const useNavigationDataApply = ({
 
       // pathDataListByInterval 재구성
       refs.pathDataListByInterval.current = [];
-      for (let i = 0; i < navigationData.instructions.length; i++) {
-        const interval = navigationData.instructions[i].interval;
-        const segmentCoordinates = navigationData.coordinates
-          .slice(interval[0], interval[1] + 1)
-          .map(coord => ({ lat: coord[1], lng: coord[0] }));
-        refs.pathDataListByInterval.current.push({
-          intervalIndex: i,
-          interval,
-          coordinateList: segmentCoordinates,
-        });
-      }
+      refs.pathDataListByInterval.current = navigationData.instructions.map(
+        (inst, idx) => {
+          const [start, end] = inst.interval;
+          return {
+            intervalIndex: idx,
+            interval: inst.interval,
+            coordinateList: navigationData.coordinates
+              .slice(start, end + 1)
+              .map(coord => ({ lat: coord[1], lng: coord[0] })),
+          };
+        },
+      );
 
       // 턴 관련 상태 리셋
       refs.isEnteredRef.current = false;
@@ -143,24 +140,18 @@ export const useNavigationDataApply = ({
       refs.previewEnterCount.current = 0;
 
       // 거리/측정 기준 리셋 (재탐색 시 remaining/interval 갱신을 즉시 반영)
-      if (refs.prevTimestampForDistanceRef) {
-        refs.prevTimestampForDistanceRef.current = null;
-      }
-      if (refs.prevMyPositionForDistanceRef) {
-        refs.prevMyPositionForDistanceRef.current = null;
-      }
-      if (refs.prevTraveledDistanceMeterRef) {
-        refs.prevTraveledDistanceMeterRef.current = 0;
-      }
-      if (refs.prevRemainingDistanceMeterRef) {
-        refs.prevRemainingDistanceMeterRef.current = Number.POSITIVE_INFINITY;
-      }
-      if (refs.prevTimestampForMeasureRef) {
-        refs.prevTimestampForMeasureRef.current = null;
-      }
-      if (refs.prevTraveledDistanceForMeasureRef) {
-        refs.prevTraveledDistanceForMeasureRef.current = null;
-      }
+      refs.prevTimestampForDistanceRef &&
+        (refs.prevTimestampForDistanceRef.current = null);
+      refs.prevMyPositionForDistanceRef &&
+        (refs.prevMyPositionForDistanceRef.current = null);
+      refs.prevTraveledDistanceMeterRef &&
+        (refs.prevTraveledDistanceMeterRef.current = 0);
+      refs.prevRemainingDistanceMeterRef &&
+        (refs.prevRemainingDistanceMeterRef.current = Number.POSITIVE_INFINITY);
+      refs.prevTimestampForMeasureRef &&
+        (refs.prevTimestampForMeasureRef.current = null);
+      refs.prevTraveledDistanceForMeasureRef &&
+        (refs.prevTraveledDistanceForMeasureRef.current = null);
 
       // 네비게이션 경로 그리기
       if (selectedRouteData && isMapReady) {
@@ -180,11 +171,13 @@ export const useNavigationDataApply = ({
 
         // 대여소 정보: 새로운 정보가 있으면 사용, 없으면 selectedRouteData 사용
         const startStation =
-          navigationData.startStation || selectedRouteData.startStation;
+          navigationData.startStation ?? selectedRouteData.startStation;
         const endStation =
-          navigationData.endStation ||
-          selectedRouteData.endStation ||
+          navigationData.endStation ??
+          selectedRouteData.endStation ??
           startStation;
+
+        if (!startStation) return;
 
         // 경유지 정보: 새로운 정보가 있으면 사용, 없으면 selectedRouteData 사용
         const waypoints = navigationData.waypoints
@@ -200,10 +193,7 @@ export const useNavigationDataApply = ({
         const endStationPoint =
           routeType === RouteType.LOOP
             ? startStationPoint
-            : {
-                lat: endStation.lat,
-                lng: endStation.lng,
-              };
+            : { lat: endStation.lat, lng: endStation.lng };
 
         drawNavigationPath({
           routeType,
