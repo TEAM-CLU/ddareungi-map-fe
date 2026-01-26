@@ -1,4 +1,3 @@
-// features/navigation/utils/ttsPlayer.ts
 import {
   COOLDOWN_BY_KEY,
   DEFAULT_COOLDOWN_MS,
@@ -6,26 +5,19 @@ import {
 } from '@/features/navigation/model/navigation.constants';
 import TrackPlayer, { Event, State } from 'react-native-track-player';
 
-// =========================
 // Queue state
-// =========================
 const queue: TtsItem[] = [];
 let isConsuming = false;
 let currentPlayingKey: string | null = null;
 let suppressIntervalGuidanceTts = false;
 
-// =========================
 // Dedupe & cooldown policy
-// =========================
 const lastSpokenAtByCooldownKey = new Map<string, number>();
 
-// =========================
 // Helpers
-// =========================
 const now = () => Date.now();
 
 /**
- * ✅ (1)(2) 핵심:
  * - 쿨다운/중복방지 기준을 "원본 key"가 아니라 "정책 key(prefix)"로 통일
  * - ex) tts-preview-12, tts-preview-13 => cooldownKey: "tts-preview"
  */
@@ -95,9 +87,7 @@ const stopCurrentIfKeyMatches = async (predicate: (key: string) => boolean) => {
   }
 };
 
-// =========================
 // Public API
-// =========================
 /**
  * enqueueTts:
  * - key(prefix)별 쿨다운 체크(“재생 시작” 기준)
@@ -133,10 +123,10 @@ export const enqueueTts = (key: string, url: string, volume: number) => {
     }
   }
 
-  // ✅ (2) 같은 "정책 key(prefix)"가 이미 큐에 대기 중이면 또 넣지 않는다(난사 방지)
+  // (2) 같은 "정책 key(prefix)"가 이미 큐에 대기 중이면 또 넣지 않는다(난사 방지)
   if (isKeyAlreadyQueued(key)) return;
 
-  // ✅ (1) prefix 기준 쿨다운(최근에 같은 prefix가 "재생 시작" 되었으면 컷)
+  // (1) prefix 기준 쿨다운(최근에 같은 prefix가 "재생 시작" 되었으면 컷)
   const lastSpokenAt = lastSpokenAtByCooldownKey.get(cooldownKey) ?? 0;
   const cooldown = getCooldownMs(key);
 
@@ -157,7 +147,6 @@ export const clearTtsQueue = async () => {
   try {
     await TrackPlayer.reset();
   } catch {
-    // ignore
   }
 };
 
@@ -179,9 +168,7 @@ export const registerTtsQueueHandler = () => {
   });
 };
 
-// =========================
 // Internal
-// =========================
 const consumeQueue = async () => {
   if (isConsuming) return;
   isConsuming = true;
@@ -194,7 +181,7 @@ const consumeQueue = async () => {
       if (isPlayingState(state)) break;
 
       const item = queue.shift()!;
-      // ✅ (1) "이 prefix(key)를 재생 시작했다"를 기록 (쿨다운 기준점)
+      // (1) "이 prefix(key)를 재생 시작했다"를 기록 (쿨다운 기준점)
       lastSpokenAtByCooldownKey.set(getCooldownKey(item.key), now());
       currentPlayingKey = item.key;
 
