@@ -26,6 +26,7 @@ import {
   formatDistanceAdaptiveText,
 } from '@/shared/utils/formatting';
 import { UpdateUserStatsPayload } from '@/features/auth/model/user.types';
+
 interface NavigationEndModalProps {
   modalRef: React.RefObject<Modal | null>;
   setShowNavigationEndModal: (show: boolean) => void;
@@ -48,47 +49,39 @@ const NavigationEndModal = ({
   sessionId,
 }: NavigationEndModalProps) => {
   const { data: prevUserInfo, isLoading } = useUserInfoQuery();
-  const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
-  const { mutateAsync: terminateNavigationSession } =
+  const { mutate: updateUserUsageInfo } = useUpdateUserStatsMutation();
+  const { mutate: terminateNavigationSession } =
     useTerminateNavigationSessionMutation();
+
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
   const { systemVolume } = useVolumeStore();
+
   const { replaceMyLocationMarker, clearNavigationPath } =
     useNavigationMessenger();
   const { turnOnBookmarkMarkers } = useBookmarkMessenger();
 
   useEffect(() => {
-    const terminateNavigation = async () => {
-      turnOnBookmarkMarkers();
-      const endTtsKey = 'tts-navigation-end';
-      const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
-      playTts(endTtsKey, endTtsUrl, systemVolume);
-      if (sessionId === null || sessionId === '') return;
-      try {
-        const payload = {
-          sessionId: sessionId,
-        };
-        await terminateNavigationSession(payload);
-      } catch (error) {}
-    };
+    turnOnBookmarkMarkers();
     clearNavigationPath();
-    terminateNavigation();
+
+    const endTtsKey = 'tts-navigation-end';
+    const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
+    playTts(endTtsKey, endTtsUrl, systemVolume);
+
+    if (!sessionId) return;
+
+    terminateNavigationSession(
+      { sessionId },
+      {
+        onSuccess: () => {},
+        onError: () => {},
+      },
+    );
   }, []);
 
-  const handleCloseEndModalPress = async () => {
-    if (!prevUserInfo) {
-      setShowNavigationEndModal(false);
-      clearSharedTimer();
-      resetNavigationData();
-      resetRouteData();
-      resetSearchData();
-      replaceMyLocationMarker(false);
-      clearTtsQueue();
-      return;
-    }
-
-    try {
+  const handleCloseEndModalPress = () => {
+    if (prevUserInfo) {
       const payload: UpdateUserStatsPayload = {
         statsInfo: {
           totalDistance:
@@ -101,22 +94,17 @@ const NavigationEndModal = ({
         },
       };
 
-      await updateUserUsageInfo(payload);
-      setShowNavigationEndModal(false);
-      clearSharedTimer();
-      resetNavigationData();
-      resetRouteData();
-      resetSearchData();
-      replaceMyLocationMarker(false);
-      clearTtsQueue();
-    } finally {
-      setShowNavigationEndModal(false);
-      clearSharedTimer();
-      resetNavigationData();
-      resetRouteData();
-      resetSearchData();
-      replaceMyLocationMarker(false);
+      updateUserUsageInfo(payload, {
+        onError: () => {},
+      });
     }
+    setShowNavigationEndModal(false);
+    clearSharedTimer();
+    resetNavigationData();
+    resetRouteData();
+    resetSearchData();
+    replaceMyLocationMarker(false);
+    clearTtsQueue();
   };
 
   const [isOpenStoryShareScreen, setIsOpenStoryShareScreen] =
