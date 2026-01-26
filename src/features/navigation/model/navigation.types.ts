@@ -6,7 +6,6 @@ export interface VolumeState {
 }
 
 // API 관련 타입
-
 export interface NavigationInstruction {
   distance: number; // in meters
   time: number; // in seconds
@@ -32,12 +31,11 @@ export interface StartNavigationSessionResponse {
 }
 
 // 내비게이션 세션 유지
-
-export interface keepNavigationSessionAlivePayload {
+export interface KeepNavigationSessionAlivePayload {
   sessionId: string;
 }
 
-export interface keepNavigationSessionAliveResponse {
+export interface KeepNavigationSessionAliveResponse {
   statusCode: number;
   message: string;
 }
@@ -53,17 +51,18 @@ export interface TerminateNavigationSessionResponse {
 }
 
 // 기존 경로 복귀
-
 interface StationDataForNav {
   stationId: string;
   stationName: string;
   location: Coordinates;
 }
+
 export interface ReturnToExistingRoutePayload {
   sessionId: string;
   currentLocation: Coordinates;
   remainingWaypoints?: Coordinates[];
 }
+
 export interface ReturnToExistingRouteResponse {
   statusCode: number;
   message: string;
@@ -80,11 +79,12 @@ export interface ReturnToExistingRouteResponse {
   };
 }
 
+export type TravelMode = 'walking' | 'biking';
+
 // 완전 재탐색
-export type travelMode = 'walking' | 'biking';
 export interface ReRoutePayload {
   sessionId: string;
-  travelMode: travelMode;
+  travelMode: TravelMode;
   currentLocation: Coordinates;
   remainingWaypoints?: Coordinates[];
 }

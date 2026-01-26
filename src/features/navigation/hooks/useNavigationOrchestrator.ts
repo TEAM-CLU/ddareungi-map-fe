@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { travelMode } from './../model/navigation.types';
+import { TravelMode } from './../model/navigation.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { Coordinates } from '@/features/map/model/map.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
@@ -173,7 +173,7 @@ export const useNavigationOrchestrator = () => {
   );
 
   // 이동수단 분류용
-  const travelModeRef = useRef<travelMode>('walking');
+  const travelModeRef = useRef<TravelMode>('walking');
 
   // 즐겨찾기 마커 제거
   const { turnOffBookmarkMarkers } = useBookmarkMessenger();

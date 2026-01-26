@@ -1,5 +1,5 @@
 import {
-  keepNavigationSessionAlivePayload,
+  KeepNavigationSessionAlivePayload,
   ReRoutePayload,
   ReturnToExistingRoutePayload,
   StartNavigationSessionPayload,
@@ -25,7 +25,7 @@ export const useStartNavigationSessionMutation = () => {
 // 내비게이션 세션 유지
 export const useKeepNavigationSessionAliveMutation = () => {
   return useMutation({
-    mutationFn: (payload: keepNavigationSessionAlivePayload) =>
+    mutationFn: (payload: KeepNavigationSessionAlivePayload) =>
       postKeepNavigationSessionAlive(payload),
   });
 };
