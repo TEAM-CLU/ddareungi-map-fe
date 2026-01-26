@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { TravelMode } from './../model/navigation.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { Coordinates } from '@/features/map/model/map.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
@@ -30,124 +29,37 @@ import { useLocationMetaHistory } from '@/features/navigation/hooks/useLocationM
 
 export const useNavigationOrchestrator = () => {
   const { data: userInfoData } = useUserInfoQuery();
-  const userGender = userInfoData?.data.gender as Gender;
-
-  const {
-    replaceMyLocationMarker,
-    drawNavigationPath,
-    updateNavigationCurrentInterval,
-    clearNavigationPath,
-  } = useNavigationMessenger();
+  const userGender = (userInfoData?.data.gender as Gender) ?? 'M';
 
   const isMapReady = useMapStore(state => state.isMapReady);
-
-  const { isNavigationMode, routeId, addCaloriesBurned, addCarbonSaved } =
-    useNavigationStore(
-      useShallow(state => ({
-        isNavigationMode: state.isNavigationMode,
-        routeId: state.routeId,
-        addCaloriesBurned: state.addCaloriesBurned,
-        addCarbonSaved: state.addCarbonSaved,
-      })),
-    );
-  // 지시 배너 업데이트 기준: 내 위치가 다음 턴 좌표에 가까워지면 다음 지시로 업데이트
+  const selectedRouteData = useRouteStore(state => state.selectedRouteData);
   const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const locationTick = useMyPositionStore(
+    state => state.locationMetaData?.timestamp,
+  );
 
-  const nextTurnCoordinate = useRef<Coordinates | null>(null);
-
-  //  네비게이션 경로 생성 및 실시간 업데이트용
-  const fullPathCoordinateList = useRef<[number, number][]>([]);
-  const pathDataListByInterval = useRef<IntervalPathData[]>([]);
-
-  // 지시 및 현재 지시
-  const instructionList = useRef<NavigationInstruction[]>([]);
-  const [currentInstruction, setCurrentInstruction] =
-    useState<NavigationInstruction | null>(null);
-
-  // 네비게이션 컨트롤러 필요 안내
-  const prevLocationMetaData = useRef<LocationMetaData | null>(null);
-  const currentLocationMetaData = useRef<LocationMetaData | null>(null);
-  const prevEmaSpeedMps = useRef<number | null>(null);
-  const [eta, setEta] = useState<Date | undefined | null>(null);
-  const [remainingDistanceMeter, setRemainingDistance] = useState<
-    number | undefined | null
-  >(null);
   const {
-    traveledDistanceMeter,
-    setTraveledDistance,
+    isNavigationMode,
+    routeId,
     sessionId,
     setSessionId,
+    traveledDistanceMeter,
+    setTraveledDistance,
+    addCaloriesBurned,
+    addCarbonSaved,
   } = useNavigationStore(
     useShallow(state => ({
-      traveledDistanceMeter: state.traveledDistanceMeter,
-      setTraveledDistance: state.setTraveledDistanceMeter,
+      isNavigationMode: state.isNavigationMode,
+      routeId: state.routeId,
       sessionId: state.sessionId,
       setSessionId: state.setSessionId,
+      traveledDistanceMeter: state.traveledDistanceMeter,
+      setTraveledDistance: state.setTraveledDistanceMeter,
+      addCaloriesBurned: state.addCaloriesBurned,
+      addCarbonSaved: state.addCarbonSaved,
     })),
   );
-  const currentTtsUrl = useRef<string | null>(null);
 
-  // 턴 진입/지나침 판정용 상태
-  const isEnteredRef = useRef<boolean>(false);
-  const passCountRef = useRef<number>(0);
-  const lastDistanceFromMyPosToNextTurnPosRef = useRef<number | null>(null);
-  const prevMyPositionForTurnRef = useRef<Coordinates | null>(null);
-  const prevTimestampForTurnRef = useRef<number | null>(null);
-  const previewInstructionText = useRef<string>('');
-  const previewTtsUrl = useRef<string | null>(null);
-  const previewSign = useRef<number | null>(null);
-  const previewEnterCount = useRef<number>(0);
-
-  // 경로 복귀
-  const recoverTriggerCount = useRef(0);
-  const rerouteTriggerCount = useRef(0);
-  const isHandlingOffRouteRef = useRef(false);
-  const [isLoadingForOffRoute, setIsLoadingForOffRoute] = useState(false);
-  const lastOffRouteTimestampRef = useRef<number | null>(null);
-  const offRouteTickBusyRef = useRef(false);
-
-  // 경유지 지나침 판단
-  const selectedRouteData = useRouteStore(state => state.selectedRouteData);
-
-  // 지나친 waypoint index들을 누적 (원하는 결과)
-  const passedWaypointIdxSetRef = useRef<Set<number>>(new Set());
-  const [passedWaypointIndexes, setPassedWaypointIndexes] = useState<number[]>(
-    [],
-  );
-
-  // waypoint 상태(entered / lastNearest / count)
-  const isWaypointEnteredRef = useRef(false);
-  const waypointCandidateIdxRef = useRef<number>(-1);
-  const waypointPassCountRef = useRef<number>(0);
-
-  // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산, 소요거리용
-  const currentIntervalIndex = useRef<number>(0);
-  const prevTimestampForDistanceRef = useRef<number | null>(null);
-  const prevMyPositionForDistanceRef = useRef<Coordinates | null>(null);
-  // 정지 판정용 별도 prev refs (거리/속도 계산용 prev와 분리)
-  const prevTimestampForStationaryRef = useRef<number | null>(null);
-  const prevMyPositionForStationaryRef = useRef<Coordinates | null>(null);
-  const prevTraveledDistanceMeterRef = useRef<number>(0);
-  const prevRemainingDistanceMeterRef = useRef<number>(
-    Number.POSITIVE_INFINITY,
-  );
-
-  // 재탐색 시 소요거리 누적용
-  const accumulatedTraveledDistanceRef = useRef<number>(0);
-
-  // 칼로리, 탄소 저감 측정용
-  const prevTimestampForMeasureRef = useRef<number | null>(null);
-  const prevTraveledDistanceForMeasureRef = useRef<number | null>(null);
-
-  // 주행 상태 추적용 (단순 속도가 아닌 지속적 주행 여부)
-  const isBikingStateRef = useRef<boolean>(false);
-  const bikingStateCountRef = useRef<number>(0);
-
-  // 정지 상태 추적용 (신호 대기 등 짧은 정지 감지)
-  const isStationaryRef = useRef<boolean>(false);
-  const stationaryCountRef = useRef<number>(0);
-
-  // 볼륨 상태
   const { systemVolume, setSystemVolume } = useVolumeStore(
     useShallow(state => ({
       systemVolume: state.systemVolume,
@@ -155,7 +67,6 @@ export const useNavigationOrchestrator = () => {
     })),
   );
 
-  // 네비게이션 디테일 모달 계산용
   const { setInstructionList, setCurrentIntervalIndex } =
     useNavigationDetailModalStore(
       useShallow(state => ({
@@ -164,51 +75,106 @@ export const useNavigationOrchestrator = () => {
       })),
     );
 
-  // 초기화 완료 트리거
-  const [isNavigationInitialized, setIsNavigationInitialized] = useState(false);
+  const {
+    replaceMyLocationMarker,
+    drawNavigationPath,
+    updateNavigationCurrentInterval,
+    clearNavigationPath,
+  } = useNavigationMessenger();
 
-  // 틱 트리거
-  const locationTick = useMyPositionStore(
-    state => state.locationMetaData?.timestamp,
-  );
-
-  // 이동수단 분류용
-  const travelModeRef = useRef<TravelMode>('walking');
-
-  // 즐겨찾기 마커 제거
   const { turnOffBookmarkMarkers } = useBookmarkMessenger();
+
+  const fullPathCoordinateList = useRef<[number, number][]>([]);
+  const pathDataListByInterval = useRef<IntervalPathData[]>([]);
+  const instructionList = useRef<NavigationInstruction[]>([]);
+  const nextTurnCoordinate = useRef<Coordinates | null>(null);
+
+  const currentIntervalIndex = useRef<number>(0);
+  const currentTtsUrl = useRef<string | null>(null);
+
+  const isEnteredRef = useRef<boolean>(false);
+  const passCountRef = useRef<number>(0);
+  const lastDistanceFromMyPosToNextTurnPosRef = useRef<number | null>(null);
+  const prevMyPositionForTurnRef = useRef<Coordinates | null>(null);
+  const prevTimestampForTurnRef = useRef<number | null>(null);
+
+  const previewInstructionText = useRef<string>('');
+  const previewTtsUrl = useRef<string | null>(null);
+  const previewSign = useRef<number | null>(null);
+  const previewEnterCount = useRef<number>(0);
+
+  const prevLocationMetaData = useRef<LocationMetaData | null>(null);
+  const currentLocationMetaData = useRef<LocationMetaData | null>(null);
+  const prevEmaSpeedMps = useRef<number | null>(null);
+
+  const prevTimestampForDistanceRef = useRef<number | null>(null);
+  const prevMyPositionForDistanceRef = useRef<Coordinates | null>(null);
+  const prevTraveledDistanceMeterRef = useRef<number>(0);
+  const prevRemainingDistanceMeterRef = useRef<number>(
+    Number.POSITIVE_INFINITY,
+  );
+  const accumulatedTraveledDistanceRef = useRef<number>(0);
+
+  const prevTimestampForMeasureRef = useRef<number | null>(null);
+  const prevTraveledDistanceForMeasureRef = useRef<number | null>(null);
+
+  const recoverTriggerCount = useRef(0);
+  const rerouteTriggerCount = useRef(0);
+  const isHandlingOffRouteRef = useRef(false);
+  const lastOffRouteTimestampRef = useRef<number | null>(null);
+  const offRouteTickBusyRef = useRef(false);
+
+  const passedWaypointIdxSetRef = useRef<Set<number>>(new Set());
+  const isWaypointEnteredRef = useRef(false);
+  const waypointCandidateIdxRef = useRef<number>(-1);
+  const waypointPassCountRef = useRef<number>(0);
+
+  const isBikingStateRef = useRef<boolean>(false);
+  const bikingStateCountRef = useRef<number>(0);
+  const isStationaryRef = useRef<boolean>(false);
+  const stationaryCountRef = useRef<number>(0);
+  const prevMyPositionForStationaryRef = useRef<Coordinates | null>(null);
+  const prevTimestampForStationaryRef = useRef<number | null>(null);
+
+  const [currentInstruction, setCurrentInstruction] =
+    useState<NavigationInstruction | null>(null);
+  const [eta, setEta] = useState<Date | undefined | null>(null);
+  const [remainingDistanceMeter, setRemainingDistance] = useState<
+    number | undefined | null
+  >(null);
+  const [passedWaypointIndexes, setPassedWaypointIndexes] = useState<number[]>(
+    [],
+  );
+  const [isLoadingForOffRoute, setIsLoadingForOffRoute] = useState(false);
+  const [isNavigationInitialized, setIsNavigationInitialized] = useState(false);
 
   useEffect(() => {
     if (!isNavigationMode) return;
-
     turnOffBookmarkMarkers();
-  }, [isNavigationMode]);
+  }, [isNavigationMode, turnOffBookmarkMarkers]);
 
   // 완전초기화
   const resetAllNavigationState = useCallback(() => {
     replaceMyLocationMarker(true);
     clearNavigationPath();
+
     pathDataListByInterval.current = [];
     instructionList.current = [];
     fullPathCoordinateList.current = [];
-    setSessionId(null);
-    setCurrentInstruction(null);
     nextTurnCoordinate.current = null;
     currentIntervalIndex.current = 0;
     currentTtsUrl.current = null;
+
     previewInstructionText.current = '';
     previewTtsUrl.current = null;
     previewSign.current = null;
     previewEnterCount.current = 0;
-    recoverTriggerCount.current = 0;
-    rerouteTriggerCount.current = 0;
-    passedWaypointIdxSetRef.current.clear();
-    setPassedWaypointIndexes([]);
-    isHandlingOffRouteRef.current = false;
-    setIsLoadingForOffRoute(false);
-    isWaypointEnteredRef.current = false;
-    waypointCandidateIdxRef.current = -1;
-    waypointPassCountRef.current = 0;
+    isEnteredRef.current = false;
+    passCountRef.current = 0;
+    lastDistanceFromMyPosToNextTurnPosRef.current = null;
+    prevMyPositionForTurnRef.current = null;
+    prevTimestampForTurnRef.current = null;
+
     prevTimestampForDistanceRef.current = null;
     prevMyPositionForDistanceRef.current = null;
     prevTraveledDistanceMeterRef.current = 0;
@@ -216,18 +182,28 @@ export const useNavigationOrchestrator = () => {
     accumulatedTraveledDistanceRef.current = 0;
     prevTimestampForMeasureRef.current = null;
     prevTraveledDistanceForMeasureRef.current = null;
+
+    recoverTriggerCount.current = 0;
+    rerouteTriggerCount.current = 0;
+    isHandlingOffRouteRef.current = false;
+
+    passedWaypointIdxSetRef.current.clear();
+    isWaypointEnteredRef.current = false;
+    waypointCandidateIdxRef.current = -1;
+    waypointPassCountRef.current = 0;
+
     isBikingStateRef.current = false;
     bikingStateCountRef.current = 0;
     isStationaryRef.current = false;
     stationaryCountRef.current = 0;
     prevMyPositionForStationaryRef.current = null;
     prevTimestampForStationaryRef.current = null;
-  }, [
-    replaceMyLocationMarker,
-    clearNavigationPath,
-    setSessionId,
-    setCurrentInstruction,
-  ]);
+
+    setSessionId(null);
+    setCurrentInstruction(null);
+    setPassedWaypointIndexes([]);
+    setIsLoadingForOffRoute(false);
+  }, [replaceMyLocationMarker, clearNavigationPath, setSessionId]);
 
   const { applyNavigationData } = useNavigationDataApply({
     selectedRouteData,
@@ -272,23 +248,24 @@ export const useNavigationOrchestrator = () => {
     isHandlingOffRouteRef,
   });
 
-  // currentIntervalIndex 변경 시 경로 업데이트 (지나온 구간 회색 처리)
-  useEffect(() => {
-    if (!isNavigationInitialized || !isMapReady) return;
-
-    const intervals = instructionList.current.map(
-      instruction => instruction.interval,
-    );
-
-    if (intervals.length > 0 && fullPathCoordinateList.current.length > 0) {
-      updateNavigationCurrentInterval(currentIntervalIndex.current);
-    }
-  }, [
-    currentIntervalIndex.current,
+  useLocationMetaHistory({
+    isNavigationMode,
     isNavigationInitialized,
-    isMapReady,
-    updateNavigationCurrentInterval,
-  ]);
+    locationMetaData,
+    locationTick,
+    prevLocationMetaData,
+    currentLocationMetaData,
+  });
+
+  useStationaryState({
+    locationMetaData,
+    locationTick,
+    currentLocationMetaData,
+    isStationaryRef,
+    stationaryCountRef,
+    prevMyPositionForStationaryRef,
+    prevTimestampForStationaryRef,
+  });
 
   useTurnController({
     isNavigationMode,
@@ -314,24 +291,21 @@ export const useNavigationOrchestrator = () => {
     },
   });
 
-  useLocationMetaHistory({
-    isNavigationMode,
-    isNavigationInitialized,
-    locationMetaData,
-    locationTick,
-    prevLocationMetaData,
-    currentLocationMetaData,
-  });
+  // currentIntervalIndex 변경 시 경로 업데이트 (지나온 구간 회색 처리)
+  useEffect(() => {
+    if (!isNavigationInitialized || !isMapReady) return;
 
-  useStationaryState({
-    locationMetaData,
-    locationTick,
-    currentLocationMetaData,
-    isStationaryRef,
-    stationaryCountRef,
-    prevMyPositionForStationaryRef,
-    prevTimestampForStationaryRef,
-  });
+    const currentIndex = currentIntervalIndex.current;
+
+    if (currentIndex >= 0 && fullPathCoordinateList.current.length > 0) {
+      updateNavigationCurrentInterval(currentIndex);
+    }
+  }, [
+    currentInstruction,
+    isNavigationInitialized,
+    isMapReady,
+    updateNavigationCurrentInterval,
+  ]);
 
   useWaypointController({
     isNavigationMode,
