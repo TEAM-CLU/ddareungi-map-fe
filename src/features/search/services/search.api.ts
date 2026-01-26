@@ -7,7 +7,7 @@ import {
 } from '../model/search.types';
 import { KAKAO_BASE_URL } from '../model/search.constants';
 import axios from 'axios';
-import { commonErrorInterceptor } from '@/shared/services/axiosConfig';
+import { commonErrorInterceptor } from '@/config/axiosConfig';
 
 // ------------------------------------------------------------------
 // 1. Axios 클라이언트 설정

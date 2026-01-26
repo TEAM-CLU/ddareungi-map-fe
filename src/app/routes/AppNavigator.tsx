@@ -12,6 +12,7 @@ import RouteRecommendScreen from '@/screens/RouteRecommendScreen';
 import RouteSelectScreen from '@/screens/RouteSelectScreen';
 import SignUpScreen from '@/screens/SignUpScreen';
 import MypageScreen from '@/screens/MypageScreen';
+import { toastConfig } from '@/config/toastConfig';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -54,7 +55,7 @@ const AppNavigator = ({ initialRouteName }: AppNavigatorProps) => {
         </Stack.Navigator>
 
         <GlobalModals />
-        <Toast />
+        <Toast config={toastConfig} />
       </View>
     </NavigationContainer>
   );
