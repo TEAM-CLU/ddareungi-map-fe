@@ -51,44 +51,36 @@ const NavigationFinishModal = ({
   const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
   const { mutateAsync: terminateNavigationSession } =
     useTerminateNavigationSessionMutation();
+
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
   const { systemVolume } = useVolumeStore();
+
   const { replaceMyLocationMarker, clearNavigationPath } =
     useNavigationMessenger();
   const { turnOnBookmarkMarkers } = useBookmarkMessenger();
 
   useEffect(() => {
-    const terminateNavigation = async () => {
-      turnOnBookmarkMarkers();
-      const finishTtsKey = 'tts-navigation-end';
-      const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
-      playTts(finishTtsKey, finishTtsUrl, systemVolume);
-      if (sessionId === null || sessionId === '') return;
-      try {
-        const payload = {
-          sessionId: sessionId,
-        };
-        await terminateNavigationSession(payload);
-      } catch (error) {}
-    };
+    turnOnBookmarkMarkers();
     clearNavigationPath();
-    terminateNavigation();
+
+    const finishTtsKey = 'tts-navigation-end';
+    const finishTtsUrl = TTS_URL_PRESET.FINISH_TTS_URL;
+    playTts(finishTtsKey, finishTtsUrl, systemVolume);
+
+    if (!sessionId) return;
+
+    terminateNavigationSession(
+      { sessionId },
+      {
+        onSuccess: () => {},
+        onError: () => {},
+      },
+    );
   }, []);
 
-  const handleCloseFinishModalPress = async () => {
-    if (!prevUserInfo) {
-      setShowNavigationFinishModal(false);
-      clearSharedTimer();
-      resetNavigationData();
-      resetRouteData();
-      resetSearchData();
-      replaceMyLocationMarker(false);
-      clearTtsQueue();
-      return;
-    }
-
-    try {
+  const handleCloseFinishModalPress = () => {
+    if (prevUserInfo) {
       const payload: UpdateUserStatsPayload = {
         statsInfo: {
           totalDistance:
@@ -101,23 +93,17 @@ const NavigationFinishModal = ({
         },
       };
 
-      await updateUserUsageInfo(payload);
-      setShowNavigationFinishModal(false);
-      clearSharedTimer();
-      resetNavigationData();
-      resetRouteData();
-      resetSearchData();
-      replaceMyLocationMarker(false);
-      clearTtsQueue();
-    } finally {
-      setShowNavigationFinishModal(false);
-      clearSharedTimer();
-      resetNavigationData();
-      resetRouteData();
-      resetSearchData();
-      replaceMyLocationMarker(false);
-      clearTtsQueue();
+      updateUserUsageInfo(payload, {
+        onError: () => {},
+      });
     }
+    setShowNavigationFinishModal(false);
+    clearSharedTimer();
+    resetNavigationData();
+    resetRouteData();
+    resetSearchData();
+    replaceMyLocationMarker(false);
+    clearTtsQueue();
   };
 
   return (
