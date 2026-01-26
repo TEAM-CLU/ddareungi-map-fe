@@ -141,7 +141,6 @@ export const useProfileEdit = ({
 
   const handleSaveChangesPress = () => {
     if (!isFormReady) {
-      Alert.alert('필수 항목을 입력해주세요.');
       return;
     }
 

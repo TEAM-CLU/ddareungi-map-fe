@@ -30,7 +30,6 @@ const PrivacyConsentModal = ({
 
   const handleAgreePress = () => {
     if (!isConsentRequiredAgreed) {
-      Alert.alert('필수항목에 동의하셔야 회원가입이 가능합니다.');
       return;
     }
     setIsPrivacyConsentModalOpen(false);
@@ -63,7 +62,10 @@ const PrivacyConsentModal = ({
       >
         <View style={tw('flex flex-row w-full justify-between items-center')}>
           <View />
-          <TouchableOpacity onPress={handleCancelPress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <TouchableOpacity
+            onPress={handleCancelPress}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <IconClose />
           </TouchableOpacity>
         </View>
