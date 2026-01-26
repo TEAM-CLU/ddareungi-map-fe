@@ -1,5 +1,4 @@
 import { useEffect, type RefObject } from 'react';
-
 import { Coordinates } from '@/features/map/model/map.types';
 import {
   ACCURACY_OK,
@@ -57,17 +56,18 @@ export const useTurnController = ({
 
   // 턴 진입/지나침 감지 및 지시 업데이트
   useEffect(() => {
+    const currentCoord = locationMetaData?.coordinate;
+    const nextTurnCoord = refs.nextTurnCoordinate.current;
+
     if (
       !isNavigationMode ||
-      !locationMetaData?.coordinate ||
-      !refs.nextTurnCoordinate.current ||
+      !currentCoord ||
+      !nextTurnCoord ||
       !currentInstruction ||
       !isNavigationInitialized
     ) {
       return;
     }
-
-    const myPosition = locationMetaData.coordinate;
 
     const resetTurnState = () => {
       refs.isEnteredRef.current = false;
@@ -83,38 +83,42 @@ export const useTurnController = ({
 
     // 2) 턴까지 거리
     const distanceToNextTurnMeter = getDistanceBetweenCoords(
-      myPosition,
-      refs.nextTurnCoordinate.current,
+      currentCoord,
+      nextTurnCoord,
     );
 
     const nowTimestamp = Date.now();
 
-    // =========================
     // 3) entry / exit
-    // =========================
-    if (!refs.isEnteredRef.current && distanceToNextTurnMeter <= ENTRY_RADIUS_METER) {
+    // 3-1) 진입
+    if (
+      !refs.isEnteredRef.current &&
+      distanceToNextTurnMeter <= ENTRY_RADIUS_METER
+    ) {
       refs.isEnteredRef.current = true;
       refs.passCountRef.current = 0;
       refs.lastDistanceFromMyPosToNextTurnPosRef.current =
         distanceToNextTurnMeter;
-      refs.prevMyPositionForTurnRef.current = myPosition;
+      refs.prevMyPositionForTurnRef.current = currentCoord;
       refs.prevTimestampForTurnRef.current = nowTimestamp;
       refs.previewEnterCount.current += 1;
-
       return;
     }
 
-    if (refs.isEnteredRef.current && distanceToNextTurnMeter >= EXIT_RADIUS_METER) {
+    // 3-2) 이탈
+    if (
+      refs.isEnteredRef.current &&
+      distanceToNextTurnMeter >= EXIT_RADIUS_METER
+    ) {
       resetTurnState();
-
-      refs.prevMyPositionForTurnRef.current = myPosition;
+      refs.prevMyPositionForTurnRef.current = currentCoord;
       refs.prevTimestampForTurnRef.current = nowTimestamp;
       return;
     }
 
     // entry 아니면 passed 판정 자체 안 함
     if (!refs.isEnteredRef.current) {
-      refs.prevMyPositionForTurnRef.current = myPosition;
+      refs.prevMyPositionForTurnRef.current = currentCoord;
       refs.prevTimestampForTurnRef.current = nowTimestamp;
       refs.lastDistanceFromMyPosToNextTurnPosRef.current =
         distanceToNextTurnMeter;
@@ -124,12 +128,13 @@ export const useTurnController = ({
     // =========================
     // 4) 거리 증가 추세 (멀어지기 시작, isEntering 이후부터 측정)
     // =========================
-    const prevDistanceMeter = refs.lastDistanceFromMyPosToNextTurnPosRef.current;
+    const prevDistanceMeter =
+      refs.lastDistanceFromMyPosToNextTurnPosRef.current;
     refs.lastDistanceFromMyPosToNextTurnPosRef.current =
       distanceToNextTurnMeter;
 
     if (prevDistanceMeter == null) {
-      refs.prevMyPositionForTurnRef.current = myPosition;
+      refs.prevMyPositionForTurnRef.current = currentCoord;
       refs.prevTimestampForTurnRef.current = nowTimestamp;
       return;
     }
@@ -137,14 +142,12 @@ export const useTurnController = ({
     const deltaDistanceMeter = distanceToNextTurnMeter - prevDistanceMeter;
     const isGettingFarther = deltaDistanceMeter > DEADZONE_DISTANCE_METER;
 
-    // =========================
     // 5) 벡터/내적 + 속도 게이트
-    // =========================
     const prevPosition = refs.prevMyPositionForTurnRef.current;
     const prevTimestamp = refs.prevTimestampForTurnRef.current;
 
     // prev 갱신은 여기서 한번만
-    refs.prevMyPositionForTurnRef.current = myPosition;
+    refs.prevMyPositionForTurnRef.current = currentCoord;
     refs.prevTimestampForTurnRef.current = nowTimestamp;
 
     if (!prevPosition || prevTimestamp == null) return;
@@ -152,8 +155,8 @@ export const useTurnController = ({
     const dtSec = (nowTimestamp - prevTimestamp) / 1000;
     const { moveMag, speedMps, dot } = calculateMotionVector(
       prevPosition,
-      myPosition,
-      refs.nextTurnCoordinate.current,
+      currentCoord,
+      nextTurnCoord,
       dtSec,
     );
 
@@ -178,9 +181,7 @@ export const useTurnController = ({
     // dot < 0 => 턴포인트를 등지고 움직임(멀어지는 방향)
     const isMovingAwayFromTurn = dot < DOT_DEADZONE;
 
-    // =========================
     // 6) passed 카운트
-    // =========================
     const isPassedCandidate = isGettingFarther && isMovingAwayFromTurn;
 
     if (!isPassedCandidate) {
@@ -195,27 +196,29 @@ export const useTurnController = ({
       refs.passCountRef.current + 1,
     );
 
-    // =========================
     // 7) 통과 확정 → 다음 instruction
-    // =========================
     if (refs.passCountRef.current < PASS_CONFIRM_COUNT) return;
 
     const nextIndex = refs.currentIntervalIndex.current + 1;
-    if (nextIndex >= refs.instructionList.current.length) return;
-    const nextInstruction = refs.instructionList.current[nextIndex];
+    const instructionList = refs.instructionList.current;
+
+    if (nextIndex >= instructionList.length) return;
+
+    const nextInstruction = instructionList[nextIndex];
+    const afterNextInstruction = instructionList[nextIndex + 1];
+
     setCurrentInstruction(nextInstruction);
     refs.nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
     refs.currentIntervalIndex.current = nextIndex;
     refs.currentTtsUrl.current = nextInstruction.ttsUrl;
-    refs.previewInstructionText.current =
-      refs.instructionList.current[nextIndex + 1]?.text ?? '';
-    refs.previewTtsUrl.current =
-      refs.instructionList.current[nextIndex + 1]?.ttsUrl ?? null;
-    refs.previewSign.current =
-      refs.instructionList.current[nextIndex + 1]?.sign ?? null;
+
+    refs.previewInstructionText.current = afterNextInstruction?.text ?? '';
+    refs.previewTtsUrl.current = afterNextInstruction?.ttsUrl ?? null;
+    refs.previewSign.current = afterNextInstruction?.sign ?? null;
     refs.previewEnterCount.current = 0;
+
     resetTurnState();
-    refs.prevMyPositionForTurnRef.current = myPosition;
+    refs.prevMyPositionForTurnRef.current = currentCoord;
     refs.prevTimestampForTurnRef.current = Date.now();
   }, [
     locationMetaData?.coordinate,
