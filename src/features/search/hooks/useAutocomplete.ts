@@ -27,7 +27,6 @@ export const useAutocomplete = () => {
 
   // ----------------------------------------------------
   // [쿼리 옵션 계산]
-  // 위치가 있으면 거리순, 없으면 정확도순
   // ----------------------------------------------------
   const searchOptions: SearchOptions = useMemo(() => {
     // 검색어가 너무 짧으면 API 요청 안 함
@@ -37,8 +36,7 @@ export const useAutocomplete = () => {
       return {
         x: myPosition.lng, // 경도
         y: myPosition.lat, // 위도
-        radius: 10000, // 10km 반경
-        sort: 'distance', // 거리순
+        sort: 'accuracy', // 정확도순
         size: 15, // 한 번에 15개씩
       };
     }
