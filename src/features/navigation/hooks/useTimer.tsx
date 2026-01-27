@@ -1,5 +1,5 @@
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 let sharedIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -12,7 +12,7 @@ export const clearSharedTimer = () => {
   }
 };
 
-export const useTimer = (initialSeconds = 0) => {
+export const useTimer = () => {
   const { seconds, setSeconds, addSeconds, timerStatus, setTimerStatus } =
     useNavigationStore(
       useShallow(state => ({
@@ -41,13 +41,13 @@ export const useTimer = (initialSeconds = 0) => {
     }
   }, [timerStatus, addSeconds]);
 
-  const startTimer = () => setTimerStatus('running');
-  const pauseTimer = () => setTimerStatus('paused');
+  const startTimer = useCallback(() => setTimerStatus('running'), [setTimerStatus]);
+  const pauseTimer = useCallback(() => setTimerStatus('paused'), [setTimerStatus]);
 
-  const resetTimer = (nextSeconds = 0) => {
+  const resetTimer = useCallback((nextSeconds = 0) => {
     setSeconds(nextSeconds);
     setTimerStatus('idle');
-  };
+  }, [setSeconds, setTimerStatus]);
 
   return {
     seconds,

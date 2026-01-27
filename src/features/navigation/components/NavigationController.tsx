@@ -7,7 +7,7 @@ import {
   formatTimeHHMMSSNumber,
   getDistanceGuideText,
 } from '@/shared/utils/formatting';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface NavigationControllerProps {
@@ -25,20 +25,14 @@ const NavigationController = ({
     state => state.setShowNavigationDetailModal,
   );
 
-  const { seconds, startTimer, pauseTimer } = useTimer();
-
-  const [playbackStatus, setPlaybackStatus] = useState<'playing' | 'paused'>(
-    'playing',
-  );
+  const { seconds, timerStatus, startTimer, pauseTimer } = useTimer();
 
   const handlePlayBackTogglePress = () => {
-    if (playbackStatus === 'playing') {
-      setPlaybackStatus('paused');
+    if (timerStatus === 'running') {
       pauseTimer();
       return;
     }
-    if (playbackStatus === 'paused') {
-      setPlaybackStatus('playing');
+    if (timerStatus === 'paused') {
       startTimer();
       return;
     }
@@ -78,7 +72,7 @@ const NavigationController = ({
             },
           ]}
         >
-          {playbackStatus === 'playing' ? (
+          {timerStatus === 'running' ? (
             <IconPause color="#ffffff" />
           ) : (
             <IconPlay />
