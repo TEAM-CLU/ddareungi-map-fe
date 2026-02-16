@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import {
@@ -87,7 +87,7 @@ export const useNavigationOrchestrator = () => {
   const fullPathCoordinateList = useRef<[number, number][]>([]);
   const pathDataListByInterval = useRef<IntervalPathData[]>([]);
   const instructionList = useRef<NavigationInstruction[]>([]);
-  const nextTurnCoordinate = useRef<Coordinates | null>(null);
+  const nextTurnCoordinate = useRef<Coordinate | null>(null);
 
   const currentIntervalIndex = useRef<number>(0);
   const currentTtsUrl = useRef<string | null>(null);
@@ -95,7 +95,7 @@ export const useNavigationOrchestrator = () => {
   const isEnteredRef = useRef<boolean>(false);
   const passCountRef = useRef<number>(0);
   const lastDistanceFromMyPosToNextTurnPosRef = useRef<number | null>(null);
-  const prevMyPositionForTurnRef = useRef<Coordinates | null>(null);
+  const prevMyPositionForTurnRef = useRef<Coordinate | null>(null);
   const prevTimestampForTurnRef = useRef<number | null>(null);
 
   const previewInstructionText = useRef<string>('');
@@ -108,7 +108,7 @@ export const useNavigationOrchestrator = () => {
   const prevEmaSpeedMps = useRef<number | null>(null);
 
   const prevTimestampForDistanceRef = useRef<number | null>(null);
-  const prevMyPositionForDistanceRef = useRef<Coordinates | null>(null);
+  const prevMyPositionForDistanceRef = useRef<Coordinate | null>(null);
   const prevTraveledDistanceMeterRef = useRef<number>(0);
   const prevRemainingDistanceMeterRef = useRef<number>(
     Number.POSITIVE_INFINITY,
@@ -133,7 +133,7 @@ export const useNavigationOrchestrator = () => {
   const bikingStateCountRef = useRef<number>(0);
   const isStationaryRef = useRef<boolean>(false);
   const stationaryCountRef = useRef<number>(0);
-  const prevMyPositionForStationaryRef = useRef<Coordinates | null>(null);
+  const prevMyPositionForStationaryRef = useRef<Coordinate | null>(null);
   const prevTimestampForStationaryRef = useRef<number | null>(null);
 
   const [currentInstruction, setCurrentInstruction] =

@@ -1,4 +1,4 @@
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { Bbox, Segment, Summary } from '@/features/routing/model/routing.types';
 export interface VolumeState {
   systemVolume: number;
@@ -12,7 +12,7 @@ export interface NavigationInstruction {
   text: string;
   sign: number;
   interval: [number, number]; // [startIndex, endIndex] in coordinates array
-  nextTurnCoordinate: Coordinates;
+  nextTurnCoordinate: Coordinate;
   ttsUrl: string;
 }
 export interface StartNavigationSessionPayload {
@@ -54,13 +54,13 @@ export interface TerminateNavigationSessionResponse {
 interface StationDataForNav {
   stationId: string;
   stationName: string;
-  location: Coordinates;
+  location: Coordinate;
 }
 
 export interface ReturnToExistingRoutePayload {
   sessionId: string;
-  currentLocation: Coordinates;
-  remainingWaypoints?: Coordinates[];
+  currentLocation: Coordinate;
+  remainingWaypoints?: Coordinate[];
 }
 
 export interface ReturnToExistingRouteResponse {
@@ -72,7 +72,7 @@ export interface ReturnToExistingRouteResponse {
     bbox: Bbox;
     startStation: StationDataForNav;
     endStation: StationDataForNav;
-    waypoints?: Coordinates[];
+    waypoints?: Coordinate[];
     coordinates: [number, number][];
     instructions: NavigationInstruction[];
     segments: Segment[];
@@ -85,8 +85,8 @@ export type TravelMode = 'walking' | 'biking';
 export interface ReRoutePayload {
   sessionId: string;
   travelMode: TravelMode;
-  currentLocation: Coordinates;
-  remainingWaypoints?: Coordinates[];
+  currentLocation: Coordinate;
+  remainingWaypoints?: Coordinate[];
 }
 
 export interface ReRouteResponse {
@@ -98,7 +98,7 @@ export interface ReRouteResponse {
     bbox: Bbox;
     startStation: StationDataForNav;
     endStation: StationDataForNav;
-    waypoints?: Coordinates[];
+    waypoints?: Coordinate[];
     coordinates: [number, number][];
     instructions: NavigationInstruction[];
     segments: Segment[];
@@ -109,21 +109,21 @@ export interface ReRouteResponse {
 export interface IntervalPathData {
   intervalIndex: number;
   interval: [number, number];
-  coordinateList: Coordinates[];
+  coordinateList: Coordinate[];
 }
 
 export interface LocationMetaData {
   timestamp: number;
   accuracy?: number;
   osSpeed?: number;
-  coordinate: Coordinates;
+  coordinate: Coordinate;
 }
 
 export interface StabilizeDistanceInput {
   newlyComputedDistanceMeter: number;
   prevStableDistanceMeter: number;
-  prevMyPosition: Coordinates | null;
-  currentMyPosition: Coordinates;
+  prevMyPosition: Coordinate | null;
+  currentMyPosition: Coordinate;
   prevTimestamp: number | null;
   currentTimestamp: number;
   type: DistanceType;

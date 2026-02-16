@@ -11,7 +11,7 @@ import {
 import { playTts } from '@/features/navigation/libs/playTts';
 import { getMinDistanceInWindow } from '@/features/navigation/utils/getMindistanceInWindow';
 import { findClosestCoordIndex } from '@/features/navigation/utils/navigationController';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { Route, RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { ApplyNavigationDataInput } from '@/features/navigation/hooks/useNavigationDataApply';
@@ -209,7 +209,7 @@ export const useOffRouteController = ({
             ? null
             : { lat: wp.lat, lng: wp.lng },
         )
-        .filter((wp): wp is Coordinates => wp !== null);
+        .filter((wp): wp is Coordinate => wp !== null);
 
       // ===============================
       // 4. reroute (정지 아닐 때만 실행)

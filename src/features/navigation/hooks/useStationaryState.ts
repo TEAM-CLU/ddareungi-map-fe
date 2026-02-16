@@ -1,7 +1,7 @@
 import { useEffect, type RefObject } from 'react';
 import { LocationMetaData } from '@/features/navigation/model/navigation.types';
 import { TRANSPORT_STATE_CONFIG } from '@/features/navigation/model/navigation.constants';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 export type UseStationaryStateParams = {
@@ -10,7 +10,7 @@ export type UseStationaryStateParams = {
   currentLocationMetaData: RefObject<LocationMetaData | null>;
   isStationaryRef: RefObject<boolean>;
   stationaryCountRef: RefObject<number>;
-  prevMyPositionForStationaryRef: RefObject<Coordinates | null>;
+  prevMyPositionForStationaryRef: RefObject<Coordinate | null>;
   prevTimestampForStationaryRef: RefObject<number | null>;
 };
 
@@ -54,8 +54,8 @@ export const useStationaryState = ({
 
     // 4. 이동거리 계산
     const movedDistanceMeter = getDistanceBetweenCoords(
-      prevCoord as Coordinates,
-      currentCoord as Coordinates,
+      prevCoord as Coordinate,
+      currentCoord as Coordinate,
     );
 
     // 5. 정지/이동 판정 로직

@@ -1,9 +1,9 @@
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 
 export const smoothPosition = (
   lat: number,
   lng: number,
-  lastPosition: Coordinates | null,
+  lastPosition: Coordinate | null,
 ) => {
   if (!lastPosition) {
     lastPosition = { lat, lng };

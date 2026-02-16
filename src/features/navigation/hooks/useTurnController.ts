@@ -1,5 +1,5 @@
 import { useEffect, type RefObject } from 'react';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import {
   ACCURACY_OK,
   MOTION_COMMON_OPTIONS,
@@ -17,7 +17,7 @@ export type UseTurnControllerParams = {
   currentInstruction: NavigationInstruction | null;
   setCurrentInstruction: (inst: NavigationInstruction | null) => void;
   refs: {
-    nextTurnCoordinate: RefObject<Coordinates | null>;
+    nextTurnCoordinate: RefObject<Coordinate | null>;
     currentIntervalIndex: RefObject<number>;
     instructionList: RefObject<NavigationInstruction[]>;
     currentTtsUrl: RefObject<string | null>;
@@ -27,7 +27,7 @@ export type UseTurnControllerParams = {
     isEnteredRef: RefObject<boolean>;
     passCountRef: RefObject<number>;
     lastDistanceFromMyPosToNextTurnPosRef: RefObject<number | null>;
-    prevMyPositionForTurnRef: RefObject<Coordinates | null>;
+    prevMyPositionForTurnRef: RefObject<Coordinate | null>;
     prevTimestampForTurnRef: RefObject<number | null>;
     previewEnterCount: RefObject<number>;
     currentLocationMetaData: RefObject<LocationMetaData | null>;

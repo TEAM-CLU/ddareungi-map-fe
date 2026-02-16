@@ -1,4 +1,4 @@
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import {
   MEAN_ACITIVITY_MET,
   MEAN_ADULT_PHYSICAL_INFORMATION,
@@ -8,8 +8,8 @@ import { TransportationType, Gender } from '@/shared/model/shared.types';
 
 // 좌표 두개 비교하여 거리 계산
 export const getDistanceBetweenCoords = (
-  prev: Coordinates,
-  next: Coordinates,
+  prev: Coordinate,
+  next: Coordinate,
 ): number => {
   const R = 6371e3; // 지구 반지름 (단위: m)
   const φ1 = (prev.lat * Math.PI) / 180; // 위도1 (라디안)

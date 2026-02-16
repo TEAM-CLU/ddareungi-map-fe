@@ -58,3 +58,9 @@ export type Gender = 'M' | 'F' | undefined;
 
 
 export type PrevScreenForFeatureBranch = 'login' | 'mypage';
+
+
+export interface Coordinate {
+  lat: number 
+  lng: number 
+}

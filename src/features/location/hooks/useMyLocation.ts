@@ -7,7 +7,7 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useWebViewRef } from '@/app/providers/webview';
 import { useLocationMessenger } from '@/features/location/hooks/useLocationMessenger';
 import { DataSetForUpdateMyLocation } from '@/features/location/model/location.types';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { smoothPosition } from '@/features/location/utils/smoothPosition';
 
 interface UseMyLocationParams {
@@ -26,7 +26,7 @@ export const useMyLocation = ({
 
   const webViewRef = useWebViewRef();
   const watchIdRef = useRef<number | null>(null);
-  const lastPosition = useRef<Coordinates | null>(null);
+  const lastPosition = useRef<Coordinate | null>(null);
 
   // 위치 전송
   const sendLocation = (

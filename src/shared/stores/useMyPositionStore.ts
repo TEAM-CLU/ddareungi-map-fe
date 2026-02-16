@@ -1,4 +1,4 @@
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { LocationMetaData } from '@/features/navigation/model/navigation.types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';

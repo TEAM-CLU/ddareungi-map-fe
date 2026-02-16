@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WebViewMessageEvent } from 'react-native-webview';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import {
   useGetStationsLatestBikeCountMutation,
   useStationDataListQuery,
@@ -38,10 +38,10 @@ export const useStation = ({
 
   // 쿼리를 트리거하기 위한 "현재 보고 있는 지도 중심점"
   const [currentMapCenterCoord, setCurrentMapCenterCoord] =
-    useState<Coordinates | null>(null);
+    useState<Coordinate | null>(null);
 
   // 거리 계산을 위해 "직전에 로딩했던 좌표" 기억용
-  const prevMapCenterCoord = useRef<Coordinates | null>(null);
+  const prevMapCenterCoord = useRef<Coordinate | null>(null);
 
   // 조건: 지도 로딩 완료 + 네비 모드 아님 + 경로 상세 모달 아님
   const enableQuery =
@@ -76,7 +76,7 @@ export const useStation = ({
               return;
             }
 
-            const next: Coordinates = { lat: data.lat, lng: data.lng };
+            const next: Coordinate = { lat: data.lat, lng: data.lng };
             const prev = prevMapCenterCoord.current;
 
             const isMovedEnough = prev

@@ -1,5 +1,5 @@
 import { useCallback, type RefObject } from 'react';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { NavigationWalkingPolicy } from '@/shared/model/map.webview.types';
 import { Route, RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
@@ -33,7 +33,7 @@ export type UseNavigationDataApplyParams = {
     routeType: RouteType;
     startPoint: [number, number];
     endPoint: [number, number];
-    waypoints: Coordinates[] | null;
+    waypoints: Coordinate[] | null;
     fullPathCoordinateList: [number, number][];
     intervals: [number, number][];
     currentIntervalIndex: number;
@@ -48,7 +48,7 @@ export type UseNavigationDataApplyParams = {
     fullPathCoordinateList: RefObject<[number, number][]>;
     pathDataListByInterval: RefObject<IntervalPathData[]>;
     instructionList: RefObject<NavigationInstruction[]>;
-    nextTurnCoordinate: RefObject<Coordinates | null>;
+    nextTurnCoordinate: RefObject<Coordinate | null>;
     currentIntervalIndex: RefObject<number>;
     currentTtsUrl: RefObject<string | null>;
     previewInstructionText: RefObject<string>;
@@ -57,12 +57,12 @@ export type UseNavigationDataApplyParams = {
     isEnteredRef: RefObject<boolean>;
     passCountRef: RefObject<number>;
     lastDistanceFromMyPosToNextTurnPosRef: RefObject<number | null>;
-    prevMyPositionForTurnRef: RefObject<Coordinates | null>;
+    prevMyPositionForTurnRef: RefObject<Coordinate | null>;
     prevTimestampForTurnRef: RefObject<number | null>;
     previewEnterCount: RefObject<number>;
     // metrics reset on re-route
     prevTimestampForDistanceRef?: RefObject<number | null>;
-    prevMyPositionForDistanceRef?: RefObject<Coordinates | null>;
+    prevMyPositionForDistanceRef?: RefObject<Coordinate | null>;
     prevTraveledDistanceMeterRef?: RefObject<number>;
     prevRemainingDistanceMeterRef?: RefObject<number>;
     prevTimestampForMeasureRef?: RefObject<number | null>;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { LocationMetaData } from '@/features/navigation/model/navigation.types';
 import { STATION_MOTION_CONFIG } from '@/features/station/model/station.constants';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
@@ -17,11 +17,11 @@ export const useStableMyPosition = ({
     STABLE_UPDATE_DISTANCE_THRESHOLD,
   } = STATION_MOTION_CONFIG;
 
-  const [stablePosition, setStablePosition] = useState<Coordinates | null>(
+  const [stablePosition, setStablePosition] = useState<Coordinate | null>(
     null,
   );
-  const prevPositionRef = useRef<Coordinates | null>(null);
-  const stablePositionRef = useRef<Coordinates | null>(null);
+  const prevPositionRef = useRef<Coordinate | null>(null);
+  const stablePositionRef = useRef<Coordinate | null>(null);
   const stationaryPassCountRef = useRef(0);
   const movePassCountRef = useRef(0);
 
@@ -29,7 +29,7 @@ export const useStableMyPosition = ({
     const currentCoord = locationMetaData?.coordinate;
     if (!currentCoord) return;
 
-    const commitStablePosition = (coord: Coordinates) => {
+    const commitStablePosition = (coord: Coordinate) => {
       stablePositionRef.current = coord;
       setStablePosition(coord);
     };

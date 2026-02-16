@@ -1,4 +1,4 @@
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import {
   ACCURACY_OK,
   MOTION_COMMON_OPTIONS,
@@ -28,8 +28,8 @@ import { getDistanceBetweenCoords } from '@/shared/utils/measure';
  *
  */
 export const findClosestCoordIndex = (
-  myPosition: Coordinates,
-  coordinateList: Coordinates[],
+  myPosition: Coordinate,
+  coordinateList: Coordinate[],
 ): number => {
   if (coordinateList.length === 0) return 0;
   if (coordinateList.length === 1) return 0;
@@ -42,7 +42,7 @@ export const findClosestCoordIndex = (
   const meterPerDegLat = 111_320;
   const meterPerDegLng = 111_320 * Math.cos((lat0 * Math.PI) / 180);
 
-  const toXY = (p: Coordinates) => ({
+  const toXY = (p: Coordinate) => ({
     x: (p.lng - myPosition.lng) * meterPerDegLng,
     y: (p.lat - myPosition.lat) * meterPerDegLat,
   });
@@ -99,7 +99,7 @@ export const findClosestCoordIndex = (
  * - interval 좌표 없음: 0
  */
 export const calculateIntervalDistanceByMyPosition = (
-  myPosition: Coordinates,
+  myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
   currentIntervalIndex: number,
   type: DistanceType,
@@ -176,14 +176,14 @@ export const calculateIntervalDistanceByMyPosition = (
 const { MAX_PHYSICAL_SPEED_MPS, DT_SEC_CAP } = MOTION_COMMON_OPTIONS;
 
 export const calculateRemainingDistance = (
-  myPosition: Coordinates,
+  myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
   currentIntervalIndex: number,
   instructionList: NavigationInstruction[],
 
   // 안정화(튐 방지)용 입력
   prevRemainingDistanceMeter: number,
-  prevMyPositionForRemaining: Coordinates | null,
+  prevMyPositionForRemaining: Coordinate | null,
   prevTimestampForRemaining: number | null,
   currentTimestamp: number,
 ) => {
@@ -358,14 +358,14 @@ export const calculateEta = (
    - 정지 판정 시 증가 억제
 */
 export const calculateTraveledDistance = (
-  myPosition: Coordinates,
+  myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
   currentIntervalIndex: number,
   instructionList: NavigationInstruction[],
 
   // 안정화(튐 방지)용 입력
   prevTraveledDistanceMeter: number, // 이전에 확정해서 UI에 보여주던 진행거리
-  prevMyPositionForTravel: Coordinates | null, // 이전 위치(정지 판정)
+  prevMyPositionForTravel: Coordinate | null, // 이전 위치(정지 판정)
   prevTimestampForTravel: number | null, // 이전 타임스탬프(ms)
   currentTimestamp: number, // 현재 타임스탬프(ms)
 ) => {

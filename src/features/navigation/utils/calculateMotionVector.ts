@@ -1,10 +1,10 @@
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { MotionVectorResult } from '@/features/navigation/model/navigation.types';
 
 export const calculateMotionVector = (
-  prevPosition: Coordinates,
-  currentPosition: Coordinates,
-  targetPosition: Coordinates,
+  prevPosition: Coordinate,
+  currentPosition: Coordinate,
+  targetPosition: Coordinate,
   dtSec: number,
 ): MotionVectorResult => {
   const safeDt = Math.max(0.001, dtSec);

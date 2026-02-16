@@ -1,6 +1,7 @@
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { PlaceInfo } from '@/features/search/model/search.types';
 
+export type { Coordinate };
 export enum RouteType {
   CONSTANT = 'constant',
   LOOP = 'loop',
@@ -28,10 +29,6 @@ export interface DraggableItem {
 export type RouteData = { [key: string]: PlaceInfo };
 
 /********** API 타입 **********/
-export interface Coordinate {
-  lat: number | undefined;
-  lng: number | undefined;
-}
 
 // 경로 요약 (전체 요약 정보)
 export interface Summary {
@@ -124,7 +121,7 @@ export interface Route {
   bbox: Bbox;
   startStation: Station;
   endStation?: Station;
-  waypoints?: Coordinates[];
+  waypoints?: Coordinate[];
   segments: Segment[];
   coordinates: [number, number][];
 }

@@ -9,7 +9,7 @@ import {
   LocationMetaData,
   NavigationInstruction,
 } from '@/features/navigation/model/navigation.types';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import {
   calculateEta,
   calculateRemainingDistance,
@@ -41,7 +41,7 @@ export type UseNavigationMetricsParams = {
     instructionList: RefObject<NavigationInstruction[]>;
     currentIntervalIndex: RefObject<number>;
     prevTimestampForDistanceRef: RefObject<number | null>;
-    prevMyPositionForDistanceRef: RefObject<Coordinates | null>;
+    prevMyPositionForDistanceRef: RefObject<Coordinate | null>;
     prevTraveledDistanceMeterRef: RefObject<number>;
     prevRemainingDistanceMeterRef: RefObject<number>;
     accumulatedTraveledDistanceRef: RefObject<number>;
