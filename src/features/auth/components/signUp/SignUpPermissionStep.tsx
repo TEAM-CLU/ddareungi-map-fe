@@ -18,6 +18,7 @@ import {
 import SquareButton from '@/shared/components/button/SquareButton';
 import { PermissionItem } from '@/features/auth/model/common.types';
 import { IconInfo, IconLocation } from '@/shared/components/icons';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 interface SignUpPermissionStepProps {
   setIsReadyToSignUp: React.Dispatch<React.SetStateAction<boolean>>;
@@ -78,15 +79,16 @@ const SignUpPermissionStep = ({
         }),
       );
       setPermissions(updatedPermissions);
-    } catch (_) {
-      Alert.alert(
-        '권한 확인 오류',
-        '권한을 확인할 수 없습니다. 설정에서 권한을 확인해주세요.',
-        [
+    } catch (error) {
+      handleCatch(error, {
+        mode: 'alert',
+        title: '권한 확인 오류',
+        message: '권한을 확인할 수 없습니다. 설정에서 권한을 확인해주세요.',
+        buttons: [
           { text: '취소', style: 'cancel' },
           { text: '설정으로 이동', onPress: () => openSettings() },
         ],
-      );
+      });
     }
   };
 
@@ -125,15 +127,16 @@ const SignUpPermissionStep = ({
           ],
         );
       }
-    } catch (_) {
-      Alert.alert(
-        '권한 요청 오류',
-        '권한 요청 중 오류가 발생했습니다. 설정에서 권한을 확인해주세요.',
-        [
+    } catch (error) {
+      handleCatch(error, {
+        mode: 'alert',
+        title: '권한 요청 오류',
+        message: '권한 요청 중 오류가 발생했습니다. 설정에서 권한을 확인해주세요.',
+        buttons: [
           { text: '취소', style: 'cancel' },
           { text: '설정으로 이동', onPress: () => openSettings() },
         ],
-      );
+      });
     }
   };
 

@@ -7,6 +7,7 @@ import {
   IntervalPathData,
   NavigationInstruction,
 } from '@/features/navigation/model/navigation.types';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 export type ApplyNavigationDataInput = {
   coordinates: [number, number][];
@@ -226,8 +227,12 @@ export const useNavigationDataApply = ({
       }
       } catch (error) {
         // undefined로 인한 크래시 방지: 네비게이션 안전 종료
-        console.error('Navigation data apply error:', error);
-        onError?.();
+        handleCatch(error, {
+          mode: 'terminateNavigation',
+          onTerminate: () => onError?.(),
+          title: '네비게이션 종료',
+          message: '경로 데이터 오류로 인해 네비게이션을 종료합니다.',
+        });
       }
     },
     [

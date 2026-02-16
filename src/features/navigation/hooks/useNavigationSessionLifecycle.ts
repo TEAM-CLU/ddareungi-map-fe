@@ -1,9 +1,9 @@
 import { useEffect, type RefObject } from 'react';
-import { Alert } from 'react-native';
 import { NavigationWalkingPolicy } from '@/shared/model/map.webview.types';
 import { ApplyNavigationDataInput } from '@/features/navigation/hooks/useNavigationDataApply';
 import { useStartNavigationSessionMutation } from '../services/navigation.queries';
 import { useNavigationStore } from '../stores/useNavigationStore';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 export type UseNavigationSessionLifecycleParams = {
   isNavigationMode: boolean;
@@ -59,15 +59,13 @@ export const useNavigationSessionLifecycle = ({
         setIsNavigationInitialized(true);
         isHandlingOffRouteRef.current = false;
       } catch (error: any) {
-        const serverMessage = error.response?.data?.message;
-        const displayMessage = serverMessage
-          ? `${serverMessage}`
-          : '일시적인 네트워크 문제로 연결할 수 없습니다.\n잠시 후 다시 시도해주세요.';
-
-        Alert.alert(
-          '경로 안내를 시작할 수 없어요',
-          displayMessage,
-          [
+        handleCatch(error, {
+          mode: 'alert',
+          title: '경로 안내를 시작할 수 없어요',
+          message:
+            error.response?.data?.message ||
+            '일시적인 네트워크 문제로 연결할 수 없습니다.\n잠시 후 다시 시도해주세요.',
+          buttons: [
             {
               text: '이전으로 돌아가기',
               onPress: () => {
@@ -76,8 +74,7 @@ export const useNavigationSessionLifecycle = ({
               style: 'default',
             },
           ],
-          { cancelable: false },
-        );
+        });
       }
     };
 

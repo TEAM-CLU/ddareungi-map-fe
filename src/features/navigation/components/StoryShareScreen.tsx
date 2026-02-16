@@ -16,6 +16,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
 import { tw } from '@/shared/libs/tw-helper';
 import { clampTagList } from '@/features/navigation/utils/clampTagList';
+import { handleCatch } from '@/shared/utils/errorHandler';
 import {
   formatDistanceAdaptiveText,
   formatTimeHHMMSSNumber,
@@ -58,6 +59,7 @@ const StoryShareScreen = ({
         const cameraPermission = await Camera.requestCameraPermission();
         setHasPermission(cameraPermission === 'granted');
       } catch (error) {
+        handleCatch(error, { mode: 'silent' });
         setHasPermission(false);
       }
     })();
@@ -147,7 +149,9 @@ const StoryShareScreen = ({
     // 공유 후 임시 파일 삭제
     try {
       await RNFS.unlink(destPath);
-    } catch (e) {}
+    } catch (e) {
+      handleCatch(e, { mode: 'silent' });
+    }
   };
 
   if (!device) {

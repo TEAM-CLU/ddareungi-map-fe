@@ -18,6 +18,7 @@ import { useStationRouteApplyActions } from '@/features/station/hooks/useStation
 import { useStableMyPosition } from '@/features/station/hooks/useStableMyPosition';
 import { DISTANCE_LAMBDA } from '@/features/station/model/station.constants';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 interface StationDetailModalProps {
   onClose?: () => void;
@@ -77,6 +78,7 @@ const StationDetailModal = ({ onClose }: StationDetailModalProps) => {
         await Linking.openURL(storeUrl);
       }
     } catch (error) {
+      handleCatch(error, { mode: 'silent' });
       const storeUrl = Platform.OS === 'ios' ? iosStoreUrl : androidStoreUrl;
       await Linking.openURL(storeUrl);
     }

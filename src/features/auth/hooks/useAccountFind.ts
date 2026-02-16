@@ -197,7 +197,28 @@ export const useAccountFind = ({
         setShowRegistrationInfo(true);
       },
       onError: error => {
-        Alert.alert('요청 실패', error.message);
+        // "유효하지 않은 보안 토큰" 오류인 경우, 토큰 활성화 대기 후 재시도
+        if (
+          error.message.includes('유효하지 않은 보안 토큰') ||
+          error.message.includes('보안 토큰')
+        ) {
+          // 짧은 지연 후 재시도 (토큰 활성화 대기)
+          setTimeout(() => {
+            findAccount(payload, {
+              onSuccess: response => {
+                const sentences = response.message.split('.');
+                setRegistrationInfoMessage(sentences);
+                setAccountType(response.data.accountType);
+                setShowRegistrationInfo(true);
+              },
+              onError: retryError => {
+                Alert.alert('요청 실패', retryError.message);
+              },
+            });
+          }, 500); // 500ms 대기 후 재시도
+        } else {
+          Alert.alert('요청 실패', error.message);
+        }
       },
     });
   };

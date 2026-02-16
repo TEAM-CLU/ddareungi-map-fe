@@ -12,6 +12,7 @@ import { useStationMessenger } from '@/features/station/hooks/useStationMessenge
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useShallow } from 'zustand/react/shallow';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 interface UseStationParams {
   isMapReady: boolean;
@@ -63,6 +64,7 @@ export const useStation = ({
       try {
         data = JSON.parse(event.nativeEvent.data);
       } catch (error) {
+        handleCatch(error, { mode: 'silent' });
         return;
       }
 
@@ -105,7 +107,9 @@ export const useStation = ({
                   stationNumbers: data.stationNumbers,
                 });
               updateTargetedStationBikeCountListMessage(response);
-            } catch (error) {}
+            } catch (error) {
+              handleCatch(error, { mode: 'silent' });
+            }
             break;
           }
 
@@ -125,7 +129,9 @@ export const useStation = ({
           default:
             break;
         }
-      } catch (error) {}
+      } catch (error) {
+        handleCatch(error, { mode: 'silent' });
+      }
     },
     [
       getLatestBikeCountList,

@@ -10,6 +10,7 @@ import { QueryClient, UseMutateFunction } from '@tanstack/react-query';
 import { StackNavigationProp } from 'node_modules/@react-navigation/stack/lib/typescript/src/types';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, AppState, Linking } from 'react-native';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 interface UseSocialLoginParams {
   getSocialAuthUrl: UseMutateFunction<
@@ -141,10 +142,11 @@ export const useSocialLogin = ({
         } catch (error) {
           resetFlow();
           setCanStartPolling(true); // 폴링 재시작
-          Alert.alert(
-            '오류',
-            '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-          );
+          handleCatch(error, {
+            mode: 'alert',
+            title: '오류',
+            message: '로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+          });
         }
       },
       onError: error => {

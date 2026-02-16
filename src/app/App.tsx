@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BootSplash from 'react-native-bootsplash';
 import { registerTtsQueueHandler } from '@/features/navigation/libs/ttsPlayer';
 import TrackPlayer from 'react-native-track-player';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 const App = () => {
   const { isAuthLoading, accessToken } = useAuth();
@@ -14,14 +15,18 @@ const App = () => {
     const setupTrackPlayer = async () => {
       try {
         await TrackPlayer.setupPlayer();
-      } catch (error) {}
+      } catch (error) {
+        handleCatch(error, { mode: 'silent' });
+      }
 
       try {
         await TrackPlayer.updateOptions({
           capabilities: [],
         });
         registerTtsQueueHandler();
-      } catch (error) {}
+      } catch (error) {
+        handleCatch(error, { mode: 'silent' });
+      }
     };
 
     setupTrackPlayer();

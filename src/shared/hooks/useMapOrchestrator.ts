@@ -8,6 +8,7 @@ import { MapReadyMessage } from '@/shared/model/map.webview.types';
 import { useShallow } from 'zustand/react/shallow';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/app/types';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 /**
  * useMapOrchestrator
@@ -107,7 +108,9 @@ export const useMapOrchestrator = ({
         console.log('✅ 지도 준비 완료');
         bumpMapReadyVersion();
       }
-    } catch (error) {}
+    } catch (error) {
+      handleCatch(error, { mode: 'silent' });
+    }
   };
 
   /* 즐겨찾기 모달 열기 */

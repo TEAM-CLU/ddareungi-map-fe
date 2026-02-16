@@ -28,6 +28,7 @@ import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 import { useRecentSearchesQuery } from '../services/search.queries';
 import BookmarkBadge from '@/shared/components/badge/BookmarkBadge';
 import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 interface SearchOverlayProps {
   onClose: () => void;
@@ -122,6 +123,9 @@ const SearchOverlay = ({
 
       handleSearchResultSelect(place);
     } catch (error) {
+      handleCatch(error, {
+        mode: 'toast',
+      });
     } finally {
       setIsLoadingCurrentLocation(false);
     }

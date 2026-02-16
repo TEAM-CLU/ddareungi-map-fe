@@ -20,6 +20,7 @@ import {
   useReRouteMutation,
   useReturnToExistingRouteMutation,
 } from '../services/navigation.queries';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 export type UseOffRouteControllerParams = {
   isNavigationMode: boolean;
@@ -280,6 +281,9 @@ export const useOffRouteController = ({
               systemVolume,
             );
           } catch (error) {
+            handleCatch(error, {
+              mode: 'toast',
+            });
           } finally {
             refs.isHandlingOffRouteRef.current = false;
             setIsLoadingForOffRoute(false);
@@ -328,6 +332,9 @@ export const useOffRouteController = ({
             systemVolume,
           );
         } catch (error) {
+          handleCatch(error, {
+            mode: 'toast',
+          });
         } finally {
           refs.isHandlingOffRouteRef.current = false;
           setIsLoadingForOffRoute(false);
@@ -338,7 +345,8 @@ export const useOffRouteController = ({
     (async () => {
       try {
         await judgeOffRoute();
-      } catch {
+      } catch (error) {
+        handleCatch(error, { mode: 'silent' });
       } finally {
         refs.offRouteTickBusyRef.current = false;
       }

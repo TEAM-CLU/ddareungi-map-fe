@@ -7,6 +7,7 @@ import { PlaceInfo } from '@/features/search/model/search.types';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
 import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
 import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 interface UseBookmarkParams {
   isMapReady: boolean;
@@ -56,7 +57,9 @@ export const useBookmark = ({
         };
         setSelectedPlaceInfoForModal(bookmarkInfoForModal);
         setShowPlaceDetailModal(true);
-      } catch (error) {}
+      } catch (error) {
+        handleCatch(error, { mode: 'silent' });
+      }
     },
     [setSelectedPlaceInfoForModal, setShowPlaceDetailModal],
   );

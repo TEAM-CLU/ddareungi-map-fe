@@ -5,6 +5,7 @@ import { ACCESS_TOKEN_KEY } from '@/shared/model/shared.constants';
 import { useAxiosInterceptor } from '@/shared/hooks/useAxiosInterceptor';
 import { setClientToken } from '@/shared/services/axios';
 import { useQueryClient } from '@tanstack/react-query';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
@@ -24,7 +25,7 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
           setClientToken(token);
         }
       } catch (error) {
-        
+        handleCatch(error, { mode: 'silent' });
       } finally {
         setIsAuthLoading(false);
       }
@@ -53,7 +54,9 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
     queryClient.clear(); // 쿼리 캐시 초기화
     try {
       await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
-    } catch (error) {}
+    } catch (error) {
+      handleCatch(error, { mode: 'silent' });
+    }
   }, []);
 
   // 토큰 있는지 확인

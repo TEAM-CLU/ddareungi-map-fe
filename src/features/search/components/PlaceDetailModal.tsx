@@ -18,6 +18,7 @@ import { getDistanceGuideText } from '@/shared/utils/formatting';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 import BookmarkToggle from '@/features/bookmark/components/BookmarkToggle';
 import { usePlaceRouteApplyActions } from '@/features/search/hooks/usePlaceRouteApplyActions';
+import { handleCatch } from '@/shared/utils/errorHandler';
 import { createPlaceBookmark } from '@/features/search/utils/createPlaceBookmark';
 
 export interface PlaceDetailModalProps {
@@ -75,6 +76,7 @@ const PlaceDetailModal = ({ place, onClose }: PlaceDetailModalProps) => {
       );
       setPlaceDistanceMeter(Math.round(distanceMeter));
     } catch (error) {
+      handleCatch(error, { mode: 'silent' });
       setPlaceDistanceMeter(undefined);
     }
   }, [myPosition, place]);

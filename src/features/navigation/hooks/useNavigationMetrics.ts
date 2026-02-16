@@ -22,6 +22,7 @@ import {
   measureCarbonSaved,
 } from '@/shared/utils/measure';
 import { Gender } from '@/shared/model/shared.types';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 export type UseNavigationMetricsParams = {
   isNavigationMode: boolean;
@@ -137,8 +138,12 @@ export const useNavigationMetrics = ({
       refs.prevTimestampForDistanceRef.current = currentTimestamp;
     } catch (error) {
       // undefined로 인한 크래시 방지: 네비게이션 안전 종료
-      console.error('Navigation metrics calculation error:', error);
-      onError?.();
+      handleCatch(error, {
+        mode: 'terminateNavigation',
+        onTerminate: () => onError?.(),
+        title: '네비게이션 종료',
+        message: '거리 계산 오류로 인해 네비게이션을 종료합니다.',
+      });
       return;
     }
   }, [
