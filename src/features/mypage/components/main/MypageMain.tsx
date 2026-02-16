@@ -233,6 +233,10 @@ const MypageMain = ({ onNavigate }: MypageMainProps) => {
             </TouchableOpacity>
           </View>
         )}
+
+        <View style={tw('mt-4 mb-4 items-center')}>
+            <Text style={tw('text-on-surface-tertiary font-primary-500 text-xs')}>© 2026 CLU. All rights reserved.</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
