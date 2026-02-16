@@ -230,7 +230,7 @@ export const calculateRemainingDistance = (
 
   if (currentIntervalIndex < instructionList.length - 1) {
     for (let i = currentIntervalIndex + 1; i < instructionList.length; i++) {
-      remainingIntervalsDistance += instructionList[i].distance;
+      remainingIntervalsDistance += instructionList[i]?.distance ?? 0;
     }
   }
 
@@ -420,7 +420,7 @@ export const calculateTraveledDistance = (
   // 첫 인터벌이 아닐 때만 계산
   if (currentIntervalIndex > 0) {
     for (let i = 0; i < currentIntervalIndex; i++) {
-      traveledIntervalsDistance += instructionList[i].distance;
+      traveledIntervalsDistance += instructionList[i]?.distance ?? 0;
     }
   }
 

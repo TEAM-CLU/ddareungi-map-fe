@@ -29,6 +29,7 @@ export type ApplyNavigationDataInput = {
 export type UseNavigationDataApplyParams = {
   selectedRouteData: Route | null;
   isMapReady: boolean;
+  onError?: () => void;
   drawNavigationPath: (payload: {
     routeType: RouteType;
     startPoint: [number, number];
@@ -73,6 +74,7 @@ export type UseNavigationDataApplyParams = {
 export const useNavigationDataApply = ({
   selectedRouteData,
   isMapReady,
+  onError,
   drawNavigationPath,
   setCurrentInstruction,
   setInstructionList,
@@ -84,52 +86,66 @@ export const useNavigationDataApply = ({
       navigationData: ApplyNavigationDataInput,
       walkingPolicy: NavigationWalkingPolicy = 'all',
     ) => {
-      if (
-        !navigationData.coordinates ||
-        navigationData.coordinates.length === 0
-      ) {
-        return;
-      }
-      // Ref 데이터 업데이트 (좌표, 지시사항)
-      refs.fullPathCoordinateList.current = navigationData.coordinates;
-      refs.instructionList.current = navigationData.instructions;
+      try {
+        if (
+          !navigationData.coordinates ||
+          navigationData.coordinates.length === 0
+        ) {
+          return;
+        }
+        // Ref 데이터 업데이트 (좌표, 지시사항)
+        refs.fullPathCoordinateList.current = navigationData.coordinates;
+        refs.instructionList.current = navigationData.instructions;
 
-      // TTS 및 preview 관련 상태 설정
-      const firstInst = navigationData.instructions[0];
-      const secondInst = navigationData.instructions[1];
+        // TTS 및 preview 관련 상태 설정
+        const firstInst = navigationData.instructions[0];
+        const secondInst = navigationData.instructions[1];
 
-      refs.currentTtsUrl.current = firstInst?.ttsUrl ?? null;
-      refs.previewInstructionText.current = secondInst?.text ?? '';
-      refs.previewTtsUrl.current = secondInst?.ttsUrl ?? null;
-      refs.previewSign.current = secondInst?.sign ?? null;
+        refs.currentTtsUrl.current = firstInst?.ttsUrl ?? null;
+        refs.previewInstructionText.current = secondInst?.text ?? '';
+        refs.previewTtsUrl.current = secondInst?.ttsUrl ?? null;
+        refs.previewSign.current = secondInst?.sign ?? null;
 
-      // 현재 instruction 및 turn 좌표 설정
-      if (firstInst) {
-        setCurrentInstruction(firstInst);
-        refs.nextTurnCoordinate.current = firstInst.nextTurnCoordinate;
+        // 현재 instruction 및 turn 좌표 설정
+        if (firstInst) {
+          setCurrentInstruction(firstInst);
+          refs.nextTurnCoordinate.current = firstInst.nextTurnCoordinate;
 
-        // 네비게이션 디테일 모달 상태 초기화
-        setInstructionList(navigationData.instructions);
-        setCurrentIntervalIndex(0);
-      }
+          // 네비게이션 디테일 모달 상태 초기화
+          setInstructionList(navigationData.instructions);
+          setCurrentIntervalIndex(0);
+        }
 
-      // currentIntervalIndex 리셋
-      refs.currentIntervalIndex.current = 0;
+        // currentIntervalIndex 리셋
+        refs.currentIntervalIndex.current = 0;
 
-      // pathDataListByInterval 재구성
-      refs.pathDataListByInterval.current = [];
-      refs.pathDataListByInterval.current = navigationData.instructions.map(
-        (inst, idx) => {
-          const [start, end] = inst.interval;
-          return {
-            intervalIndex: idx,
-            interval: inst.interval,
-            coordinateList: navigationData.coordinates
+        // pathDataListByInterval 재구성
+        refs.pathDataListByInterval.current = [];
+        refs.pathDataListByInterval.current = navigationData.instructions.map(
+          (inst, idx) => {
+            // inst.interval이 없거나 배열이 아니면 에러 발생 가능
+            if (!inst.interval || !Array.isArray(inst.interval) || inst.interval.length < 2) {
+              throw new Error(`Invalid instruction interval at index ${idx}`);
+            }
+            const [start, end] = inst.interval;
+            
+            // coordinates 요소가 undefined일 수 있음
+            const coordinateList = navigationData.coordinates
               .slice(start, end + 1)
-              .map(coord => ({ lat: coord[1], lng: coord[0] })),
-          };
-        },
-      );
+              .map(coord => {
+                if (!coord || !Array.isArray(coord) || coord.length < 2) {
+                  throw new Error(`Invalid coordinate at index ${idx}`);
+                }
+                return { lat: coord[1], lng: coord[0] };
+              });
+            
+            return {
+              intervalIndex: idx,
+              interval: inst.interval,
+              coordinateList,
+            };
+          },
+        );
 
       // 턴 관련 상태 리셋
       refs.isEnteredRef.current = false;
@@ -208,10 +224,16 @@ export const useNavigationDataApply = ({
           walkingPolicy,
         });
       }
+      } catch (error) {
+        // undefined로 인한 크래시 방지: 네비게이션 안전 종료
+        console.error('Navigation data apply error:', error);
+        onError?.();
+      }
     },
     [
       selectedRouteData,
       isMapReady,
+      onError,
       drawNavigationPath,
       setCurrentInstruction,
       setInstructionList,

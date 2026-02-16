@@ -26,6 +26,7 @@ import { useOffRouteController } from '@/features/navigation/hooks/useOffRouteCo
 import { useNavigationMetrics } from '@/features/navigation/hooks/useNavigationMetrics';
 import { useSystemVolumeSync } from '@/features/navigation/hooks/useSystemVolumeSync';
 import { useLocationMetaHistory } from '@/features/navigation/hooks/useLocationMetaHistory';
+import { useModalStore } from '@/shared/stores/useModalStore';
 
 export const useNavigationOrchestrator = () => {
   const { data: userInfoData } = useUserInfoQuery();
@@ -47,6 +48,7 @@ export const useNavigationOrchestrator = () => {
     setTraveledDistance,
     addCaloriesBurned,
     addCarbonSaved,
+    setIsNavigationMode,
   } = useNavigationStore(
     useShallow(state => ({
       isNavigationMode: state.isNavigationMode,
@@ -57,6 +59,7 @@ export const useNavigationOrchestrator = () => {
       setTraveledDistance: state.setTraveledDistanceMeter,
       addCaloriesBurned: state.addCaloriesBurned,
       addCarbonSaved: state.addCarbonSaved,
+      setIsNavigationMode: state.setIsNavigationMode,
     })),
   );
 
@@ -74,6 +77,12 @@ export const useNavigationOrchestrator = () => {
         setCurrentIntervalIndex: state.setCurrentIntervalIndex,
       })),
     );
+
+  const { setShowNavigationEndModal } = useModalStore(
+    useShallow(state => ({
+      setShowNavigationEndModal: state.setShowNavigationEndModal,
+    })),
+  );
 
   const {
     replaceMyLocationMarker,
@@ -153,6 +162,12 @@ export const useNavigationOrchestrator = () => {
     turnOffBookmarkMarkers();
   }, [isNavigationMode, turnOffBookmarkMarkers]);
 
+  // 네비게이션 안전 종료 (크래시 방지용)
+  const terminateNavigationSafely = useCallback(() => {
+    setIsNavigationMode(false);
+    setShowNavigationEndModal(true);
+  }, [setIsNavigationMode, setShowNavigationEndModal]);
+
   // 완전초기화
   const resetAllNavigationState = useCallback(() => {
     replaceMyLocationMarker(true);
@@ -212,6 +227,7 @@ export const useNavigationOrchestrator = () => {
     setCurrentInstruction,
     setInstructionList,
     setCurrentIntervalIndex,
+    onError: terminateNavigationSafely,
     refs: {
       fullPathCoordinateList,
       pathDataListByInterval,
@@ -363,6 +379,7 @@ export const useNavigationOrchestrator = () => {
     setEta,
     addCaloriesBurned,
     addCarbonSaved,
+    onError: terminateNavigationSafely,
     refs: {
       pathDataListByInterval,
       instructionList,

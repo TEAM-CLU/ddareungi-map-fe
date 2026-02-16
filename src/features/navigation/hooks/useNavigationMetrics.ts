@@ -36,6 +36,7 @@ export type UseNavigationMetricsParams = {
   setEta: (v: Date | undefined | null) => void;
   addCaloriesBurned: (v: number) => void;
   addCarbonSaved: (v: number) => void;
+  onError?: () => void;
   refs: {
     pathDataListByInterval: RefObject<IntervalPathData[]>;
     instructionList: RefObject<NavigationInstruction[]>;
@@ -68,6 +69,7 @@ export const useNavigationMetrics = ({
   setEta,
   addCaloriesBurned,
   addCarbonSaved,
+  onError,
   refs,
 }: UseNavigationMetricsParams) => {
   const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
@@ -94,44 +96,51 @@ export const useNavigationMetrics = ({
     const prevPosisionForDistance = refs.prevMyPositionForDistanceRef.current; // null이면 첫 진입
     const prevTimestampForDistance = refs.prevTimestampForDistanceRef.current;
 
-    // 이동 거리 계산
-    const calculatedTraveldDistanceMeter = calculateTraveledDistance(
-      currentCoord,
-      pathData,
-      refs.currentIntervalIndex.current,
-      instructions,
-      refs.prevTraveledDistanceMeterRef.current,
-      prevPosisionForDistance,
-      prevTimestampForDistance,
-      currentTimestamp,
-    );
+    try {
+      // 이동 거리 계산
+      const calculatedTraveldDistanceMeter = calculateTraveledDistance(
+        currentCoord,
+        pathData,
+        refs.currentIntervalIndex.current,
+        instructions,
+        refs.prevTraveledDistanceMeterRef.current,
+        prevPosisionForDistance,
+        prevTimestampForDistance,
+        currentTimestamp,
+      );
 
-    // 남은 거리 계산
-    const calculatedRemainigDistanceMeter = calculateRemainingDistance(
-      currentCoord,
-      pathData,
-      refs.currentIntervalIndex.current,
-      instructions,
-      refs.prevRemainingDistanceMeterRef.current,
-      prevPosisionForDistance,
-      prevTimestampForDistance,
-      currentTimestamp,
-    );
+      // 남은 거리 계산
+      const calculatedRemainigDistanceMeter = calculateRemainingDistance(
+        currentCoord,
+        pathData,
+        refs.currentIntervalIndex.current,
+        instructions,
+        refs.prevRemainingDistanceMeterRef.current,
+        prevPosisionForDistance,
+        prevTimestampForDistance,
+        currentTimestamp,
+      );
 
-    // 재탐색 등을 고려한 누적 거리 합산
-    const finalTraveledDistanceMeter =
-      calculatedTraveldDistanceMeter +
-      refs.accumulatedTraveledDistanceRef.current;
+      // 재탐색 등을 고려한 누적 거리 합산
+      const finalTraveledDistanceMeter =
+        calculatedTraveldDistanceMeter +
+        refs.accumulatedTraveledDistanceRef.current;
 
-    setTraveledDistance(finalTraveledDistanceMeter);
-    setRemainingDistance(calculatedRemainigDistanceMeter);
+      setTraveledDistance(finalTraveledDistanceMeter);
+      setRemainingDistance(calculatedRemainigDistanceMeter);
 
-    // Refs 갱신 (다음 틱 계산을 위해)
-    refs.prevTraveledDistanceMeterRef.current = finalTraveledDistanceMeter;
-    refs.prevRemainingDistanceMeterRef.current =
-      calculatedRemainigDistanceMeter;
-    refs.prevMyPositionForDistanceRef.current = currentCoord;
-    refs.prevTimestampForDistanceRef.current = currentTimestamp;
+      // Refs 갱신 (다음 틱 계산을 위해)
+      refs.prevTraveledDistanceMeterRef.current = finalTraveledDistanceMeter;
+      refs.prevRemainingDistanceMeterRef.current =
+        calculatedRemainigDistanceMeter;
+      refs.prevMyPositionForDistanceRef.current = currentCoord;
+      refs.prevTimestampForDistanceRef.current = currentTimestamp;
+    } catch (error) {
+      // undefined로 인한 크래시 방지: 네비게이션 안전 종료
+      console.error('Navigation metrics calculation error:', error);
+      onError?.();
+      return;
+    }
   }, [
     locationMetaData?.coordinate,
     locationTick,
