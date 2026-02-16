@@ -8,7 +8,7 @@ import RoundButton from '@/shared/components/button/RoundButton';
 import { Route, Waypoint } from '../model/routing.types';
 import React from 'react';
 import { useSelectedRouteDetailModal } from '@/features/routing/hooks/useSelectedRouteDetailModal';
-import { formatDistanceAdaptiveText } from '@/shared/utils/formatting';
+import { formatDistanceAdaptiveText, formatTimeHMText } from '@/shared/utils/formatting';
 
 interface SelectedRouteDetailModalProps {
   selectedRouteData: Route | null;
@@ -151,7 +151,7 @@ const SelectedRouteDetailModal = ({
                 <Text
                   style={[tw('font-primary-500 text-black'), { fontSize: 15 }]}
                 >
-                  {formatTimeMinutesNumber(firstWalkingSegment.summary.time)}분
+                  {formatTimeHMText(firstWalkingSegment.summary.time)}
                 </Text>
               </Text>
             )}
@@ -199,7 +199,7 @@ const SelectedRouteDetailModal = ({
                     ]}
                   >
                     {' '}
-                    {formatTimeMinutesNumber(totalBikingTime)}분
+                    {formatTimeHMText(totalBikingTime)}
                   </Text>
                 </Text>
                 {/* 경유지가 있을 경우에만 표시 */}
@@ -255,7 +255,7 @@ const SelectedRouteDetailModal = ({
                       { fontSize: 15 },
                     ]}
                   >
-                    {formatTimeMinutesNumber(lastWalkingSegment.summary.time)}분
+                    {formatTimeHMText(lastWalkingSegment.summary.time)}
                   </Text>
                 </Text>
               )}
