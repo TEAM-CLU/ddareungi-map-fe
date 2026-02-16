@@ -24,6 +24,7 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
           setClientToken(token);
         }
       } catch (error) {
+        
       } finally {
         setIsAuthLoading(false);
       }

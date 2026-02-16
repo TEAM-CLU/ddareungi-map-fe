@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		35C0EE17DEF9EF3FB261BA9C /* libPods-DdareungiMap.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C8BCC14AD2E00BE6CE9F5628 /* libPods-DdareungiMap.a */; };
 		3E4378243B4941F69F26B524 /* Pretendard-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8F6530A2474B449BAC691C7A /* Pretendard-Light.ttf */; };
 		46C0343F359B4E12BA7167C8 /* HSYeolumMulbit.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DF156FFEB6AF4A438F827410 /* HSYeolumMulbit.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
@@ -20,6 +19,7 @@
 		A5887A8A6A1C4EBBB83E0471 /* Pretendard-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 499B97AB1F1847CA92265839 /* Pretendard-Bold.ttf */; };
 		BA855B8B58DE4276B4261D33 /* Pretendard-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2B8F0C7BF88546B4B29E16C9 /* Pretendard-SemiBold.ttf */; };
 		CFAB93229BC9422099F4D977 /* Pretendard-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C15AFE34D3314CAC846561C7 /* Pretendard-ExtraLight.ttf */; };
+		D60F7AC18FDF63AC6A3CE4C0 /* libPods-DdareungiMap.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A21EF5AFF69DFD9271B696E5 /* libPods-DdareungiMap.a */; };
 		D932E34CE8604114866931FC /* Pretendard-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C7F72E8A50E34CE5B724EB34 /* Pretendard-Black.ttf */; };
 		E831C8AAF13573911A33B403 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		F0118E84D36B4E60AA6ADDD6 /* Pretendard-Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E50A7B4DBB7C47568C942035 /* Pretendard-Thin.ttf */; };
@@ -38,16 +38,16 @@
 		499B97AB1F1847CA92265839 /* Pretendard-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Bold.ttf"; path = "../src/assets/fonts/Pretendard-Bold.ttf"; sourceTree = "<group>"; };
 		62D2A6B0543247FCAE383B6B /* Pretendard-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-ExtraBold.ttf"; path = "../src/assets/fonts/Pretendard-ExtraBold.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DdareungiMap/AppDelegate.swift; sourceTree = "<group>"; };
-		7F4A9C97278CB05415BDD75A /* Pods-DdareungiMap.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DdareungiMap.debug.xcconfig"; path = "Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = DdareungiMap/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8F6530A2474B449BAC691C7A /* Pretendard-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Light.ttf"; path = "../src/assets/fonts/Pretendard-Light.ttf"; sourceTree = "<group>"; };
+		A21EF5AFF69DFD9271B696E5 /* libPods-DdareungiMap.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DdareungiMap.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7335D3287E84A109E847A26 /* Colors.xcassets */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = folder.assetcatalog; name = Colors.xcassets; path = DdareungiMap/Colors.xcassets; sourceTree = "<group>"; };
-		BD5FBBA2E7E0E81438D6B40D /* Pods-DdareungiMap.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DdareungiMap.release.xcconfig"; path = "Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap.release.xcconfig"; sourceTree = "<group>"; };
 		C15AFE34D3314CAC846561C7 /* Pretendard-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-ExtraLight.ttf"; path = "../src/assets/fonts/Pretendard-ExtraLight.ttf"; sourceTree = "<group>"; };
 		C7F72E8A50E34CE5B724EB34 /* Pretendard-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Black.ttf"; path = "../src/assets/fonts/Pretendard-Black.ttf"; sourceTree = "<group>"; };
-		C8BCC14AD2E00BE6CE9F5628 /* libPods-DdareungiMap.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DdareungiMap.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DF156FFEB6AF4A438F827410 /* HSYeolumMulbit.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = HSYeolumMulbit.ttf; path = ../src/assets/fonts/HSYeolumMulbit.ttf; sourceTree = "<group>"; };
+		E3E5B24D989A19877260BE4C /* Pods-DdareungiMap.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DdareungiMap.debug.xcconfig"; path = "Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap.debug.xcconfig"; sourceTree = "<group>"; };
 		E50A7B4DBB7C47568C942035 /* Pretendard-Thin.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Thin.ttf"; path = "../src/assets/fonts/Pretendard-Thin.ttf"; sourceTree = "<group>"; };
+		ECB10FE23330D67495B169DE /* Pods-DdareungiMap.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DdareungiMap.release.xcconfig"; path = "Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -56,7 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				35C0EE17DEF9EF3FB261BA9C /* libPods-DdareungiMap.a in Frameworks */,
+				D60F7AC18FDF63AC6A3CE4C0 /* libPods-DdareungiMap.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,7 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				C8BCC14AD2E00BE6CE9F5628 /* libPods-DdareungiMap.a */,
+				A21EF5AFF69DFD9271B696E5 /* libPods-DdareungiMap.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -136,8 +136,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				7F4A9C97278CB05415BDD75A /* Pods-DdareungiMap.debug.xcconfig */,
-				BD5FBBA2E7E0E81438D6B40D /* Pods-DdareungiMap.release.xcconfig */,
+				E3E5B24D989A19877260BE4C /* Pods-DdareungiMap.debug.xcconfig */,
+				ECB10FE23330D67495B169DE /* Pods-DdareungiMap.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -149,13 +149,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "DdareungiMap" */;
 			buildPhases = (
-				9EC4AD23DF70F1676EB3A93A /* [CP] Check Pods Manifest.lock */,
+				003F161F3A250A65471C7880 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				8B571A0B8850C243A38FA18B /* [CP] Embed Pods Frameworks */,
-				A6C185FBE47DEA98F870C5FB /* [CP] Copy Pods Resources */,
+				7F5FC5EB018979DA69FC96D7 /* [CP] Embed Pods Frameworks */,
+				0441EDD6E32B7B94DAB05500 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -223,40 +223,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/.xcode.env",
-			);
-			name = "Bundle React Native code and images";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=/opt/homebrew/bin/node\nset -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
-		};
-		8B571A0B8850C243A38FA18B /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		9EC4AD23DF70F1676EB3A93A /* [CP] Check Pods Manifest.lock */ = {
+		003F161F3A250A65471C7880 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -278,7 +245,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A6C185FBE47DEA98F870C5FB /* [CP] Copy Pods Resources */ = {
+		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/.xcode.env",
+			);
+			name = "Bundle React Native code and images";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export NODE_BINARY=/opt/homebrew/bin/node\nset -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+		};
+		0441EDD6E32B7B94DAB05500 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -293,6 +276,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7F5FC5EB018979DA69FC96D7 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -311,12 +311,12 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7F4A9C97278CB05415BDD75A /* Pods-DdareungiMap.debug.xcconfig */;
+			baseConfigurationReference = E3E5B24D989A19877260BE4C /* Pods-DdareungiMap.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = J6DBW5Z8PZ;
+				DEVELOPMENT_TEAM = NQV2G8UQZB;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = DdareungiMap/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "따릉이맵";
@@ -331,7 +331,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ssuzn.ddareungiMap01;
+				PRODUCT_BUNDLE_IDENTIFIER = com.letyuchan.ddareungiMap0112;
 				PRODUCT_NAME = DdareungiMap;
 				RCT_NEW_ARCH_ENABLED = 0;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -342,12 +342,12 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BD5FBBA2E7E0E81438D6B40D /* Pods-DdareungiMap.release.xcconfig */;
+			baseConfigurationReference = ECB10FE23330D67495B169DE /* Pods-DdareungiMap.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = J6DBW5Z8PZ;
+				DEVELOPMENT_TEAM = NQV2G8UQZB;
 				INFOPLIST_FILE = DdareungiMap/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "따릉이맵";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
@@ -361,7 +361,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ssuzn.ddareungiMap01;
+				PRODUCT_BUNDLE_IDENTIFIER = com.letyuchan.ddareungiMap0112;
 				PRODUCT_NAME = DdareungiMap;
 				RCT_NEW_ARCH_ENABLED = 0;
 				SWIFT_VERSION = 5.0;

@@ -85,7 +85,7 @@ const MapScreen = () => {
 
   return (
     <View style={tw('flex-1 relative w-full')}>
-      <Map handleMapReadyMessage={handleMapReadyMessage} />
+      <Map onMessage={handleMapReadyMessage} />
 
       {isLoadingForOffRoute && <SimpleLoading title="경로 재탐색 중" />}
 

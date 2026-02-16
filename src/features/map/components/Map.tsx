@@ -6,9 +6,9 @@ import { useBookmark } from '@/features/bookmark/hooks/useBookmark';
 import { useWebViewRef } from '@/app/providers/webview';
 import { useShallow } from 'zustand/react/shallow';
 interface MapProps {
-  handleMapReadyMessage: (event: WebViewMessageEvent) => void;
+  onMessage: (event: WebViewMessageEvent) => void;
 }
-const Map = ({ handleMapReadyMessage }: MapProps) => {
+const Map = ({ onMessage }: MapProps) => {
   const { isMapReady, mapReadyVersion } = useMapStore(
     useShallow(state => ({
       isMapReady: state.isMapReady,
@@ -30,7 +30,7 @@ const Map = ({ handleMapReadyMessage }: MapProps) => {
   });
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
-    handleMapReadyMessage(event);
+    onMessage(event);
     handleStationMessage(event);
     handleBookmarkMarkerClick(event);
   };
@@ -42,9 +42,9 @@ const Map = ({ handleMapReadyMessage }: MapProps) => {
       domStorageEnabled={true}
       originWhitelist={['*']}
       onMessage={handleWebViewMessage}
-      onError={() => {}} 
+      onError={() => {}}
       source={{
-        uri: 'https://12b5110446eb.ngrok-free.app/map.html',
+        uri: 'https://ssumpick.com/map',
       }}
     />
   );

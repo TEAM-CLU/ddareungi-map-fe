@@ -343,7 +343,7 @@ const SearchOverlay = ({
                   >
                     최근 검색
                   </Text>
-                  {recentSearches.length > 0 && (
+                  {recentSearches!.length > 0 && (
                     <TouchableOpacity onPress={() => clearRecentSearches()}>
                       <Text
                         style={[
