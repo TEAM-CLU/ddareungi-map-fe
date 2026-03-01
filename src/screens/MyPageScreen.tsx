@@ -23,5 +23,5 @@ const MypageScreen = () => {
     <View style={{ flex: 1 }}>{mypageScreenDef.render(mypageRouter)}</View>
   );
 };
-
+//
 export default MypageScreen;

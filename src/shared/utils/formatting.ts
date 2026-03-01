@@ -107,9 +107,12 @@ export const getDistanceGuideText = (
   return formatDistanceAdaptiveText(distance);
 };
 
-// 칼로리 → kcal 텍스트
+// 칼로리 → kcal 텍스트 (소수점 최대 1자리)
 export const formatCaloriesKcalText = (calories: number | null): string =>
-  `${(calories ?? 0).toLocaleString()}kcal`;
+  `${(calories ?? 0).toLocaleString('ko-KR', {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0,
+  })}kcal`;
 
 // 경로 카테고리 텍스트 매핑
 export const getRouteCategoryText = (category: string) => {

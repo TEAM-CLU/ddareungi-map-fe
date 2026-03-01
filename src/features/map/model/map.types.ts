@@ -1,9 +1,3 @@
-// 좌표
-export interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
 // 방향
 export interface CompassHeadingData {
   heading: number; // 0~360

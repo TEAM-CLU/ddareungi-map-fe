@@ -44,6 +44,11 @@ const Footer = ({
               return;
             }
 
+            if (item.name === 'measurement') {
+              navigation.navigate('Measure');
+              return;
+            }
+
             if (item.name === 'bookmark') {
               setIsBookmarkBtnPressed(true);
             }

@@ -1,0 +1,43 @@
+import {
+  ACCURACY_OK,
+  MOTION_COMMON_OPTIONS,
+  TRAVELED_DISTANCE_OPTIONS,
+  TRANSPORT_STATE_CONFIG,
+} from '@/features/navigation/model/navigation.constants';
+
+export const MEASUREMENT_GOAL_CONFIG = {
+  MIN_TARGET_KM: 0.25,
+  MAX_TARGET_KM: 50,
+  STEP_KM: 0.25,
+  DEFAULT_TARGET_KM: 5,
+} as const;
+
+export const MEASUREMENT_METRICS_CONFIG = {
+  STATIONARY_THRESHOLD: TRANSPORT_STATE_CONFIG.STATIONARY_THRESHOLD,
+  STATIONARY_DISTANCE_THRESHOLD:
+    TRANSPORT_STATE_CONFIG.STATIONARY_DISTANCE_THRESHOLD,
+  MAX_PHYSICAL_SPEED_MPS: MOTION_COMMON_OPTIONS.MAX_PHYSICAL_SPEED_MPS,
+  DT_SEC_CAP: MOTION_COMMON_OPTIONS.DT_SEC_CAP,
+  ACCURACY_OK,
+  STOP_JUDGE_MOVE_METER: TRAVELED_DISTANCE_OPTIONS.STOP_JUDGE_MOVE_METER,
+  MIN_PACE_MIN_PER_KM: 2,
+  MAX_PACE_MIN_PER_KM: 30,
+  MIN_SPEED_KMH: 0,
+  MAX_SPEED_KMH: 50,
+} as const;
+
+export const MEASUREMENT_TTS_KEYS = {
+  RIDING_START: 'tts-measurement-riding-start',
+  RIDING_RESTART: 'tts-measurement-riding-restart',
+  TEMP_STOP: 'tts-measurement-temp-stop',
+  ARRIVE_AIMED_DISTANCE: 'tts-measurement-arrive-aimed-distance',
+  FINISH: 'tts-measurement-finish',
+} as const;
+
+export const MEASUREMENT_AUDIO_URLS = {
+  RIDING_START: require('@/assets/audios/ridingStartTts.mp3'),
+  RIDING_RESTART: require('@/assets/audios/ridingRestartTts.mp3'),
+  TEMP_STOP: require('@/assets/audios/tempStopMeasureMode.mp3'),
+  ARRIVE_AIMED_DISTANCE: require('@/assets/audios/arriveAimedDistance.mp3'),
+  FINISH: require('@/assets/audios/finishMeasureMode.mp3'),
+} as const;

@@ -1,0 +1,117 @@
+import { useCallback, useEffect, useRef } from 'react';
+import { useMeasurementStore } from '../stores/useMeasurementStore';
+import { useMeasurementMetrics } from './useMeasurementMetrics';
+import { useMeasurementGoalReached } from './useMeasurementGoalReached';
+import { playMeasurementTts } from '../utils/playMeasurementTts';
+
+export function useMeasurementOrchestrator() {
+  const {
+    phase,
+    setPhase,
+    setElapsedTimeSeconds,
+    elapsedTimeSeconds,
+    isPaused,
+    setIsPaused,
+    resetMetrics,
+    setSessionResult,
+    metrics,
+    targetDistanceKm,
+    resetSession,
+  } = useMeasurementStore();
+
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef<number | null>(null);
+
+  useMeasurementMetrics();
+  useMeasurementGoalReached();
+
+  useEffect(() => {
+    if (phase === 'measuring' && !isPaused) {
+      if (startTimeRef.current == null) {
+        startTimeRef.current = Date.now();
+      }
+      timerRef.current = setInterval(() => {
+        if (startTimeRef.current == null) return;
+        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        setElapsedTimeSeconds(elapsed);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [phase, isPaused, setElapsedTimeSeconds]);
+
+  const handleStartCountdown = useCallback(() => {
+    resetMetrics();
+    setElapsedTimeSeconds(0);
+    startTimeRef.current = null;
+    setPhase('countdown');
+  }, [resetMetrics, setElapsedTimeSeconds, setPhase]);
+
+  const handleStartMeasuring = useCallback(() => {
+    setPhase('measuring');
+    setIsPaused(false);
+    startTimeRef.current = Date.now();
+    playMeasurementTts.ridingStart();
+  }, [setPhase, setIsPaused]);
+
+  const handleTogglePause = useCallback(() => {
+    if (isPaused) {
+      setIsPaused(false);
+      setPhase('measuring');
+      playMeasurementTts.ridingRestart();
+    } else {
+      setIsPaused(true);
+      setPhase('paused');
+      playMeasurementTts.tempStop();
+    }
+  }, [isPaused, setIsPaused, setPhase]);
+
+  const handleFinishMeasurement = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    playMeasurementTts.finish();
+
+    const distKm = metrics.traveledDistanceMeter / 1000;
+    const totalAvgSpeedKmh =
+      elapsedTimeSeconds > 0 && distKm > 0
+        ? distKm / (elapsedTimeSeconds / 3600)
+        : 0;
+    const avgPace = totalAvgSpeedKmh > 0 ? 60 / totalAvgSpeedKmh : null;
+
+    setSessionResult({
+      traveledDistanceMeter: metrics.traveledDistanceMeter,
+      elapsedTimeSeconds,
+      caloriesBurned: metrics.caloriesBurned,
+      averagePaceMinutesPerKm: avgPace,
+      averageSpeedKmh: totalAvgSpeedKmh,
+      maxSpeedKmh: metrics.speedKmh,
+    });
+    setPhase('ended');
+  }, [
+    metrics,
+    elapsedTimeSeconds,
+    setSessionResult,
+    setPhase,
+  ]);
+
+  const handleCloseEnd = useCallback(() => {
+    resetSession();
+  }, [resetSession]);
+
+  return {
+    phase,
+    handleStartCountdown,
+    handleStartMeasuring,
+    handleTogglePause,
+    handleFinishMeasurement,
+    handleCloseEnd,
+  };
+}

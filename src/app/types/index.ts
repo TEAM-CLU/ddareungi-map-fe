@@ -31,4 +31,5 @@ export type RootStackParamList = {
       }
     | undefined;
   Mypage: undefined;
+  Measure: undefined;
 };

@@ -42,6 +42,7 @@ export type UseOffRouteControllerParams = {
     currentTtsUrl: RefObject<string | null>;
     recoverTriggerCount: RefObject<number>;
     rerouteTriggerCount: RefObject<number>;
+    hasReroutedRef: RefObject<boolean>;
     isHandlingOffRouteRef: RefObject<boolean>;
     isStationaryRef: RefObject<boolean>;
     isBikingStateRef: RefObject<boolean>;
@@ -152,7 +153,7 @@ export const useOffRouteController = ({
           );
         }
       } else {
-        if (isOffForReroute) {
+        if (isOffForReroute && !refs.hasReroutedRef.current) {
           refs.rerouteTriggerCount.current = Math.min(
             MAX_TRIGGER_COUNT,
             refs.rerouteTriggerCount.current + 1,
@@ -161,7 +162,7 @@ export const useOffRouteController = ({
             0,
             refs.recoverTriggerCount.current - COUNT_DECAY,
           );
-        } else if (isOffForRecovery) {
+        } else if (isOffForRecovery || (isOffForReroute && refs.hasReroutedRef.current)) {
           refs.recoverTriggerCount.current = Math.min(
             MAX_TRIGGER_COUNT,
             refs.recoverTriggerCount.current + 1,
@@ -218,6 +219,7 @@ export const useOffRouteController = ({
       if (
         !refs.isStationaryRef.current &&
         !refs.isHandlingOffRouteRef.current &&
+        !refs.hasReroutedRef.current &&
         routeType === RouteType.CONSTANT &&
         refs.rerouteTriggerCount.current >= MAX_TRIGGER_COUNT
       ) {
@@ -272,6 +274,8 @@ export const useOffRouteController = ({
               },
               shouldBikingReroute ? 'only-end' : 'all',
             );
+
+            refs.hasReroutedRef.current = true;
 
             playTts('tts-offroute-reroute', REROUTE_TTS_URL, systemVolume);
             playTts('tts-navigation-start', START_TTS_URL, systemVolume);

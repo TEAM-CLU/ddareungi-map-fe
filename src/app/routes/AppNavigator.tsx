@@ -12,6 +12,7 @@ import RouteRecommendScreen from '@/screens/RouteRecommendScreen';
 import RouteSelectScreen from '@/screens/RouteSelectScreen';
 import SignUpScreen from '@/screens/SignUpScreen';
 import MypageScreen from '@/screens/MypageScreen';
+import MeasureScreen from '@/screens/MeasureScreen';
 import { toastConfig } from '@/config/toastConfig';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -50,6 +51,7 @@ const AppNavigator = ({ initialRouteName }: AppNavigatorProps) => {
             component={RouteRecommendScreen}
           />
           <Stack.Screen name="Mypage" component={MypageScreen} />
+          <Stack.Screen name="Measure" component={MeasureScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="SignUp" component={SignUpScreen} />
         </Stack.Navigator>

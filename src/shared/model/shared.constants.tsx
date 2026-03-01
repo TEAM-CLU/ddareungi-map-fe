@@ -2,6 +2,7 @@ import {
   IconBicycle,
   IconMypage,
   IconRecommendedPath,
+  IconRun,
   IconStar,
 } from '../components/icons';
 import { FooterRoutes } from './shared.types';
@@ -79,6 +80,12 @@ export const FOOTER_MENU: {
     screen: 'RouteRecommend',
     label: '추천 경로',
     icon: <IconRecommendedPath width={30} height={30} />,
+  },
+  {
+    name: 'measurement',
+    screen: 'Measure',
+    label: '측정 모드',
+    icon: <IconRun width={30} height={30} color="white" />,
   },
   {
     name: 'mypage',

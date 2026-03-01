@@ -47,6 +47,10 @@ const StoryShareScreen = ({
   const [tagList, setTagList] = useState<string[]>(['따릉이맵', '라이딩']);
   const [tagInput, setTagInput] = useState<string>('');
 
+  // 메트릭 텍스트 다크/라이트 토글 (false = 라이트, true = 다크)
+  const [isDarkMetrics, setIsDarkMetrics] = useState(false);
+  const metricColor = isDarkMetrics ? '#000' : '#fff';
+
   // 공유 카드 캡처용
   const shotRef = useRef<ViewShot>(null);
 
@@ -225,6 +229,28 @@ const StoryShareScreen = ({
     <View
       style={[StyleSheet.absoluteFillObject, tw('bg-black'), { zIndex: 9999 }]}
     >
+      {/* 다크/라이트 토글 (사진 촬영 후에만 표시) */}
+      {photoUri && (
+        <TouchableOpacity
+          style={[
+            tw('absolute top-12 left-5 px-3 py-1.5 rounded-full border border-brand-primary'),
+            { zIndex: 10000, backgroundColor: isDarkMetrics ? '#000' : '#fff', opacity: 0.85 },
+          ]}
+          onPress={() => setIsDarkMetrics(prev => !prev)}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Text
+            style={[
+              tw('font-primary-700'),
+              { fontSize: 13, color: isDarkMetrics ? '#fff' : '#000' },
+            ]}
+          >
+            {isDarkMetrics ? '☀️ 라이트' : '🌙 다크'}
+          </Text>
+        </TouchableOpacity>
+      )}
+
       {/* 닫기 버튼 */}
       <TouchableOpacity
         style={[
@@ -301,24 +327,24 @@ const StoryShareScreen = ({
             <View style={[tw('p-4 rounded-2xl flex-row justify-between')]}>
               <Text
                 style={[
-                  tw('text-on-surface-secondary font-primary-700'),
-                  { fontSize: 19 },
+                  tw('font-primary-700'),
+                  { fontSize: 19, color: metricColor },
                 ]}
               >
                 {distanceText}
               </Text>
               <Text
                 style={[
-                  tw('text-on-surface-secondary font-primary-700'),
-                  { fontSize: 19 },
+                  tw('font-primary-700'),
+                  { fontSize: 19, color: metricColor },
                 ]}
               >
                 {durationText}
               </Text>
               <Text
                 style={[
-                  tw('text-on-surface-secondary font-primary-700'),
-                  { fontSize: 19 },
+                  tw('font-primary-700'),
+                  { fontSize: 19, color: metricColor },
                 ]}
               >
                 {caloriesText}
@@ -349,39 +375,39 @@ const StoryShareScreen = ({
       >
         {photoUri ? (
           <View style={[tw('flex flex-row w-full'), { gap: 12 }]}>
-            <TouchableOpacity
-              style={[
-                tw(
-                  'flex-1 px-6 py-3 rounded-full items-center justify-center border-2 border-white bg-black',
-                ),
-                { opacity: 0.7 },
-              ]}
-              onPress={handleRetakePress}
-            >
-              <Text
+              <TouchableOpacity
                 style={[
-                  tw('text-on-surface-secondary font-primary-700'),
-                  { fontSize: 15 },
+                  tw(
+                    'flex-1 px-6 py-3 rounded-full items-center justify-center border-2 border-white bg-black',
+                  ),
+                  { opacity: 0.7 },
                 ]}
+                onPress={handleRetakePress}
               >
-                다시 찍기
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={tw(
-                'flex-1 px-6 py-3 rounded-full items-center justify-center bg-brand-primary',
-              )}
-              onPress={handleShareStoryPress}
-            >
-              <Text
-                style={[
-                  tw('text-on-surface-primary font-primary-700'),
-                  { fontSize: 15 },
-                ]}
+                <Text
+                  style={[
+                    tw('text-on-surface-secondary font-primary-700'),
+                    { fontSize: 15 },
+                  ]}
+                >
+                  다시 찍기
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={tw(
+                  'flex-1 px-6 py-3 rounded-full items-center justify-center bg-brand-primary',
+                )}
+                onPress={handleShareStoryPress}
               >
-                공유하기
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    tw('text-on-surface-primary font-primary-700'),
+                    { fontSize: 15 },
+                  ]}
+                >
+                  공유하기
+                </Text>
+              </TouchableOpacity>
           </View>
         ) : (
           <>

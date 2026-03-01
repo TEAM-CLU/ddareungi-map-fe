@@ -129,6 +129,7 @@ export const useNavigationOrchestrator = () => {
 
   const recoverTriggerCount = useRef(0);
   const rerouteTriggerCount = useRef(0);
+  const hasReroutedRef = useRef(false);
   const isHandlingOffRouteRef = useRef(false);
   const lastOffRouteTimestampRef = useRef<number | null>(null);
   const offRouteTickBusyRef = useRef(false);
@@ -200,6 +201,7 @@ export const useNavigationOrchestrator = () => {
 
     recoverTriggerCount.current = 0;
     rerouteTriggerCount.current = 0;
+    hasReroutedRef.current = false;
     isHandlingOffRouteRef.current = false;
 
     passedWaypointIdxSetRef.current.clear();
@@ -356,6 +358,7 @@ export const useNavigationOrchestrator = () => {
       currentTtsUrl,
       recoverTriggerCount,
       rerouteTriggerCount,
+      hasReroutedRef,
       isHandlingOffRouteRef,
       isStationaryRef,
       isBikingStateRef,
