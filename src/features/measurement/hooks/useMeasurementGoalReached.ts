@@ -35,7 +35,7 @@ export function useMeasurementGoalReached(): void {
       caloriesBurned: metrics.caloriesBurned,
       averagePaceMinutesPerKm: avgPace,
       averageSpeedKmh: totalAvgSpeedKmh,
-      maxSpeedKmh: metrics.speedKmh,
+      maxSpeedKmh: metrics.maxSpeedKmh,
     });
     setPhase('ended');
   }, [
@@ -45,7 +45,7 @@ export function useMeasurementGoalReached(): void {
     metrics.traveledDistanceMeter,
     metrics.caloriesBurned,
     metrics.averageSpeedKmh,
-    metrics.speedKmh,
+    metrics.maxSpeedKmh,
     elapsedTimeSeconds,
     setPhase,
     setSessionResult,

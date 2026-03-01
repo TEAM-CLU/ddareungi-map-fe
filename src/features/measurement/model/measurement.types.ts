@@ -14,6 +14,7 @@ export interface MeasurementLiveMetrics {
   paceMinutesPerKm: number | null;
   speedKmh: number;
   averageSpeedKmh: number;
+  maxSpeedKmh: number;
 }
 
 export interface MeasurementSessionResult {

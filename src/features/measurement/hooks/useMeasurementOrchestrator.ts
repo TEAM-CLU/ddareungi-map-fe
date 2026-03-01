@@ -94,7 +94,7 @@ export function useMeasurementOrchestrator() {
       caloriesBurned: metrics.caloriesBurned,
       averagePaceMinutesPerKm: avgPace,
       averageSpeedKmh: totalAvgSpeedKmh,
-      maxSpeedKmh: metrics.speedKmh,
+      maxSpeedKmh: metrics.maxSpeedKmh,
     });
     setPhase('ended');
   }, [

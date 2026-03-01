@@ -13,6 +13,7 @@ const initialMetrics: MeasurementLiveMetrics = {
   paceMinutesPerKm: null,
   speedKmh: 0,
   averageSpeedKmh: 0,
+  maxSpeedKmh: 0,
 };
 
 interface MeasurementState {

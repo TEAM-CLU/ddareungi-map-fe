@@ -57,6 +57,7 @@ export const MOTION_COMMON_OPTIONS = {
   MAX_PHYSICAL_SPEED_MPS: 15,
   PASS_CONFIRM_COUNT: 3,
   DT_SEC_CAP: 3,
+  BACKGROUND_RESUME_RESET_GAP_SEC: 10,
 } as const;
 
 export const TURN_CONFIG = {
@@ -70,7 +71,7 @@ export const TURN_CONFIG = {
 } as const;
 
 export const TRAVELED_DISTANCE_OPTIONS = {
-  STOP_JUDGE_MOVE_METER: 10,
+  STOP_JUDGE_MOVE_METER: 5,
 } as const;
 
 export const REMAINING_DISTANCE_OPTIONS = {

@@ -179,6 +179,14 @@ export default function MeasureEndModal({
             >
               소모 칼로리: {formatCaloriesKcalText(sessionResult.caloriesBurned)}
             </Text>
+            <Text
+              style={[
+                tw('font-primary-600 text-on-surface-primary'),
+                { fontSize: 16 },
+              ]}
+            >
+              최고 속도: {sessionResult.maxSpeedKmh.toFixed(1)} km/h
+            </Text>
           </View>
 
           <Text

@@ -111,6 +111,7 @@ export function useMeasurementMetrics(): void {
       paceMinutesPerKm: paceMinPerKm,
       caloriesBurned: accumulatedCaloriesRef.current,
       averageSpeedKmh: avgSpeedKmh,
+      maxSpeedKmh: Math.max(metrics.maxSpeedKmh, speedKmh),
     });
 
     prevPosRef.current = { lat: coord.lat, lng: coord.lng };
@@ -119,7 +120,14 @@ export function useMeasurementMetrics(): void {
     prevTimeMsRef.current = ts;
     prevCalorieTimeRef.current = ts;
     prevCalorieTraveledRef.current = traveledMeter;
-  }, [isMeasuring, locationTick, locationMetaData, userGender, setMetrics]);
+  }, [
+    isMeasuring,
+    locationTick,
+    locationMetaData,
+    userGender,
+    setMetrics,
+    metrics.maxSpeedKmh,
+  ]);
 
   useEffect(() => {
     const prev = prevPhasePausedStateRef.current;

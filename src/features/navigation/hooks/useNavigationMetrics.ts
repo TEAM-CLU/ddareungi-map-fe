@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import {
   MOTION_COMMON_OPTIONS,
   TRAVELED_DISTANCE_OPTIONS,
@@ -77,6 +77,8 @@ export const useNavigationMetrics = ({
 }: UseNavigationMetricsParams) => {
   const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
   const { BIKING_STATE_THRESHOLD } = TRANSPORT_STATE_CONFIG;
+  const { BACKGROUND_RESUME_RESET_GAP_SEC } = MOTION_COMMON_OPTIONS;
+  const skippedEtaTickTimestampRef = useRef<number | null>(null);
 
   // 1. 소요거리(Traveled) / 남은거리(Remaining) 업데이트
   useEffect(() => {
@@ -98,8 +100,58 @@ export const useNavigationMetrics = ({
     const currentTimestamp = locationMetaData.timestamp ?? Date.now();
     const prevPosisionForDistance = refs.prevMyPositionForDistanceRef.current; // null이면 첫 진입
     const prevTimestampForDistance = refs.prevTimestampForDistanceRef.current;
+    const resumeGapSec =
+      prevTimestampForDistance !== null
+        ? (currentTimestamp - prevTimestampForDistance) / 1000
+        : null;
+    const resumedFromBackground =
+      resumeGapSec !== null && resumeGapSec > BACKGROUND_RESUME_RESET_GAP_SEC;
 
     try {
+      if (resumedFromBackground) {
+        // 백그라운드 복귀 첫 틱은 속도 기반 필터를 건너뛰고 기준점만 재설정
+        const resumedTraveledDistanceMeter = calculateTraveledDistance(
+          currentCoord,
+          pathData,
+          refs.currentIntervalIndex.current,
+          instructions,
+          refs.prevTraveledDistanceMeterRef.current,
+          null,
+          null,
+          currentTimestamp,
+        );
+        const resumedRemainingDistanceMeter = calculateRemainingDistance(
+          currentCoord,
+          pathData,
+          refs.currentIntervalIndex.current,
+          instructions,
+          refs.prevRemainingDistanceMeterRef.current,
+          null,
+          null,
+          currentTimestamp,
+        );
+        const finalTraveledDistanceMeter =
+          resumedTraveledDistanceMeter +
+          refs.accumulatedTraveledDistanceRef.current;
+
+        setTraveledDistance(finalTraveledDistanceMeter);
+        setRemainingDistance(resumedRemainingDistanceMeter);
+
+        refs.prevTraveledDistanceMeterRef.current = finalTraveledDistanceMeter;
+        refs.prevRemainingDistanceMeterRef.current = resumedRemainingDistanceMeter;
+        refs.prevMyPositionForDistanceRef.current = currentCoord;
+        refs.prevTimestampForDistanceRef.current = currentTimestamp;
+
+        // 칼로리/ETA 관련 기준도 함께 초기화
+        refs.prevTimestampForMeasureRef.current = null;
+        refs.prevTraveledDistanceForMeasureRef.current = null;
+        refs.prevLocationMetaData.current = null;
+        refs.currentLocationMetaData.current = locationMetaData;
+        refs.prevEmaSpeedMps.current = null;
+        skippedEtaTickTimestampRef.current = currentTimestamp;
+        return;
+      }
+
       // 이동 거리 계산
       const calculatedTraveldDistanceMeter = calculateTraveledDistance(
         currentCoord,
@@ -159,6 +211,15 @@ export const useNavigationMetrics = ({
 
   // 2. ETA(도착 예정 시간) 업데이트
   useEffect(() => {
+    const currentTimestamp = locationMetaData?.timestamp ?? null;
+    if (
+      currentTimestamp !== null &&
+      skippedEtaTickTimestampRef.current === currentTimestamp
+    ) {
+      skippedEtaTickTimestampRef.current = null;
+      return;
+    }
+
     if (
       !isNavigationMode ||
       !isNavigationInitialized ||
