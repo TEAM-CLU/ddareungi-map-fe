@@ -106,11 +106,11 @@ const SignUpProfileStep = ({
               { fontSize: 15 },
             ]}
           >
-            이름
+            닉네임
           </Text>
           <Input
             type="text"
-            placeholder="이름을 입력하세요."
+            placeholder="닉네임을 입력하세요."
             value={name}
             onChangeText={setName}
             isValid={isValidName}

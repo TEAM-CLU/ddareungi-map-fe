@@ -119,11 +119,6 @@ export const calculateIntervalDistanceByMyPosition = (
 
     if (type === 'traveled') {
       // 1) start -> closest (직선) + 2) start..closest polyline 누적
-      distanceMeter += getDistanceBetweenCoords(
-        intervalCoordinateList[0],
-        closestCoord,
-      );
-
       for (let i = 0; i < closestIdx; i++) {
         distanceMeter += getDistanceBetweenCoords(
           intervalCoordinateList[i],
