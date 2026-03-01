@@ -120,6 +120,7 @@ export const useNavigationOrchestrator = () => {
   const prevTimestampForDistanceRef = useRef<number | null>(null);
   const prevMyPositionForDistanceRef = useRef<Coordinate | null>(null);
   const prevTraveledDistanceMeterRef = useRef<number>(0);
+  const routeTraveledBaselineRef = useRef<number | null>(null);
   const prevRemainingDistanceMeterRef = useRef<number>(
     Number.POSITIVE_INFINITY,
   );
@@ -133,6 +134,7 @@ export const useNavigationOrchestrator = () => {
   const hasReroutedRef = useRef(false);
   const isHandlingOffRouteRef = useRef(false);
   const lastOffRouteTimestampRef = useRef<number | null>(null);
+  const offRouteJudgeCooldownUntilRef = useRef<number>(0);
   const offRouteTickBusyRef = useRef(false);
 
   const passedWaypointIdxSetRef = useRef<Set<number>>(new Set());
@@ -195,6 +197,7 @@ export const useNavigationOrchestrator = () => {
     prevTimestampForDistanceRef.current = null;
     prevMyPositionForDistanceRef.current = null;
     prevTraveledDistanceMeterRef.current = 0;
+    routeTraveledBaselineRef.current = null;
     prevRemainingDistanceMeterRef.current = Number.POSITIVE_INFINITY;
     accumulatedTraveledDistanceRef.current = 0;
     prevTimestampForMeasureRef.current = null;
@@ -204,6 +207,7 @@ export const useNavigationOrchestrator = () => {
     rerouteTriggerCount.current = 0;
     hasReroutedRef.current = false;
     isHandlingOffRouteRef.current = false;
+    offRouteJudgeCooldownUntilRef.current = 0;
 
     passedWaypointIdxSetRef.current.clear();
     isWaypointEnteredRef.current = false;
@@ -250,6 +254,7 @@ export const useNavigationOrchestrator = () => {
       prevTimestampForDistanceRef,
       prevMyPositionForDistanceRef,
       prevTraveledDistanceMeterRef,
+      routeTraveledBaselineRef,
       prevRemainingDistanceMeterRef,
       prevTimestampForMeasureRef,
       prevTraveledDistanceForMeasureRef,
@@ -364,6 +369,7 @@ export const useNavigationOrchestrator = () => {
       isStationaryRef,
       isBikingStateRef,
       lastOffRouteTimestampRef,
+      offRouteJudgeCooldownUntilRef,
       offRouteTickBusyRef,
       accumulatedTraveledDistanceRef,
       passedWaypointIdxSetRef,
@@ -392,6 +398,7 @@ export const useNavigationOrchestrator = () => {
       prevTimestampForDistanceRef,
       prevMyPositionForDistanceRef,
       prevTraveledDistanceMeterRef,
+      routeTraveledBaselineRef,
       prevRemainingDistanceMeterRef,
       accumulatedTraveledDistanceRef,
       prevLocationMetaData,

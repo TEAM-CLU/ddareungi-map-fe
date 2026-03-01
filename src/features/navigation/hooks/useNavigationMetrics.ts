@@ -46,6 +46,7 @@ export type UseNavigationMetricsParams = {
     prevTimestampForDistanceRef: RefObject<number | null>;
     prevMyPositionForDistanceRef: RefObject<Coordinate | null>;
     prevTraveledDistanceMeterRef: RefObject<number>;
+    routeTraveledBaselineRef: RefObject<number | null>;
     prevRemainingDistanceMeterRef: RefObject<number>;
     accumulatedTraveledDistanceRef: RefObject<number>;
     prevLocationMetaData: RefObject<LocationMetaData | null>;
@@ -110,7 +111,7 @@ export const useNavigationMetrics = ({
     try {
       if (resumedFromBackground) {
         // 백그라운드 복귀 첫 틱은 속도 기반 필터를 건너뛰고 기준점만 재설정
-        const resumedTraveledDistanceMeter = calculateTraveledDistance(
+        const resumedLocalTraveledDistanceMeter = calculateTraveledDistance(
           currentCoord,
           pathData,
           refs.currentIntervalIndex.current,
@@ -119,6 +120,14 @@ export const useNavigationMetrics = ({
           null,
           null,
           currentTimestamp,
+        );
+        if (refs.routeTraveledBaselineRef.current === null) {
+          refs.routeTraveledBaselineRef.current =
+            resumedLocalTraveledDistanceMeter;
+        }
+        const normalizedLocalTraveledDistanceMeter = Math.max(
+          0,
+          resumedLocalTraveledDistanceMeter - refs.routeTraveledBaselineRef.current,
         );
         const resumedRemainingDistanceMeter = calculateRemainingDistance(
           currentCoord,
@@ -131,13 +140,14 @@ export const useNavigationMetrics = ({
           currentTimestamp,
         );
         const finalTraveledDistanceMeter =
-          resumedTraveledDistanceMeter +
+          normalizedLocalTraveledDistanceMeter +
           refs.accumulatedTraveledDistanceRef.current;
 
         setTraveledDistance(finalTraveledDistanceMeter);
         setRemainingDistance(resumedRemainingDistanceMeter);
 
-        refs.prevTraveledDistanceMeterRef.current = finalTraveledDistanceMeter;
+        refs.prevTraveledDistanceMeterRef.current =
+          resumedLocalTraveledDistanceMeter;
         refs.prevRemainingDistanceMeterRef.current = resumedRemainingDistanceMeter;
         refs.prevMyPositionForDistanceRef.current = currentCoord;
         refs.prevTimestampForDistanceRef.current = currentTimestamp;
@@ -153,7 +163,7 @@ export const useNavigationMetrics = ({
       }
 
       // 이동 거리 계산
-      const calculatedTraveldDistanceMeter = calculateTraveledDistance(
+      const calculatedLocalTraveledDistanceMeter = calculateTraveledDistance(
         currentCoord,
         pathData,
         refs.currentIntervalIndex.current,
@@ -162,6 +172,14 @@ export const useNavigationMetrics = ({
         prevPosisionForDistance,
         prevTimestampForDistance,
         currentTimestamp,
+      );
+      if (refs.routeTraveledBaselineRef.current === null) {
+        refs.routeTraveledBaselineRef.current =
+          calculatedLocalTraveledDistanceMeter;
+      }
+      const normalizedLocalTraveledDistanceMeter = Math.max(
+        0,
+        calculatedLocalTraveledDistanceMeter - refs.routeTraveledBaselineRef.current,
       );
 
       // 남은 거리 계산
@@ -178,14 +196,15 @@ export const useNavigationMetrics = ({
 
       // 재탐색 등을 고려한 누적 거리 합산
       const finalTraveledDistanceMeter =
-        calculatedTraveldDistanceMeter +
+        normalizedLocalTraveledDistanceMeter +
         refs.accumulatedTraveledDistanceRef.current;
 
       setTraveledDistance(finalTraveledDistanceMeter);
       setRemainingDistance(calculatedRemainigDistanceMeter);
 
       // Refs 갱신 (다음 틱 계산을 위해)
-      refs.prevTraveledDistanceMeterRef.current = finalTraveledDistanceMeter;
+      refs.prevTraveledDistanceMeterRef.current =
+        calculatedLocalTraveledDistanceMeter;
       refs.prevRemainingDistanceMeterRef.current =
         calculatedRemainigDistanceMeter;
       refs.prevMyPositionForDistanceRef.current = currentCoord;

@@ -66,9 +66,81 @@ export type UseNavigationDataApplyParams = {
     prevTimestampForDistanceRef?: RefObject<number | null>;
     prevMyPositionForDistanceRef?: RefObject<Coordinate | null>;
     prevTraveledDistanceMeterRef?: RefObject<number>;
+    routeTraveledBaselineRef?: RefObject<number | null>;
     prevRemainingDistanceMeterRef?: RefObject<number>;
     prevTimestampForMeasureRef?: RefObject<number | null>;
     prevTraveledDistanceForMeasureRef?: RefObject<number | null>;
+  };
+};
+
+type StationPoint = { lat: number; lng: number } | undefined;
+
+const findNearestCoordinateIndex = (
+  coords: [number, number][],
+  target: StationPoint,
+) => {
+  if (!target || !Array.isArray(coords) || coords.length === 0) return 0;
+
+  let bestIdx = 0;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  coords.forEach(([lng, lat], idx) => {
+    const score = Math.abs(lat - target.lat) + Math.abs(lng - target.lng);
+    if (score < bestScore) {
+      bestScore = score;
+      bestIdx = idx;
+    }
+  });
+
+  return bestIdx;
+};
+
+export const normalizeNavigationDataByWalkingPolicy = (
+  navigationData: ApplyNavigationDataInput,
+  walkingPolicy: NavigationWalkingPolicy,
+  startStation: StationPoint,
+) => {
+  if (walkingPolicy !== 'only-end') return navigationData;
+  if (!Array.isArray(navigationData.coordinates)) return navigationData;
+  if (navigationData.coordinates.length < 2) return navigationData;
+
+  const trimStartIdx = findNearestCoordinateIndex(
+    navigationData.coordinates,
+    startStation,
+  );
+
+  // 시작 인덱스가 유효하지 않으면 원본 유지
+  if (
+    trimStartIdx <= 0 ||
+    trimStartIdx >= navigationData.coordinates.length - 1
+  ) {
+    return navigationData;
+  }
+
+  const normalizedCoordinates = navigationData.coordinates.slice(trimStartIdx);
+  const normalizedInstructions = navigationData.instructions
+    .map(inst => {
+      const [start, end] = inst.interval;
+      if (end < trimStartIdx) return null;
+
+      const clippedStart = Math.max(start, trimStartIdx) - trimStartIdx;
+      const clippedEnd = end - trimStartIdx;
+      if (clippedStart > clippedEnd) return null;
+
+      return {
+        ...inst,
+        interval: [clippedStart, clippedEnd] as [number, number],
+      };
+    })
+    .filter((inst): inst is NavigationInstruction => inst !== null);
+
+  // instruction이 완전히 소실되면 안전하게 원본 유지
+  if (normalizedInstructions.length === 0) return navigationData;
+
+  return {
+    ...navigationData,
+    coordinates: normalizedCoordinates,
+    instructions: normalizedInstructions,
   };
 };
 
@@ -94,13 +166,21 @@ export const useNavigationDataApply = ({
         ) {
           return;
         }
+        const startStationFromPayload =
+          navigationData.startStation ?? selectedRouteData?.startStation;
+        const normalizedNavigationData = normalizeNavigationDataByWalkingPolicy(
+          navigationData,
+          walkingPolicy,
+          startStationFromPayload,
+        );
+
         // Ref 데이터 업데이트 (좌표, 지시사항)
-        refs.fullPathCoordinateList.current = navigationData.coordinates;
-        refs.instructionList.current = navigationData.instructions;
+        refs.fullPathCoordinateList.current = normalizedNavigationData.coordinates;
+        refs.instructionList.current = normalizedNavigationData.instructions;
 
         // TTS 및 preview 관련 상태 설정
-        const firstInst = navigationData.instructions[0];
-        const secondInst = navigationData.instructions[1];
+        const firstInst = normalizedNavigationData.instructions[0];
+        const secondInst = normalizedNavigationData.instructions[1];
 
         refs.currentTtsUrl.current = firstInst?.ttsUrl ?? null;
         refs.previewInstructionText.current = secondInst?.text ?? '';
@@ -108,21 +188,19 @@ export const useNavigationDataApply = ({
         refs.previewSign.current = secondInst?.sign ?? null;
 
         // 현재 instruction 및 turn 좌표 설정
-        if (firstInst) {
-          setCurrentInstruction(firstInst);
-          refs.nextTurnCoordinate.current = firstInst.nextTurnCoordinate;
+        setCurrentInstruction(firstInst ?? null);
+        refs.nextTurnCoordinate.current = firstInst?.nextTurnCoordinate ?? null;
 
-          // 네비게이션 디테일 모달 상태 초기화
-          setInstructionList(navigationData.instructions);
-          setCurrentIntervalIndex(0);
-        }
+        // 네비게이션 디테일 모달 상태 초기화
+        setInstructionList(normalizedNavigationData.instructions);
+        setCurrentIntervalIndex(0);
 
         // currentIntervalIndex 리셋
         refs.currentIntervalIndex.current = 0;
 
         // pathDataListByInterval 재구성
         refs.pathDataListByInterval.current = [];
-        refs.pathDataListByInterval.current = navigationData.instructions.map(
+        refs.pathDataListByInterval.current = normalizedNavigationData.instructions.map(
           (inst, idx) => {
             // inst.interval이 없거나 배열이 아니면 에러 발생 가능
             if (!inst.interval || !Array.isArray(inst.interval) || inst.interval.length < 2) {
@@ -131,7 +209,7 @@ export const useNavigationDataApply = ({
             const [start, end] = inst.interval;
             
             // coordinates 요소가 undefined일 수 있음
-            const coordinateList = navigationData.coordinates
+            const coordinateList = normalizedNavigationData.coordinates
               .slice(start, end + 1)
               .map(coord => {
                 if (!coord || !Array.isArray(coord) || coord.length < 2) {
@@ -163,6 +241,8 @@ export const useNavigationDataApply = ({
         (refs.prevMyPositionForDistanceRef.current = null);
       refs.prevTraveledDistanceMeterRef &&
         (refs.prevTraveledDistanceMeterRef.current = 0);
+      refs.routeTraveledBaselineRef &&
+        (refs.routeTraveledBaselineRef.current = null);
       refs.prevRemainingDistanceMeterRef &&
         (refs.prevRemainingDistanceMeterRef.current = Number.POSITIVE_INFINITY);
       refs.prevTimestampForMeasureRef &&
@@ -178,27 +258,27 @@ export const useNavigationDataApply = ({
           storeRouteType === 'loop' ? RouteType.LOOP : RouteType.CONSTANT;
 
         // 실제 출발지/도착지 좌표
-        const coordinates = navigationData.coordinates;
+        const coordinates = normalizedNavigationData.coordinates;
         const startPoint: [number, number] = coordinates[0];
         const endPoint: [number, number] = coordinates[coordinates.length - 1];
 
-        const intervals = navigationData.instructions.map(
+        const intervals = normalizedNavigationData.instructions.map(
           instruction => instruction.interval,
         );
 
         // 대여소 정보: 새로운 정보가 있으면 사용, 없으면 selectedRouteData 사용
         const startStation =
-          navigationData.startStation ?? selectedRouteData.startStation;
+          normalizedNavigationData.startStation ?? selectedRouteData.startStation;
         const endStation =
-          navigationData.endStation ??
+          normalizedNavigationData.endStation ??
           selectedRouteData.endStation ??
           startStation;
 
         if (!startStation) return;
 
         // 경유지 정보: 새로운 정보가 있으면 사용, 없으면 selectedRouteData 사용
-        const waypoints = navigationData.waypoints
-          ? navigationData.waypoints.map(wp => ({ lat: wp[1], lng: wp[0] }))
+        const waypoints = normalizedNavigationData.waypoints
+          ? normalizedNavigationData.waypoints.map(wp => ({ lat: wp[1], lng: wp[0] }))
           : selectedRouteData.waypoints || null;
 
         // loop 모드일 때는 startStationPoint와 endStationPoint를 동일하게 설정
@@ -217,7 +297,7 @@ export const useNavigationDataApply = ({
           startPoint,
           endPoint,
           waypoints,
-          fullPathCoordinateList: navigationData.coordinates,
+          fullPathCoordinateList: normalizedNavigationData.coordinates,
           intervals,
           currentIntervalIndex: 0,
           startStationPoint,

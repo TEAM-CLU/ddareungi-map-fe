@@ -140,6 +140,9 @@ const InstructionBanner = ({
     ? previewInstructionText
     : '다음 안내까지 직진하세요';
   const displaySign = isPreviewMode ? (previewSign as number) : 0; // 0은 직진 아이콘
+  const directionIcon =
+    DIRECTION_ICONS[String(displaySign) as keyof typeof DIRECTION_ICONS] ??
+    DIRECTION_ICONS['0'];
 
   const instructionLines = useMemo(() => {
     const words = (displayText ?? '').trim().split(/\s+/).filter(Boolean);
@@ -231,9 +234,7 @@ const InstructionBanner = ({
         style={[tw('flex flex-col justify-center items-center'), { gap: 1 }]}
       >
         <Image
-          source={
-            DIRECTION_ICONS[String(displaySign) as keyof typeof DIRECTION_ICONS]
-          }
+          source={directionIcon}
           style={{ width: 50, height: 50 } as ImageStyle}
           resizeMode="cover"
         />

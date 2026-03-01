@@ -18,6 +18,10 @@ const InstructionItem = ({
   currentIdx,
   distanceMeter,
 }: InstructionItemProps) => {
+  const directionIcon =
+    DIRECTION_ICONS[String(sign) as keyof typeof DIRECTION_ICONS] ??
+    DIRECTION_ICONS['0'];
+
   return (
     <View
       style={[
@@ -31,7 +35,7 @@ const InstructionItem = ({
     >
       <View style={[tw('flex flex-col justify-center'), { gap: 6 }]}>
         <Image
-          source={DIRECTION_ICONS[String(sign) as keyof typeof DIRECTION_ICONS]}
+          source={directionIcon}
           style={
             {
               width: 44,

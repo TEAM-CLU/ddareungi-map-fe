@@ -26,6 +26,14 @@ export const DIRECTION_ICONS: Record<string, any> = {
 
   // KEEP_RIGHT
   '7': require('@/assets/imgs/instruction/arrow_keep_right.png'),
+
+  // U-TURN 계열(백엔드 sign 변동 대응)
+  '-8': require('@/assets/imgs/instruction/arrow_left.png'),
+  '8': require('@/assets/imgs/instruction/arrow_right.png'),
+  '-11': require('@/assets/imgs/instruction/arrow_left.png'),
+  '11': require('@/assets/imgs/instruction/arrow_right.png'),
+  '-98': require('@/assets/imgs/instruction/arrow_left.png'),
+  '98': require('@/assets/imgs/instruction/arrow_right.png'),
 };
 export const BIKING_POLYLINE_COLORS = [
   '#00E676', // 0 Green
@@ -116,10 +124,10 @@ export const PREVIEW_THRESHOLD_METER = 50;
 // 재탐색 관련
 export const OFF_ROUTE_CONFIG = {
   // 이 정도 벗어나면 "경로로 복귀하세요" (soft)
-  RECOVERY_TRIGGER_METER: PREVIEW_THRESHOLD_METER,
+  RECOVERY_TRIGGER_METER: 300,
 
   // 이 정도면 "경로 이탈 → 재탐색" (hard)
-  REROUTE_TRIGGER_METER: 150,
+  REROUTE_TRIGGER_METER: 500,
 
   // bestIdx 튐 방지: 이전 bestIdx 기준 ±N개만 탐색
   CLOSEST_INDEX_WINDOW_SIZE: 5,
@@ -129,6 +137,16 @@ export const OFF_ROUTE_CONFIG = {
 
   // 재탐색/복귀 카운트 감쇠량
   COUNT_DECAY: 1,
+
+  // 재탐색은 시작 초반(출발지 인근)에서만 허용
+  REROUTE_MAX_TRAVELED_METER: 120,
+  REROUTE_MAX_INTERVAL_INDEX: 1,
+
+  // 새 경로 적용 직후 즉시 off-route 재트리거 방지
+  POST_APPLY_JUDGE_COOLDOWN_MS: 7000,
+
+  // reroute 직후 recovery 즉시 재발동 방지
+  POST_REROUTE_RECOVERY_LOCK_MS: 30_000,
 };
 
 // playTts.ts
