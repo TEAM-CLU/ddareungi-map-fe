@@ -31,6 +31,10 @@ export function useMeasurementMetrics(): void {
   const prevCalorieTimeRef = useRef<number | null>(null);
   const prevCalorieTraveledRef = useRef<number | null>(null);
   const speedHistoryRef = useRef<number[]>([]);
+  const prevPhasePausedStateRef = useRef<{
+    phase: typeof phase;
+    isPaused: boolean;
+  } | null>(null);
 
   const isMeasuring =
     phase === 'measuring' && !isPaused && locationMetaData?.coordinate;
@@ -118,6 +122,27 @@ export function useMeasurementMetrics(): void {
   }, [isMeasuring, locationTick, locationMetaData, userGender, setMetrics]);
 
   useEffect(() => {
+    const prev = prevPhasePausedStateRef.current;
+    const resumedFromPause =
+      prev != null &&
+      (prev.phase === 'paused' || prev.isPaused) &&
+      phase === 'measuring' &&
+      !isPaused;
+
+    if (resumedFromPause) {
+      // 재개 첫 틱은 pause 이전 기준점과 분리해서 dt/거리 급증을 방지
+      prevPosRef.current = null;
+      prevMetaRef.current = null;
+      prevTimeMsRef.current = null;
+      prevEmaMpsRef.current = null;
+      prevCalorieTimeRef.current = null;
+      prevCalorieTraveledRef.current = null;
+    }
+
+    prevPhasePausedStateRef.current = { phase, isPaused };
+  }, [phase, isPaused]);
+
+  useEffect(() => {
     if (phase !== 'measuring' && phase !== 'paused') {
       prevPosRef.current = null;
       prevMetaRef.current = null;
@@ -128,6 +153,7 @@ export function useMeasurementMetrics(): void {
       prevCalorieTraveledRef.current = null;
       speedHistoryRef.current = [];
       accumulatedCaloriesRef.current = 0;
+      prevPhasePausedStateRef.current = null;
     }
   }, [phase]);
 }

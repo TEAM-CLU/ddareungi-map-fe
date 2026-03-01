@@ -62,6 +62,8 @@ export function useMeasurementOrchestrator() {
 
   const handleTogglePause = useCallback(() => {
     if (isPaused) {
+      // paused 동안 경과한 벽시계 시간을 제외하도록 기준 시작시각 보정
+      startTimeRef.current = Date.now() - elapsedTimeSeconds * 1000;
       setIsPaused(false);
       setPhase('measuring');
       playMeasurementTts.ridingRestart();
@@ -70,7 +72,7 @@ export function useMeasurementOrchestrator() {
       setPhase('paused');
       playMeasurementTts.tempStop();
     }
-  }, [isPaused, setIsPaused, setPhase]);
+  }, [elapsedTimeSeconds, isPaused, setIsPaused, setPhase]);
 
   const handleFinishMeasurement = useCallback(() => {
     if (timerRef.current) {

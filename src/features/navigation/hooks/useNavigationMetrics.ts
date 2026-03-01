@@ -172,6 +172,7 @@ export const useNavigationMetrics = ({
     const accurateSpeedMps = returnAccurateSpeed(
       refs.prevLocationMetaData.current,
       refs.currentLocationMetaData.current,
+      refs.prevEmaSpeedMps.current ?? undefined,
     );
     refs.prevEmaSpeedMps.current = accurateSpeedMps;
 
