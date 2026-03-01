@@ -7,6 +7,7 @@ import {
   formatTimeHHMMSSNumber,
   getDistanceGuideText,
 } from '@/shared/utils/formatting';
+import { MOTION_COMMON_OPTIONS } from '@/features/navigation/model/navigation.constants';
 import { useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -26,6 +27,13 @@ const NavigationController = ({
   );
 
   const { seconds, timerStatus, startTimer, pauseTimer } = useTimer();
+  const maxEtaMs = MOTION_COMMON_OPTIONS.MAX_ETA_HOURS * 60 * 60 * 1000;
+  const isEtaCapped =
+    !!estimatedArrivalTime &&
+    estimatedArrivalTime.getTime() - Date.now() >= maxEtaMs - 1000;
+  const etaGuideText = isEtaCapped
+    ? `${MOTION_COMMON_OPTIONS.MAX_ETA_HOURS}시간+`
+    : getTimeGuideText(estimatedArrivalTime);
 
   const handlePlayBackTogglePress = () => {
     if (timerStatus === 'running') {
@@ -93,7 +101,7 @@ const NavigationController = ({
               { fontSize: 13 },
             ]}
           >
-            예상 도착시간: {getTimeGuideText(estimatedArrivalTime)}
+            예상 도착시간: {etaGuideText}
           </Text>
           <TouchableOpacity
             testID="hamburger-button"

@@ -340,8 +340,20 @@ export const calculateEta = (
   if (currentEmaSpeedMps <= 0) return undefined;
   if (totalRemainingDistanceMeter <= 0) return undefined;
 
-  const remainingTimeSec = totalRemainingDistanceMeter / currentEmaSpeedMps;
-  return new Date(Date.now() + remainingTimeSec * 1000);
+  const {
+    MIN_EFFECTIVE_SPEED_MPS,
+    MAX_ETA_HOURS,
+  } = MOTION_COMMON_OPTIONS;
+  const effectiveSpeedMps = Math.max(
+    currentEmaSpeedMps,
+    MIN_EFFECTIVE_SPEED_MPS,
+  );
+  const remainingTimeSec = totalRemainingDistanceMeter / effectiveSpeedMps;
+  const cappedRemainingTimeSec = Math.min(
+    remainingTimeSec,
+    MAX_ETA_HOURS * 60 * 60,
+  );
+  return new Date(Date.now() + cappedRemainingTimeSec * 1000);
 };
 /* 소요 거리 측정
 1. 현재 내가 속한 인터벌의 firstCoordinate와 현재 내 좌표간 거리 계산(보정 필요)
