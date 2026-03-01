@@ -1,33 +1,19 @@
 import { useCallback, type RefObject } from 'react';
 import { Coordinate } from '@/shared/model/shared.types';
-import { NavigationWalkingPolicy } from '@/shared/model/map.webview.types';
+import {
+  NavigationPathMode,
+  NavigationWalkingPolicy,
+} from '@/shared/model/map.webview.types';
 import { Route, RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import {
   IntervalPathData,
   NavigationInstruction,
+  ApplyNavigationDataInput,
 } from '@/features/navigation/model/navigation.types';
 import { handleCatch } from '@/shared/utils/errorHandler';
 
-export type ApplyNavigationDataInput = {
-  coordinates: [number, number][];
-  instructions: NavigationInstruction[];
-  startStation?: {
-    lat: number;
-    lng: number;
-    stationId?: string;
-    stationName?: string;
-  };
-  endStation?: {
-    lat: number;
-    lng: number;
-    stationId?: string;
-    stationName?: string;
-  };
-  waypoints?: [number, number][];
-};
-
-export type UseNavigationDataApplyParams = {
+export interface UseNavigationDataApplyParams {
   selectedRouteData: Route | null;
   isMapReady: boolean;
   onError?: () => void;
@@ -35,12 +21,14 @@ export type UseNavigationDataApplyParams = {
     routeType: RouteType;
     startPoint: [number, number];
     endPoint: [number, number];
+    originPoint?: [number, number] | null;
     waypoints: Coordinate[] | null;
     fullPathCoordinateList: [number, number][];
     intervals: [number, number][];
     currentIntervalIndex: number;
-    startStationPoint: { lat: number; lng: number };
+    startStationPoint: { lat: number; lng: number } | null;
     endStationPoint: { lat: number; lng: number };
+    pathMode?: NavigationPathMode;
     walkingPolicy: NavigationWalkingPolicy;
   }) => void;
   setCurrentInstruction: (inst: NavigationInstruction | null) => void;
@@ -71,13 +59,16 @@ export type UseNavigationDataApplyParams = {
     prevTimestampForMeasureRef?: RefObject<number | null>;
     prevTraveledDistanceForMeasureRef?: RefObject<number | null>;
   };
-};
+}
 
-type StationPoint = { lat: number; lng: number } | undefined;
+interface StationPoint {
+  lat: number;
+  lng: number;
+}
 
 const findNearestCoordinateIndex = (
   coords: [number, number][],
-  target: StationPoint,
+  target: StationPoint | undefined,
 ) => {
   if (!target || !Array.isArray(coords) || coords.length === 0) return 0;
 
@@ -98,7 +89,7 @@ const findNearestCoordinateIndex = (
 export const normalizeNavigationDataByWalkingPolicy = (
   navigationData: ApplyNavigationDataInput,
   walkingPolicy: NavigationWalkingPolicy,
-  startStation: StationPoint,
+  startStation: StationPoint | undefined,
 ) => {
   if (walkingPolicy !== 'only-end') return navigationData;
   if (!Array.isArray(navigationData.coordinates)) return navigationData;
@@ -158,6 +149,7 @@ export const useNavigationDataApply = ({
     (
       navigationData: ApplyNavigationDataInput,
       walkingPolicy: NavigationWalkingPolicy = 'all',
+      pathMode: NavigationPathMode = 'normal',
     ) => {
       try {
         if (
@@ -261,6 +253,13 @@ export const useNavigationDataApply = ({
         const coordinates = normalizedNavigationData.coordinates;
         const startPoint: [number, number] = coordinates[0];
         const endPoint: [number, number] = coordinates[coordinates.length - 1];
+        const routeStart = useRouteStore.getState().start;
+        const originPoint =
+          routeType === RouteType.LOOP
+            ? routeStart
+              ? ([routeStart.longitude, routeStart.latitude] as [number, number])
+              : startPoint
+            : null;
 
         const intervals = normalizedNavigationData.instructions.map(
           instruction => instruction.interval,
@@ -283,25 +282,30 @@ export const useNavigationDataApply = ({
 
         // loop 모드일 때는 startStationPoint와 endStationPoint를 동일하게 설정
         // (splitPathByStations가 좌표 비교로 loop를 판단하기 때문)
-        const startStationPoint = {
-          lat: startStation.lat,
-          lng: startStation.lng,
-        };
+        const startStationPoint =
+          walkingPolicy === 'only-end'
+            ? null
+            : {
+                lat: startStation.lat,
+                lng: startStation.lng,
+              };
         const endStationPoint =
           routeType === RouteType.LOOP
-            ? startStationPoint
+            ? startStationPoint ?? { lat: startStation.lat, lng: startStation.lng }
             : { lat: endStation.lat, lng: endStation.lng };
 
         drawNavigationPath({
           routeType,
           startPoint,
           endPoint,
+          originPoint,
           waypoints,
           fullPathCoordinateList: normalizedNavigationData.coordinates,
           intervals,
           currentIntervalIndex: 0,
           startStationPoint,
           endStationPoint,
+          pathMode,
           walkingPolicy,
         });
       }

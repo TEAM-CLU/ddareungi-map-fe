@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { useKeepNavigationSessionAliveMutation } from '../services/navigation.queries';
 
-export type UseNavigationSessionKeepAliveParams = {
+export interface UseNavigationSessionKeepAliveParams {
   isNavigationMode: boolean;
   sessionId: string | null;
   isNavigationInitialized: boolean;
-};
+}
 
 export const useNavigationSessionKeepAlive = ({
   isNavigationMode,

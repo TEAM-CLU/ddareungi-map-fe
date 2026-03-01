@@ -7,23 +7,30 @@ import {
 import {
   IntervalPathData,
   LocationMetaData,
+  ApplyNavigationDataInput,
 } from '@/features/navigation/model/navigation.types';
 import { playTts } from '@/features/navigation/libs/playTts';
 import { getMinDistanceInWindow } from '@/features/navigation/utils/getMindistanceInWindow';
 import { findClosestCoordIndex } from '@/features/navigation/utils/navigationController';
-import { calculateMotionVector } from '@/features/navigation/utils/calculateMotionVector';
 import { Coordinate } from '@/shared/model/shared.types';
 import { Route, RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { ApplyNavigationDataInput } from '@/features/navigation/hooks/useNavigationDataApply';
 import { NavigationWalkingPolicy } from '@/shared/model/map.webview.types';
+import { mapOffRouteResponseToApplyInput } from '@/features/navigation/utils/offRouteResponseMapper';
+import {
+  createInitialOffRouteRecoveryGuardState,
+  evaluateRecoveryAvailability,
+  getIsMovingTowardRoute,
+  lockRecoveryAfterReroute,
+  resetOffRouteRecoveryGuardState,
+} from '@/features/navigation/utils/offRouteRecoveryGuard';
 import {
   useReRouteMutation,
   useReturnToExistingRouteMutation,
 } from '../services/navigation.queries';
 import { handleCatch } from '@/shared/utils/errorHandler';
 
-export type UseOffRouteControllerParams = {
+export interface UseOffRouteControllerParams {
   isNavigationMode: boolean;
   isNavigationInitialized: boolean;
   sessionId: string | null;
@@ -34,6 +41,7 @@ export type UseOffRouteControllerParams = {
   applyNavigationData: (
     data: ApplyNavigationDataInput,
     walkingPolicy?: NavigationWalkingPolicy,
+    pathMode?: 'normal' | 'loop-recovery',
   ) => void;
   setIsLoadingForOffRoute: (v: boolean) => void;
   refs: {
@@ -53,7 +61,7 @@ export type UseOffRouteControllerParams = {
     accumulatedTraveledDistanceRef: RefObject<number>;
     passedWaypointIdxSetRef: RefObject<Set<number>>;
   };
-};
+}
 
 export const useOffRouteController = ({
   isNavigationMode,
@@ -90,22 +98,14 @@ export const useOffRouteController = ({
   } = TTS_URL_PRESET;
 
   // reroute 직후 recovery 재발동 제어
-  const recoveryLockUntilRef = useRef<number>(0);
-  const recoveryUnlockCountRef = useRef<number>(0);
-  const shouldRequireRecoveryUnlockRef = useRef<boolean>(false);
-  const isRecoveryUnlockedRef = useRef<boolean>(false);
-  const prevMyPositionForOffRouteRef = useRef<Coordinate | null>(null);
-  const prevTimestampForOffRouteRef = useRef<number | null>(null);
+  const recoveryGuardStateRef = useRef(
+    createInitialOffRouteRecoveryGuardState(),
+  );
 
   useEffect(() => {
     if (isNavigationMode && isNavigationInitialized && sessionId) return;
 
-    recoveryLockUntilRef.current = 0;
-    recoveryUnlockCountRef.current = 0;
-    shouldRequireRecoveryUnlockRef.current = false;
-    isRecoveryUnlockedRef.current = false;
-    prevMyPositionForOffRouteRef.current = null;
-    prevTimestampForOffRouteRef.current = null;
+    resetOffRouteRecoveryGuardState(recoveryGuardStateRef.current);
   }, [isNavigationMode, isNavigationInitialized, sessionId]);
 
   // 경로복귀 (OFF-ROUTE JUDGE)
@@ -155,25 +155,13 @@ export const useOffRouteController = ({
         bestIdx,
       );
 
-      // 현재 인터벌의 nearest 좌표를 기준으로 접근/이탈 방향성 계산
-      const prevPosition = prevMyPositionForOffRouteRef.current;
-      const prevTimestamp = prevTimestampForOffRouteRef.current;
-      const targetCoord = intervalCoordinateList[bestIdx];
-      let isMovingTowardRoute = false;
-
-      if (prevPosition && prevTimestamp != null && targetCoord) {
-        const dtSec = Math.max(0.001, (tickNowMs - prevTimestamp) / 1000);
-        const { dot } = calculateMotionVector(
-          prevPosition,
-          myPosition,
-          targetCoord,
-          dtSec,
-        );
-        isMovingTowardRoute = dot > 0;
-      }
-
-      prevMyPositionForOffRouteRef.current = myPosition;
-      prevTimestampForOffRouteRef.current = tickNowMs;
+      const targetCoord = intervalCoordinateList[bestIdx] ?? null;
+      const isMovingTowardRoute = getIsMovingTowardRoute(
+        recoveryGuardStateRef.current,
+        myPosition,
+        targetCoord,
+        tickNowMs,
+      );
 
       const isOffForRecovery = minDistanceMeter >= RECOVERY_TRIGGER_METER;
       const isOffForReroute = minDistanceMeter >= REROUTE_TRIGGER_METER;
@@ -187,93 +175,60 @@ export const useOffRouteController = ({
         useRouteStore.getState().routeType === 'loop'
           ? RouteType.LOOP
           : RouteType.CONSTANT;
+
+      // 정책: 원형경로는 off-route 재탐색/복귀를 수행하지 않음
+      if (routeType === RouteType.LOOP) {
+        refs.recoverTriggerCount.current = 0;
+        refs.rerouteTriggerCount.current = 0;
+        return;
+      }
+
       const canTriggerReroute =
         routeType === RouteType.CONSTANT &&
         !refs.hasReroutedRef.current &&
         isEarlyRerouteWindow;
-      const recoveryWalkingPolicy: NavigationWalkingPolicy =
-        routeType === RouteType.LOOP ? 'all' : 'only-end';
+      const recoveryWalkingPolicy: NavigationWalkingPolicy = 'only-end';
 
-      // reroute 직후 30초는 recovery를 강제 잠금
-      const isRecoveryLockActive = tickNowMs < recoveryLockUntilRef.current;
-
-      // lock 해제 후에는 "3회 연속 접근(방향벡터 + 근접)"일 때만 recovery 잠금 해제
-      if (
-        shouldRequireRecoveryUnlockRef.current &&
-        !isRecoveryLockActive &&
-        !isRecoveryUnlockedRef.current
-      ) {
-        const isRecoveryUnlockCandidate =
-          minDistanceMeter <= RECOVERY_TRIGGER_METER && isMovingTowardRoute;
-
-        if (isRecoveryUnlockCandidate) {
-          recoveryUnlockCountRef.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            recoveryUnlockCountRef.current + 1,
-          );
-        } else {
-          recoveryUnlockCountRef.current = Math.max(
-            0,
-            recoveryUnlockCountRef.current - COUNT_DECAY,
-          );
-        }
-
-        if (recoveryUnlockCountRef.current >= MAX_TRIGGER_COUNT) {
-          isRecoveryUnlockedRef.current = true;
-          shouldRequireRecoveryUnlockRef.current = false;
-          recoveryUnlockCountRef.current = 0;
-        }
-      }
-
-      const canUseRecovery =
-        !isRecoveryLockActive &&
-        (!shouldRequireRecoveryUnlockRef.current ||
-          isRecoveryUnlockedRef.current);
+      const { canUseRecovery } = evaluateRecoveryAvailability({
+        state: recoveryGuardStateRef.current,
+        tickNowMs,
+        minDistanceMeter,
+        recoveryTriggerMeter: RECOVERY_TRIGGER_METER,
+        maxTriggerCount: MAX_TRIGGER_COUNT,
+        countDecay: COUNT_DECAY,
+        isMovingTowardRoute,
+      });
 
       // ===============================
       // 1. off 카운트는 "항상" 누적
       // ===============================
-      if (routeType === RouteType.LOOP) {
-        if ((isOffForRecovery || isOffForReroute) && canUseRecovery) {
-          refs.recoverTriggerCount.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            refs.recoverTriggerCount.current + 1,
-          );
-        } else {
-          refs.recoverTriggerCount.current = Math.max(
-            0,
-            refs.recoverTriggerCount.current - COUNT_DECAY,
-          );
-        }
+      if (isOffForReroute && canTriggerReroute) {
+        refs.rerouteTriggerCount.current = Math.min(
+          MAX_TRIGGER_COUNT,
+          refs.rerouteTriggerCount.current + 1,
+        );
+        refs.recoverTriggerCount.current = Math.max(
+          0,
+          refs.recoverTriggerCount.current - COUNT_DECAY,
+        );
+      } else if ((isOffForRecovery || isOffForReroute) && canUseRecovery) {
+        refs.recoverTriggerCount.current = Math.min(
+          MAX_TRIGGER_COUNT,
+          refs.recoverTriggerCount.current + 1,
+        );
+        refs.rerouteTriggerCount.current = Math.max(
+          0,
+          refs.rerouteTriggerCount.current - COUNT_DECAY,
+        );
       } else {
-        if (isOffForReroute && canTriggerReroute) {
-          refs.rerouteTriggerCount.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            refs.rerouteTriggerCount.current + 1,
-          );
-          refs.recoverTriggerCount.current = Math.max(
-            0,
-            refs.recoverTriggerCount.current - COUNT_DECAY,
-          );
-        } else if ((isOffForRecovery || isOffForReroute) && canUseRecovery) {
-          refs.recoverTriggerCount.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            refs.recoverTriggerCount.current + 1,
-          );
-          refs.rerouteTriggerCount.current = Math.max(
-            0,
-            refs.rerouteTriggerCount.current - COUNT_DECAY,
-          );
-        } else {
-          refs.recoverTriggerCount.current = Math.max(
-            0,
-            refs.recoverTriggerCount.current - COUNT_DECAY,
-          );
-          refs.rerouteTriggerCount.current = Math.max(
-            0,
-            refs.rerouteTriggerCount.current - COUNT_DECAY,
-          );
-        }
+        refs.recoverTriggerCount.current = Math.max(
+          0,
+          refs.recoverTriggerCount.current - COUNT_DECAY,
+        );
+        refs.rerouteTriggerCount.current = Math.max(
+          0,
+          refs.rerouteTriggerCount.current - COUNT_DECAY,
+        );
       }
 
       // ===============================
@@ -333,42 +288,14 @@ export const useOffRouteController = ({
             remainingWaypoints: remainingWaypoints ?? [],
           });
 
-          applyNavigationData(
-            {
-              coordinates: response.data.coordinates,
-              instructions: response.data.instructions,
-              startStation: response.data.startStation
-                ? {
-                    lat: response.data.startStation.location.lat,
-                    lng: response.data.startStation.location.lng,
-                    stationId: response.data.startStation.stationId,
-                    stationName: response.data.startStation.stationName,
-                  }
-                : undefined,
-              endStation: response.data.endStation
-                ? {
-                    lat: response.data.endStation.location.lat,
-                    lng: response.data.endStation.location.lng,
-                    stationId: response.data.endStation.stationId,
-                    stationName: response.data.endStation.stationName,
-                  }
-                : undefined,
-              waypoints: response.data.waypoints
-                ? response.data.waypoints.map(
-                    (wp: { lng: number; lat: number }) =>
-                      [wp.lng, wp.lat] as [number, number],
-                  )
-                : undefined,
-            },
-            'all',
-          );
+          applyNavigationData(mapOffRouteResponseToApplyInput(response.data), 'all');
 
           refs.hasReroutedRef.current = true;
-          recoveryLockUntilRef.current =
-            tickNowMs + POST_REROUTE_RECOVERY_LOCK_MS;
-          shouldRequireRecoveryUnlockRef.current = true;
-          isRecoveryUnlockedRef.current = false;
-          recoveryUnlockCountRef.current = 0;
+          lockRecoveryAfterReroute(
+            recoveryGuardStateRef.current,
+            tickNowMs,
+            POST_REROUTE_RECOVERY_LOCK_MS,
+          );
           refs.offRouteJudgeCooldownUntilRef.current =
             tickNowMs + POST_APPLY_JUDGE_COOLDOWN_MS;
 
@@ -415,33 +342,9 @@ export const useOffRouteController = ({
           });
 
           applyNavigationData(
-            {
-              coordinates: response.data.coordinates,
-              instructions: response.data.instructions,
-              startStation: response.data.startStation
-                ? {
-                    lat: response.data.startStation.location.lat,
-                    lng: response.data.startStation.location.lng,
-                    stationId: response.data.startStation.stationId,
-                    stationName: response.data.startStation.stationName,
-                  }
-                : undefined,
-              endStation: response.data.endStation
-                ? {
-                    lat: response.data.endStation.location.lat,
-                    lng: response.data.endStation.location.lng,
-                    stationId: response.data.endStation.stationId,
-                    stationName: response.data.endStation.stationName,
-                  }
-                : undefined,
-              waypoints: response.data.waypoints
-                ? response.data.waypoints.map(
-                    (wp: { lng: number; lat: number }) =>
-                      [wp.lng, wp.lat] as [number, number],
-                  )
-                : undefined,
-            },
+            mapOffRouteResponseToApplyInput(response.data),
             recoveryWalkingPolicy,
+            'normal',
           );
           refs.hasReroutedRef.current = true;
           refs.offRouteJudgeCooldownUntilRef.current =

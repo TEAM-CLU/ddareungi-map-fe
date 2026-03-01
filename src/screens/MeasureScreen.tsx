@@ -8,12 +8,16 @@ import MeasureCountdownOverlay from '@/features/measurement/components/MeasureCo
 import MeasureActiveScreen from '@/features/measurement/components/MeasureActiveScreen';
 import MeasureEndModal from '@/features/measurement/components/MeasureEndModal';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import MeasureBackgroundMap from '@/features/measurement/components/MeasureBackgroundMap';
 
 export default function MeasureScreen() {
   const { navigation } = useAppNavigation();
   const { phase, setMeasurementScreenActive } = useMeasurementStore();
   const {
+    handleStartCountdown,
     handleStartMeasuring,
+    handleTogglePause,
+    handleFinishMeasurement,
     handleCloseEnd,
   } = useMeasurementOrchestrator();
 
@@ -31,17 +35,40 @@ export default function MeasureScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      {(phase === 'idle' || phase === 'goal-setting') && <MeasureGoalScreen />}
+      <View
+        pointerEvents="none"
+        style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+      >
+        <MeasureBackgroundMap />
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            // 측정 UI 가독성을 위한 반투명 레이어
+            backgroundColor: 'rgba(255, 255, 255, 0.42)',
+          }}
+        />
+      </View>
+
+      {(phase === 'idle' || phase === 'goal-setting') && (
+        <MeasureGoalScreen onStartCountdown={handleStartCountdown} />
+      )}
 
       {phase === 'countdown' && (
         <>
-          <MeasureGoalScreen />
+          <MeasureGoalScreen onStartCountdown={handleStartCountdown} />
           <MeasureCountdownOverlay onComplete={handleStartMeasuring} />
         </>
       )}
 
       {(phase === 'measuring' || phase === 'paused') && (
-        <MeasureActiveScreen />
+        <MeasureActiveScreen
+          onTogglePause={handleTogglePause}
+          onFinishMeasurement={handleFinishMeasurement}
+        />
       )}
 
       <MeasureEndModal

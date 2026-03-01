@@ -8,12 +8,16 @@ import RoundButton from '@/shared/components/button/RoundButton';
 import { useMeasurementStore } from '../stores/useMeasurementStore';
 import { MEASUREMENT_GOAL_CONFIG } from '../model/measurement.constants';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
-import { useMeasurementOrchestrator } from '../hooks/useMeasurementOrchestrator';
 
-export default function MeasureGoalScreen() {
+interface MeasureGoalScreenProps {
+  onStartCountdown: () => void;
+}
+
+export default function MeasureGoalScreen({
+  onStartCountdown,
+}: MeasureGoalScreenProps) {
   const { navigation } = useAppNavigation();
   const { targetDistanceKm, setTargetDistanceKm } = useMeasurementStore();
-  const { handleStartCountdown } = useMeasurementOrchestrator();
 
   const handleDecrease = () => {
     if (targetDistanceKm <= MEASUREMENT_GOAL_CONFIG.MIN_TARGET_KM) {
@@ -36,8 +40,13 @@ export default function MeasureGoalScreen() {
   };
 
   return (
-    <SafeAreaView style={tw('flex-1 bg-surface-primary')} edges={['top']}>
-      <View style={tw('flex-row items-center px-4 py-3 border-b border-line-default')}>
+    <SafeAreaView style={tw('flex-1')} edges={['top']}>
+      <View
+        style={[
+          tw('flex-row items-center px-4 py-3 border-b border-line-default'),
+          { backgroundColor: 'rgba(255, 255, 255, 0.85)' },
+        ]}
+      >
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
           <IconBackArrow width={24} height={24} color="gray" />
         </TouchableOpacity>
@@ -52,7 +61,12 @@ export default function MeasureGoalScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <View style={[tw('flex-1 justify-center px-6'), { gap: 50 }]}>
+      <View
+        style={[
+          tw('flex-1 justify-center px-6'),
+          { gap: 50, backgroundColor: 'rgba(255, 255, 255, 0.58)' },
+        ]}
+      >
         <Text
           style={[
             tw('text-center font-primary-700 text-on-surface-primary'),
@@ -104,7 +118,7 @@ export default function MeasureGoalScreen() {
         <View style={tw('items-center')}>
           <RoundButton
             title="시작"
-            onPress={handleStartCountdown}
+            onPress={onStartCountdown}
             preset="lg"
           />
         </View>

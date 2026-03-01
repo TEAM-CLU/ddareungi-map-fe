@@ -81,7 +81,7 @@ export const TURN_CONFIG = {
 } as const;
 
 export const TRAVELED_DISTANCE_OPTIONS = {
-  STOP_JUDGE_MOVE_METER: 5,
+  STOP_JUDGE_MOVE_METER: 10,
 } as const;
 
 export const REMAINING_DISTANCE_OPTIONS = {

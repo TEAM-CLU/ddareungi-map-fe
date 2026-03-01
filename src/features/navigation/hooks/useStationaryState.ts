@@ -4,7 +4,7 @@ import { TRANSPORT_STATE_CONFIG } from '@/features/navigation/model/navigation.c
 import { Coordinate } from '@/shared/model/shared.types';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
-export type UseStationaryStateParams = {
+export interface UseStationaryStateParams {
   locationMetaData: LocationMetaData | null;
   locationTick: number | undefined;
   currentLocationMetaData: RefObject<LocationMetaData | null>;
@@ -12,7 +12,7 @@ export type UseStationaryStateParams = {
   stationaryCountRef: RefObject<number>;
   prevMyPositionForStationaryRef: RefObject<Coordinate | null>;
   prevTimestampForStationaryRef: RefObject<number | null>;
-};
+}
 
 export const useStationaryState = ({
   locationMetaData,

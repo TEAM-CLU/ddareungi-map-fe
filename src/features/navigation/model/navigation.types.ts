@@ -79,6 +79,25 @@ export interface ReturnToExistingRouteResponse {
   };
 }
 
+// 내비 경로 데이터 적용 공통 입력 타입 (start/recovery/reroute 공용)
+export interface ApplyNavigationDataInput {
+  coordinates: [number, number][];
+  instructions: NavigationInstruction[];
+  startStation?: {
+    lat: number;
+    lng: number;
+    stationId?: string;
+    stationName?: string;
+  };
+  endStation?: {
+    lat: number;
+    lng: number;
+    stationId?: string;
+    stationName?: string;
+  };
+  waypoints?: [number, number][];
+}
+
 export type TravelMode = 'walking' | 'biking';
 
 // 완전 재탐색
@@ -129,14 +148,23 @@ export interface StabilizeDistanceInput {
   type: DistanceType;
 }
 
+export interface OffRouteRecoveryGuardState {
+  lockUntilMs: number;
+  unlockCount: number;
+  shouldRequireUnlock: boolean;
+  isUnlocked: boolean;
+  prevPosition: Coordinate | null;
+  prevTimestamp: number | null;
+}
+
 export type DistanceType = 'remaining' | 'traveled';
 
 // calculateMotionVector 결과 타입
-export type MotionVectorResult = {
+export interface MotionVectorResult {
   moveMag: number; // 이동거리(m)
   speedMps: number; // 속도(m/s)
   dot: number; // v·u
-};
+}
 
 // useTimer 훅에서 사용하는 타입
 export type TimerStatus = 'idle' | 'running' | 'paused';

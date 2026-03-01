@@ -469,6 +469,7 @@ export const stabilizeDistance = ({
 }: StabilizeDistanceInput) => {
   const { MAX_PHYSICAL_SPEED_MPS } = MOTION_COMMON_OPTIONS;
   const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
+  const MOVEMENT_CAP_BUFFER_METER = STOP_JUDGE_MOVE_METER;
 
   // =========================
   // 0) dtSec 계산
@@ -493,8 +494,9 @@ export const stabilizeDistance = ({
   // =========================
   // 2) 정지 판정이면 변화 막기
   // =========================
+  let movedDistanceMeter: number | null = null;
   if (prevMyPosition) {
-    const movedDistanceMeter = getDistanceBetweenCoords(
+    movedDistanceMeter = getDistanceBetweenCoords(
       prevMyPosition,
       currentMyPosition,
     );
@@ -508,7 +510,15 @@ export const stabilizeDistance = ({
   // 3) 최대 물리 속도 기반 "변화 최대폭" 제한 (GPS 점프 컷)
   // =========================
   if (dtSec !== null) {
-    const maxChangeDistanceMeter = MAX_PHYSICAL_SPEED_MPS * dtSec;
+    const maxChangeBySpeedMeter = MAX_PHYSICAL_SPEED_MPS * dtSec;
+    const maxChangeByMovementMeter =
+      movedDistanceMeter != null
+        ? movedDistanceMeter * 2 + MOVEMENT_CAP_BUFFER_METER
+        : Number.POSITIVE_INFINITY;
+    const maxChangeDistanceMeter = Math.min(
+      maxChangeBySpeedMeter,
+      maxChangeByMovementMeter,
+    );
 
     if (type === 'traveled') {
       stabilizedDistanceMeter = Math.min(

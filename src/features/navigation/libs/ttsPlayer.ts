@@ -13,6 +13,7 @@ let suppressIntervalGuidanceTts = false;
 
 // Dedupe & cooldown policy
 const lastSpokenAtByCooldownKey = new Map<string, number>();
+let isQueueHandlerRegistered = false;
 
 // Helpers
 const now = () => Date.now();
@@ -155,6 +156,9 @@ export const clearTtsQueue = async () => {
  * (registerPlaybackService랑 별개로, 이벤트 리스너는 여기서 붙임)
  */
 export const registerTtsQueueHandler = () => {
+  if (isQueueHandlerRegistered) return;
+  isQueueHandlerRegistered = true;
+
   TrackPlayer.addEventListener(Event.PlaybackQueueEnded, () => {
     currentPlayingKey = null;
     void consumeQueue();

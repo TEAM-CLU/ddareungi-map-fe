@@ -207,7 +207,9 @@ export const useNavigationOrchestrator = () => {
     rerouteTriggerCount.current = 0;
     hasReroutedRef.current = false;
     isHandlingOffRouteRef.current = false;
+    lastOffRouteTimestampRef.current = null;
     offRouteJudgeCooldownUntilRef.current = 0;
+    offRouteTickBusyRef.current = false;
 
     passedWaypointIdxSetRef.current.clear();
     isWaypointEnteredRef.current = false;
@@ -220,12 +222,21 @@ export const useNavigationOrchestrator = () => {
     stationaryCountRef.current = 0;
     prevMyPositionForStationaryRef.current = null;
     prevTimestampForStationaryRef.current = null;
+    prevLocationMetaData.current = null;
+    currentLocationMetaData.current = null;
+    prevEmaSpeedMps.current = null;
 
     setSessionId(null);
+    setIsNavigationInitialized(false);
     setCurrentInstruction(null);
     setPassedWaypointIndexes([]);
     setIsLoadingForOffRoute(false);
-  }, [replaceMyLocationMarker, clearNavigationPath, setSessionId]);
+  }, [
+    replaceMyLocationMarker,
+    clearNavigationPath,
+    setSessionId,
+    setIsNavigationInitialized,
+  ]);
 
   const { applyNavigationData } = useNavigationDataApply({
     selectedRouteData,

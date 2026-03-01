@@ -1,14 +1,14 @@
 import { useEffect, type RefObject } from 'react';
 import { LocationMetaData } from '@/features/navigation/model/navigation.types';
 
-export type UseLocationMetaHistoryParams = {
+export interface UseLocationMetaHistoryParams {
   isNavigationMode: boolean;
   isNavigationInitialized: boolean;
   locationMetaData: LocationMetaData | null;
   locationTick: number | undefined;
   prevLocationMetaData: RefObject<LocationMetaData | null>;
   currentLocationMetaData: RefObject<LocationMetaData | null>;
-};
+}
 
 export const useLocationMetaHistory = ({
   isNavigationMode,

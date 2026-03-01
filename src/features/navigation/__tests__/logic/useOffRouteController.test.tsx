@@ -263,6 +263,7 @@ describe('useOffRouteController', () => {
         instructions: expect.any(Array),
       }),
       'only-end',
+      'normal',
     );
   });
 
@@ -288,6 +289,7 @@ describe('useOffRouteController', () => {
         instructions: expect.any(Array),
       }),
       'all',
+      'loop-recovery',
     );
   });
 

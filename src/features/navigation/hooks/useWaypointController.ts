@@ -9,7 +9,7 @@ import { playTts } from '@/features/navigation/libs/playTts';
 import { Route } from '@/features/routing/model/routing.types';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
-export type UseWaypointControllerParams = {
+export interface UseWaypointControllerParams {
   isNavigationMode: boolean;
   isNavigationInitialized: boolean;
   locationMetaData: LocationMetaData | null;
@@ -23,7 +23,7 @@ export type UseWaypointControllerParams = {
     waypointCandidateIdxRef: RefObject<number>;
     waypointPassCountRef: RefObject<number>;
   };
-};
+}
 
 export const useWaypointController = ({
   isNavigationMode,

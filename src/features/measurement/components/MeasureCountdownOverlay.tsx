@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { tw } from '@/shared/libs/tw-helper';
 
 interface MeasureCountdownOverlayProps {
   onComplete: () => void;
@@ -25,17 +26,24 @@ export default function MeasureCountdownOverlay({
 
   return (
     <View
-      style={[
-        StyleSheet.absoluteFillObject,
-        {
-          backgroundColor: 'rgba(0,0,0,0.7)',
-          zIndex: 999,
-          justifyContent: 'center',
-          alignItems: 'center',
-        },
-      ]}
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        zIndex: 999,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
     >
-      <Text style={{ fontFamily: 'Pretendard-Bold', fontSize: 72, color: '#fff' }}>
+      <Text
+        style={[
+          tw('font-primary-700 text-brand-primary'),
+          { fontSize: 72 },
+        ]}
+      >
         {count > 0 ? count : '시작'}
       </Text>
     </View>

@@ -59,6 +59,7 @@ const MapScreen = () => {
   );
 
   const selectedRouteData = useRouteStore(state => state.selectedRouteData);
+  const routeType = useRouteStore(state => state.routeType);
 
   const {
     handleCloseSearchPress,
@@ -73,7 +74,9 @@ const MapScreen = () => {
   );
 
   const waypointCount = selectedRouteData?.waypoints?.length ?? 0;
-  const segmentColors = makeSegmentColors(waypointCount);
+  const effectiveWaypointCount =
+    routeType === 'loop' && waypointCount === 1 ? 0 : waypointCount;
+  const segmentColors = makeSegmentColors(effectiveWaypointCount);
   const indicatorStyle = () => [
     tw('flex-row items-center px-2 py-1 rounded-full'),
     {

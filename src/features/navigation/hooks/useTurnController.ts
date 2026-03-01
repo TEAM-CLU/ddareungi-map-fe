@@ -10,7 +10,7 @@ import { calculateMotionVector } from '@/features/navigation/utils/calculateMoti
 import { LocationMetaData } from '@/features/navigation/model/navigation.types';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
-export type UseTurnControllerParams = {
+export interface UseTurnControllerParams {
   isNavigationMode: boolean;
   isNavigationInitialized: boolean;
   locationMetaData: LocationMetaData | null;
@@ -32,7 +32,7 @@ export type UseTurnControllerParams = {
     previewEnterCount: RefObject<number>;
     currentLocationMetaData: RefObject<LocationMetaData | null>;
   };
-};
+}
 
 export const useTurnController = ({
   isNavigationMode,

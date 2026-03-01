@@ -1,5 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import {
+  ACCURACY_OK,
   MOTION_COMMON_OPTIONS,
   TRAVELED_DISTANCE_OPTIONS,
   TRANSPORT_STATE_CONFIG,
@@ -17,6 +18,7 @@ import {
   returnAccurateSpeed,
 } from '@/features/navigation/utils/navigationController';
 import { classifyTransportBySpeed } from '@/features/navigation/utils/classifyTransportBySpeed';
+import { normalizeTraveledDistance } from '@/features/navigation/utils/navigationMetricsDistance';
 import {
   measureCaloriesBurned,
   measureCarbonSaved,
@@ -24,7 +26,7 @@ import {
 import { Gender } from '@/shared/model/shared.types';
 import { handleCatch } from '@/shared/utils/errorHandler';
 
-export type UseNavigationMetricsParams = {
+export interface UseNavigationMetricsParams {
   isNavigationMode: boolean;
   isNavigationInitialized: boolean;
   locationMetaData: LocationMetaData | null;
@@ -57,7 +59,7 @@ export type UseNavigationMetricsParams = {
     isBikingStateRef: RefObject<boolean>;
     bikingStateCountRef: RefObject<number>;
   };
-};
+}
 
 export const useNavigationMetrics = ({
   isNavigationMode,
@@ -98,6 +100,13 @@ export const useNavigationMetrics = ({
       return;
     }
 
+    if (
+      locationMetaData.accuracy != null &&
+      locationMetaData.accuracy > ACCURACY_OK
+    ) {
+      return;
+    }
+
     const currentTimestamp = locationMetaData.timestamp ?? Date.now();
     const prevPosisionForDistance = refs.prevMyPositionForDistanceRef.current; // null이면 첫 진입
     const prevTimestampForDistance = refs.prevTimestampForDistanceRef.current;
@@ -121,14 +130,14 @@ export const useNavigationMetrics = ({
           null,
           currentTimestamp,
         );
-        if (refs.routeTraveledBaselineRef.current === null) {
-          refs.routeTraveledBaselineRef.current =
-            resumedLocalTraveledDistanceMeter;
-        }
-        const normalizedLocalTraveledDistanceMeter = Math.max(
-          0,
-          resumedLocalTraveledDistanceMeter - refs.routeTraveledBaselineRef.current,
-        );
+        const resumedTraveledInfo = normalizeTraveledDistance({
+          localTraveledDistanceMeter: resumedLocalTraveledDistanceMeter,
+          baselineDistanceMeter: refs.routeTraveledBaselineRef.current,
+          accumulatedTraveledDistanceMeter:
+            refs.accumulatedTraveledDistanceRef.current,
+        });
+        refs.routeTraveledBaselineRef.current =
+          resumedTraveledInfo.nextBaselineDistanceMeter;
         const resumedRemainingDistanceMeter = calculateRemainingDistance(
           currentCoord,
           pathData,
@@ -140,8 +149,7 @@ export const useNavigationMetrics = ({
           currentTimestamp,
         );
         const finalTraveledDistanceMeter =
-          normalizedLocalTraveledDistanceMeter +
-          refs.accumulatedTraveledDistanceRef.current;
+          resumedTraveledInfo.finalTraveledDistanceMeter;
 
         setTraveledDistance(finalTraveledDistanceMeter);
         setRemainingDistance(resumedRemainingDistanceMeter);
@@ -173,14 +181,13 @@ export const useNavigationMetrics = ({
         prevTimestampForDistance,
         currentTimestamp,
       );
-      if (refs.routeTraveledBaselineRef.current === null) {
-        refs.routeTraveledBaselineRef.current =
-          calculatedLocalTraveledDistanceMeter;
-      }
-      const normalizedLocalTraveledDistanceMeter = Math.max(
-        0,
-        calculatedLocalTraveledDistanceMeter - refs.routeTraveledBaselineRef.current,
-      );
+      const traveledInfo = normalizeTraveledDistance({
+        localTraveledDistanceMeter: calculatedLocalTraveledDistanceMeter,
+        baselineDistanceMeter: refs.routeTraveledBaselineRef.current,
+        accumulatedTraveledDistanceMeter:
+          refs.accumulatedTraveledDistanceRef.current,
+      });
+      refs.routeTraveledBaselineRef.current = traveledInfo.nextBaselineDistanceMeter;
 
       // 남은 거리 계산
       const calculatedRemainigDistanceMeter = calculateRemainingDistance(
@@ -195,9 +202,7 @@ export const useNavigationMetrics = ({
       );
 
       // 재탐색 등을 고려한 누적 거리 합산
-      const finalTraveledDistanceMeter =
-        normalizedLocalTraveledDistanceMeter +
-        refs.accumulatedTraveledDistanceRef.current;
+      const finalTraveledDistanceMeter = traveledInfo.finalTraveledDistanceMeter;
 
       setTraveledDistance(finalTraveledDistanceMeter);
       setRemainingDistance(calculatedRemainigDistanceMeter);
@@ -246,6 +251,13 @@ export const useNavigationMetrics = ({
       !locationMetaData?.coordinate ||
       !refs.prevLocationMetaData.current ||
       !refs.currentLocationMetaData.current
+    ) {
+      return;
+    }
+
+    if (
+      locationMetaData.accuracy != null &&
+      locationMetaData.accuracy > ACCURACY_OK
     ) {
       return;
     }

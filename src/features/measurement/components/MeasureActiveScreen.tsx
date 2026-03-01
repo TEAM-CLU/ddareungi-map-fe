@@ -9,85 +9,84 @@ import {
   formatCaloriesKcalText,
 } from '@/shared/utils/formatting';
 import { useMeasurementStore } from '../stores/useMeasurementStore';
-import { useMeasurementOrchestrator } from '../hooks/useMeasurementOrchestrator';
 import { formatPace } from '../utils/formatPace';
 
-export default function MeasureActiveScreen() {
+interface MeasureActiveScreenProps {
+  onTogglePause: () => void;
+  onFinishMeasurement: () => void;
+}
+
+interface MetricHeaderItemProps {
+  label: string;
+  value: string;
+}
+
+function MetricHeaderItem({ label, value }: MetricHeaderItemProps) {
+  return (
+    <View style={tw('flex-1 items-center px-1')}>
+      <Text
+        style={[
+          tw('font-primary-500 text-on-surface-placeholder text-xs'),
+          { lineHeight: 16 },
+        ]}
+      >
+        {label}
+      </Text>
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit={true}
+        minimumFontScale={0.75}
+        style={[
+          tw('font-primary-700 text-on-surface-primary mt-1'),
+          {
+            width: '100%',
+            fontSize: 20,
+            textAlign: 'center',
+            fontVariant: ['tabular-nums'],
+          },
+        ]}
+      >
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+export default function MeasureActiveScreen({
+  onTogglePause,
+  onFinishMeasurement,
+}: MeasureActiveScreenProps) {
   const {
     metrics,
     elapsedTimeSeconds,
     targetDistanceKm,
     isPaused,
   } = useMeasurementStore();
-  const { handleTogglePause, handleFinishMeasurement } =
-    useMeasurementOrchestrator();
 
   const targetMeter = targetDistanceKm * 1000;
 
   return (
-    <SafeAreaView style={tw('flex-1 bg-surface-primary')} edges={['top']}>
-      <View style={tw('flex-1 px-4')}>
+    <SafeAreaView style={tw('flex-1')} edges={['top']}>
+      <View
+        style={[
+          tw('flex-1 px-4'),
+          { backgroundColor: 'rgba(255, 255, 255, 0.58)' },
+        ]}
+      >
         {/* 상단: 시간, 페이스, 속도 */}
-        <View
-          style={[
-            tw('flex-row justify-around py-6'),
-            { borderBottomWidth: 1, borderColor: '#E5E7EB' },
-          ]}
-        >
-          <View style={tw('items-center')}>
-            <Text
-              style={[
-                tw('font-primary-500 text-on-surface-placeholder'),
-                { fontSize: 12 },
-              ]}
-            >
-              시간
-            </Text>
-            <Text
-              style={[
-                tw('font-primary-700 text-on-surface-primary mt-1'),
-                { fontSize: 20 },
-              ]}
-            >
-              {formatTimeHHMMSSNumber(elapsedTimeSeconds)}
-            </Text>
-          </View>
-          <View style={tw('items-center')}>
-            <Text
-              style={[
-                tw('font-primary-500 text-on-surface-placeholder'),
-                { fontSize: 12 },
-              ]}
-            >
-              페이스
-            </Text>
-            <Text
-              style={[
-                tw('font-primary-700 text-on-surface-primary mt-1'),
-                { fontSize: 20 },
-              ]}
-            >
-              {formatPace(metrics.paceMinutesPerKm)}/km
-            </Text>
-          </View>
-          <View style={tw('items-center')}>
-            <Text
-              style={[
-                tw('font-primary-500 text-on-surface-placeholder'),
-                { fontSize: 12 },
-              ]}
-            >
-              속도
-            </Text>
-            <Text
-              style={[
-                tw('font-primary-700 text-on-surface-primary mt-1'),
-                { fontSize: 20 },
-              ]}
-            >
-              {metrics.speedKmh.toFixed(1)} km/h
-            </Text>
-          </View>
+        <View style={tw('flex-row py-6 border-b border-line-default')}>
+          <MetricHeaderItem
+            label="시간"
+            value={formatTimeHHMMSSNumber(elapsedTimeSeconds)}
+          />
+          <MetricHeaderItem
+            label="페이스"
+            value={`${formatPace(metrics.paceMinutesPerKm)}/km`}
+          />
+          <MetricHeaderItem
+            label="속도"
+            value={`${metrics.speedKmh.toFixed(1)} km/h`}
+          />
         </View>
 
         {/* 중단: 이동거리(주요) + 칼로리/목표(동일 위계) */}
@@ -204,7 +203,7 @@ export default function MeasureActiveScreen() {
           }}
         >
           <TouchableOpacity
-            onPress={handleTogglePause}
+            onPress={onTogglePause}
             style={[
               tw('rounded-full bg-brand-primary items-center justify-center'),
               { width: 56, height: 56 },
@@ -218,7 +217,7 @@ export default function MeasureActiveScreen() {
             )}
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={handleFinishMeasurement}
+            onPress={onFinishMeasurement}
             style={[
               tw('rounded-full items-center justify-center'),
               {

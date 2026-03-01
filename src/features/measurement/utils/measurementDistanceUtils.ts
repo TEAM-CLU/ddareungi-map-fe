@@ -21,6 +21,7 @@ export function calculateFreeTraveledDistanceMeter(
   prevTraveledMeter: number,
   prevTimestampMs: number | null,
   currentTimestampMs: number,
+  minEffectiveMoveMeter: number = STOP_JUDGE_MOVE_METER,
 ): number {
   if (!prevPosition) return 0;
 
@@ -35,7 +36,7 @@ export function calculateFreeTraveledDistanceMeter(
   if (dtSec != null) {
     const instantSpeedMps = movedMeter / dtSec;
     if (instantSpeedMps > MAX_PHYSICAL_SPEED_MPS) return prevTraveledMeter;
-    if (movedMeter < STOP_JUDGE_MOVE_METER) return prevTraveledMeter;
+    if (movedMeter < minEffectiveMoveMeter) return prevTraveledMeter;
   }
 
   let next = Math.max(prevTraveledMeter, prevTraveledMeter + movedMeter);

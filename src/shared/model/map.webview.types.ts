@@ -130,16 +130,19 @@ export interface NavigationPathData {
   routeType: RouteType;
   startPoint: [number, number];
   endPoint: [number, number];
+  originPoint?: [number, number] | null;
   waypoints: Coordinate[] | null;
   fullPathCoordinateList: [number, number][];
   intervals: [number, number][];
   currentIntervalIndex: number;
-  startStationPoint: Coordinate;
+  startStationPoint: Coordinate | null;
   endStationPoint: Coordinate;
+  pathMode?: NavigationPathMode;
   walkingPolicy?: NavigationWalkingPolicy; // 도보 경로 표시 정책
 }
 
 export type NavigationWalkingPolicy = 'all' | 'only-end' | 'none';
+export type NavigationPathMode = 'normal' | 'loop-recovery';
 
 export interface DrawNavigationPathMessage {
   type: 'drawNavigationPath';
