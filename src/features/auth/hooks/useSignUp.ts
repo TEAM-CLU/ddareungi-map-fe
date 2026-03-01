@@ -32,7 +32,7 @@ export const useSignUp = ({ signUp, navigation }: UseSignUpParams) => {
   const [pwd, setPwd] = useState<string>('');
   const [confirmPwd, setConfirmPwd] = useState<string>('');
   const [name, setName] = useState<string>('');
-  const [birthDate, setBirthDate] = useState<string>('');
+  const [birthYear, setBirthYear] = useState<string>('');
   const [gender, setGender] = useState<'M' | 'F' | undefined>(undefined);
   const [address, setAddress] = useState<string | null>(null);
 
@@ -43,16 +43,14 @@ export const useSignUp = ({ signUp, navigation }: UseSignUpParams) => {
       !email ||
       !pwd ||
       !name ||
-      !birthDate ||
-      !gender ||
-      (!address && isConsentOptionalAgreed) ||
+      (isConsentOptionalAgreed && (!birthYear || !gender || !address)) ||
       !isConsentRequiredAgreed ||
       !consentedAt
     ) {
       Alert.alert('오류', '모든 필수 정보를 입력해주세요.');
       setSignUpStep(1);
       setName('');
-      setBirthDate('');
+      setBirthYear('');
       setGender(undefined);
       setAddress(null);
       setPwd('');
@@ -71,9 +69,9 @@ export const useSignUp = ({ signUp, navigation }: UseSignUpParams) => {
       email: email,
       password: pwd,
       name: name,
-      gender: gender,
-      birthDate: birthDate,
-      address: isConsentOptionalAgreed && address ? address : null,
+      gender: isConsentOptionalAgreed ? (gender ?? null) : null,
+      birthYear: isConsentOptionalAgreed ? (birthYear || null) : null,
+      address: isConsentOptionalAgreed ? (address || null) : null,
       consentedAt: consentedAt,
       requiredAgreed: isConsentRequiredAgreed,
       optionalAgreed: isConsentOptionalAgreed,
@@ -86,7 +84,8 @@ export const useSignUp = ({ signUp, navigation }: UseSignUpParams) => {
           Alert.alert('알림', data.message);
         },
         onError: error => {
-          Alert.alert('오류', error.message);
+          Alert.alert('오류', "회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.");
+          navigation.navigate('Login');
         },
       });
     }
@@ -116,8 +115,8 @@ export const useSignUp = ({ signUp, navigation }: UseSignUpParams) => {
     setConfirmPwd,
     name,
     setName,
-    birthDate,
-    setBirthDate,
+    birthYear,
+    setBirthYear,
     gender,
     setGender,
     address,

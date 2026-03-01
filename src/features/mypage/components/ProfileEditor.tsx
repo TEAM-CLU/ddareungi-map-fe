@@ -9,7 +9,7 @@ import {
 } from '@/features/auth/services/user.queries';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import Input from '@/shared/components/Input/Input';
-import BirthDateInput from '@/shared/components/Input/BirthDateInput';
+import BirthYearInput from '@/shared/components/Input/BirthYearInput';
 import GenderButton from '@/shared/components/button/GenderButton';
 import AddressInput from '@/shared/components/Input/AddressInput';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -31,11 +31,6 @@ const ProfileEditor = ({ onBack }: { onBack: () => void }) => {
     setName,
     year,
     setYear,
-    month,
-    setMonth,
-    day,
-    setDay,
-
     gender,
     setGender,
     gu,
@@ -50,7 +45,6 @@ const ProfileEditor = ({ onBack }: { onBack: () => void }) => {
     isConsentOptionalAgreed,
     setIsConsentOptionalAgreed,
     setConsentedAt,
-    isAddressInputEnabled,
 
     isFormReady,
     isValidName,
@@ -104,95 +98,97 @@ const ProfileEditor = ({ onBack }: { onBack: () => void }) => {
             />
           </View>
 
-          {/* 생년월일 */}
-          <View
-            style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
-          >
-            <Text
-              style={[
-                tw('font-primary-600 text-on-surface-label-input text-left'),
-                { fontSize: 15 },
-              ]}
-            >
-              생년월일
-            </Text>
-            <BirthDateInput
-              year={year}
-              month={month}
-              day={day}
-              setYear={setYear}
-              setMonth={setMonth}
-              setDay={setDay}
-            />
-          </View>
-
-          {/* 성별 */}
-          <View
-            style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
-          >
-            <Text
-              style={[
-                tw('font-primary-600 text-on-surface-label-input text-left'),
-                { fontSize: 15 },
-              ]}
-            >
-              성별
-            </Text>
-            <View
-              style={[
-                tw('flex flex-row flex-nowrap items-center justify-start'),
-                { gap: 9 },
-              ]}
-            >
-              <GenderButton
-                title="남성"
-                onPress={() => setGender('M')}
-                selected={gender === 'M'}
-              />
-              <GenderButton
-                title="여성"
-                onPress={() => setGender('F')}
-                selected={gender === 'F'}
-              />
-            </View>
-          </View>
-
-          {/* 주소 */}
-          <TouchableOpacity
-            onPress={() => {
-              if (!isAddressInputEnabled) {
-                setIsPrivacyConsentModalOpen(true);
-              }
-            }}
-            activeOpacity={isAddressInputEnabled ? 1 : 0.7}
-          >
-            <View
-              style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
-            >
-              <Text
-                style={[
-                  tw('font-primary-600 text-on-surface-label-input text-left'),
-                  { fontSize: 15 },
-                ]}
-              >
-                주소 {!isAddressInputEnabled && '(동의 필요)'}
-              </Text>
+          {isConsentOptionalAgreed && (
+            <>
+              {/* 태어난 연도 */}
               <View
-                style={[
-                  tw('flex flex-row flex-nowrap items-center justify-start'),
-                  { gap: 9 },
-                ]}
-                pointerEvents={isAddressInputEnabled ? 'auto' : 'none'}
+                style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
               >
-                <AddressInput
-                  gu={gu}
-                  setGu={setGu}
-                  dong={dong}
-                  setDong={setDong}
+                <Text
+                  style={[
+                    tw('font-primary-600 text-on-surface-label-input text-left'),
+                    { fontSize: 15 },
+                  ]}
+                >
+                  태어난 연도 (선택)
+                </Text>
+                <BirthYearInput
+                  year={year}
+                  setYear={setYear}
                 />
               </View>
-            </View>
-          </TouchableOpacity>
+
+              {/* 성별 */}
+              <View
+                style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
+              >
+                <Text
+                  style={[
+                    tw('font-primary-600 text-on-surface-label-input text-left'),
+                    { fontSize: 15 },
+                  ]}
+                >
+                  성별 (선택)
+                </Text>
+                <View
+                  style={[
+                    tw('flex flex-row flex-nowrap items-center justify-start'),
+                    { gap: 9 },
+                  ]}
+                >
+                  <GenderButton
+                    title="남성"
+                    onPress={() => setGender('M')}
+                    selected={gender === 'M'}
+                  />
+                  <GenderButton
+                    title="여성"
+                    onPress={() => setGender('F')}
+                    selected={gender === 'F'}
+                  />
+                </View>
+              </View>
+              {/* 거주지 */}
+              <View
+                style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
+              >
+                <Text
+                  style={[
+                    tw('font-primary-600 text-on-surface-label-input text-left'),
+                    { fontSize: 15 },
+                  ]}
+                >
+                  거주지 (선택)
+                </Text>
+                <View
+                  style={[
+                    tw('flex flex-row flex-nowrap items-center justify-start'),
+                    { gap: 9 },
+                  ]}
+                >
+                  <AddressInput
+                    gu={gu}
+                    setGu={setGu}
+                    dong={dong}
+                    setDong={setDong}
+                  />
+                </View>
+              </View>
+            </>
+          )}
+
+          {!isConsentOptionalAgreed && (
+            <TouchableOpacity onPress={() => setIsPrivacyConsentModalOpen(true)}>
+              <Text
+                style={[
+                  tw('font-primary-500 text-brand-primary text-left'),
+                  { fontSize: 13 },
+                ]}
+              >
+                선택 정보(성별/태어난 연도/거주지) 수집 동의하기
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* 로그아웃 / 회원탈퇴 */}

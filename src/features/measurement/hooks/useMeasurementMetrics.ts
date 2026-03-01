@@ -3,7 +3,6 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { useMeasurementStore } from '../stores/useMeasurementStore';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { measureCaloriesBurned } from '@/shared/utils/measure';
-import { Gender } from '@/shared/model/shared.types';
 import { MEASUREMENT_METRICS_CONFIG } from '../model/measurement.constants';
 import {
   calculateFreeTraveledDistanceMeter,
@@ -21,7 +20,8 @@ export function useMeasurementMetrics(): void {
   const accumulatedCaloriesRef = useRef(0);
 
   const { data: userInfo } = useUserInfoQuery();
-  const userGender: Gender = userInfo?.data?.gender ?? undefined;
+  const userGender = userInfo?.data?.gender ?? undefined;
+  const userBirthYear = userInfo?.data?.birthYear ?? null;
 
   const prevMetaRef = useRef<typeof locationMetaData | null>(null);
   const prevPosRef = useRef<{ lat: number; lng: number } | null>(null);
@@ -100,7 +100,7 @@ export function useMeasurementMetrics(): void {
       const dtSec = (ts - prevCT) / 1000;
       const dDist = traveledMeter - prevCTrav;
       if (dtSec > 0 && dDist > 0) {
-        deltaCal = measureCaloriesBurned('biking', userGender, dtSec);
+        deltaCal = measureCaloriesBurned('biking', userGender, dtSec, Number(userBirthYear));
       }
     }
     accumulatedCaloriesRef.current += deltaCal;

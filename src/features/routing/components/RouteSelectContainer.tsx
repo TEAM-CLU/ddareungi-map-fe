@@ -12,7 +12,6 @@ import {
   measureCaloriesBurned,
   measureCarbonSaved,
 } from '@/shared/utils/measure';
-import { Gender } from '@/shared/model/shared.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import {
   getRouteCategoryText,
@@ -47,8 +46,9 @@ const RouteSelectContainer = ({
   baseTime,
   onRoutePress,
 }: RouteSelectContainerProps) => {
-  const userGender: Gender = useUserInfoQuery().data?.data.gender;
-
+  const userInfoData = useUserInfoQuery().data?.data;
+  const userGender = userInfoData?.gender ?? undefined;
+  const userBirthYear = userInfoData?.birthYear ?? null;
   // 로딩 상태
   if (isLoading) {
     return (
@@ -176,11 +176,13 @@ const RouteSelectContainer = ({
           'walking',
           userGender,
           walkingSeconds,
+          Number(userBirthYear),
         );
         const caloriesBurendBiking = measureCaloriesBurned(
           'biking',
           userGender,
           bikingSeconds,
+          Number(userBirthYear),
         );
         const totalCaloriesBurned = Math.trunc(
           caloriesBurnedWalking + caloriesBurendBiking,
@@ -190,7 +192,7 @@ const RouteSelectContainer = ({
           if (segment.type === 'walking') {
             return acc + segment.summary.distance;
           }
-          return acc;
+          return acc; 
         }, 0);
 
         const bikingDistance = segments.reduce((acc, segment) => {

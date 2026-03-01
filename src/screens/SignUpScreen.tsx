@@ -41,11 +41,9 @@ const SignUpScreen = () => {
     setConfirmPwd,
     name,
     setName,
-    birthDate,
-    setBirthDate,
+    setBirthYear,
     gender,
     setGender,
-    address,
     setAddress,
     isReadyToSignUp,
     setIsReadyToSignUp,
@@ -117,11 +115,9 @@ const SignUpScreen = () => {
           <SignUpProfileStep
             name={name}
             setName={setName}
-            birthDate={birthDate}
-            setBirthDate={setBirthDate}
+            setBirthYear={setBirthYear}
             gender={gender}
             setGender={setGender}
-            address={address}
             setAddress={setAddress}
             setSignUpStep={setSignUpStep}
             isConsentOptionalAgreed={isConsentOptionalAgreed}

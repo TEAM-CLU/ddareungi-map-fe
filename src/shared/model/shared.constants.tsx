@@ -128,3 +128,14 @@ export const MEAN_CARBON_EMISSION = {
   EMISSION_WALKING_PER_KM: 0.05,
   EMISSION_BIKING_PER_KM: 0.02,
 };
+
+// 칼로리 연령 보정
+export const CALORIE_AGE_FACTORS = [
+  { minAge: 0, weight: 1.03 },
+  { minAge: 20, weight: 1.0 },
+  { minAge: 40, weight: 0.97 },
+  { minAge: 60, weight: 0.94 },
+] as const;
+
+export const DEFAULT_CALORIE_AGE_FACTOR = 1.0;
+export const MAX_SUPPORTED_AGE = 120;

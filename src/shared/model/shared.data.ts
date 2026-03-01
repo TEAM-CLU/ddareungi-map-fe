@@ -58,7 +58,7 @@ export const textInputAttrSettingMap: Record<InputType, object> = {
 };
 
 // Date 배열
-export const yearList = Array.from({ length: 100 }, (_, i) => {
+export const yearList = Array.from({ length: 121 }, (_, i) => {
   const year = CURRENT_YEAR - i;
   return { label: `${year}년`, value: year };
 });

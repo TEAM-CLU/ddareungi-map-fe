@@ -31,6 +31,7 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 export const useNavigationOrchestrator = () => {
   const { data: userInfoData } = useUserInfoQuery();
   const userGender = (userInfoData?.data.gender as Gender) ?? 'M';
+  const userBirthYear = userInfoData?.data.birthYear ?? null;
 
   const isMapReady = useMapStore(state => state.isMapReady);
   const selectedRouteData = useRouteStore(state => state.selectedRouteData);
@@ -375,6 +376,7 @@ export const useNavigationOrchestrator = () => {
     locationMetaData,
     locationTick,
     userGender,
+    userBirthYear,
     traveledDistanceMeter,
     remainingDistanceMeter,
     setTraveledDistance,

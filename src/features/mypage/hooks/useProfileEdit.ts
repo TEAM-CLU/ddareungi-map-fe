@@ -6,8 +6,8 @@ import {
   UpdateUserPayload,
   DeleteUserResponse,
 } from '@/features/auth/model/user.types';
+import { formatBirthYear } from '@/shared/utils/date';
 import { formatAddress } from '@/shared/utils/formatAddress';
-import { formatBirthDate } from '@/shared/utils/date';
 import { CommonActions } from '@react-navigation/native';
 import { UseMutateFunction } from '@tanstack/react-query';
 import { StackNavigationProp } from 'node_modules/@react-navigation/stack/lib/typescript/src/types';
@@ -36,8 +36,6 @@ export const useProfileEdit = ({
 }: UseProfileEditParams) => {
   const [name, setName] = useState('');
   const [year, setYear] = useState<number | null>(null);
-  const [month, setMonth] = useState<number | null>(null);
-  const [day, setDay] = useState<number | null>(null);
   const [gender, setGender] = useState<'M' | 'F' | undefined>(undefined);
   const [gu, setGu] = useState<string | null>(null);
   const [dong, setDong] = useState<string | null>(null);
@@ -48,73 +46,74 @@ export const useProfileEdit = ({
   const [isConsentRequiredAgreed, setIsConsentRequiredAgreed] = useState(false);
   const [isConsentOptionalAgreed, setIsConsentOptionalAgreed] = useState(false);
   const [consentedAt, setConsentedAt] = useState<string | null>(null);
-  const [isAddressInputEnabled, setIsAddressInputEnabled] = useState(false);
 
   // 수정 여부
   const initialFormRef = useRef<{
     name: string;
-    gender?: 'M' | 'F';
-    birthDate: string;
-    address: string;
+    gender: 'M' | 'F' | null;
+    birthYear: string | null;
+    address: string | null;
     optionalAgreed: boolean;
   } | null>(null);
 
   useEffect(() => {
     if (userInfo) {
       setName(userInfo.data.name ?? '');
-      setGender(userInfo.data.gender as 'M' | 'F');
+      setGender((userInfo.data.gender as 'M' | 'F' | null) ?? undefined);
 
       setIsConsentRequiredAgreed(true); // 필수 동의는 항상 true (회원가입시 완료)
       setIsConsentOptionalAgreed(userInfo.data.optionalAgreed ?? false);
-      setIsAddressInputEnabled(userInfo.data.optionalAgreed ?? false);
       setConsentedAt(userInfo.data.consentedAt ?? null);
 
-      if (userInfo.data.birthDate) {
-        const [y, m, d] = userInfo.data.birthDate.split('-').map(Number);
-        setYear(y);
-        setMonth(m);
-        setDay(d);
+      const parsedBirthYear = userInfo.data.birthYear
+        ? Number(userInfo.data.birthYear)
+        : null;
+      if (parsedBirthYear && Number.isFinite(parsedBirthYear)) {
+        setYear(parsedBirthYear);
+      } else {
+        setYear(null);
       }
       if (userInfo.data.address) {
         const parts = userInfo.data.address.split('-');
         if (parts.length >= 3) {
           setGu(parts[1]);
           setDong(parts[2]);
+        } else {
+          setGu(null);
+          setDong(null);
         }
+      } else {
+        setGu(null);
+        setDong(null);
       }
 
       if (!initialFormRef.current) {
         initialFormRef.current = {
           name: userInfo.data.name ?? '',
-          gender: userInfo.data.gender as 'M' | 'F',
-          birthDate: userInfo.data.birthDate ?? '',
-          address: userInfo.data.address ?? '',
+          gender: userInfo.data.gender ?? null,
+          birthYear: userInfo.data.birthYear ?? null,
+          address: userInfo.data.address ?? null,
           optionalAgreed: userInfo.data.optionalAgreed ?? false,
         };
       }
     }
   }, [userInfo]);
 
-  // 동의 모달에서 필수 동의 완료 시 주소 입력 활성화
-  useEffect(() => {
-    if (isConsentOptionalAgreed && !isPrivacyConsentModalOpen) {
-      setIsAddressInputEnabled(true);
-    }
-  }, [isConsentOptionalAgreed, isPrivacyConsentModalOpen]);
-
-  const formattedBirthDate = useMemo(() => {
-    if (year && month && day) return formatBirthDate(year, month, day);
-    return userInfo?.data.birthDate ?? '';
-  }, [year, month, day]);
-
+  const formattedBirthYear = useMemo(
+    () => (year ? formatBirthYear(year) : null),
+    [year],
+  );
   const formattedAddress = useMemo(() => {
     if (gu && dong) return formatAddress(gu, dong);
-    return userInfo?.data.address ?? '';
+    return null;
   }, [gu, dong]);
 
   const isValidName = name.trim().length > 0 && name.trim() !== '';
-  const isValidGender = gender === 'M' || gender === 'F';
-  const isValidBirthDate = !!formattedBirthDate;
+  const isValidOptional =
+    !isConsentOptionalAgreed ||
+    ((gender === 'M' || gender === 'F') &&
+      !!formattedBirthYear &&
+      !!formattedAddress);
 
   const isDirty = useMemo(() => {
     if (!initialFormRef.current) return false;
@@ -123,21 +122,16 @@ export const useProfileEdit = ({
 
     return (
       initialUserInfo.name !== name ||
-      initialUserInfo.gender !== gender ||
-      initialUserInfo.birthDate !== formattedBirthDate ||
-      initialUserInfo.address !== formattedAddress ||
+      initialUserInfo.gender !== (isConsentOptionalAgreed ? (gender ?? null) : null) ||
+      initialUserInfo.birthYear !==
+        (isConsentOptionalAgreed ? formattedBirthYear : null) ||
+      initialUserInfo.address !==
+        (isConsentOptionalAgreed ? formattedAddress : null) ||
       initialUserInfo.optionalAgreed !== isConsentOptionalAgreed
     );
-  }, [
-    name,
-    gender,
-    formattedBirthDate,
-    formattedAddress,
-    isConsentOptionalAgreed,
-  ]);
+  }, [name, gender, formattedBirthYear, formattedAddress, isConsentOptionalAgreed]);
 
-  const isFormReady =
-    isValidName && isValidGender && isValidBirthDate && isDirty;
+  const isFormReady = isValidName && isValidOptional && isDirty;
 
   const handleSaveChangesPress = () => {
     if (!isFormReady) {
@@ -146,9 +140,9 @@ export const useProfileEdit = ({
 
     const updatedData: UpdateUserPayload = {
       name: name ?? userInfo?.data.name ?? '',
-      gender: gender ?? userInfo?.data.gender ?? 'M',
-      birthDate: formattedBirthDate ?? userInfo?.data.birthDate ?? '',
-      address: formattedAddress ?? userInfo?.data.address ?? '',
+      gender: isConsentOptionalAgreed ? (gender ?? null) : null,
+      birthYear: isConsentOptionalAgreed ? formattedBirthYear : null,
+      address: isConsentOptionalAgreed ? formattedAddress : null,
       requiredAgreed: true, // 필수 동의는 항상 true
       optionalAgreed: isConsentOptionalAgreed,
       consentedAt:
@@ -160,7 +154,7 @@ export const useProfileEdit = ({
         Alert.alert('알림', data.message);
       },
       onError: error => {
-        Alert.alert('오류', error.message);
+        Alert.alert('오류', "정보 수정에 실패했습니다. ");
       },
     });
   };
@@ -215,7 +209,8 @@ export const useProfileEdit = ({
                 Alert.alert('알림', data.message);
               },
               onError: error => {
-                Alert.alert('오류', error.message);
+                Alert.alert('오류', "회원탈퇴에 실패했습니다. " );
+                navigation.navigate('Login');
               },
             }),
         },
@@ -229,10 +224,6 @@ export const useProfileEdit = ({
     setName,
     year,
     setYear,
-    month,
-    setMonth,
-    day,
-    setDay,
 
     gender,
     setGender,
@@ -248,7 +239,6 @@ export const useProfileEdit = ({
     isConsentOptionalAgreed,
     setIsConsentOptionalAgreed,
     setConsentedAt,
-    isAddressInputEnabled,
 
     isFormReady,
     isValidName,

@@ -30,6 +30,7 @@ export type UseNavigationMetricsParams = {
   locationMetaData: LocationMetaData | null;
   locationTick: number | undefined;
   userGender: Gender;
+  userBirthYear: string | undefined | null;
   traveledDistanceMeter: number | undefined | null;
   remainingDistanceMeter: number | undefined | null;
   setTraveledDistance: (v: number) => void;
@@ -63,6 +64,7 @@ export const useNavigationMetrics = ({
   locationMetaData,
   locationTick,
   userGender,
+  userBirthYear,
   traveledDistanceMeter,
   remainingDistanceMeter,
   setTraveledDistance,
@@ -259,6 +261,7 @@ export const useNavigationMetrics = ({
       transportationType,
       userGender,
       dtSec,
+      Number(userBirthYear),
     );
     const carbonDelta = measureCarbonSaved(
       transportationType,
@@ -274,6 +277,7 @@ export const useNavigationMetrics = ({
     locationTick,
     traveledDistanceMeter, // 거리가 변했을 때 실행
     userGender,
+    userBirthYear,
     addCaloriesBurned,
     addCarbonSaved,
   ]);

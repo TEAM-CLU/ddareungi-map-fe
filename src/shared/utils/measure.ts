@@ -1,5 +1,7 @@
 import { Coordinate } from '@/shared/model/shared.types';
 import {
+  CALORIE_AGE_FACTORS,
+  DEFAULT_CALORIE_AGE_FACTOR,
   MEAN_ACITIVITY_MET,
   MEAN_ADULT_PHYSICAL_INFORMATION,
   MEAN_CARBON_EMISSION,
@@ -25,10 +27,30 @@ export const getDistanceBetweenCoords = (
   return d;
 };
 
+// 태어난 연도 범위 측정
+export const getWeightByBirthYear = (
+  birthYear?: number | null,
+  today: Date = new Date()
+): number => {
+  if (!birthYear) return DEFAULT_CALORIE_AGE_FACTOR;
+
+  const age = today.getFullYear() - birthYear;
+
+  for (let i = CALORIE_AGE_FACTORS.length - 1; i >= 0; i--) {
+    if (age >= CALORIE_AGE_FACTORS[i].minAge) {
+      return CALORIE_AGE_FACTORS[i].weight;
+    }
+  }
+
+  return DEFAULT_CALORIE_AGE_FACTOR;
+};
+
+
 export const measureCaloriesBurned = (
   transportationType: TransportationType,
   gender: Gender,
   deltaSeconds: number,
+  birthYear?: number | null,
 ): number => {
   if (deltaSeconds <= 0) return 0;
 
@@ -38,7 +60,9 @@ export const measureCaloriesBurned = (
     MEAN_ADULT_WOMAN_WEIGHT_KG,
     MEAN_ADULT_NEUTRAL_WEIGHT_KG,
   } = MEAN_ADULT_PHYSICAL_INFORMATION;
-  const weight =
+
+  const weightFactorByBirthYear = getWeightByBirthYear(birthYear);
+  const weightByPhysicalInformation =
     gender === 'M'
       ? MEAN_ADULT_MAN_WEIGHT_KG
       : gender === 'F'
@@ -53,8 +77,9 @@ export const measureCaloriesBurned = (
       : 0;
 
   const hours = deltaSeconds / 3600;
-  return met * weight * hours;
+  return met * weightFactorByBirthYear * weightByPhysicalInformation * hours;
 };
+
 export const measureCarbonSaved = (
   transportationType: TransportationType,
   distanceMeter: number,

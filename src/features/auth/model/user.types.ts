@@ -4,8 +4,8 @@ export interface CreateUserPayload {
   email: string;
   password: string;
   name: string;
-  gender: 'M' | 'F';
-  birthDate: string;
+  gender: 'M' | 'F' | null;
+  birthYear: string | null;
   address: string | null;
   consentedAt: string;
   requiredAgreed: boolean;
@@ -41,8 +41,8 @@ export interface GetUserInfoResponse {
 export interface UserInfo {
   name: string;
   email: string;
-  birthDate: string;
-  gender: 'M' | 'F';
+  birthYear: string | null;
+  gender: 'M' | 'F' | null;
   address: string | null;
   totalTime: number;
   totalDistance: number;
@@ -57,8 +57,8 @@ export interface UserInfo {
 // 유저 정보 수정
 export interface UpdateUserPayload {
   name: string;
-  birthDate: string;
-  gender: 'M' | 'F';
+  birthYear: string | null;
+  gender: 'M' | 'F' | null;
   address: string | null;
   consentedAt: string;
   requiredAgreed: boolean;

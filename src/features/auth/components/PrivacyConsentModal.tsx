@@ -114,7 +114,7 @@ const PrivacyConsentModal = ({
               { fontSize: 14 },
             ]}
           >
-            수집 항목: 이메일(아이디), 이름, 생년월일, 성별
+            수집 항목: 이메일(아이디), 닉네임
           </Text>
           <Text
             style={[
@@ -122,7 +122,7 @@ const PrivacyConsentModal = ({
               { fontSize: 14 },
             ]}
           >
-            이용 목적: 회원관리 및 식별, 맞춤형 기능 제공
+            이용 목적: 회원관리 및 식별
           </Text>
           <Text
             style={[
@@ -169,7 +169,7 @@ const PrivacyConsentModal = ({
               { fontSize: 14 },
             ]}
           >
-            더 나은 지역 기반 추천 서비스를 위해 아래 정보를 선택적으로
+            더 나은 맞춤형 추천 서비스를 위해 아래 정보를 선택적으로
             수집·이용합니다.
           </Text>
           <Text
@@ -178,7 +178,7 @@ const PrivacyConsentModal = ({
               { fontSize: 14 },
             ]}
           >
-            수집 항목: 거주 지역(시/군/동)
+            수집 항목: 성별, 태어난 연도, 거주 지역(시/군/동)
           </Text>
           <Text
             style={[
@@ -186,7 +186,7 @@ const PrivacyConsentModal = ({
               { fontSize: 14 },
             ]}
           >
-            이용 목적: 지역 맞춤 추천 및 통계 분석
+            이용 목적: 맞춤형 측정 결과 및 지역 서비스 제공
           </Text>
           <Text
             style={[
@@ -221,7 +221,7 @@ const PrivacyConsentModal = ({
             ]}
           >
             이용자는 개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있습니다.
-            다만, 필수 항목에 대한 동의를 거부하시는 경우 회원가입 및 마이페이지
+            다만, 필수 항목에 대한 동의를 거부하시는 경우 마이페이지
             등 일부 기능 이용이 제한될 수 있습니다. 선택 항목에 대한 동의를
             거부하셔도 기본적인 서비스(경로 탐색, 지도 보기 등)는 정상적으로
             이용 가능합니다.
