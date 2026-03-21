@@ -1,5 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { navigationRef } from '@/shared/services/navigationRef';
 import { RootStackParamList } from '../types';
 import GlobalModals from '@/shared/components/modal/GlobalModals';
 import Toast from 'react-native-toast-message';
@@ -23,7 +24,7 @@ interface AppNavigatorProps {
 
 const AppNavigator = ({ initialRouteName }: AppNavigatorProps) => {
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <View style={{ flex: 1 }}>
         <Stack.Navigator
           screenOptions={{

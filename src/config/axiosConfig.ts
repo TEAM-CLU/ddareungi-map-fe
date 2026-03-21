@@ -6,6 +6,19 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import { Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { navigateToLogin } from '@/shared/services/navigationRef';
+
+// 401 Alert가 이미 표시 중인지 여부 (동시 다발적 401 중복 방지)
+let isHandling401 = false;
+
+// 새 로그인 성공 시 플래그를 리셋해주는 함수 (AuthProvider의 setToken에서 호출)
+export const resetAuth401Flag = () => {
+  isHandling401 = false;
+};
+
+// 네트워크 오류 토스트 마지막 표시 시각 (동시 다발적 오류 및 재시도 중복 방지)
+let lastNetworkToastTime = 0;
+const NETWORK_TOAST_COOLDOWN_MS = 10_000; // 10초 쿨다운
 
 export const commonErrorInterceptor = (
   instance: AxiosInstance,
@@ -22,24 +35,26 @@ export const commonErrorInterceptor = (
 
       // 1. 중요 에러 (Alert)
       if (status === 401) {
-        Alert.alert(
-          '인증 만료',
-          '세션이 만료되었습니다. 다시 로그인해주세요.',
-          [
-            {
-              text: '확인',
-              onPress: async () => {
-                // 1. handleLogout 함수 없으면 리턴
-                if (!handleLogout) return;
-
-                try {
-                  // 2. 로그아웃 시도
-                  await handleLogout();
-                } catch (logoutError) {}
+        if (!isHandling401) {
+          isHandling401 = true;
+          Alert.alert(
+            '인증 만료',
+            '세션이 만료되었습니다. 다시 로그인해주세요.',
+            [
+              {
+                text: '확인',
+                onPress: async () => {
+                  if (handleLogout) {
+                    try {
+                      await handleLogout();
+                    } catch (logoutError) {}
+                  }
+                  navigateToLogin();
+                },
               },
-            },
-          ],
-        );
+            ],
+          );
+        }
         return Promise.reject(new Error('로그인이 만료되었습니다.'));
       }
       if (status === 403) {
@@ -49,21 +64,29 @@ export const commonErrorInterceptor = (
 
       // 2. 공통 에러 (Toast)
       if (status && status >= 500) {
-        Toast.show({
-          type: 'error',
-          text1: '서버 오류',
-          text2: '잠시 후 다시 시도해주세요.',
-        });
+        const now = Date.now();
+        if (now - lastNetworkToastTime > NETWORK_TOAST_COOLDOWN_MS) {
+          lastNetworkToastTime = now;
+          Toast.show({
+            type: 'error',
+            text1: '서버 오류',
+            text2: '잠시 후 다시 시도해주세요.',
+          });
+        }
         customMessage = '서버 점검 중입니다.';
       } else if (
         error.message.includes('Network Error') ||
         error.code === 'ECONNABORTED'
       ) {
-        Toast.show({
-          type: 'error',
-          text1: '네트워크 오류',
-          text2: '인터넷 연결을 확인해주세요.',
-        });
+        const now = Date.now();
+        if (now - lastNetworkToastTime > NETWORK_TOAST_COOLDOWN_MS) {
+          lastNetworkToastTime = now;
+          Toast.show({
+            type: 'error',
+            text1: '네트워크 오류',
+            text2: '인터넷 연결을 확인해주세요.',
+          });
+        }
         customMessage = '인터넷 연결이 불안정합니다.';
       } else if (status && status >= 400 && status < 500) {
         // 백엔드에서 보내준 에러 메시지가 있으면 그걸 우선 사용

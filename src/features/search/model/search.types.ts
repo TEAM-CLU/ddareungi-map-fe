@@ -15,17 +15,21 @@ export interface KakaoSearchPlace {
 }
 
 export interface KakaoSearchResponse {
-  documents: KakaoSearchPlace[];
-  meta: {
-    total_count: number;
-    pageable_count: number;
-    is_end: boolean;
-    same_name: {
-      region: string[];
-      keyword: string;
-      selected_region: string;
+  statusCode: number;
+  message: string;
+  data: {
+    documents: KakaoSearchPlace[];
+    meta: {
+      total_count: number;
+      pageable_count: number;
+      is_end: boolean;
+      same_name?: {
+        region: string[];
+        keyword: string;
+        selected_region: string;
+      };
     };
-  };
+  }
 }
 
 // 앱 내부 장소 정보 기준 타입

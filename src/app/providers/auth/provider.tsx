@@ -6,6 +6,7 @@ import { useAxiosInterceptor } from '@/shared/hooks/useAxiosInterceptor';
 import { setClientToken } from '@/shared/services/axios';
 import { useQueryClient } from '@tanstack/react-query';
 import { handleCatch } from '@/shared/utils/errorHandler';
+import { resetAuth401Flag } from '@/config/axiosConfig';
 
 export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
@@ -35,6 +36,7 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
 
   // 토큰 저장
   const setToken = useCallback(async (token: string) => {
+    resetAuth401Flag(); // 새 로그인 성공 시 인증 만료 Alert 플래그 리셋
     setAccessTokenState(token);
     setClientToken(token);
     await AsyncStorage.setItem(ACCESS_TOKEN_KEY, token);

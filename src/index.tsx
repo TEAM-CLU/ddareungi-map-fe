@@ -12,7 +12,15 @@ import { WebViewRefProvider } from '@/app/providers/webview';
 import { trackPlayerService } from '@/features/navigation/utils/trackPlayerService';
 import TrackPlayer from 'react-native-track-player';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // 재시도는 1회만 (기본 3회 → 각 재시도마다 인터셉터 토스트가 중복 발생하는 문제 방지)
+      retry: 1,
+      retryDelay: 2000,
+    },
+  },
+});
 TrackPlayer.registerPlaybackService(() => trackPlayerService);
 
 const Root = () => {
