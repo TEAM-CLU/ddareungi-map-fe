@@ -80,9 +80,10 @@ export const useAutocomplete = () => {
   }, []);
 
   // 타이핑 중(디바운스 대기)이거나, API 로딩 중이면 '로딩 중'으로 취급
-  // 이렇게 하면 타자 칠 때 즉시 로딩바가 떠서 반응이 빨라 보임
+  // 단, 이전 에러/결과가 이미 있을 때는 타이핑만으로 로딩 화면으로 전환하지 않음 (깜빡임 방지)
   const isTyping = query !== debouncedQuery;
-  const showLoading = isTyping || isQueryLoading;
+  const hasExistingState = results.length > 0 || !!queryError;
+  const showLoading = isQueryLoading || (isTyping && !hasExistingState);
 
   return {
     query,
