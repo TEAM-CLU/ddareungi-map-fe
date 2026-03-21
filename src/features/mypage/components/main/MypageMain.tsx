@@ -225,7 +225,7 @@ const MypageMain = ({ onNavigate }: MypageMainProps) => {
             >
               <Text
                 style={tw(
-                  'text-placeholder font-primary-500 text-xs underline',
+                  'text-on-surface-placeholder font-primary-500 text-xs underline',
                 )}
               >
                 로그아웃

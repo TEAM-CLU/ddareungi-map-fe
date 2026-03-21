@@ -55,8 +55,8 @@ export function useMeasurementLocation(): void {
         {
           enableHighAccuracy: true,
           distanceFilter: 0,
-          interval: 3000,
-          fastestInterval: 2000,
+          interval: 1000,
+          fastestInterval: 500,
           forceRequestLocation: true,
         },
       );

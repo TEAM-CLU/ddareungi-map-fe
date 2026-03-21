@@ -49,6 +49,7 @@ const SearchOverlay = ({
     query,
     setQuery,
     isLoading,
+    isFetching,
     error,
     results,
     clearSearch,
@@ -397,6 +398,12 @@ const SearchOverlay = ({
             ) : (
               // 검색 결과 표시
               <View style={tw('flex-1 mb-8')}>
+                {/* 기존 상태 유지 중 재검색 시 상단 미세 로딩 인디케이터 */}
+                {isFetching && (
+                  <View style={tw('items-center py-2')}>
+                    <ActivityIndicator size="small" color="#888" />
+                  </View>
+                )}
                 {isLoading ? (
                   <View
                     style={[

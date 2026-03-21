@@ -47,7 +47,7 @@ export const useTurnController = ({
     EXIT_RADIUS_METER,
     DEADZONE_DISTANCE_METER,
     MIN_EFFECTIVE_MOVE_METER,
-    DOT_DEADZONE,
+    DOT_DEADZONE: _DOT_DEADZONE,
     PASS_COUNT_DECAY,
     PASS_COUNT_MAX,
   } = TURN_CONFIG;
@@ -153,7 +153,7 @@ export const useTurnController = ({
     if (!prevPosition || prevTimestamp == null) return;
 
     const dtSec = (nowTimestamp - prevTimestamp) / 1000;
-    const { moveMag, speedMps, dot } = calculateMotionVector(
+    const { moveMag, speedMps, dot: _dot } = calculateMotionVector(
       prevPosition,
       currentCoord,
       nextTurnCoord,
@@ -179,10 +179,10 @@ export const useTurnController = ({
     }
 
     // dot < 0 => 턴포인트를 등지고 움직임(멀어지는 방향)
-    const isMovingAwayFromTurn = dot < DOT_DEADZONE;
+    // const isMovingAwayFromTurn = _dot < _DOT_DEADZONE;
 
-    // 6) passed 카운트
-    const isPassedCandidate = isGettingFarther && isMovingAwayFromTurn;
+    // 6) passed 카운트 (벡터 방향 판단 미사용 — 거리 증가 여부만으로 판단)
+    const isPassedCandidate = isGettingFarther; // && isMovingAwayFromTurn;
 
     if (!isPassedCandidate) {
       refs.passCountRef.current = Math.max(

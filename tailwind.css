@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  * {
-    font-family: 'Pretendard Variable';
-  }
-}
-
 @layer utilities {
   /* === Brand === */
   .bg-brand-primary {
@@ -33,10 +27,10 @@
   .text-on-surface-quaternary {
     color: theme('colors.on-surface.quaternary');
   }
-  .text-input-label {
+  .text-on-surface-input-label {
     color: theme('colors.on-surface.input-label');
   }
-  .text-placeholder {
+  .text-on-surface-placeholder {
     color: theme('colors.on-surface.placeholder');
   }
   .text-on-surface-disabled {
@@ -91,139 +85,6 @@
     background-color: theme('colors.marker.origin');
   }
 
-  /* === GAP (row) === */
-  .g-x-2 {
-    flex-direction: row;
-    margin-left: -8px;
-    margin-right: -8px;
-  }
-  .g-x-3 {
-    flex-direction: row;
-    margin-left: -12px;
-    margin-right: -12px;
-  }
-  .g-x-4 {
-    flex-direction: row;
-    margin-left: -16px;
-    margin-right: -16px;
-  }
-  .g-x-6 {
-    flex-direction: row;
-    margin-left: -24px;
-    margin-right: -24px;
-  }
-  .g-x-8 {
-    flex-direction: row;
-    margin-left: -32px;
-    margin-right: -32px;
-  }
-
-  .g-item-x-2 {
-    margin-left: 8px;
-    margin-right: 8px;
-  }
-  .g-item-x-3 {
-    margin-left: 12px;
-    margin-right: 12px;
-  }
-  .g-item-x-4 {
-    margin-left: 16px;
-    margin-right: 16px;
-  }
-  .g-item-x-6 {
-    margin-left: 24px;
-    margin-right: 24px;
-  }
-  .g-item-x-8 {
-    margin-left: 32px;
-    margin-right: 32px;
-  }
-
-  /* === GAP (column) === */
-  .g-y-2 {
-    flex-direction: column;
-    margin-top: -8px;
-    margin-bottom: -8px;
-  }
-  .g-y-3 {
-    flex-direction: column;
-    margin-top: -12px;
-    margin-bottom: -12px;
-  }
-  .g-y-4 {
-    flex-direction: column;
-    margin-top: -16px;
-    margin-bottom: -16px;
-  }
-  .g-y-6 {
-    flex-direction: column;
-    margin-top: -24px;
-    margin-bottom: -24px;
-  }
-  .g-y-8 {
-    flex-direction: column;
-    margin-top: -32px;
-    margin-bottom: -32px;
-  }
-
-  .g-item-y-2 {
-    margin-top: 8px;
-    margin-bottom: 8px;
-  }
-  .g-item-y-3 {
-    margin-top: 12px;
-    margin-bottom: 12px;
-  }
-  .g-item-y-4 {
-    margin-top: 16px;
-    margin-bottom: 16px;
-  }
-  .g-item-y-6 {
-    margin-top: 24px;
-    margin-bottom: 24px;
-  }
-  .g-item-y-8 {
-    margin-top: 32px;
-    margin-bottom: 32px;
-  }
-
-  /* === Shadows === */
-  .shadow-sm {
-    shadow-color: #000000;
-    shadow-offset: 0px 1px;
-    shadow-opacity: 0.1;
-    shadow-radius: 2px;
-    elevation: 1;
-  }
-  .shadow-md {
-    shadow-color: #000000;
-    shadow-offset: 0px 3px;
-    shadow-opacity: 0.15;
-    shadow-radius: 4px;
-    elevation: 3;
-  }
-  .shadow-lg {
-    shadow-color: #000000;
-    shadow-offset: 0px 6px;
-    shadow-opacity: 0.2;
-    shadow-radius: 6px;
-    elevation: 6;
-  }
-  .shadow-xl {
-    shadow-color: #000000;
-    shadow-offset: 0px 10px;
-    shadow-opacity: 0.25;
-    shadow-radius: 12px;
-    elevation: 10;
-  }
-  .shadow-2xl {
-    shadow-color: #000000;
-    shadow-offset: 0px 15px;
-    shadow-opacity: 0.3;
-    shadow-radius: 20px;
-    elevation: 15;
-  }
-
   /* === Fonts === */
   .font-primary-400 {
     font-family: 'Pretendard-Regular';
@@ -264,12 +125,11 @@
   .font-p-black {
     font-family: 'Pretendard-Black';
   }
-
   .font-secondary {
     font-family: system-ui;
   }
 
-  /* === Fall back - error === */
+  /* === Error === */
   .text-error {
     color: theme('colors.error');
   }

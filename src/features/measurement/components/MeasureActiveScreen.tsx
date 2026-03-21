@@ -66,7 +66,7 @@ export default function MeasureActiveScreen({
   const targetMeter = targetDistanceKm * 1000;
 
   return (
-    <SafeAreaView style={tw('flex-1')} edges={['top']}>
+    <SafeAreaView style={tw('flex-1')} edges={['bottom']}>
       <View
         style={[
           tw('flex-1 px-4'),

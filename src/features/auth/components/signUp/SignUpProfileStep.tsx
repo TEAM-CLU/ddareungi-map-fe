@@ -88,7 +88,7 @@ const SignUpProfileStep = ({
         <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
           <Text
             style={[
-              tw('font-primary-600 text-on-surface-label-input text-left'),
+              tw('font-primary-600 text-on-surface-input-label text-left'),
               { fontSize: 15 },
             ]}
           >
@@ -107,7 +107,7 @@ const SignUpProfileStep = ({
             <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
               <Text
                 style={[
-                  tw('font-primary-600 text-on-surface-label-input text-left'),
+                  tw('font-primary-600 text-on-surface-input-label text-left'),
                   { fontSize: 15 },
                 ]}
               >
@@ -121,7 +121,7 @@ const SignUpProfileStep = ({
             <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
               <Text
                 style={[
-                  tw('font-primary-600 text-on-surface-label-input text-left'),
+                  tw('font-primary-600 text-on-surface-input-label text-left'),
                   { fontSize: 15 },
                 ]}
               >
@@ -148,7 +148,7 @@ const SignUpProfileStep = ({
             <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
               <Text
                 style={[
-                  tw('font-primary-600 text-on-surface-label-input text-left'),
+                  tw('font-primary-600 text-on-surface-input-label text-left'),
                   { fontSize: 15 },
                 ]}
               >

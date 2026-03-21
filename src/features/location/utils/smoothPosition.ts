@@ -11,8 +11,9 @@ export const smoothPosition = (
   }
   const prev = lastPosition;
   const smoothedcoord = {
-    lat: prev.lat * 0.5 + lat * 0.5,
-    lng: prev.lng * 0.5 + lng * 0.5,
+    // 현재 위치에 70% 가중치를 주어 실제 이동 거리가 충분히 반영되도록 한다.
+    lat: prev.lat * 0.3 + lat * 0.7,
+    lng: prev.lng * 0.3 + lng * 0.7,
   };
   lastPosition = smoothedcoord;
   return smoothedcoord;

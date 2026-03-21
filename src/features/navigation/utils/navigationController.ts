@@ -91,11 +91,12 @@ export const findClosestCoordIndex = (
  *
  * 계산 방식:
  * - interval 좌표가 2개 이상:
- *    traveled  = (start -> closest) + polyline(start..closest)
- *    remaining = (myPos -> closest) + polyline(closest..end)
+ *    traveled  = polyline(start..closestSegmentStart)
+ *    remaining = dist(myPos → closestSegmentEnd) + polyline(closestSegmentEnd..end)
+ *    ※ remaining은 현재 세그먼트의 끝점(nextIdx)부터 누적하여
+ *       전진할수록 값이 감소하는 구조를 보장한다.
  * - interval 좌표가 1개:
- *    traveled  = (onlyCoord -> myPos)
- *    remaining = (myPos -> onlyCoord)
+ *    traveled/remaining 모두 (onlyCoord ↔ myPos) 직선거리
  * - interval 좌표 없음: 0
  */
 export const calculateIntervalDistanceByMyPosition = (
@@ -115,7 +116,6 @@ export const calculateIntervalDistanceByMyPosition = (
       myPosition,
       intervalCoordinateList,
     );
-    const closestCoord = intervalCoordinateList[closestIdx];
 
     if (type === 'traveled') {
       // 1) start -> closest (직선) + 2) start..closest polyline 누적
@@ -128,10 +128,16 @@ export const calculateIntervalDistanceByMyPosition = (
     }
 
     if (type === 'remaining') {
-      // 1) myPos -> closest (직선) + 2) closest..end polyline 누적
-      distanceMeter += getDistanceBetweenCoords(myPosition, closestCoord);
+      // findClosestCoordIndex는 선분 기준이므로 closestIdx는 세그먼트 시작점 인덱스.
+      // 세그먼트 끝점(nextIdx)까지의 직선 + nextIdx부터 끝까지 폴리라인을 합산하면
+      // 전진할수록 값이 반드시 감소한다.
+      const nextIdx = closestIdx + 1;
+      distanceMeter += getDistanceBetweenCoords(
+        myPosition,
+        intervalCoordinateList[nextIdx],
+      );
 
-      for (let i = closestIdx; i < intervalCoordinateList.length - 1; i++) {
+      for (let i = nextIdx; i < intervalCoordinateList.length - 1; i++) {
         distanceMeter += getDistanceBetweenCoords(
           intervalCoordinateList[i],
           intervalCoordinateList[i + 1],

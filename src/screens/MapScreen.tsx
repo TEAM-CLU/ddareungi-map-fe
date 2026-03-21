@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
@@ -19,10 +19,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigationOrchestrator } from '@/features/navigation/hooks/useNavigationOrchestrator';
 import NavVolumeToggleButton from '@/features/navigation/components/NavVolumeToggleButton';
 import NorthIndicator from '@/features/navigation/components/NorthIndicator';
-import SimpleLoading from '@/shared/components/SimpleLoading';
-import { makeSegmentColors } from '@/features/navigation/utils/makeSegmentColors';
 import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
+import SimpleLoading from '@/shared/components/SimpleLoading';
+import { useMapStore } from '@/features/map/stores/useMapStore';
+import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { getRouteCategoryText } from '@/shared/utils/formatting';
+import { makeSegmentColors } from '@/features/navigation/utils/makeSegmentColors';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 const MapScreen = () => {
@@ -35,6 +37,14 @@ const MapScreen = () => {
     handleOpenBookmarkModal,
     handleMapReadyMessage,
   } = useMapOrchestrator({ navigation });
+
+  // ─────────────────────────────────────────────
+  // 초기 로딩 오버레이
+  // isMapReady(Zustand) + 첫 GPS 좌표 수신 완료 시 해제
+  // ─────────────────────────────────────────────
+  const isMapReady = useMapStore(state => state.isMapReady);
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const isMapPositioned = isMapReady && !!locationMetaData?.coordinate;
 
   const {
     pathDataListByInterval,
@@ -77,14 +87,6 @@ const MapScreen = () => {
   const effectiveWaypointCount =
     routeType === 'loop' && waypointCount === 1 ? 0 : waypointCount;
   const segmentColors = makeSegmentColors(effectiveWaypointCount);
-  const indicatorStyle = () => [
-    tw('flex-row items-center px-2 py-1 rounded-full'),
-    {
-      backgroundColor: '#FFFFFF',
-      borderColor: '#E5E7EB',
-      borderWidth: 1,
-    },
-  ];
 
   return (
     <View style={tw('flex-1 relative w-full')}>
@@ -115,30 +117,22 @@ const MapScreen = () => {
           />
           <View
             style={[
-              tw('absolute flex flex-row items-center justify-start'),
+              tw('absolute flex-row items-center justify-start left-5 px-2.5 py-1.5 border border-gray-200'),
               {
                 top: 158,
-                left: 20,
                 gap: 6,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
                 backgroundColor: 'rgba(255,255,255,0.95)',
                 borderRadius: 14,
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
               },
             ]}
           >
             {segmentColors.map((color, segIdx) => (
-              <View key={segIdx} style={indicatorStyle()}>
+              <View
+                key={segIdx}
+                style={tw('flex-row items-center px-2 py-1 rounded-full bg-white border border-gray-200')}
+              >
                 <View
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 999,
-                    backgroundColor: color,
-                    marginRight: 6,
-                  }}
+                  style={[tw('w-2 h-2 rounded-full mr-1.5'), { backgroundColor: color }]}
                 />
                 <Text style={[tw('font-primary-600'), { fontSize: 11 }]}>
                   {segIdx + 1}
@@ -244,6 +238,9 @@ const MapScreen = () => {
           <BookmarkMarkersToggleButton />
         </View>
       )}
+
+      {/* ── 초기 로딩 오버레이: 맵 준비 + 첫 위치 수신 전까지 표시 ── */}
+      {!isMapPositioned && <SimpleLoading title="지도를 불러오는 중..." />}
     </View>
   );
 };

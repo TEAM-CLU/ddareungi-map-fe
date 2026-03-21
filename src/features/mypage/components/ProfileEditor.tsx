@@ -83,7 +83,7 @@ const ProfileEditor = ({ onBack }: { onBack: () => void }) => {
           >
             <Text
               style={[
-                tw('font-primary-600 text-on-surface-label-input text-left'),
+                tw('font-primary-600 text-on-surface-input-label text-left'),
                 { fontSize: 15 },
               ]}
             >
@@ -106,7 +106,7 @@ const ProfileEditor = ({ onBack }: { onBack: () => void }) => {
               >
                 <Text
                   style={[
-                    tw('font-primary-600 text-on-surface-label-input text-left'),
+                    tw('font-primary-600 text-on-surface-input-label text-left'),
                     { fontSize: 15 },
                   ]}
                 >
@@ -124,7 +124,7 @@ const ProfileEditor = ({ onBack }: { onBack: () => void }) => {
               >
                 <Text
                   style={[
-                    tw('font-primary-600 text-on-surface-label-input text-left'),
+                    tw('font-primary-600 text-on-surface-input-label text-left'),
                     { fontSize: 15 },
                   ]}
                 >
@@ -154,7 +154,7 @@ const ProfileEditor = ({ onBack }: { onBack: () => void }) => {
               >
                 <Text
                   style={[
-                    tw('font-primary-600 text-on-surface-label-input text-left'),
+                    tw('font-primary-600 text-on-surface-input-label text-left'),
                     { fontSize: 15 },
                   ]}
                 >
@@ -194,13 +194,13 @@ const ProfileEditor = ({ onBack }: { onBack: () => void }) => {
         {/* 로그아웃 / 회원탈퇴 */}
         <View style={tw('flex-row justify-center')}>
           <TouchableOpacity onPress={handleLogoutPress}>
-            <Text style={tw('text-placeholder font-primary-500 text-xs')}>
+            <Text style={tw('text-on-surface-placeholder font-primary-500 text-xs')}>
               로그아웃
             </Text>
           </TouchableOpacity>
-          <Text style={tw('mx-2 text-placeholder text-xs')}>|</Text>
+          <Text style={tw('mx-2 text-on-surface-placeholder text-xs')}>|</Text>
           <TouchableOpacity onPress={handleDeleteAccountPress}>
-            <Text style={tw('text-placeholder font-primary-500 text-xs')}>
+            <Text style={tw('text-on-surface-placeholder font-primary-500 text-xs')}>
               회원탈퇴
             </Text>
           </TouchableOpacity>

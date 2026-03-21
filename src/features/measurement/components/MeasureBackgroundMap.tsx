@@ -9,11 +9,21 @@ interface MapReadyPayload {
   isReady?: boolean;
 }
 
+interface MeasureBackgroundMapProps {
+  /** true이면 위치 업데이트마다 항상 내 위치로 재센터링 (분할 모드에서 사용) */
+  isTracking?: boolean;
+  /** WebView 맵이 준비되면 1회 호출 */
+  onMapReady?: () => void;
+}
+
 /**
  * 측정 화면 전용 배경 지도.
  * 전역 webViewRef/지도 오케스트레이터를 쓰지 않아 내비/메인맵과 충돌하지 않는다.
  */
-export default function MeasureBackgroundMap() {
+export default function MeasureBackgroundMap({
+  isTracking = true,
+  onMapReady,
+}: MeasureBackgroundMapProps) {
   const webViewRef = useRef<WebView | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const prevLocationModeRef = useRef<LocationMode>('default');
@@ -45,12 +55,13 @@ export default function MeasureBackgroundMap() {
         const payload = JSON.parse(event.nativeEvent.data) as MapReadyPayload;
         if (payload.type === 'mapReady' && payload.isReady) {
           setIsMapReady(true);
+          onMapReady?.();
         }
       } catch {
         // ignore malformed payloads
       }
     },
-    [],
+    [onMapReady],
   );
 
   useEffect(() => {
@@ -91,11 +102,12 @@ export default function MeasureBackgroundMap() {
       accuracy: locationMetaData.accuracy ?? 0,
     });
 
-    // compass 모드에서만 위치 업데이트마다 재센터링(지속 추적 유지)
-    if (locationMode === 'compass') {
+    // isTracking(분할 모드): 항상 내 위치로 재센터링
+    // 전체화면 모드: compass 모드일 때만 재센터링 (사용자가 자유롭게 지도 탐색 가능)
+    if (isTracking || locationMode === 'compass') {
       sendCenterOnMyLocation();
     }
-  }, [isMapReady, locationMetaData, locationMode, sendRawMessage, sendCenterOnMyLocation]);
+  }, [isMapReady, locationMetaData, locationMode, isTracking, sendRawMessage, sendCenterOnMyLocation]);
 
   return (
     <WebView

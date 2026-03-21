@@ -2,7 +2,6 @@ import { useEffect, useRef, type RefObject } from 'react';
 import {
   ACCURACY_OK,
   MOTION_COMMON_OPTIONS,
-  TRAVELED_DISTANCE_OPTIONS,
   TRANSPORT_STATE_CONFIG,
 } from '@/features/navigation/model/navigation.constants';
 import {
@@ -78,7 +77,6 @@ export const useNavigationMetrics = ({
   onError,
   refs,
 }: UseNavigationMetricsParams) => {
-  const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
   const { BIKING_STATE_THRESHOLD } = TRANSPORT_STATE_CONFIG;
   const { BACKGROUND_RESUME_RESET_GAP_SEC } = MOTION_COMMON_OPTIONS;
   const skippedEtaTickTimestampRef = useRef<number | null>(null);
@@ -307,8 +305,8 @@ export const useNavigationMetrics = ({
     // Ref 갱신 (다음 계산 준비)
     refs.prevTraveledDistanceForMeasureRef.current = traveledDistanceMeter;
 
-    // 움직임이 너무 적으면 계산 스킵 (GPS 오차 무시)
-    if (deltaDistanceMeter <= STOP_JUDGE_MOVE_METER) return;
+    // 움직임이 너무 적으면 계산 스킵 (GPS 오차 무시, 2m 이하)
+    if (deltaDistanceMeter <= 2) return;
 
     // 시간 차이(Delta Time) 계산
     const currentTimestamp = locationMetaData.timestamp ?? Date.now();
@@ -353,7 +351,7 @@ export const useNavigationMetrics = ({
       transportationType,
       userGender,
       dtSec,
-      Number(userBirthYear),
+      userBirthYear != null ? Number(userBirthYear) : null,
     );
     const carbonDelta = measureCarbonSaved(
       transportationType,

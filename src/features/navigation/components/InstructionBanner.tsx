@@ -99,16 +99,25 @@ const InstructionBanner = ({
       'remaining',
     );
 
-    // 10m 이하 변화 무시
+    // 첫 계산은 안정화 없이 즉시 반영
+    if (prevRemainingDistanceRef.current === null) {
+      prevRemainingDistanceRef.current = remainingDistanceMeter;
+      setCurrentRemainingDistanceMeter(remainingDistanceMeter);
+      if (remainingDistanceMeter <= PREVIEW_THRESHOLD_METER) {
+        previewEnterCountSet(prev => Math.min(prev + 1, PREVIEW_ENTER_COUNT_MIN));
+      }
+      return;
+    }
+
+    // MIN_INTERVAL_DISTANCE_METER 이하 변화 무시 (GPS 노이즈 억제)
     if (
-      Math.abs(
-        (prevRemainingDistanceRef.current ?? 0) - remainingDistanceMeter,
-      ) <= INTERVAL_DISTANCE_OPTIONS.MIN_INTERVAL_DISTANCE_METER
+      Math.abs(prevRemainingDistanceRef.current - remainingDistanceMeter) <=
+      INTERVAL_DISTANCE_OPTIONS.MIN_INTERVAL_DISTANCE_METER
     ) {
       return;
     }
 
-    // 10m 이상 변화도 3번 누적 후 반영
+    // 변화가 있을 때 2회 누적 후 반영 (단발 튐 방지)
     passCountRef.current += 1;
     if (passCountRef.current < MOTION_COMMON_OPTIONS.PASS_CONFIRM_COUNT) return;
 

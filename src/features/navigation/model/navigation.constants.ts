@@ -71,12 +71,17 @@ export const MOTION_COMMON_OPTIONS = {
 } as const;
 
 export const TURN_CONFIG = {
-  ENTRY_RADIUS_METER: 40,
-  EXIT_RADIUS_METER: 60,
-  DEADZONE_DISTANCE_METER: 6,
+  // 턴포인트 50m 이내 진입 시 감지 시작 (40 → 50: 더 여유 있게 사전 감지)
+  ENTRY_RADIUS_METER: 50,
+  // 70m 이상 멀어지면 리셋 (60 → 70: 좁은 골목/커브에서 오탈출 방지)
+  EXIT_RADIUS_METER: 70,
+  // 3m 이상 멀어져야 "멀어지는 중" (6 → 3: 조금만 벗어나도 카운트)
+  DEADZONE_DISTANCE_METER: 3,
+  // 최소 유효 이동 거리 (기존 유지)
   MIN_EFFECTIVE_MOVE_METER: 10,
   DOT_DEADZONE: 0,
   PASS_COUNT_DECAY: 1,
+  // 최대 카운트 기존 유지
   PASS_COUNT_MAX: 3,
 } as const;
 
@@ -93,9 +98,12 @@ export const INTERVAL_DISTANCE_OPTIONS = {
 } as const;
 
 export const WAYPOINT_CONFIG = {
-  ENTRY_RADIUS_METER: 20, // waypoint 근처로 들어왔다 판정
-  EXIT_RADIUS_METER: 35, // 다시 멀어지면 지나침 확정 후보
-  PASS_CONFIRM_COUNT: 2, // 2회 반복되면 진짜 지나침
+  // waypoint 근처로 들어왔다 판정 (20 → 30: 자전거 속도에서 더 일찍 감지)
+  ENTRY_RADIUS_METER: 30,
+  // 다시 멀어지면 지나침 확정 후보 (35 → 45)
+  EXIT_RADIUS_METER: 45,
+  // 2회 반복되면 진짜 지나침 (기존 유지)
+  PASS_CONFIRM_COUNT: 2,
 };
 
 // classifyTransportBySpeed.ts

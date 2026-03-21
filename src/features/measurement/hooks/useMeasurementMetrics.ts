@@ -19,7 +19,7 @@ export function useMeasurementMetrics(): void {
   const locationMetaData = useMyPositionStore(s => s.locationMetaData);
   const locationTick = locationMetaData?.timestamp;
 
-  const { phase, isPaused, setMetrics, metrics } = useMeasurementStore();
+  const { phase, isPaused, setMetrics } = useMeasurementStore();
   const accumulatedCaloriesRef = useRef(0);
 
   const { data: userInfo } = useUserInfoQuery();
@@ -34,6 +34,7 @@ export function useMeasurementMetrics(): void {
   const prevCalorieTimeRef = useRef<number | null>(null);
   const prevCalorieTraveledRef = useRef<number | null>(null);
   const speedHistoryRef = useRef<number[]>([]);
+  const maxSpeedKmhRef = useRef(0);
   const startupMoveConfirmStreakRef = useRef(0);
   const hasStartedMovingRef = useRef(false);
   const prevPhasePausedStateRef = useRef<{
@@ -176,6 +177,8 @@ export function useMeasurementMetrics(): void {
           speedHistoryRef.current.length
         : 0;
 
+    maxSpeedKmhRef.current = Math.max(maxSpeedKmhRef.current, speedKmh);
+
     let deltaCal = 0;
     const prevCT = prevCalorieTimeRef.current;
     const prevCTrav = prevCalorieTraveledRef.current;
@@ -183,7 +186,12 @@ export function useMeasurementMetrics(): void {
       const dtSec = (ts - prevCT) / 1000;
       const dDist = traveledMeter - prevCTrav;
       if (dtSec > 0 && dDist > 0) {
-        deltaCal = measureCaloriesBurned('biking', userGender, dtSec, Number(userBirthYear));
+        deltaCal = measureCaloriesBurned(
+          'biking',
+          userGender,
+          dtSec,
+          userBirthYear != null ? Number(userBirthYear) : null,
+        );
       }
     }
     accumulatedCaloriesRef.current += deltaCal;
@@ -194,7 +202,7 @@ export function useMeasurementMetrics(): void {
       paceMinutesPerKm: paceMinPerKm,
       caloriesBurned: accumulatedCaloriesRef.current,
       averageSpeedKmh: avgSpeedKmh,
-      maxSpeedKmh: Math.max(metrics.maxSpeedKmh, speedKmh),
+      maxSpeedKmh: maxSpeedKmhRef.current,
     });
 
     prevPosRef.current = { lat: coord.lat, lng: coord.lng };
@@ -209,7 +217,6 @@ export function useMeasurementMetrics(): void {
     locationMetaData,
     userGender,
     setMetrics,
-    metrics.maxSpeedKmh,
   ]);
 
   useEffect(() => {
@@ -246,6 +253,7 @@ export function useMeasurementMetrics(): void {
       prevCalorieTraveledRef.current = null;
       speedHistoryRef.current = [];
       accumulatedCaloriesRef.current = 0;
+      maxSpeedKmhRef.current = 0;
       startupMoveConfirmStreakRef.current = 0;
       hasStartedMovingRef.current = false;
       prevPhasePausedStateRef.current = null;
