@@ -8,6 +8,7 @@ import {
   calculateFreeTraveledDistanceMeter,
   calculateSpeedMps,
   getDistanceNoiseGateMeter,
+  hasTrustedMeasurementOsSpeed,
   isLocationAccurateEnoughForMeasurement,
   speedMpsToKmh,
   paceMinPerKmFromSpeedKmh,
@@ -97,8 +98,12 @@ export function useMeasurementMetrics(): void {
       locationMetaData,
       prevEmaMpsRef.current ?? undefined,
     );
+    const hasTrustedLiveOsSpeed =
+      hasTrustedMeasurementOsSpeed(locationMetaData) ||
+      hasTrustedMeasurementOsSpeed(prevSpeedMeta);
     if (
       acceptedDistanceDeltaMeter === 0 &&
+      !hasTrustedLiveOsSpeed &&
       speedMps < MEASUREMENT_METRICS_CONFIG.STOPPED_SPEED_CUTOFF_MPS
     ) {
       speedMps = 0;

@@ -88,4 +88,23 @@ describe('useMeasurementMetrics', () => {
       useMeasurementStore.getState().metrics.traveledDistanceMeter,
     ).toBeGreaterThan(traveledBeforePause);
   });
+
+  it('거리 누적이 아직 없더라도 trusted OS speed가 있으면 라이브 속도를 유지한다', () => {
+    render(<TestHarness />);
+
+    act(() => {
+      useMeasurementStore.getState().setPhase('measuring');
+      useMeasurementStore.getState().setIsPaused(false);
+    });
+
+    setLocationMetaData({
+      timestamp: 1000,
+      accuracy: 70,
+      osSpeed: 5,
+      coordinate: { lat: 37.566501, lng: 126.978 },
+    });
+
+    expect(useMeasurementStore.getState().metrics.traveledDistanceMeter).toBe(0);
+    expect(useMeasurementStore.getState().metrics.speedKmh).toBeGreaterThan(17);
+  });
 });

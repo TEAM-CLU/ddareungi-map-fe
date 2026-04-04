@@ -44,7 +44,7 @@ export function calculateFreeTraveledDistanceMeter(
     minEffectiveMoveMeter,
   );
 
-  return Math.round(prevTraveledMeter + deltaMeter);
+  return prevTraveledMeter + deltaMeter;
 }
 
 export function calculateDistanceDeltaMeter(
@@ -86,6 +86,20 @@ const hasNum = (v: unknown): v is number =>
 
 const hasUsableAccuracy = (accuracy?: number): accuracy is number =>
   hasNum(accuracy) && accuracy >= 0;
+
+export function hasTrustedMeasurementOsSpeed(
+  locationMetaData?: Pick<LocationMetaData, 'accuracy' | 'osSpeed'> | null,
+): boolean {
+  if (!locationMetaData) return false;
+
+  return (
+    hasNum(locationMetaData.osSpeed) &&
+    locationMetaData.osSpeed >= 0 &&
+    locationMetaData.osSpeed <= MAX_PHYSICAL_SPEED_MPS &&
+    (!hasUsableAccuracy(locationMetaData.accuracy) ||
+      locationMetaData.accuracy <= OS_SPEED_TRUST_ACCURACY_METER)
+  );
+}
 
 export function isLocationAccurateEnoughForMeasurement(
   accuracy?: number,
@@ -131,26 +145,26 @@ export function calculateSpeedMps(
   const normalizedRaw =
     Number.isFinite(raw) && raw >= 0 && raw <= MAX_PHYSICAL_SPEED_MPS ? raw : 0;
 
-  const hasTrustedCurrOsSpeed =
-    hasNum(currMeta.osSpeed) &&
-    currMeta.osSpeed >= 0 &&
-    currMeta.osSpeed <= MAX_PHYSICAL_SPEED_MPS &&
-    (!hasUsableAccuracy(currMeta.accuracy) ||
-      currMeta.accuracy <= OS_SPEED_TRUST_ACCURACY_METER);
+  const hasTrustedCurrOsSpeed = hasTrustedMeasurementOsSpeed(currMeta);
+  const hasTrustedPrevOsSpeed = hasTrustedMeasurementOsSpeed(prevMeta);
 
   let targetMps = normalizedRaw;
   if (hasTrustedCurrOsSpeed) {
-    const currentOsSpeed = currMeta.osSpeed as number;
+    targetMps = currMeta.osSpeed as number;
+  } else if (hasTrustedPrevOsSpeed && normalizedRaw > 0) {
+    const previousOsSpeed = prevMeta.osSpeed as number;
     targetMps =
-      normalizedRaw > 0
-        ? currentOsSpeed * OS_SPEED_BLEND_WEIGHT +
-          normalizedRaw * (1 - OS_SPEED_BLEND_WEIGHT)
-        : currentOsSpeed;
+      previousOsSpeed * (OS_SPEED_BLEND_WEIGHT * 0.5) +
+      normalizedRaw * (1 - OS_SPEED_BLEND_WEIGHT * 0.5);
   }
 
   const base =
     prevEmaMps ??
-    (hasTrustedCurrOsSpeed ? (currMeta.osSpeed as number) : targetMps);
+    (hasTrustedCurrOsSpeed
+      ? (currMeta.osSpeed as number)
+      : hasTrustedPrevOsSpeed
+      ? (prevMeta.osSpeed as number)
+      : targetMps);
   const alpha = targetMps >= base ? SPEED_RISE_EMA_ALPHA : SPEED_FALL_EMA_ALPHA;
 
   return ema(base, targetMps, alpha);

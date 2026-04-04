@@ -2,6 +2,7 @@ import {
   calculateFreeTraveledDistanceMeter,
   calculateSpeedMps,
   getDistanceNoiseGateMeter,
+  hasTrustedMeasurementOsSpeed,
 } from '@/features/measurement/utils/measurementDistanceUtils';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
@@ -121,9 +122,55 @@ describe('measurementDistanceUtils', () => {
       expect(rawSpeed).toBeLessThan(3);
       expect(result).toBeGreaterThan(4.5);
     });
+
+    it('accuracy가 40m 수준이어도 현재 OS speed를 라이브 속도에 반영한다', () => {
+      const prev = meta(37.5665, 126.978, 0, 35, 4.5);
+      const curr = meta(37.566505, 126.978, 1000, 35, 5);
+
+      const result = calculateSpeedMps(prev, curr, 4.5);
+
+      expect(result).toBeGreaterThan(4.4);
+    });
+
+    it('accuracy가 70m 수준이어도 trusted OS speed를 유지한다', () => {
+      const prev = meta(37.5665, 126.978, 0, 70, 4.8);
+      const curr = meta(37.566501, 126.978, 1000, 70, 5.1);
+
+      const result = calculateSpeedMps(prev, curr, 4.8);
+
+      expect(result).toBeGreaterThan(4.9);
+    });
+  });
+
+  describe('hasTrustedMeasurementOsSpeed', () => {
+    it('측정 허용 정확도 범위에서는 OS speed를 trusted로 본다', () => {
+      expect(
+        hasTrustedMeasurementOsSpeed(meta(37.5665, 126.978, 0, 70, 4.8)),
+      ).toBe(true);
+    });
+
+    it('측정 허용 범위를 넘는 정확도에서는 OS speed를 trusted로 보지 않는다', () => {
+      expect(
+        hasTrustedMeasurementOsSpeed(meta(37.5665, 126.978, 0, 90, 4.8)),
+      ).toBe(false);
+    });
   });
 
   describe('calculateFreeTraveledDistanceMeter', () => {
+    it('내부 누적은 소수 거리까지 유지해 계단식 점프를 줄인다', () => {
+      const result = calculateFreeTraveledDistanceMeter(
+        coord(37.5665, 126.978),
+        coord(37.566538, 126.978),
+        0,
+        0,
+        1000,
+        3,
+      );
+
+      expect(result).toBeGreaterThan(4);
+      expect(Number.isInteger(result)).toBe(false);
+    });
+
     it('기준점은 유지한 채 작은 이동을 누적하다가 임계치를 넘기면 거리로 반영한다', () => {
       const anchor = coord(37.5, 127);
       const almostMoving = coord(37.500018, 127);
