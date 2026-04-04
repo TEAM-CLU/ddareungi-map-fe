@@ -19,7 +19,7 @@ const CarbonStatusCard = ({
     <View
       style={[
         tw(
-          'w-full h-[242px] border border-brand-primary bg-surface-primary shadow-sm rounded-xl overflow-hidden',
+          'w-full h-[260px] border border-brand-primary bg-surface-primary shadow-sm rounded-xl overflow-hidden',
         ),
       ]}
     >
@@ -27,7 +27,7 @@ const CarbonStatusCard = ({
         colors={['#FFFFFF', '#CFFBEA']}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
-        style={tw('w-full h-[242px] justify-center items-center px-5 py-4')}
+        style={tw('w-full flex-1 justify-center items-center px-5 pt-6 pb-4')}
       >
         {/* 상단 텍스트 */}
         <View style={tw('w-full items-start')}>

@@ -20,7 +20,7 @@ const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
   return (
     <View
       style={tw(
-        'w-full h-[158px] border border-brand-primary bg-surface-primary shadow-sm rounded-xl overflow-hidden',
+        'w-full h-[180px] border border-brand-primary bg-surface-primary shadow-sm rounded-xl overflow-hidden',
       )}
     >
       {/* 상단 헤더 */}
