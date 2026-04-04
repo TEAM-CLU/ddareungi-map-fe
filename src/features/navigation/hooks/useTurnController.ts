@@ -16,6 +16,7 @@ export interface UseTurnControllerParams {
   locationMetaData: LocationMetaData | null;
   currentInstruction: NavigationInstruction | null;
   setCurrentInstruction: (inst: NavigationInstruction | null) => void;
+  setCurrentIntervalIndex: (index: number) => void;
   refs: {
     nextTurnCoordinate: RefObject<Coordinate | null>;
     currentIntervalIndex: RefObject<number>;
@@ -40,6 +41,7 @@ export const useTurnController = ({
   locationMetaData,
   currentInstruction,
   setCurrentInstruction,
+  setCurrentIntervalIndex,
   refs,
 }: UseTurnControllerParams) => {
   const {
@@ -87,7 +89,7 @@ export const useTurnController = ({
       nextTurnCoord,
     );
 
-    const nowTimestamp = Date.now();
+    const nowTimestamp = locationMetaData.timestamp ?? Date.now();
 
     // 3) entry / exit
     // 3-1) 진입
@@ -210,6 +212,7 @@ export const useTurnController = ({
     setCurrentInstruction(nextInstruction);
     refs.nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
     refs.currentIntervalIndex.current = nextIndex;
+    setCurrentIntervalIndex(nextIndex);
     refs.currentTtsUrl.current = nextInstruction.ttsUrl;
 
     refs.previewInstructionText.current = afterNextInstruction?.text ?? '';
@@ -219,11 +222,12 @@ export const useTurnController = ({
 
     resetTurnState();
     refs.prevMyPositionForTurnRef.current = currentCoord;
-    refs.prevTimestampForTurnRef.current = Date.now();
+    refs.prevTimestampForTurnRef.current = nowTimestamp;
   }, [
     locationMetaData?.coordinate,
     isNavigationMode,
     currentInstruction,
     isNavigationInitialized,
+    setCurrentIntervalIndex,
   ]);
 };

@@ -26,6 +26,7 @@ import { useOffRouteController } from '@/features/navigation/hooks/useOffRouteCo
 import { useNavigationMetrics } from '@/features/navigation/hooks/useNavigationMetrics';
 import { useSystemVolumeSync } from '@/features/navigation/hooks/useSystemVolumeSync';
 import { useLocationMetaHistory } from '@/features/navigation/hooks/useLocationMetaHistory';
+import { useDestinationArrival } from '@/features/navigation/hooks/useDestinationArrival';
 import { useModalStore } from '@/shared/stores/useModalStore';
 
 export const useNavigationOrchestrator = () => {
@@ -79,9 +80,10 @@ export const useNavigationOrchestrator = () => {
       })),
     );
 
-  const { setShowNavigationEndModal } = useModalStore(
+  const { setShowNavigationEndModal, setShowNavigationFinishModal } = useModalStore(
     useShallow(state => ({
       setShowNavigationEndModal: state.setShowNavigationEndModal,
+      setShowNavigationFinishModal: state.setShowNavigationFinishModal,
     })),
   );
 
@@ -176,6 +178,8 @@ export const useNavigationOrchestrator = () => {
   const resetAllNavigationState = useCallback(() => {
     replaceMyLocationMarker(true);
     clearNavigationPath();
+    setInstructionList([]);
+    setCurrentIntervalIndex(0);
 
     pathDataListByInterval.current = [];
     instructionList.current = [];
@@ -234,6 +238,8 @@ export const useNavigationOrchestrator = () => {
   }, [
     replaceMyLocationMarker,
     clearNavigationPath,
+    setInstructionList,
+    setCurrentIntervalIndex,
     setSessionId,
     setIsNavigationInitialized,
   ]);
@@ -308,6 +314,7 @@ export const useNavigationOrchestrator = () => {
     locationMetaData,
     currentInstruction,
     setCurrentInstruction,
+    setCurrentIntervalIndex,
     refs: {
       nextTurnCoordinate,
       currentIntervalIndex,
@@ -419,6 +426,21 @@ export const useNavigationOrchestrator = () => {
       prevTraveledDistanceForMeasureRef,
       isBikingStateRef,
       bikingStateCountRef,
+    },
+  });
+
+  useDestinationArrival({
+    isNavigationMode,
+    isNavigationInitialized,
+    locationMetaData,
+    locationTick,
+    remainingDistanceMeter,
+    setIsNavigationMode,
+    setShowNavigationEndModal,
+    setShowNavigationFinishModal,
+    refs: {
+      currentIntervalIndex,
+      instructionList,
     },
   });
 

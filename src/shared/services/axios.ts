@@ -17,6 +17,9 @@ export const setClientToken = (token: string | null) => {
   cachedToken = token;
 };
 
+// 3. 인터셉터에서 현재 토큰과 요청 토큰 비교에 사용
+export const getCachedToken = (): string | null => cachedToken;
+
 api.interceptors.request.use(
   async config => {
     if (cachedToken) {

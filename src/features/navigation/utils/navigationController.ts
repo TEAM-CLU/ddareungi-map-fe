@@ -31,11 +31,29 @@ export const findClosestCoordIndex = (
   myPosition: Coordinate,
   coordinateList: Coordinate[],
 ): number => {
-  if (coordinateList.length === 0) return 0;
-  if (coordinateList.length === 1) return 0;
+  return findClosestSegmentProjection(myPosition, coordinateList).closestIdx;
+};
+
+const findClosestSegmentProjection = (
+  myPosition: Coordinate,
+  coordinateList: Coordinate[],
+) => {
+  if (coordinateList.length === 0) {
+    return {
+      closestIdx: 0,
+      projectionRatio: 0,
+    };
+  }
+  if (coordinateList.length === 1) {
+    return {
+      closestIdx: 0,
+      projectionRatio: 0,
+    };
+  }
 
   let bestIdx = 0;
   let bestDistance = Infinity;
+  let bestProjectionRatio = 0;
 
   // 위경도를 로컬 평면(m 단위)으로 근사
   const lat0 = myPosition.lat;
@@ -59,6 +77,7 @@ export const findClosestCoordIndex = (
     const denom = ABx * ABx + ABy * ABy;
 
     let distToSegment: number;
+    let projectionRatio = 0;
 
     if (denom === 0) {
       // a == b (이상 케이스)
@@ -68,6 +87,7 @@ export const findClosestCoordIndex = (
       const t = (-A.x * ABx + -A.y * ABy) / denom;
 
       const tClamped = Math.max(0, Math.min(1, t));
+      projectionRatio = tClamped;
 
       const projX = A.x + ABx * tClamped;
       const projY = A.y + ABy * tClamped;
@@ -78,10 +98,14 @@ export const findClosestCoordIndex = (
     if (distToSegment < bestDistance) {
       bestDistance = distToSegment;
       bestIdx = i;
+      bestProjectionRatio = projectionRatio;
     }
   }
 
-  return bestIdx;
+  return {
+    closestIdx: bestIdx,
+    projectionRatio: bestProjectionRatio,
+  };
 };
 
 /**
@@ -91,10 +115,8 @@ export const findClosestCoordIndex = (
  *
  * 계산 방식:
  * - interval 좌표가 2개 이상:
- *    traveled  = polyline(start..closestSegmentStart)
- *    remaining = dist(myPos → closestSegmentEnd) + polyline(closestSegmentEnd..end)
- *    ※ remaining은 현재 세그먼트의 끝점(nextIdx)부터 누적하여
- *       전진할수록 값이 감소하는 구조를 보장한다.
+ *    traveled  = polyline(start..closestSegmentStart) + 현재 세그먼트 진행분
+ *    remaining = 현재 세그먼트 남은 진행분 + polyline(closestSegmentEnd..end)
  * - interval 좌표가 1개:
  *    traveled/remaining 모두 (onlyCoord ↔ myPos) 직선거리
  * - interval 좌표 없음: 0
@@ -112,30 +134,33 @@ export const calculateIntervalDistanceByMyPosition = (
 
   // case 1: 현재 인터벌 좌표가 2개 이상일 때
   if (intervalCoordinateList.length > 1) {
-    const closestIdx = findClosestCoordIndex(
+    const { closestIdx, projectionRatio } = findClosestSegmentProjection(
       myPosition,
       intervalCoordinateList,
     );
+    const currentSegmentStart = intervalCoordinateList[closestIdx];
+    const currentSegmentEnd = intervalCoordinateList[closestIdx + 1];
+    const currentSegmentDistance = getDistanceBetweenCoords(
+      currentSegmentStart,
+      currentSegmentEnd,
+    );
 
     if (type === 'traveled') {
-      // 1) start -> closest (직선) + 2) start..closest polyline 누적
+      // 1) 이전 세그먼트 polyline 누적 + 2) 현재 세그먼트 진행분
       for (let i = 0; i < closestIdx; i++) {
         distanceMeter += getDistanceBetweenCoords(
           intervalCoordinateList[i],
           intervalCoordinateList[i + 1],
         );
       }
+
+      distanceMeter += currentSegmentDistance * projectionRatio;
     }
 
     if (type === 'remaining') {
-      // findClosestCoordIndex는 선분 기준이므로 closestIdx는 세그먼트 시작점 인덱스.
-      // 세그먼트 끝점(nextIdx)까지의 직선 + nextIdx부터 끝까지 폴리라인을 합산하면
-      // 전진할수록 값이 반드시 감소한다.
+      // 현재 세그먼트의 남은 진행분 + 이후 세그먼트 polyline 누적
       const nextIdx = closestIdx + 1;
-      distanceMeter += getDistanceBetweenCoords(
-        myPosition,
-        intervalCoordinateList[nextIdx],
-      );
+      distanceMeter += currentSegmentDistance * (1 - projectionRatio);
 
       for (let i = nextIdx; i < intervalCoordinateList.length - 1; i++) {
         distanceMeter += getDistanceBetweenCoords(

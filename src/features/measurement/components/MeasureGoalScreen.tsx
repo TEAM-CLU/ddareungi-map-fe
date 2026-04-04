@@ -40,11 +40,11 @@ export default function MeasureGoalScreen({
   };
 
   return (
-    <SafeAreaView style={tw('flex-1')} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top']}>
       <View
         style={[
           tw('flex-row items-center px-4 py-3 border-b border-line-default'),
-          { backgroundColor: 'rgba(255, 255, 255, 0.85)' },
+          { backgroundColor: '#FFFFFF' },
         ]}
       >
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
@@ -62,10 +62,13 @@ export default function MeasureGoalScreen({
       </View>
 
       <View
-        style={[
-          tw('flex-1 justify-center px-6'),
-          { gap: 50, backgroundColor: 'rgba(255, 255, 255, 0.58)' },
-        ]}
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          paddingHorizontal: 24,
+          gap: 50,
+          backgroundColor: '#FFFFFF',
+        }}
       >
         <Text
           style={[

@@ -7,6 +7,7 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 import { Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { navigateToLogin } from '@/shared/services/navigationRef';
+import { getCachedToken } from '@/shared/services/axios';
 
 // 401 Alert가 이미 표시 중인지 여부 (동시 다발적 401 중복 방지)
 let isHandling401 = false;
@@ -35,7 +36,17 @@ export const commonErrorInterceptor = (
 
       // 1. 중요 에러 (Alert)
       if (status === 401) {
-        if (!isHandling401) {
+        const requestAuthHeader = error.config?.headers?.Authorization as string | undefined;
+        const hadAuthToken = !!requestAuthHeader;
+
+        // 요청에 담긴 토큰 추출
+        const requestToken = requestAuthHeader?.replace('Bearer ', '') ?? null;
+        // 현재 메모리에 있는 토큰 (로그인 후 갱신된 값)
+        const currentToken = getCachedToken();
+        // 요청 토큰 ≠ 현재 토큰 → 로그인 후 날아온 구 토큰의 재시도 응답 → 무시
+        const isStaleRequest = requestToken !== currentToken;
+
+        if (hadAuthToken && !isStaleRequest && !isHandling401) {
           isHandling401 = true;
           Alert.alert(
             '인증 만료',

@@ -66,13 +66,14 @@ export default function MeasureActiveScreen({
   const targetMeter = targetDistanceKm * 1000;
 
   return (
-    <SafeAreaView style={tw('flex-1')} edges={['bottom']}>
-      <View
-        style={[
-          tw('flex-1 px-4'),
-          { backgroundColor: 'rgba(255, 255, 255, 0.58)' },
-        ]}
-      >
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: 16,
+          }}
+        >
         {/* 상단: 시간, 페이스, 속도 */}
         <View style={tw('flex-row py-6 border-b border-line-default')}>
           <MetricHeaderItem
@@ -238,7 +239,8 @@ export default function MeasureActiveScreen({
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }

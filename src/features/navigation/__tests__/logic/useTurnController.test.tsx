@@ -66,6 +66,7 @@ describe('useTurnController interval 판정', () => {
     ];
     const refs = createRefs(instructionList);
     const setCurrentInstruction = jest.fn();
+    const setCurrentIntervalIndex = jest.fn();
 
     const baseProps: TestProps = {
       isNavigationMode: true,
@@ -73,6 +74,7 @@ describe('useTurnController interval 판정', () => {
       locationMetaData: refs.currentLocationMetaData.current,
       currentInstruction: instructionList[0],
       setCurrentInstruction,
+      setCurrentIntervalIndex,
       refs,
     };
 
@@ -131,6 +133,7 @@ describe('useTurnController interval 판정', () => {
     );
 
     expect(setCurrentInstruction).toHaveBeenCalledWith(instructionList[1]);
+    expect(setCurrentIntervalIndex).toHaveBeenCalledWith(1);
     expect(refs.currentIntervalIndex.current).toBe(1);
     expect(refs.nextTurnCoordinate.current).toEqual(
       instructionList[1].nextTurnCoordinate,
@@ -149,6 +152,7 @@ describe('useTurnController interval 판정', () => {
     ];
     const refs = createRefs(instructionList);
     const setCurrentInstruction = jest.fn();
+    const setCurrentIntervalIndex = jest.fn();
 
     const baseProps: TestProps = {
       isNavigationMode: true,
@@ -156,6 +160,7 @@ describe('useTurnController interval 판정', () => {
       locationMetaData: refs.currentLocationMetaData.current,
       currentInstruction: instructionList[0],
       setCurrentInstruction,
+      setCurrentIntervalIndex,
       refs,
     };
 
@@ -198,6 +203,7 @@ describe('useTurnController interval 판정', () => {
     );
 
     expect(setCurrentInstruction).not.toHaveBeenCalled();
+    expect(setCurrentIntervalIndex).not.toHaveBeenCalled();
     expect(refs.currentIntervalIndex.current).toBe(0);
   });
 });

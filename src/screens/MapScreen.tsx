@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
@@ -40,11 +40,23 @@ const MapScreen = () => {
 
   // ─────────────────────────────────────────────
   // 초기 로딩 오버레이
-  // isMapReady(Zustand) + 첫 GPS 좌표 수신 완료 시 해제
+  // isMapReady(Zustand) + 첫 GPS 좌표 수신 완료 시 페이드아웃
   // ─────────────────────────────────────────────
   const isMapReady = useMapStore(state => state.isMapReady);
   const locationMetaData = useMyPositionStore(state => state.locationMetaData);
   const isMapPositioned = isMapReady && !!locationMetaData?.coordinate;
+
+  const [isMapLoadingVisible, isMapLoadingVisibleSet] = useState(true);
+  const mapLoadingOpacityAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (!isMapPositioned) return;
+    Animated.timing(mapLoadingOpacityAnim, {
+      toValue: 0,
+      duration: 400,
+      useNativeDriver: true,
+    }).start(() => isMapLoadingVisibleSet(false));
+  }, [isMapPositioned, mapLoadingOpacityAnim]);
 
   const {
     pathDataListByInterval,
@@ -240,7 +252,20 @@ const MapScreen = () => {
       )}
 
       {/* ── 초기 로딩 오버레이: 맵 준비 + 첫 위치 수신 전까지 표시 ── */}
-      {!isMapPositioned && <SimpleLoading title="지도를 불러오는 중..." />}
+      {isMapLoadingVisible && (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            tw('absolute top-0 left-0 right-0 bottom-0 bg-surface-primary items-center justify-center z-10'),
+            { gap: 12, opacity: mapLoadingOpacityAnim },
+          ]}
+        >
+          <ActivityIndicator size="large" color="#01DA86" />
+          <Text style={[tw('text-on-surface-primary font-primary-500'), { fontSize: 18 }]}>
+            지도를 불러오는 중...
+          </Text>
+        </Animated.View>
+      )}
     </View>
   );
 };
