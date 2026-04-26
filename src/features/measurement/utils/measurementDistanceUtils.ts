@@ -150,7 +150,7 @@ export function calculateSpeedMps(
 
   let targetMps = normalizedRaw;
   if (hasTrustedCurrOsSpeed) {
-    targetMps = currMeta.osSpeed as number;
+    return currMeta.osSpeed as number;
   } else if (hasTrustedPrevOsSpeed && normalizedRaw > 0) {
     const previousOsSpeed = prevMeta.osSpeed as number;
     targetMps =

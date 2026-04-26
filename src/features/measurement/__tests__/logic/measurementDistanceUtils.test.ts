@@ -78,7 +78,7 @@ describe('measurementDistanceUtils', () => {
       expect(result).toBeCloseTo(5, 5);
     });
 
-    it('이전 EMA가 있으면 현재 OS 속도를 빠르게 따라간다', () => {
+    it('현재 OS 속도가 trusted이면 이전 EMA로 낮추지 않고 즉시 반영한다', () => {
       const prev = {
         coordinate: coord(0, 0),
         timestamp: 0,
@@ -94,7 +94,25 @@ describe('measurementDistanceUtils', () => {
 
       const result = calculateSpeedMps(prev, curr, 2);
 
-      expect(result).toBeCloseTo(4.16, 2);
+      expect(result).toBeCloseTo(5, 5);
+    });
+
+    it('이전 EMA가 0이어도 trusted OS 속도를 1/4 수준으로 낮추지 않는다', () => {
+      const prev = {
+        coordinate: coord(37.5665, 126.978),
+        timestamp: 0,
+        accuracy: 10,
+      };
+      const curr = {
+        coordinate: coord(37.566501, 126.978),
+        timestamp: 1000,
+        accuracy: 10,
+        osSpeed: 5,
+      };
+
+      const result = calculateSpeedMps(prev, curr, 0);
+
+      expect(result).toBeCloseTo(5, 5);
     });
 
     it('OS 속도가 없으면 물리적으로 가능한 범위의 거리 기반 속도를 사용한다', () => {
