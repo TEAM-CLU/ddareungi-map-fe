@@ -14,6 +14,7 @@ import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
 import { launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
+import LinearGradient from 'react-native-linear-gradient';
 import { tw } from '@/shared/libs/tw-helper';
 import { clampTagList } from '@/features/navigation/utils/clampTagList';
 import { handleCatch } from '@/shared/utils/errorHandler';
@@ -22,7 +23,18 @@ import {
   formatTimeHHMMSSNumber,
   formatCaloriesKcalText,
 } from '@/shared/utils/formatting';
-import { IconClose } from '@/shared/components/icons';
+import { IconClose, IconShared } from '@/shared/components/icons';
+
+interface ShareMetricItemProps {
+  label: string;
+  value: string;
+  color: string;
+}
+
+interface ShareTagPillProps {
+  text: string;
+  index: number;
+}
 
 interface StoryShareScreenProps {
   traveledDistance: number;
@@ -30,6 +42,69 @@ interface StoryShareScreenProps {
   calories: number;
   onClose: () => void;
 }
+
+const CAPTURE_CARD_SIDE_OFFSET = 38;
+const CAPTURE_CARD_TOP_OFFSET = 84;
+const BRAND_TEXT = '따릉이맵';
+
+const ShareMetricItem = ({ label, value, color }: ShareMetricItemProps) => {
+  return (
+    <View style={tw('flex-1 items-start')}>
+      <Text
+        style={[
+          tw('font-primary-500'),
+          { color, fontSize: 10, opacity: 0.72, marginBottom: 4 },
+        ]}
+      >
+        {label}
+      </Text>
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit={true}
+        minimumFontScale={0.72}
+        style={[
+          tw('font-primary-700'),
+          { color, fontSize: 17, width: '100%' },
+        ]}
+      >
+        {value}
+      </Text>
+    </View>
+  );
+};
+
+const ShareTagPill = ({ text, index }: ShareTagPillProps) => {
+  const isPrimary = index === 0;
+
+  return (
+    <View
+      style={[
+        tw('px-3 py-1.5 rounded-full border'),
+        {
+          backgroundColor: isPrimary
+            ? 'rgba(1,218,134,0.86)'
+            : 'rgba(0,0,0,0.34)',
+          borderColor: isPrimary
+            ? 'rgba(255,255,255,0.62)'
+            : 'rgba(255,255,255,0.22)',
+        },
+      ]}
+    >
+      <Text
+        style={[
+          tw('font-primary-700'),
+          {
+            color: isPrimary ? '#111827' : '#FFFFFF',
+            fontSize: isPrimary ? 14 : 13,
+            lineHeight: 18,
+          },
+        ]}
+      >
+        #{text}
+      </Text>
+    </View>
+  );
+};
 
 const StoryShareScreen = ({
   traveledDistance,
@@ -233,8 +308,16 @@ const StoryShareScreen = ({
       {photoUri && (
         <TouchableOpacity
           style={[
-            tw('absolute top-12 left-5 px-3 py-1.5 rounded-full border border-brand-primary'),
-            { zIndex: 10000, backgroundColor: isDarkMetrics ? '#000' : '#fff', opacity: 0.85 },
+            tw('absolute top-12 left-5 px-3 py-2 rounded-full border'),
+            {
+              zIndex: 10000,
+              backgroundColor: isDarkMetrics
+                ? 'rgba(0,0,0,0.72)'
+                : 'rgba(255,255,255,0.9)',
+              borderColor: isDarkMetrics
+                ? 'rgba(255,255,255,0.25)'
+                : 'rgba(0,0,0,0.08)',
+            },
           ]}
           onPress={() => setIsDarkMetrics(prev => !prev)}
           activeOpacity={0.7}
@@ -243,10 +326,10 @@ const StoryShareScreen = ({
           <Text
             style={[
               tw('font-primary-700'),
-              { fontSize: 13, color: isDarkMetrics ? '#fff' : '#000' },
+              { fontSize: 13, color: isDarkMetrics ? '#fff' : '#111827' },
             ]}
           >
-            {isDarkMetrics ? '☀️ 라이트' : '🌙 다크'}
+            {isDarkMetrics ? '밝은 글자' : '어두운 글자'}
           </Text>
         </TouchableOpacity>
       )}
@@ -254,8 +337,8 @@ const StoryShareScreen = ({
       {/* 닫기 버튼 */}
       <TouchableOpacity
         style={[
-          tw('absolute top-12 right-5 p-2.5 rounded-full bg-black'),
-          { zIndex: 10000, opacity: 0.7 },
+          tw('absolute top-12 right-5 p-2.5 rounded-full'),
+          { zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.55)' },
         ]}
         onPress={handleClosePress}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -279,8 +362,13 @@ const StoryShareScreen = ({
         <ViewShot
           ref={shotRef}
           style={[
-            tw('absolute left-5 right-5 rounded-2xl overflow-hidden bg-black'),
-            { top: 100, aspectRatio: 9 / 16 },
+            tw('absolute rounded-2xl overflow-hidden bg-black'),
+            {
+              top: CAPTURE_CARD_TOP_OFFSET,
+              left: CAPTURE_CARD_SIDE_OFFSET,
+              right: CAPTURE_CARD_SIDE_OFFSET,
+              aspectRatio: 9 / 16,
+            },
           ]}
           options={{
             format: 'png',
@@ -295,71 +383,94 @@ const StoryShareScreen = ({
             source={{ uri: photoUri }}
             style={StyleSheet.absoluteFillObject}
           />
+          <LinearGradient
+            pointerEvents="none"
+            colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.08)', 'transparent']}
+            locations={[0, 0.55, 1]}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 180,
+            }}
+          />
+          <LinearGradient
+            pointerEvents="none"
+            colors={['transparent', 'rgba(0,0,0,0.22)', 'rgba(0,0,0,0.72)']}
+            locations={[0, 0.45, 1]}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 260,
+            }}
+          />
 
           {/* 상단 태그 */}
-          <View style={[tw('absolute left-5 right-5'), { top: 25 }]}>
-            <View style={[tw('flex flex-row flex-wrap'), { gap: 8 }]}>
+          <View style={[tw('absolute left-5 right-5'), { top: 22 }]}>
+            <Text
+              style={[
+                tw('font-secondary text-brand-primary'),
+                { fontSize: 18, lineHeight: 24, marginBottom: 10 },
+              ]}
+            >
+              {BRAND_TEXT}
+            </Text>
+            <View style={[tw('flex flex-row flex-wrap'), { gap: 7 }]}>
               {clampedTags.map((text: string, idx: number) => (
-                <View
+                <ShareTagPill
                   key={`${text}-${idx}`}
-                  style={[
-                    tw(
-                      'px-3 py-2 rounded-full bg-black border border-brand-primary',
-                    ),
-                    { opacity: 0.6 },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      tw('text-brand-primary font-primary-700'),
-                      { fontSize: 15, zIndex: 10 },
-                    ]}
-                  >
-                    #{text}
-                  </Text>
-                </View>
+                  text={text}
+                  index={idx}
+                />
               ))}
             </View>
           </View>
 
           {/* 하단 메트릭 카드 */}
-          <View style={[tw('absolute left-4 right-4'), { bottom: 30 }]}>
-            <View style={[tw('p-4 rounded-2xl flex-row justify-between')]}>
-              <Text
-                style={[
-                  tw('font-primary-700'),
-                  { fontSize: 19, color: metricColor },
-                ]}
-              >
-                {distanceText}
-              </Text>
-              <Text
-                style={[
-                  tw('font-primary-700'),
-                  { fontSize: 19, color: metricColor },
-                ]}
-              >
-                {durationText}
-              </Text>
-              <Text
-                style={[
-                  tw('font-primary-700'),
-                  { fontSize: 19, color: metricColor },
-                ]}
-              >
-                {caloriesText}
-              </Text>
+          <View style={[tw('absolute left-4 right-4'), { bottom: 34 }]}>
+            <View
+              style={[
+                tw('px-4 py-3 rounded-2xl flex-row items-center border'),
+                {
+                  gap: 12,
+                  backgroundColor: isDarkMetrics
+                    ? 'rgba(255,255,255,0.78)'
+                    : 'rgba(0,0,0,0.42)',
+                  borderColor: isDarkMetrics
+                    ? 'rgba(255,255,255,0.55)'
+                    : 'rgba(255,255,255,0.18)',
+                },
+              ]}
+            >
+              <ShareMetricItem
+                label="거리"
+                value={distanceText}
+                color={metricColor}
+              />
+              <ShareMetricItem
+                label="시간"
+                value={durationText}
+                color={metricColor}
+              />
+              <ShareMetricItem
+                label="칼로리"
+                value={caloriesText}
+                color={metricColor}
+              />
             </View>
           </View>
 
           {/* 워터마크 */}
           <Text
             style={[
-              tw('absolute right-3 font-secondary text-brand-primary'),
-              { bottom: 10, opacity: 0.8, fontSize: 13, lineHeight: 22 },
+              tw('absolute right-4 font-primary-700 text-white'),
+              { bottom: 12, opacity: 0.74, fontSize: 11, lineHeight: 16 },
             ]}
           >
-            따릉이맵
+            @{BRAND_TEXT}
           </Text>
         </ViewShot>
       )}
@@ -370,56 +481,69 @@ const StoryShareScreen = ({
         keyboardVerticalOffset={0}
         style={[
           tw('absolute left-0 right-0 px-6 items-center flex flex-col'),
-          { bottom: 60, gap: 12 },
+          { bottom: 42, gap: 12 },
         ]}
       >
         {photoUri ? (
-          <View style={[tw('flex flex-row w-full'), { gap: 12 }]}>
-              <TouchableOpacity
+          <View
+            style={[
+              tw('flex flex-row w-full rounded-2xl p-2'),
+              { gap: 10, backgroundColor: 'rgba(0,0,0,0.42)' },
+            ]}
+          >
+            <TouchableOpacity
+              style={[
+                tw(
+                  'flex-1 px-5 py-3 rounded-xl items-center justify-center border',
+                ),
+                { borderColor: 'rgba(255,255,255,0.28)' },
+              ]}
+              onPress={handleRetakePress}
+            >
+              <Text
                 style={[
-                  tw(
-                    'flex-1 px-6 py-3 rounded-full items-center justify-center border-2 border-white bg-black',
-                  ),
-                  { opacity: 0.7 },
+                  tw('text-on-surface-secondary font-primary-700'),
+                  { fontSize: 15 },
                 ]}
-                onPress={handleRetakePress}
               >
-                <Text
-                  style={[
-                    tw('text-on-surface-secondary font-primary-700'),
-                    { fontSize: 15 },
-                  ]}
-                >
-                  다시 찍기
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={tw(
-                  'flex-1 px-6 py-3 rounded-full items-center justify-center bg-brand-primary',
-                )}
-                onPress={handleShareStoryPress}
+                다시 찍기
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                tw(
+                  'flex-1 px-5 py-3 rounded-xl items-center justify-center bg-brand-primary flex-row',
+                ),
+                { gap: 6 },
+              ]}
+              onPress={handleShareStoryPress}
+            >
+              <IconShared color="#111827" width={17} height={17} />
+              <Text
+                style={[
+                  tw('text-on-surface-primary font-primary-700'),
+                  { fontSize: 15 },
+                ]}
               >
-                <Text
-                  style={[
-                    tw('text-on-surface-primary font-primary-700'),
-                    { fontSize: 15 },
-                  ]}
-                >
-                  공유하기
-                </Text>
-              </TouchableOpacity>
+                공유하기
+              </Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <>
             <View
               style={[
                 tw(
-                  'w-full rounded-2xl p-3 flex flex-col justify-center bg-black',
+                  'w-full rounded-2xl p-4 flex flex-col justify-center border',
                 ),
-                { opacity: 0.7, minHeight: 100 },
+                {
+                  minHeight: 108,
+                  backgroundColor: 'rgba(0,0,0,0.52)',
+                  borderColor: 'rgba(255,255,255,0.14)',
+                },
               ]}
             >
-              <View style={{ gap: 8 }}>
+              <View style={{ gap: 10 }}>
                 {tagList.length > 0 && (
                   <View
                     style={[
@@ -434,7 +558,7 @@ const StoryShareScreen = ({
                           tw(
                             'flex-row items-center px-3 py-2 bg-brand-primary rounded-full',
                           ),
-                          { gap: 4 },
+                          { gap: 5 },
                         ]}
                       >
                         <Text
@@ -467,7 +591,7 @@ const StoryShareScreen = ({
                         tw(
                           'flex-1 rounded-xl px-3 py-2 text-on-surface-primary bg-white',
                         ),
-                        { opacity: 0.7, fontSize: 13 },
+                        { fontSize: 13, minHeight: 42 },
                       ]}
                       value={tagInput}
                       onChangeText={setTagInput}
@@ -476,6 +600,22 @@ const StoryShareScreen = ({
                       onSubmitEditing={handleAddTagPress}
                       returnKeyType="done"
                     />
+                    <TouchableOpacity
+                      style={tw(
+                        'w-10 h-10 rounded-xl bg-brand-primary items-center justify-center',
+                      )}
+                      onPress={handleAddTagPress}
+                      activeOpacity={0.8}
+                    >
+                      <Text
+                        style={[
+                          tw('font-primary-700 text-on-surface-primary'),
+                          { fontSize: 20, lineHeight: 24 },
+                        ]}
+                      >
+                        +
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>
@@ -491,25 +631,33 @@ const StoryShareScreen = ({
               <TouchableOpacity
                 style={[
                   tw(
-                    'rounded-full border border-brand-primary bg-surface-primary flex justify-center items-center',
+                    'rounded-full bg-surface-primary flex justify-center items-center',
                   ),
                   {
-                    width: 50,
-                    height: 50,
-                    opacity: 0.7,
-                    borderWidth: 4,
+                    width: 68,
+                    height: 68,
+                    borderWidth: 5,
+                    borderColor: '#FFFFFF',
                   },
                 ]}
                 onPress={takePhotoPress}
               >
-                <Text>📷</Text>
+                <View
+                  style={[
+                    tw('rounded-full bg-brand-primary'),
+                    { width: 46, height: 46 },
+                  ]}
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   tw(
-                    'px-3 py-2 rounded-full border border-brand-primary bg-black flex justify-center items-center absolute right-0',
+                    'px-4 py-2 rounded-full border bg-black flex justify-center items-center absolute right-0',
                   ),
-                  { opacity: 0.7 },
+                  {
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    borderColor: 'rgba(255,255,255,0.2)',
+                  },
                 ]}
                 onPress={pickFromGalleryPress}
               >
