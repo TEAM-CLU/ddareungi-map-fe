@@ -269,9 +269,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -286,9 +290,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DdareungiMap/Pods-DdareungiMap-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -320,6 +328,7 @@
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = DdareungiMap/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "따릉이맵";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -331,7 +340,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.letyuchan.ddareungiMap0112;
+				PRODUCT_BUNDLE_IDENTIFIER = com.letyuchan.ddareungiMap;
 				PRODUCT_NAME = DdareungiMap;
 				RCT_NEW_ARCH_ENABLED = 0;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -350,6 +359,7 @@
 				DEVELOPMENT_TEAM = NQV2G8UQZB;
 				INFOPLIST_FILE = DdareungiMap/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "따릉이맵";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -361,7 +371,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.letyuchan.ddareungiMap0112;
+				PRODUCT_BUNDLE_IDENTIFIER = com.letyuchan.ddareungiMap;
 				PRODUCT_NAME = DdareungiMap;
 				RCT_NEW_ARCH_ENABLED = 0;
 				SWIFT_VERSION = 5.0;
