@@ -154,7 +154,7 @@ export const useProfileEdit = ({
         Alert.alert('알림', data.message);
       },
       onError: error => {
-        Alert.alert('오류', "정보 수정에 실패했습니다. ");
+        Alert.alert('오류', "error.message");
       },
     });
   };

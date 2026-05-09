@@ -180,7 +180,7 @@ export default function MeasureScreen() {
           ]}
         >
           <ActivityIndicator size="large" color="#01DA86" />
-          <Text style={[tw('text-on-surface-primary font-primary-500'), { fontSize: 18 }]}>
+          <Text style={[tw('text-on-surface-primary font-primary-700'), { fontSize: 18 }]}>
             위치를 확인하는 중...
           </Text>
         </Animated.View>
