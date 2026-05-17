@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Text, View } from 'react-native';
+import { Animated, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import Footer from '@/shared/components/Footer';
 import Map from '@/features/map/components/Map';
@@ -26,6 +26,7 @@ import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { getRouteCategoryText } from '@/shared/utils/formatting';
 import { makeSegmentColors } from '@/features/navigation/utils/makeSegmentColors';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import MapLoadingOverlay from '@/shared/components/MapLoadingOverlay';
 
 const MapScreen = () => {
   const { navigation } = useAppNavigation();
@@ -256,14 +257,13 @@ const MapScreen = () => {
         <Animated.View
           pointerEvents="none"
           style={[
-            tw('absolute top-0 left-0 right-0 bottom-0 bg-surface-primary items-center justify-center z-10'),
-            { gap: 12, opacity: mapLoadingOpacityAnim },
+            tw('absolute top-0 left-0 right-0 bottom-0 z-10'),
+            { opacity: mapLoadingOpacityAnim },
           ]}
         >
-          <ActivityIndicator size="large" color="#01DA86" />
-          <Text style={[tw('text-on-surface-primary font-primary-700'), { fontSize: 18 }]}>
-            지도를 불러오는 중...
-          </Text>
+          <MapLoadingOverlay
+            title="지도를 불러오는 중"
+          />
         </Animated.View>
       )}
     </View>

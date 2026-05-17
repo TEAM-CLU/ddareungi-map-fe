@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
   Text,
   TouchableOpacity,
@@ -19,6 +18,7 @@ import MeasureBackgroundMap from '@/features/measurement/components/MeasureBackg
 import { IconChevronDown } from '@/shared/components/icons';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { tw } from '@/shared/libs/tw-helper';
+import MapLoadingOverlay from '@/shared/components/MapLoadingOverlay';
 
 const MAP_LOADING_FADE_DURATION_MS = 400;
 
@@ -100,7 +100,7 @@ export default function MeasureScreen() {
           {/* 상단 절반: 지도 투명 노출, 탭 → 전체화면 */}
           <TouchableOpacity
             style={{
-              flex: 1,
+              flex: 2,
               justifyContent: 'flex-end',
               alignItems: 'center',
               paddingBottom: 12,
@@ -122,7 +122,7 @@ export default function MeasureScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* 하단 절반: 측정 지표 UI */}
+          {/* 하단 1/3: 측정 지표 UI */}
           <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
             <MeasureActiveScreen
               onTogglePause={handleTogglePause}
@@ -164,25 +164,13 @@ export default function MeasureScreen() {
         <Animated.View
           pointerEvents="none"
           style={[
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: '#FFFFFF',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 12,
-              zIndex: 10,
-            },
+            tw('absolute top-0 left-0 right-0 bottom-0 z-10'),
             { opacity: loadingOpacityAnim },
           ]}
         >
-          <ActivityIndicator size="large" color="#01DA86" />
-          <Text style={[tw('text-on-surface-primary font-primary-700'), { fontSize: 18 }]}>
-            위치를 확인하는 중...
-          </Text>
+          <MapLoadingOverlay
+            title="위치를 확인하는 중"
+          />
         </Animated.View>
       )}
 

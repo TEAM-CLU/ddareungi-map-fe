@@ -26,14 +26,14 @@ import {
 import { IconClose, IconShared } from '@/shared/components/icons';
 
 interface ShareMetricItemProps {
-  label: string;
+  align: 'flex-start' | 'center' | 'flex-end';
   value: string;
   color: string;
 }
 
-interface ShareTagPillProps {
+interface ShareTagTextProps {
+  color: string;
   text: string;
-  index: number;
 }
 
 interface StoryShareScreenProps {
@@ -46,25 +46,34 @@ interface StoryShareScreenProps {
 const CAPTURE_CARD_SIDE_OFFSET = 38;
 const CAPTURE_CARD_TOP_OFFSET = 84;
 const BRAND_TEXT = '따릉이맵';
+const SHARE_TAG_LIMIT = 2;
 
-const ShareMetricItem = ({ label, value, color }: ShareMetricItemProps) => {
+const ShareMetricItem = ({
+  align,
+  value,
+  color,
+}: ShareMetricItemProps) => {
+  const textAlign =
+    align === 'center' ? 'center' : align === 'flex-end' ? 'right' : 'left';
+
   return (
-    <View style={tw('flex-1 items-start')}>
-      <Text
-        style={[
-          tw('font-primary-500'),
-          { color, fontSize: 10, opacity: 0.72, marginBottom: 4 },
-        ]}
-      >
-        {label}
-      </Text>
+    <View style={[tw('flex-1'), { alignItems: align, minWidth: 0 }]}>
       <Text
         numberOfLines={1}
         adjustsFontSizeToFit={true}
         minimumFontScale={0.72}
         style={[
           tw('font-primary-700'),
-          { color, fontSize: 17, width: '100%' },
+          {
+            color,
+            fontSize: 19,
+            lineHeight: 25,
+            width: '100%',
+            textAlign,
+            textShadowColor: 'rgba(0,0,0,0.32)',
+            textShadowOffset: { width: 0, height: 1 },
+            textShadowRadius: 8,
+          },
         ]}
       >
         {value}
@@ -73,36 +82,24 @@ const ShareMetricItem = ({ label, value, color }: ShareMetricItemProps) => {
   );
 };
 
-const ShareTagPill = ({ text, index }: ShareTagPillProps) => {
-  const isPrimary = index === 0;
-
+const ShareTagText = ({ color, text }: ShareTagTextProps) => {
   return (
-    <View
+    <Text
+      numberOfLines={1}
       style={[
-        tw('px-3 py-1.5 rounded-full border'),
+        tw('font-primary-700'),
         {
-          backgroundColor: isPrimary
-            ? 'rgba(1,218,134,0.86)'
-            : 'rgba(0,0,0,0.34)',
-          borderColor: isPrimary
-            ? 'rgba(255,255,255,0.62)'
-            : 'rgba(255,255,255,0.22)',
+          color,
+          fontSize: 14,
+          lineHeight: 20,
+          textShadowColor: 'rgba(0,0,0,0.32)',
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 7,
         },
       ]}
     >
-      <Text
-        style={[
-          tw('font-primary-700'),
-          {
-            color: isPrimary ? '#111827' : '#FFFFFF',
-            fontSize: isPrimary ? 14 : 13,
-            lineHeight: 18,
-          },
-        ]}
-      >
-        #{text}
-      </Text>
-    </View>
+      #{text}
+    </Text>
   );
 };
 
@@ -144,7 +141,10 @@ const StoryShareScreen = ({
     })();
   }, []);
 
-  const clampedTags = useMemo(() => clampTagList(tagList), [tagList]);
+  const clampedTags = useMemo(
+    () => clampTagList(tagList).slice(0, SHARE_TAG_LIMIT),
+    [tagList],
+  );
   const distanceText = useMemo(
     () => formatDistanceAdaptiveText(traveledDistance),
     [traveledDistance],
@@ -163,7 +163,7 @@ const StoryShareScreen = ({
   };
 
   const handleAddTagPress = () => {
-    if (tagInput.trim() && tagList.length < 3) {
+    if (tagInput.trim() && tagList.length < SHARE_TAG_LIMIT) {
       setTagList([...tagList, tagInput.trim()]);
       setTagInput('');
     }
@@ -397,81 +397,76 @@ const StoryShareScreen = ({
           />
           <LinearGradient
             pointerEvents="none"
-            colors={['transparent', 'rgba(0,0,0,0.22)', 'rgba(0,0,0,0.72)']}
+            colors={['transparent', 'rgba(0,0,0,0.28)', 'rgba(0,0,0,0.82)']}
             locations={[0, 0.45, 1]}
             style={{
               position: 'absolute',
               left: 0,
               right: 0,
               bottom: 0,
-              height: 260,
+              height: 300,
             }}
           />
 
-          {/* 상단 태그 */}
-          <View style={[tw('absolute left-5 right-5'), { top: 22 }]}>
+          {/* 상단 브랜딩/태그 */}
+          <View
+            style={[
+              tw('absolute left-5 right-5 flex-row items-start justify-between'),
+              { top: 20, gap: 12 },
+            ]}
+          >
+            <View
+              style={[
+                tw('flex flex-row flex-wrap'),
+                { flex: 1, gap: 10, maxWidth: '58%', paddingTop: 10 },
+              ]}
+            >
+              {clampedTags.map((text: string, idx: number) => (
+                <ShareTagText
+                  key={`${text}-${idx}`}
+                  color={metricColor}
+                  text={text}
+                />
+              ))}
+            </View>
             <Text
               style={[
-                tw('font-secondary text-brand-primary'),
-                { fontSize: 18, lineHeight: 24, marginBottom: 10 },
+                tw('font-secondary text-brand-primary text-right'),
+                {
+                  fontSize: 24,
+                  height: 52,
+                  lineHeight: 46,
+                  includeFontPadding: true,
+                  textShadowColor: 'rgba(0,0,0,0.42)',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 8,
+                },
               ]}
             >
               {BRAND_TEXT}
             </Text>
-            <View style={[tw('flex flex-row flex-wrap'), { gap: 7 }]}>
-              {clampedTags.map((text: string, idx: number) => (
-                <ShareTagPill
-                  key={`${text}-${idx}`}
-                  text={text}
-                  index={idx}
-                />
-              ))}
-            </View>
           </View>
 
-          {/* 하단 메트릭 카드 */}
-          <View style={[tw('absolute left-4 right-4'), { bottom: 34 }]}>
-            <View
-              style={[
-                tw('px-4 py-3 rounded-2xl flex-row items-center border'),
-                {
-                  gap: 12,
-                  backgroundColor: isDarkMetrics
-                    ? 'rgba(255,255,255,0.78)'
-                    : 'rgba(0,0,0,0.42)',
-                  borderColor: isDarkMetrics
-                    ? 'rgba(255,255,255,0.55)'
-                    : 'rgba(255,255,255,0.18)',
-                },
-              ]}
-            >
+          {/* 하단 메트릭 */}
+          <View style={[tw('absolute left-5 right-5'), { bottom: 38 }]}>
+            <View style={tw('flex-row items-end justify-between')}>
               <ShareMetricItem
-                label="거리"
+                align="flex-start"
                 value={distanceText}
                 color={metricColor}
               />
               <ShareMetricItem
-                label="시간"
+                align="center"
                 value={durationText}
                 color={metricColor}
               />
               <ShareMetricItem
-                label="칼로리"
+                align="flex-end"
                 value={caloriesText}
                 color={metricColor}
               />
             </View>
           </View>
-
-          {/* 워터마크 */}
-          <Text
-            style={[
-              tw('absolute right-4 font-primary-700 text-white'),
-              { bottom: 12, opacity: 0.74, fontSize: 11, lineHeight: 16 },
-            ]}
-          >
-            @{BRAND_TEXT}
-          </Text>
         </ViewShot>
       )}
 
@@ -579,7 +574,7 @@ const StoryShareScreen = ({
                     ))}
                   </View>
                 )}
-                {tagList.length < 3 && (
+                {tagList.length < SHARE_TAG_LIMIT && (
                   <View
                     style={[
                       tw('flex flex-row items-center justify-center'),
@@ -595,7 +590,7 @@ const StoryShareScreen = ({
                       ]}
                       value={tagInput}
                       onChangeText={setTagInput}
-                      placeholder="태그를 입력하세요 (최대 3개)"
+                      placeholder="태그를 입력하세요 (최대 2개)"
                       placeholderTextColor="#B3B3B3"
                       onSubmitEditing={handleAddTagPress}
                       returnKeyType="done"
