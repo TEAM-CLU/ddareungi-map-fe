@@ -23,8 +23,12 @@ export const useStation = ({
   isMapReady,
   mapReadyVersion,
 }: UseStationParams) => {
-  const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
-    useStationMessenger();
+  const {
+    turnOffStationMarkers,
+    turnOnStationMarkers,
+    updateStationDataList,
+    updateTargetedStationBikeCountListMessage,
+  } = useStationMessenger();
   const { mutateAsync: getLatestBikeCountList } =
     useGetStationsLatestBikeCountMutation();
   const isNavigationMode = useNavigationStore(state => state.isNavigationMode);
@@ -36,6 +40,9 @@ export const useStation = ({
       })),
     );
   const setStationMetaData = useStationStore(state => state.setStationMetaData);
+  const isStationMarkersVisible = useStationStore(
+    state => state.isStationMarkersVisible,
+  );
 
   // 쿼리를 트리거하기 위한 "현재 보고 있는 지도 중심점"
   const [currentMapCenterCoord, setCurrentMapCenterCoord] =
@@ -44,9 +51,12 @@ export const useStation = ({
   // 거리 계산을 위해 "직전에 로딩했던 좌표" 기억용
   const prevMapCenterCoord = useRef<Coordinate | null>(null);
 
-  // 조건: 지도 로딩 완료 + 네비 모드 아님 + 경로 상세 모달 아님
+  // 조건: 지도 로딩 완료 + 네비 모드 아님 + 경로 상세 모달 아님 + 대여소 마커 표시 중
   const enableQuery =
-    isMapReady && !isNavigationMode && !showSelectedRouteDetailModal;
+    isMapReady &&
+    !isNavigationMode &&
+    !showSelectedRouteDetailModal &&
+    isStationMarkersVisible;
   const { data: stationDataList } = useStationDataListQuery({
     lat: currentMapCenterCoord?.lat,
     lng: currentMapCenterCoord?.lng,
@@ -94,6 +104,10 @@ export const useStation = ({
 
           // 2. 특정 대여소 실시간 재고 조회 요청
           case 'needUpdateStationBikeCountList': {
+            if (!isStationMarkersVisible) {
+              return;
+            }
+
             if (
               !Array.isArray(data.stationNumbers) ||
               data.stationNumbers.length === 0
@@ -135,6 +149,7 @@ export const useStation = ({
     },
     [
       getLatestBikeCountList,
+      isStationMarkersVisible,
       setShowStationDetailModal,
       setStationMetaData,
       updateTargetedStationBikeCountListMessage,
@@ -143,9 +158,33 @@ export const useStation = ({
 
   // 쿼리 데이터가 갱신되면 웹뷰에 전달
   useEffect(() => {
-    if (!enableQuery || !stationDataList) return;
+    if (!enableQuery || !stationDataList || !isStationMarkersVisible) return;
     updateStationDataList(stationDataList);
-  }, [stationDataList, updateStationDataList, enableQuery, mapReadyVersion]);
+  }, [
+    stationDataList,
+    updateStationDataList,
+    enableQuery,
+    isStationMarkersVisible,
+    mapReadyVersion,
+  ]);
+
+  // 웹뷰가 다시 준비되거나 버튼이 재마운트되어도 대여소 마커 표시 상태를 유지한다.
+  useEffect(() => {
+    if (!isMapReady) return;
+
+    if (isStationMarkersVisible) {
+      turnOnStationMarkers();
+      return;
+    }
+
+    turnOffStationMarkers();
+  }, [
+    isMapReady,
+    isStationMarkersVisible,
+    mapReadyVersion,
+    turnOffStationMarkers,
+    turnOnStationMarkers,
+  ]);
 
   return {
     handleStationMessage,
