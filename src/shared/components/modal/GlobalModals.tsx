@@ -1,0 +1,256 @@
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import RouteRecommendModal from '@/features/routing/components/recommend/RouteRecommendModal';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
+import PlaceDetailModal from '@/features/search/components/PlaceDetailModal';
+import NearbyStationModal from '@/features/station/components/NearbyStationModal';
+import StationDetailModal from '@/features/station/components/StationDetailModal';
+import { useModalStore } from '@/shared/stores/useModalStore';
+import SlideModal from './SlideModal';
+import { useSearchStore } from '@/features/search/stores/useSearchStore';
+import NavigationDetailModal from '@/features/navigation/components/NavigationDetailModal';
+import SelectedRouteDetailModal from '@/features/routing/components/SelectedRouteDetailModal';
+import { useShallow } from 'zustand/react/shallow';
+import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
+import NavigationStartModal from '@/features/navigation/components/NavigationStartModal';
+import NavigationFinishModal from '@/features/navigation/components/NavigationFinishModal';
+import NavigationEndModal from '@/features/navigation/components/NavigationEndModal';
+import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
+import { useRef } from 'react';
+import Modal from 'react-native-modal';
+import { useSlideModalSync } from '@/shared/components/hooks/useSlideModalSync';
+import BookmarkEditorModal from '@/features/bookmark/components/BookmarkEditorModal';
+
+const GlobalModals = () => {
+  const { start, end, waypoints, selectedRouteData } = useRouteStore(
+    useShallow(state => ({
+      start: state.start,
+      end: state.end,
+      waypoints: state.waypoints,
+      selectedRouteData: state.selectedRouteData,
+    })),
+  );
+  const {
+    setShowNearByStationModal,
+    setShowStationDetailModal,
+    setShowRouteRecommendModal,
+    setShowPlaceDetailModal,
+    setShowSelectedRouteDetailModal,
+    setShowNavigationDetailModal,
+    showPlaceDetailModal,
+    showSelectedRouteDetailModal,
+    showNearByStationModal,
+    showStationDetailModal,
+    showRouteRecommendModal,
+    showBookmarkModal,
+    showNavigationDetailModal,
+    setShowBookmarkModal,
+    showNavigationStartModal,
+    showNavigationEndModal,
+    showNavigationFinishModal,
+    setShowNavigationStartModal,
+    setShowNavigationEndModal,
+    setShowNavigationFinishModal,
+  } = useModalStore(
+    useShallow(state => ({
+      setShowNearByStationModal: state.setShowNearByStationModal,
+      setShowStationDetailModal: state.setShowStationDetailModal,
+      setShowRouteRecommendModal: state.setShowRouteRecommendModal,
+      setShowPlaceDetailModal: state.setShowPlaceDetailModal,
+      setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
+      setShowNavigationDetailModal: state.setShowNavigationDetailModal,
+      showPlaceDetailModal: state.showPlaceDetailModal,
+      showSelectedRouteDetailModal: state.showSelectedRouteDetailModal,
+      showNearByStationModal: state.showNearByStationModal,
+      showStationDetailModal: state.showStationDetailModal,
+      showRouteRecommendModal: state.showRouteRecommendModal,
+      showBookmarkModal: state.showBookmarkModal,
+      showNavigationDetailModal: state.showNavigationDetailModal,
+      setShowBookmarkModal: state.setShowBookmarkModal,
+      showNavigationEndModal: state.showNavigationEndModal,
+      showNavigationStartModal: state.showNavigationStartModal,
+      setShowNavigationStartModal: state.setShowNavigationStartModal,
+      setShowNavigationEndModal: state.setShowNavigationEndModal,
+      showNavigationFinishModal: state.showNavigationFinishModal,
+      setShowNavigationFinishModal: state.setShowNavigationFinishModal,
+    })),
+  );
+
+  const selectedRouteDetailModalRef = useRef<BottomSheetModal | null>(null);
+  const routeRecommendModalRef = useRef<BottomSheetModal | null>(null);
+  const nearbyStationModalRef = useRef<BottomSheetModal | null>(null);
+  const stationDetailModalRef = useRef<BottomSheetModal | null>(null);
+  const placeDetailModalRef = useRef<BottomSheetModal | null>(null);
+  const bookmarkModalRef = useRef<BottomSheetModal | null>(null);
+  const navigationDetailModalRef = useRef<BottomSheetModal | null>(null);
+  const navigationStartModalRef = useRef<Modal | null>(null);
+  const navigationEndModalRef = useRef<Modal | null>(null);
+  const navigationFinishModalRef = useRef<Modal | null>(null);
+
+  const selectedPlaceInfoForModal = useSearchStore(
+    state => state.selectedPlaceInfoForModal,
+  );
+
+  const { instructionList, currentIntervalIndex } =
+    useNavigationDetailModalStore(
+      useShallow(state => ({
+        instructionList: state.instructionList,
+        currentIntervalIndex: state.currentIntervalIndex,
+      })),
+    );
+
+  const {
+    seconds,
+    traveledDistanceMeter,
+    totalCaloriesBurned,
+    totalCarbonSaved,
+    sessionId,
+    resetAlldata,
+  } = useNavigationStore(
+    useShallow(state => ({
+      seconds: state.seconds,
+      traveledDistanceMeter: state.traveledDistanceMeter,
+      totalCaloriesBurned: state.totalCaloriesBurned,
+      totalCarbonSaved: state.totalCarbonSaved,
+      sessionId: state.sessionId,
+      resetAlldata: state.resetAllData,
+    })),
+  );
+
+  useSlideModalSync(selectedRouteDetailModalRef, showSelectedRouteDetailModal);
+  useSlideModalSync(routeRecommendModalRef, showRouteRecommendModal);
+  useSlideModalSync(nearbyStationModalRef, showNearByStationModal);
+  useSlideModalSync(stationDetailModalRef, showStationDetailModal);
+  useSlideModalSync(placeDetailModalRef, showPlaceDetailModal);
+  useSlideModalSync(bookmarkModalRef, showBookmarkModal);
+  useSlideModalSync(navigationDetailModalRef, showNavigationDetailModal);
+
+  return (
+    <>
+      {/* 선택된 경로 상세 모달 */}
+      <SlideModal
+        ref={selectedRouteDetailModalRef}
+        snapPoints={['20%', '50%']}
+        initialIndex={0}
+        onDismiss={() => setShowSelectedRouteDetailModal(false)}
+        enablePanDownToClose={false}
+      >
+        <SelectedRouteDetailModal
+          selectedRouteData={selectedRouteData}
+          startAddress={start?.address || start?.name}
+          endAddress={end?.address || end?.name}
+          waypoints={waypoints}
+        />
+      </SlideModal>
+
+      {/* 경로추천 모달 */}
+      <SlideModal
+        ref={routeRecommendModalRef}
+        snapPoints={['45%', '49%']}
+        initialIndex={1}
+        onDismiss={() => setShowRouteRecommendModal(false)}
+      >
+        <RouteRecommendModal />
+      </SlideModal>
+
+      {/* Nearby 대여소 모달 */}
+      <SlideModal
+        ref={nearbyStationModalRef}
+        snapPoints={['43%', '47%']}
+        initialIndex={1}
+        onDismiss={() => setShowNearByStationModal(false)}
+      >
+        <NearbyStationModal />
+      </SlideModal>
+
+      {/* 대여소 상세 모달 */}
+      <SlideModal
+        ref={stationDetailModalRef}
+        snapPoints={['43%', '47%']}
+        initialIndex={1}
+        onDismiss={() => setShowStationDetailModal(false)}
+      >
+        <StationDetailModal onClose={() => setShowStationDetailModal(false)} />
+      </SlideModal>
+
+      {/* 장소 상세 모달 */}
+      <SlideModal
+        ref={placeDetailModalRef}
+        onDismiss={() => setShowPlaceDetailModal(false)}
+        snapPoints={['33%', '37%']}
+        initialIndex={1}
+        enablePanDownToClose={false}
+      >
+        <PlaceDetailModal
+          place={selectedPlaceInfoForModal}
+          onClose={() => setShowPlaceDetailModal(false)}
+        />
+      </SlideModal>
+
+      {/* 즐겨찾기 모달 */}
+      <SlideModal
+        ref={bookmarkModalRef}
+        snapPoints={['60%', '90%']}
+        onDismiss={() => setShowBookmarkModal(false)}
+        enablePanDownToClose={true}
+        useFlexView={true}
+      >
+        <BookmarkEditorModal />
+      </SlideModal>
+
+      {/* 네비게이션 디테일 모달 */}
+      <SlideModal
+        ref={navigationDetailModalRef}
+        snapPoints={['80%']}
+        initialIndex={0}
+        onDismiss={() => setShowNavigationDetailModal(false)}
+        enablePanDownToClose={false}
+        enableContentPanningGesture={true}
+        enableHandlePanningGesture={false}
+        enableOverDrag={false}
+        useFlexView={true}
+      >
+        <NavigationDetailModal
+          instructionList={instructionList}
+          currentIntervalIndex={currentIntervalIndex}
+        />
+      </SlideModal>
+
+      {/* 네비게이션 시작 모달 */}
+      {showNavigationStartModal && navigationStartModalRef && (
+        <NavigationStartModal
+          modalRef={navigationStartModalRef}
+          setShowNavigationStartModal={setShowNavigationStartModal}
+        />
+      )}
+
+      {/* 네비게이션 중간 종료 모달 */}
+      {showNavigationEndModal && navigationEndModalRef && (
+        <NavigationEndModal
+          modalRef={navigationEndModalRef}
+          setShowNavigationEndModal={setShowNavigationEndModal}
+          totalCaloriesBurned={totalCaloriesBurned}
+          totalCarbonSaved={totalCarbonSaved}
+          seconds={seconds}
+          traveledDistanceMeter={traveledDistanceMeter}
+          resetNavigationData={resetAlldata}
+          sessionId={sessionId}
+        />
+      )}
+
+      {/* 네비게이션 종료 모달 */}
+      {showNavigationFinishModal && navigationFinishModalRef && (
+        <NavigationFinishModal
+          modalRef={navigationFinishModalRef}
+          setShowNavigationFinishModal={setShowNavigationFinishModal}
+          totalCaloriesBurned={totalCaloriesBurned}
+          totalCarbonSaved={totalCarbonSaved}
+          seconds={seconds}
+          traveledDistanceMeter={traveledDistanceMeter}
+          resetNavigationData={resetAlldata}
+          sessionId={sessionId}
+        />
+      )}
+    </>
+  );
+};
+export default GlobalModals;

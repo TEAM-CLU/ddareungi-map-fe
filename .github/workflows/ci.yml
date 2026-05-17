@@ -1,4 +1,4 @@
-name: CI (PR-only RN build)
+name: CI (PR quick check)
 
 on:
   pull_request:
@@ -8,63 +8,48 @@ permissions:
   contents: read
 
 jobs:
-  android:
-    name: Android assembleDebug
-    runs-on: macos-latest
-    timeout-minutes: 30
+  quick-check:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: pnpm
-
-      - uses: pnpm/action-setup@v4
+      # 1. pnpm 먼저 설치
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
-      - name: Install deps
+      # 2. Node + pnpm 캐시 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      # 3. 의존성 설치
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+      # 4. 타입체크만 수행 (출력물 없음, 빠르게 검증)
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
 
-      - name: Build Android (assembleDebug)
-        run: ./gradlew -p android --no-daemon assembleDebug
-
-  ios:
-    name: iOS build (Simulator)
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: pnpm
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-
-      - name: Install CocoaPods
+      # 5. 번들 테스트 (iOS)
+      - name: Bundle iOS
         run: |
-          cd ios
-          pod install --repo-update
+          pnpm exec react-native bundle \
+            --platform ios \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output /tmp/main.ios.jsbundle \
+            --assets-dest /tmp/ios-assets
 
-      - name: Build iOS (iphonesimulator)
+      # 6. 번들 테스트 (Android)
+      - name: Bundle Android
         run: |
-          xcodebuild \
-            -workspace ios/DdareungiMap.xcworkspace \
-            -scheme DdareungiMap \
-            -sdk iphonesimulator \
-            -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' \
-            build
+          pnpm exec react-native bundle \
+            --platform android \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output /tmp/main.android.jsbundle \
+            --assets-dest /tmp/android-assets

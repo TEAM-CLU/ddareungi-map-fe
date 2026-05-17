@@ -56,11 +56,13 @@ module.exports = {
           quaternary: '#77838F',
           'input-label': '#373E44',
           placeholder: '#A7A7A7',
+          disabled: '#9CA3AF',
         },
 
         surface: {
           primary: '#FFFFFF',
           secondary: '#F9F9F9',
+          disabled: '#E5E7EB',
         },
 
         line: {
@@ -90,7 +92,11 @@ module.exports = {
           destination: '#006AFF',
           origin: '#FF0000',
         },
+
+        error: '#ef4444',
+        disabled: '#E5E7EB',
       },
+
       fontFamily: {
         primary: {
           400: 'Pretendard-Regular',

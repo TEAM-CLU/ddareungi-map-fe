@@ -8,14 +8,18 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/__tests__/**/*.ts",
-    "**/__tests__/**/*.tsx"
+    "**/__tests__/**/*.tsx",
+    "map.js"
   ],
   "exclude": ["**/node_modules", "**/Pods"],
   "compilerOptions": {
-    "baseUrl": "./src",
-    "paths": { "@/*": ["*"] },
+    "types": ["jest"],
+    "baseUrl": ".",
+    "paths": { "@/*": ["src/*"] },
     "resolveJsonModule": true,
+    "jsx": "react-native",
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "jsx": "react-jsx"
+    "skipLibCheck": true
   }
 }

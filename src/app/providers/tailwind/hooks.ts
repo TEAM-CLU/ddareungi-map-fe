@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { TailwindCtx } from './context';
-import { TW } from '@/shared/model/index.types';
+import { TW } from '@/shared/model/shared.types';
 
 export const useTailwind = (): TW => {
   const tailwindCtx = useContext(TailwindCtx);

@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>DdareungiMap</string>
+	<string>따릉이맵</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -20,6 +20,17 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.ddareungimap</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ddareungimap</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -27,16 +38,25 @@
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
-		<false/>
+		<true/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>라이딩 스토리 사진을 촬영하여 공유하기 위해 카메라 접근 권한이 필요합니다.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>현위치 기반 대여소 검색 및 길찾기 기능을 제공하기 위해 위치 정보가 필요합니다.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>라이딩 스토리 영상을 촬영하기 위해 마이크 접근 권한이 필요합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>촬영한 라이딩 스토리를 저장하기 위해 사진 라이브러리 접근 권한이 필요합니다.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>주요 공지 알림 수신 및 마케팅 이벤트 홍보를 위해 알림 권한이 필요합니다.</string>
 	<key>RCTNewArchEnabled</key>
 	<false/>
 	<key>UIAppFonts</key>
 	<array>
+		<string>HSYeolumMulbit.ttf</string>
 		<string>Pretendard-Black.ttf</string>
 		<string>Pretendard-Bold.ttf</string>
 		<string>Pretendard-ExtraBold.ttf</string>
@@ -46,10 +66,9 @@
 		<string>Pretendard-Regular.ttf</string>
 		<string>Pretendard-SemiBold.ttf</string>
 		<string>Pretendard-Thin.ttf</string>
-		<string>HSYeolumMulbit.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
+	<string>BootSplash</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>

@@ -12,7 +12,7 @@ import type {
   Environment as TWEnv,
   Utilities as TWUtilities,
 } from 'tailwind-rn/dist/types';
-import { TW } from '@/shared/model/index.types';
+import { TW } from '@/shared/model/shared.types';
 import { setTw } from '@/shared/libs/tw-helper';
 
 export const TailwindProvider: React.FC<{ children?: React.ReactNode }> = ({

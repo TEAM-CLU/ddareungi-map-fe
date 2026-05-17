@@ -1,0 +1,25 @@
+import React from 'react';
+import Svg, { Path } from 'react-native-svg';
+
+interface IconPlayProps {
+  color?: string;
+  width?: number;
+  height?: number;
+}
+
+const IconPlay = ({
+  color = 'white',
+  width = 19,
+  height = 21,
+}: IconPlayProps) => {
+  return (
+    <Svg width={width} height={height} viewBox="0 0 19 21" fill="none">
+      <Path
+        d="M18 8.76795C19.3333 9.53775 19.3333 11.4623 18 12.2321L3.75 20.4593C2.41667 21.2291 0.750001 20.2668 0.750001 18.7272L0.750002 2.27276C0.750002 0.733157 2.41667 -0.229093 3.75 0.540708L18 8.76795Z"
+        fill={color}
+      />
+    </Svg>
+  );
+};
+
+export default React.memo(IconPlay);
