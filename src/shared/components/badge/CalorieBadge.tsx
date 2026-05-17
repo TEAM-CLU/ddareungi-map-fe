@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import IconKcal from '@/shared/components/icons/IconKcal';
+import { IconKcal } from '../icons';
+import { formatCaloriesKcalText } from '@/shared/utils/formatting';
 
 interface CalorieBadgeProps {
   value: number;
@@ -26,7 +27,7 @@ const CalorieBadge = ({ value }: CalorieBadgeProps) => (
         { fontSize: 13 },
       ]}
     >
-      {value}kcal
+      {formatCaloriesKcalText(value)}
     </Text>
   </View>
 );

@@ -79,6 +79,10 @@ export const postSocialAuthExchangeToken = async (
 
 // 로그아웃
 export const postLogout = async (): Promise<LogoutResponse> => {
-  const response = await api.post('/auth/logout', {}, { withCredentials: true });
+  const response = await api.post(
+    '/auth/logout',
+    {},
+    { withCredentials: true },
+  );
   return response.data;
 };

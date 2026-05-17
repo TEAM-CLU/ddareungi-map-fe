@@ -1,7 +1,7 @@
 import { DIRECTION_ICONS } from '@/features/navigation/model/navigation.constants';
 import { Image, ImageStyle, Text, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { formatDistanceAdaptive } from '@/shared/utils/formatting';
+import { formatDistanceAdaptiveText } from '@/shared/utils/formatting';
 
 interface InstructionItemProps {
   sign: number;
@@ -18,6 +18,10 @@ const InstructionItem = ({
   currentIdx,
   distanceMeter,
 }: InstructionItemProps) => {
+  const directionIcon =
+    DIRECTION_ICONS[String(sign) as keyof typeof DIRECTION_ICONS] ??
+    DIRECTION_ICONS['0'];
+
   return (
     <View
       style={[
@@ -31,7 +35,7 @@ const InstructionItem = ({
     >
       <View style={[tw('flex flex-col justify-center'), { gap: 6 }]}>
         <Image
-          source={DIRECTION_ICONS[String(sign) as keyof typeof DIRECTION_ICONS]}
+          source={directionIcon}
           style={
             {
               width: 44,
@@ -138,7 +142,7 @@ const InstructionItem = ({
             { fontSize: 12, marginTop: 2, flexShrink: 0 },
           ]}
         >
-          {formatDistanceAdaptive(distanceMeter)}
+          {formatDistanceAdaptiveText(distanceMeter)}
         </Text>
       </View>
     </View>

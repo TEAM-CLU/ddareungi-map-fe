@@ -1,28 +1,14 @@
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
-import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { WebViewMessageEvent } from 'react-native-webview';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useModalStore } from '../stores/useModalStore';
-import { useAppNavigation } from './useAppNavigation';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useRoutingMessenger } from '@/features/routing/hooks/useRoutingMessenger';
 import { MapReadyMessage } from '@/shared/model/map.webview.types';
-import Modal from 'react-native-modal';
 import { useShallow } from 'zustand/react/shallow';
-
-// 모달의 상태(Boolean)와 Ref를 동기화하는 훅
-const useModalSync = (
-  ref: RefObject<BottomSheetModal | null>,
-  isVisible: boolean,
-) => {
-  useEffect(() => {
-    if (isVisible) {
-      ref.current?.present();
-    } else {
-      ref.current?.dismiss();
-    }
-  }, [isVisible, ref]);
-};
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '@/app/types';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 /**
  * useMapOrchestrator
@@ -30,43 +16,28 @@ const useModalSync = (
  * MapScreen에서 사용하는 "전역 레벨 제어 로직"을 한 곳에 모은 컨트롤러 훅.
  *
  * 이 훅의 역할:
- * - WebView / BottomSheetModal 같은 ref를 생성하고 전역 store에 등록
- * - 모달의 show/hide 상태(boolean)는 store에서 읽고,
- *   실제 present/dismiss 호출은 이 훅에서만 수행
+ * - 모달 open/close 제어 함수 제공
  * - 지도 관련 전역 navigation / ref를 mapStore에 주입
  * - 거리 값, 경로 추천 관련 라우팅 핸들러 제공
  */
-export const useMapOrchestrator = () => {
-  const [isLocalMapReady, setIsLocalMapReady] = useState(false);
-  /** ----------------------------------------
-   * 1. Navigation 객체 (화면 이동용)
-   * ---------------------------------------- */
-  const { navigation } = useAppNavigation();
+interface UseMapOrchestratorParams {
+  navigation: StackNavigationProp<RootStackParamList>;
+}
+
+export const useMapOrchestrator = ({
+  navigation,
+}: UseMapOrchestratorParams) => {
   const { clearStaticPath } = useRoutingMessenger();
 
-  /** ----------------------------------------
-   * 2. 화면 내부에서만 생성하는 Ref들
-   *    - 실제 useRef() 호출은 여기서만
-   *    - store에는 "보관" 용도로만 넘긴다.
-   * ---------------------------------------- */
-
-  // BottomSheetModal refs (실제 인스턴스)
-  const placeDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
-  const selectedRouteDetailModalLocalRef = useRef<BottomSheetModal | null>(
-    null,
+  const { setIsMapReady, bumpMapReadyVersion } = useMapStore(
+    useShallow(state => ({
+      setIsMapReady: state.setIsMapReady,
+      bumpMapReadyVersion: state.bumpMapReadyVersion,
+    })),
   );
-  const nearbyStationModalLocalRef = useRef<BottomSheetModal | null>(null);
-  const stationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
-  const routeRecommendModalLocalRef = useRef<BottomSheetModal | null>(null);
-  const bookmarkModalLocalRef = useRef<BottomSheetModal | null>(null);
-  const navigationDetailModalLocalRef = useRef<BottomSheetModal | null>(null);
-  // 네비게이션 시작/종료 모달
-  const navigationStartModalLocalRef = useRef<Modal | null>(null);
-  const navigationEndModalLocalRef = useRef<Modal | null>(null);
-  const navigationFinishModalLocalRef = useRef<Modal | null>(null);
 
   /** ----------------------------------------
-   * 3. 경로/거리 관련 상태 (routeStore)
+   * 2. 경로/거리 관련 상태 (routeStore)
    * ---------------------------------------- */
   const { distance, setDistance, prevScreen } = useRouteStore(
     useShallow(state => ({
@@ -77,78 +48,33 @@ export const useMapOrchestrator = () => {
   );
 
   /** ----------------------------------------
-   * 4. 모달 show/hide 및 모달 ref 보관용 상태 (modalStore)
-   *    - store는 "boolean + ref 저장소" 역할만 담당
-   *    - 실제 present/dismiss는 이 훅에서 useEffect로 수행
+   * 3. 모달 show/hide 상태 (modalStore)
    * ---------------------------------------- */
   const {
-    showPlaceDetailModal,
-    showNearByStationModal,
-    showSelectedRouteDetailModal,
-    showStationDetailModal,
-    showRouteRecommendModal,
-    showNavigationDetailModal,
-    showBookmarkModal,
-
-    setShowPlaceDetailModal,
     setShowNearByStationModal,
     setShowSelectedRouteDetailModal,
-    setShowStationDetailModal,
     setShowRouteRecommendModal,
-    setShowNavigationDetailModal,
     setShowBookmarkModal,
-
-    setModalRefs,
   } = useModalStore();
 
   /** ----------------------------------------
-   * 5. 지도 전역 상태 (mapStore)
+   * 4. 지도 전역 상태 (mapStore)
    *    - WebView ref / navigation 객체를 전역에서 재사용할 수 있도록 등록
    * ---------------------------------------- */
   const setGlobalNavigation = useMapStore(state => state.setGlobalNavigation);
 
   /** ----------------------------------------
-   * 6. 초기 mount 시: ref & navigation을 전역 store에 한번만 등록
+   * 5. 초기 mount 시: navigation을 전역 store에 한번만 등록
    *
-   * - WebView ref: 지도 조작용 (줌, 이동 등 WebView postMessage)
-   * - BottomSheetModal refs: GlobalModals에서 접근할 수 있도록 주입
    * - navigation: 모달 내부/웹뷰 메시지 핸들러에서도 화면 전환 가능하게 공유
    * ---------------------------------------- */
   useEffect(() => {
-    // BottomSheetModal Ref 등록 (GlobalModals ↔ Screen 연결)
-    setModalRefs({
-      placeDetailModalRef: placeDetailModalLocalRef,
-      selectedRouteDetailModalRef: selectedRouteDetailModalLocalRef,
-      nearbyStationModalRef: nearbyStationModalLocalRef,
-      stationDetailModalRef: stationDetailModalLocalRef,
-      routeRecommendModalRef: routeRecommendModalLocalRef,
-      bookmarkModalRef: bookmarkModalLocalRef,
-      navigationDetailModalRef: navigationDetailModalLocalRef,
-      navigationStartModalRef: navigationStartModalLocalRef,
-      navigationEndModalRef: navigationEndModalLocalRef,
-      navigationFinishModalRef: navigationFinishModalLocalRef,
-    });
-
     // 네비게이션 객체 전역 저장 (모달/웹뷰 이벤트에서도 navigate 가능)
     setGlobalNavigation(navigation);
-  }, [navigation, setModalRefs, setGlobalNavigation]);
+  }, [navigation, setGlobalNavigation]);
 
   /** ----------------------------------------
-   * 7. 모달 boolean 상태를 구독하고 → 실제 present/dismiss 실행
-   *
-   * - store: "지금 이 모달이 열려 있어야 하는가?"만 관리 (boolean)
-   * - controller: ref.current.present()/dismiss()를 실제로 호출
-   * ---------------------------------------- */
-  useModalSync(placeDetailModalLocalRef, showPlaceDetailModal);
-  useModalSync(selectedRouteDetailModalLocalRef, showSelectedRouteDetailModal);
-  useModalSync(nearbyStationModalLocalRef, showNearByStationModal);
-  useModalSync(stationDetailModalLocalRef, showStationDetailModal);
-  useModalSync(routeRecommendModalLocalRef, showRouteRecommendModal);
-  useModalSync(bookmarkModalLocalRef, showBookmarkModal);
-  useModalSync(navigationDetailModalLocalRef, showNavigationDetailModal);
-
-  /** ----------------------------------------
-   * 8. 외부에서 사용할 이벤트 핸들러들
+   * 6. 외부에서 사용할 이벤트 핸들러들
    *    - Screen/Component 쪽에서 이 함수들만 호출하면
    *      내부에서 모달 상태/거리/네비게이션이 알아서 연동된다.
    * ---------------------------------------- */
@@ -166,7 +92,7 @@ export const useMapOrchestrator = () => {
   }, [distance, setDistance, setShowRouteRecommendModal]);
 
   /** 선택된 경로 상세 모달 닫기 + 경로 선택 화면으로 이동 */
-  const handleSelectedRouteDetailModalClose = useCallback(() => {
+  const handleCloseSelectedRouteDetailModal = useCallback(() => {
     clearStaticPath();
     setShowSelectedRouteDetailModal(false);
     navigation.navigate(prevScreen ?? 'RouteSelect');
@@ -178,11 +104,11 @@ export const useMapOrchestrator = () => {
       const data: MapReadyMessage = JSON.parse(event.nativeEvent.data);
 
       if (data.type === 'mapReady') {
-        console.log('✅ 지도 준비 완료');
-        setIsLocalMapReady(data.isReady);
+        setIsMapReady(data.isReady);
+        bumpMapReadyVersion();
       }
     } catch (error) {
-      console.error('Invalid JSON from WebView:', event.nativeEvent.data);
+      handleCatch(error, { mode: 'silent' });
     }
   };
 
@@ -192,16 +118,14 @@ export const useMapOrchestrator = () => {
   }, [setShowBookmarkModal]);
 
   /** ----------------------------------------
-   * 9. 외부로 노출할 핸들러 함수
+   * 7. 외부로 노출할 핸들러 함수
    * ---------------------------------------- */
   return {
     // 이벤트 핸들러
     handleOpenNearbyStationModal,
     handleOpenRouteRecommendModal,
-    handleSelectedRouteDetailModalClose,
+    handleCloseSelectedRouteDetailModal,
     handleOpenBookmarkModal,
     handleMapReadyMessage,
-    isLocalMapReady,
-    setIsLocalMapReady,
   };
 };

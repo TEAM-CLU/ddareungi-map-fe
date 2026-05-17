@@ -1,6 +1,6 @@
-import IconEclipse from '@/shared/components/icons/IconEclipse';
 import { tw } from '@/shared/libs/tw-helper';
 import { View } from 'react-native';
+import { IconEclipse } from './icons';
 
 interface StepIndicatorProps {
   totalSteps: number;
@@ -8,7 +8,9 @@ interface StepIndicatorProps {
 }
 const StepIndicator = ({ totalSteps, currentStep }: StepIndicatorProps) => {
   return (
-        <View style={[tw('flex flex-row items-center justify-center'), { gap: 11 }]}>
+    <View
+      style={[tw('flex flex-row items-center justify-center'), { gap: 11 }]}
+    >
       {Array.from({ length: totalSteps }, (_, index) => {
         const stepNumber = index + 1;
         return (

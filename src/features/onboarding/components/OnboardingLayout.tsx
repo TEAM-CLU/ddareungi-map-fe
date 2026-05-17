@@ -48,7 +48,7 @@ const OnboardingLayout = ({
         >
           <Text
             style={[
-              tw('font-primary-600 text-[#000] text-center'),
+              tw('font-primary-600 text-on-surface-primary text-center'),
               { fontSize: 20, lineHeight: 30 },
             ]}
           >
@@ -56,7 +56,7 @@ const OnboardingLayout = ({
           </Text>
           <Text
             style={[
-              tw('font-primary-700 text-[#000] text-center'),
+              tw('font-primary-700 text-on-surface-primary text-center'),
               { fontSize: 20, lineHeight: 30 },
             ]}
           >

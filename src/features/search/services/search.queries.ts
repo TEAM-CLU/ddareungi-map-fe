@@ -106,7 +106,7 @@ export const useRecentSearchesQuery = () => {
     queryFn: getRecentSearches,
     staleTime: Infinity, // 최근 검색 기록은 수시로 변하지 않으므로 무한대로 설정
     gcTime: Infinity,
-    initialData: [],
+    placeholderData: [],
   });
 
   // 2. [추가] 검색어 저장

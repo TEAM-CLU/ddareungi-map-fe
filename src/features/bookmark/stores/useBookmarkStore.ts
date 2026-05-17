@@ -1,14 +1,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BookmarkItem } from '@/shared/model/index.types';
 import { MAX_BOOKMARK_COUNT } from '@/features/bookmark/model/bookmark.constants';
-
-export type toggleBookmarkResult =
-  | 'added'
-  | 'removed'
-  | 'limit_reached'
-  | 'fail';
+import {
+  BookmarkItem,
+  ToggleBookmarkResult,
+} from '@/features/bookmark/model/bookmark.types';
 
 interface BookmarkState {
   bookmarks: BookmarkItem[];
@@ -16,7 +13,7 @@ interface BookmarkState {
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
 
-  toggleBookmark: (bookmark: BookmarkItem) => toggleBookmarkResult;
+  toggleBookmark: (bookmark: BookmarkItem) => ToggleBookmarkResult;
   addBookmark: (bookmark: BookmarkItem) => boolean;
   removeBookmark: (id: string) => void;
   updateBookmarkAlias: (id: string, alias: string) => void;
@@ -94,8 +91,7 @@ export const useBookmarkStore = create<BookmarkState>()(
       name: 'bookmark-storage',
       storage: createJSONStorage(() => AsyncStorage),
       version: 1, // 데이터 구조 변경 대비
-      onRehydrateStorage: () => (state, error) => {
-        if (error) console.error('즐겨찾기 데이터 로드 실패:', error);
+      onRehydrateStorage: () => state => {
         state?.setHasHydrated(true);
       },
     },

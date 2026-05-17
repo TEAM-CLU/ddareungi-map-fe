@@ -1,24 +1,18 @@
-import { Coordinates } from '@/features/map/model/map.types';
-import {
-  Bbox,
-  Coordinate,
-  Segment,
-  Summary,
-} from '@/features/routing/model/routing.types';
+import { Coordinate } from '@/shared/model/shared.types';
+import { Bbox, Segment, Summary } from '@/features/routing/model/routing.types';
 export interface VolumeState {
   systemVolume: number;
   setSystemVolume: (volume: number) => void;
 }
 
 // API 관련 타입
-
 export interface NavigationInstruction {
   distance: number; // in meters
   time: number; // in seconds
   text: string;
   sign: number;
   interval: [number, number]; // [startIndex, endIndex] in coordinates array
-  nextTurnCoordinate: Coordinates;
+  nextTurnCoordinate: Coordinate;
   ttsUrl: string;
 }
 export interface StartNavigationSessionPayload {
@@ -37,12 +31,11 @@ export interface StartNavigationSessionResponse {
 }
 
 // 내비게이션 세션 유지
-
-export interface keepNavigationSessionAlivePayload {
+export interface KeepNavigationSessionAlivePayload {
   sessionId: string;
 }
 
-export interface keepNavigationSessionAliveResponse {
+export interface KeepNavigationSessionAliveResponse {
   statusCode: number;
   message: string;
 }
@@ -58,17 +51,18 @@ export interface TerminateNavigationSessionResponse {
 }
 
 // 기존 경로 복귀
-
 interface StationDataForNav {
   stationId: string;
   stationName: string;
-  location: Coordinates;
+  location: Coordinate;
 }
+
 export interface ReturnToExistingRoutePayload {
   sessionId: string;
-  currentLocation: Coordinates;
-  remainingWaypoints?: Coordinates[];
+  currentLocation: Coordinate;
+  remainingWaypoints?: Coordinate[];
 }
+
 export interface ReturnToExistingRouteResponse {
   statusCode: number;
   message: string;
@@ -78,20 +72,40 @@ export interface ReturnToExistingRouteResponse {
     bbox: Bbox;
     startStation: StationDataForNav;
     endStation: StationDataForNav;
-    waypoints?: Coordinates[];
+    waypoints?: Coordinate[];
     coordinates: [number, number][];
     instructions: NavigationInstruction[];
     segments: Segment[];
   };
 }
 
+// 내비 경로 데이터 적용 공통 입력 타입 (start/recovery/reroute 공용)
+export interface ApplyNavigationDataInput {
+  coordinates: [number, number][];
+  instructions: NavigationInstruction[];
+  startStation?: {
+    lat: number;
+    lng: number;
+    stationId?: string;
+    stationName?: string;
+  };
+  endStation?: {
+    lat: number;
+    lng: number;
+    stationId?: string;
+    stationName?: string;
+  };
+  waypoints?: [number, number][];
+}
+
+export type TravelMode = 'walking' | 'biking';
+
 // 완전 재탐색
-export type travelMode = 'walking' | 'biking';
 export interface ReRoutePayload {
   sessionId: string;
-  travelMode: travelMode;
-  currentLocation: Coordinates;
-  remainingWaypoints?: Coordinates[];
+  travelMode: TravelMode;
+  currentLocation: Coordinate;
+  remainingWaypoints?: Coordinate[];
 }
 
 export interface ReRouteResponse {
@@ -103,7 +117,7 @@ export interface ReRouteResponse {
     bbox: Bbox;
     startStation: StationDataForNav;
     endStation: StationDataForNav;
-    waypoints?: Coordinates[];
+    waypoints?: Coordinate[];
     coordinates: [number, number][];
     instructions: NavigationInstruction[];
     segments: Segment[];
@@ -114,34 +128,43 @@ export interface ReRouteResponse {
 export interface IntervalPathData {
   intervalIndex: number;
   interval: [number, number];
-  coordinateList: Coordinates[];
+  coordinateList: Coordinate[];
 }
 
 export interface LocationMetaData {
   timestamp: number;
   accuracy?: number;
   osSpeed?: number;
-  coordinate: Coordinates;
+  coordinate: Coordinate;
 }
 
 export interface StabilizeDistanceInput {
   newlyComputedDistanceMeter: number;
   prevStableDistanceMeter: number;
-  prevMyPosition: Coordinates | null;
-  currentMyPosition: Coordinates;
+  prevMyPosition: Coordinate | null;
+  currentMyPosition: Coordinate;
   prevTimestamp: number | null;
   currentTimestamp: number;
   type: DistanceType;
 }
 
+export interface OffRouteRecoveryGuardState {
+  lockUntilMs: number;
+  unlockCount: number;
+  shouldRequireUnlock: boolean;
+  isUnlocked: boolean;
+  prevPosition: Coordinate | null;
+  prevTimestamp: number | null;
+}
+
 export type DistanceType = 'remaining' | 'traveled';
 
 // calculateMotionVector 결과 타입
-export type MotionVectorResult = {
+export interface MotionVectorResult {
   moveMag: number; // 이동거리(m)
   speedMps: number; // 속도(m/s)
   dot: number; // v·u
-};
+}
 
 // useTimer 훅에서 사용하는 타입
 export type TimerStatus = 'idle' | 'running' | 'paused';

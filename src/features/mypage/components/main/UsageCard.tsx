@@ -1,6 +1,10 @@
 import { tw } from '@/shared/libs/tw-helper';
+import {
+  formatTimeHMText,
+  formatDistanceAdaptiveText,
+  formatCaloriesKcalText,
+} from '@/shared/utils/formatting';
 import { Text, View } from 'react-native';
-import { formatCalories, formatDistance, formatTime } from '@/shared/utils/formatting';
 
 interface UsageCardProps {
   totalTime: number;
@@ -9,20 +13,20 @@ interface UsageCardProps {
 }
 
 const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
-  const time = formatTime(totalTime);
-  const distance = formatDistance(totalDistance);
-  const calorie = formatCalories(calories);
+  const timeText = formatTimeHMText(totalTime);
+  const distanceText = formatDistanceAdaptiveText(totalDistance);
+  const calorieText = formatCaloriesKcalText(calories);
 
   return (
     <View
       style={tw(
-        'w-full h-[158px] border border-brand-primary bg-surface-primary shadow-sm rounded-xl overflow-hidden',
+        'w-full h-[180px] border border-brand-primary bg-surface-primary shadow-sm rounded-xl overflow-hidden',
       )}
     >
       {/* 상단 헤더 */}
       <View style={tw('w-full bg-brand-primary px-5 py-3 items-start')}>
         <Text style={tw('font-primary-700 text-lg text-on-surface-secondary')}>
-          이번 달 이용이력
+          총 이용이력
         </Text>
       </View>
 
@@ -37,7 +41,7 @@ const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
           <Text
             style={tw('text-on-surface-primary font-primary-700 text-base')}
           >
-            {time}
+            {timeText}
           </Text>
         </View>
 
@@ -50,7 +54,7 @@ const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
           <Text
             style={tw('text-on-surface-primary font-primary-700 text-base')}
           >
-            {distance}
+            {distanceText}
           </Text>
         </View>
 
@@ -63,7 +67,7 @@ const UsageCard = ({ totalTime, totalDistance, calories }: UsageCardProps) => {
           <Text
             style={tw('text-on-surface-primary font-primary-700 text-base')}
           >
-            {calorie}
+            {calorieText}
           </Text>
         </View>
       </View>

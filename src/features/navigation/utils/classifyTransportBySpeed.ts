@@ -1,5 +1,5 @@
 import { SPEED_THRESHOLDS } from '@/features/navigation/model/navigation.constants';
-import { TransportationType } from '@/shared/model/index.types';
+import { TransportationType } from '@/shared/model/shared.types';
 
 export const classifyTransportBySpeed = (
   speedMps: number,

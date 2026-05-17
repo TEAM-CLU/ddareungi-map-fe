@@ -1,12 +1,9 @@
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { LocationMetaData } from '@/features/navigation/model/navigation.types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 interface MyPositionState {
-  myPosition: Coordinates | undefined;
-  setMyPosition: (position: Coordinates) => void;
-
   locationMetaData: LocationMetaData;
   setLocationMetaData: (locationMetaData: LocationMetaData) => void;
 }
@@ -14,10 +11,6 @@ interface MyPositionState {
 export const useMyPositionStore = (() => {
   return create<MyPositionState>()(
     devtools(set => ({
-      myPosition: undefined,
-      setMyPosition: (position: Coordinates) =>
-        set({ myPosition: position }, false, 'myPosition/setMyPosition'),
-
       locationMetaData: { timestamp: 0, coordinate: { lat: 0, lng: 0 } },
       setLocationMetaData: (locationMetaData: LocationMetaData) =>
         set({ locationMetaData }, false, 'myPosition/setLocationMetaData'),

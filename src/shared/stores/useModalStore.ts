@@ -1,22 +1,40 @@
-import { ModalState } from '@/shared/model/index.types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+interface ModalState {
+  /* -----------------------------
+          모달 오픈 / 닫힘 상태
+  ------------------------------ */
+  showPlaceDetailModal: boolean;
+  showSelectedRouteDetailModal: boolean;
+  showNearByStationModal: boolean;
+  showStationDetailModal: boolean;
+  showRouteRecommendModal: boolean;
+  showBookmarkModal: boolean;
+  showNavigationDetailModal: boolean;
+  showNavigationStartModal: boolean;
+  showNavigationEndModal: boolean;
+  showNavigationFinishModal: boolean;
+
+  /* -----------------------------
+                Actions
+  ------------------------------ */
+
+  /** 각 모달의 show/hide 토글 함수들 */
+  setShowPlaceDetailModal: (isVisible: boolean) => void;
+  setShowSelectedRouteDetailModal: (isVisible: boolean) => void;
+  setShowNearByStationModal: (isVisible: boolean) => void;
+  setShowStationDetailModal: (isVisible: boolean) => void;
+  setShowRouteRecommendModal: (isVisible: boolean) => void;
+  setShowBookmarkModal: (isVisible: boolean) => void;
+  setShowNavigationDetailModal: (isVisible: boolean) => void;
+  setShowNavigationStartModal: (isVisible: boolean) => void;
+  setShowNavigationEndModal: (isVisible: boolean) => void;
+  setShowNavigationFinishModal: (isVisible: boolean) => void;
+}
 export const useModalStore = create<ModalState>()(
   devtools(
     set => ({
-      /* 모달 ref 초기값 (실제 생성은 useMapController) */
-      placeDetailModalRef: null,
-      selectedRouteDetailModalRef: null,
-      nearbyStationModalRef: null,
-      stationDetailModalRef: null,
-      routeRecommendModalRef: null,
-      bookmarkModalRef: null,
-      navigationDetailModalRef: null,
-      navigationStartModalRef: null,
-      navigationEndModalRef: null,
-      navigationFinishModalRef: null,
-
       /* 모달 오픈 여부 초기값 */
       showPlaceDetailModal: false,
       showSelectedRouteDetailModal: false,
@@ -32,13 +50,6 @@ export const useModalStore = create<ModalState>()(
       /* -----------------------------
                 ACTION 구현부
       ------------------------------ */
-
-      setModalRefs: modalRefs =>
-        set(
-          currentState => ({ ...currentState, ...modalRefs }),
-          false,
-          'modal/setModalRefs',
-        ),
 
       setShowPlaceDetailModal: isVisible =>
         set(

@@ -63,7 +63,3 @@ export interface GetStationLatestBikeCountListResponse {
   data: StationLatestBikeCountData[];
 }
 
-// useStation hook 내부 상태 타입
-export interface UseStationsOptions {
-  isMapReady: boolean;
-}

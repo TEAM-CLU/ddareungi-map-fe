@@ -1,5 +1,8 @@
 import { tw } from '@/shared/libs/tw-helper';
-import { formatDistance, formatTime } from '@/shared/utils/formatting';
+import {
+  formatDistanceAdaptiveText,
+  formatTimeHMText,
+} from '@/shared/utils/formatting';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
@@ -20,13 +23,13 @@ const SelectedRouteDetailBadge = ({
   useEffect(() => {
     if (!value) return;
     if (type === 'distance') {
-      const formattedDistance = formatDistance(value);
-      setText(formattedDistance);
+      const formattedDistanceText = formatDistanceAdaptiveText(value);
+      setText(formattedDistanceText);
     }
 
     if (type === 'time') {
-      const formattedDistnace = formatTime(value);
-      setText(formattedDistnace);
+      const formattedTimeText = formatTimeHMText(value);
+      setText(formattedTimeText);
     }
   }, []);
 

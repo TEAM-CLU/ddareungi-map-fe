@@ -1,4 +1,3 @@
-import { UpdateUserStatsPayload } from '@/features/auth/model/auth.types';
 import {
   useUpdateUserStatsMutation,
   useUserInfoQuery,
@@ -11,22 +10,23 @@ import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { playTts } from '@/features/navigation/libs/playTts';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import { IconClose } from '@/shared/components/icons';
+import { IconClose, IconShared } from '@/shared/components/icons';
 import SimpleLoading from '@/shared/components/SimpleLoading';
 import { tw } from '@/shared/libs/tw-helper';
-import {
-  formatCalories,
-  formatDistanceAdaptive,
-  formatTimeWithSeconds,
-} from '@/shared/utils/formatting';
 import { convertToTrees } from '@/shared/utils/measure';
 import { useEffect, useState } from 'react';
 import { Image, ImageStyle, Text, TouchableOpacity, View } from 'react-native';
 import Modal from 'react-native-modal';
 import { clearTtsQueue } from '@/features/navigation/libs/ttsPlayer';
-import IconShared from '@/shared/components/icons/IconShared';
 import StoryShareScreen from '@/features/navigation/components/StoryShareScreen';
 import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
+import {
+  formatTimeHMSText,
+  formatCaloriesKcalText,
+  formatDistanceAdaptiveText,
+} from '@/shared/utils/formatting';
+import { UpdateUserStatsPayload } from '@/features/auth/model/user.types';
+
 interface NavigationEndModalProps {
   modalRef: React.RefObject<Modal | null>;
   setShowNavigationEndModal: (show: boolean) => void;
@@ -49,47 +49,39 @@ const NavigationEndModal = ({
   sessionId,
 }: NavigationEndModalProps) => {
   const { data: prevUserInfo, isLoading } = useUserInfoQuery();
-  const { mutateAsync: updateUserUsageInfo } = useUpdateUserStatsMutation();
-  const { mutateAsync: terminateNavigationSession } =
+  const { mutate: updateUserUsageInfo } = useUpdateUserStatsMutation();
+  const { mutate: terminateNavigationSession } =
     useTerminateNavigationSessionMutation();
+
   const { resetAllData: resetRouteData } = useRouteStore();
   const { resetAllData: resetSearchData } = useSearchStore();
   const { systemVolume } = useVolumeStore();
+
   const { replaceMyLocationMarker, clearNavigationPath } =
     useNavigationMessenger();
   const { turnOnBookmarkMarkers } = useBookmarkMessenger();
 
   useEffect(() => {
-    const terminateNavigation = async () => {
-      turnOnBookmarkMarkers();
-      const endTtsKey = 'tts-navigation-end';
-      const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
-      playTts(endTtsKey, endTtsUrl, systemVolume);
-      if (sessionId === null || sessionId === '') return;
-      try {
-        const payload = {
-          sessionId: sessionId,
-        };
-        await terminateNavigationSession(payload);
-      } catch (error) {}
-    };
+    turnOnBookmarkMarkers();
     clearNavigationPath();
-    terminateNavigation();
+
+    const endTtsKey = 'tts-navigation-end';
+    const endTtsUrl = TTS_URL_PRESET.END_TTS_URL;
+    playTts(endTtsKey, endTtsUrl, systemVolume);
+
+    if (!sessionId) return;
+
+    terminateNavigationSession(
+      { sessionId },
+      {
+        onSuccess: () => {},
+        onError: () => {},
+      },
+    );
   }, []);
 
-  const handleCloseEndModalPress = async () => {
-    if (!prevUserInfo) {
-      setShowNavigationEndModal(false);
-      clearSharedTimer();
-      resetNavigationData();
-      resetRouteData();
-      resetSearchData();
-      replaceMyLocationMarker(false);
-      clearTtsQueue();
-      return;
-    }
-
-    try {
+  const handleCloseEndModalPress = () => {
+    if (prevUserInfo) {
       const payload: UpdateUserStatsPayload = {
         statsInfo: {
           totalDistance:
@@ -102,23 +94,17 @@ const NavigationEndModal = ({
         },
       };
 
-      await updateUserUsageInfo(payload);
-      setShowNavigationEndModal(false);
-      clearSharedTimer();
-      resetNavigationData();
-      resetRouteData();
-      resetSearchData();
-      replaceMyLocationMarker(false);
-    } catch (error) {
-      console.error('Failed to update user stats:', error);
-    } finally {
-      setShowNavigationEndModal(false);
-      clearSharedTimer();
-      resetNavigationData();
-      resetRouteData();
-      resetSearchData();
-      replaceMyLocationMarker(false);
+      updateUserUsageInfo(payload, {
+        onError: () => {},
+      });
     }
+    setShowNavigationEndModal(false);
+    clearSharedTimer();
+    resetNavigationData();
+    resetRouteData();
+    resetSearchData();
+    replaceMyLocationMarker(false);
+    clearTtsQueue();
   };
 
   const [isOpenStoryShareScreen, setIsOpenStoryShareScreen] =
@@ -163,6 +149,7 @@ const NavigationEndModal = ({
                 <TouchableOpacity
                   onPress={handleCloseEndModalPress}
                   style={[tw('absolute top-3 right-3')]}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   <IconClose color="#01DA86" />
                 </TouchableOpacity>
@@ -209,7 +196,7 @@ const NavigationEndModal = ({
                       { fontSize: 16 },
                     ]}
                   >
-                    소요시간: {formatTimeWithSeconds(seconds)}
+                    소요시간: {formatTimeHMSText(seconds)}
                   </Text>
                   <Text
                     style={[
@@ -225,7 +212,7 @@ const NavigationEndModal = ({
                       { fontSize: 16 },
                     ]}
                   >
-                    소모 칼로리: {formatCalories(totalCaloriesBurned)}
+                    소모 칼로리: {formatCaloriesKcalText(totalCaloriesBurned)}
                   </Text>
                 </View>
                 <Text
@@ -234,7 +221,7 @@ const NavigationEndModal = ({
                     { fontSize: 20 },
                   ]}
                 >
-                  총 {formatDistanceAdaptive(traveledDistanceMeter ?? 0)}{' '}
+                  총 {formatDistanceAdaptiveText(traveledDistanceMeter ?? 0)}{' '}
                   이동했어요!
                 </Text>
                 <Image

@@ -1,29 +1,36 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WebViewMessageEvent } from 'react-native-webview';
-import { Coordinates } from '@/features/map/model/map.types';
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
+import { Coordinate } from '@/shared/model/shared.types';
 import {
   useGetStationsLatestBikeCountMutation,
   useStationDataListQuery,
 } from '@/features/station/services/station.queries';
-import {
-  StationLatestBikeCountData,
-  UseStationsOptions,
-} from '@/features/station/model/station.types';
+import { StationLatestBikeCountData } from '@/features/station/model/station.types';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useStationStore } from '../stores/useStationStore';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
-import {
-  ChangeMapCenterMessage,
-  ClickStationMarkerMessage,
-  NeedUpdateStationBikeCountListMessage,
-} from '@/shared/model/map.webview.types';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useShallow } from 'zustand/react/shallow';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
-export const useStation = ({ isMapReady }: UseStationsOptions) => {
-  const { updateStationDataList, updateTargetedStationBikeCountListMessage } =
-    useStationMessenger();
+interface UseStationParams {
+  isMapReady: boolean;
+  mapReadyVersion: number;
+}
+
+export const useStation = ({
+  isMapReady,
+  mapReadyVersion,
+}: UseStationParams) => {
+  const {
+    turnOffStationMarkers,
+    turnOnStationMarkers,
+    updateStationDataList,
+    updateTargetedStationBikeCountListMessage,
+  } = useStationMessenger();
+  const { mutateAsync: getLatestBikeCountList } =
+    useGetStationsLatestBikeCountMutation();
   const isNavigationMode = useNavigationStore(state => state.isNavigationMode);
   const { setShowStationDetailModal, showSelectedRouteDetailModal } =
     useModalStore(
@@ -33,18 +40,23 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
       })),
     );
   const setStationMetaData = useStationStore(state => state.setStationMetaData);
+  const isStationMarkersVisible = useStationStore(
+    state => state.isStationMarkersVisible,
+  );
 
   // 쿼리를 트리거하기 위한 "현재 보고 있는 지도 중심점"
   const [currentMapCenterCoord, setCurrentMapCenterCoord] =
-    useState<Coordinates | null>(null);
+    useState<Coordinate | null>(null);
 
   // 거리 계산을 위해 "직전에 로딩했던 좌표" 기억용
-  const prevMapCenterCoord = useRef<Coordinates | null>(null);
+  const prevMapCenterCoord = useRef<Coordinate | null>(null);
 
-  // 조건: 지도 로딩 완료 + 네비 모드 아님 + 경로 상세 모달 아님
+  // 조건: 지도 로딩 완료 + 네비 모드 아님 + 경로 상세 모달 아님 + 대여소 마커 표시 중
   const enableQuery =
-    isMapReady && !isNavigationMode && !showSelectedRouteDetailModal;
-
+    isMapReady &&
+    !isNavigationMode &&
+    !showSelectedRouteDetailModal &&
+    isStationMarkersVisible;
   const { data: stationDataList } = useStationDataListQuery({
     lat: currentMapCenterCoord?.lat,
     lng: currentMapCenterCoord?.lng,
@@ -52,37 +64,31 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
     enable: enableQuery,
   });
 
-  const { mutateAsync: getLatestBikeCountList } =
-    useGetStationsLatestBikeCountMutation();
-
   // 메세지 핸들러
   // 웹뷰에서 오는 메세지 한 곳에서 처리
   const handleStationMessage = useCallback(
     async (event: WebViewMessageEvent) => {
-      // JSON 파싱만 먼저 수행하고 에러를 분리
       let data: any;
+
+      // 1. JSON 파싱 시도
       try {
         data = JSON.parse(event.nativeEvent.data);
       } catch (error) {
-        console.error(
-          'WebView Message JSON Parse Error:',
-          event.nativeEvent.data,
-        );
+        handleCatch(error, { mode: 'silent' });
         return;
       }
 
-      // 파싱된 데이터 기반 로직 수행
+      // 2. 파싱된 데이터 로직 수행
       try {
         switch (data.type) {
           // 1. 지도 이동 멈춤 (Idle)
           // 일정 거리 이상 움직였을 때만 상태 업데이트 -> 쿼리 자동 실행
           case 'changeMapCenter': {
             if (typeof data.lat !== 'number' || typeof data.lng !== 'number') {
-              console.warn('changeMapCenter 페이로드에 잘못된 데이터:', data);
               return;
             }
 
-            const next: Coordinates = { lat: data.lat, lng: data.lng };
+            const next: Coordinate = { lat: data.lat, lng: data.lng };
             const prev = prevMapCenterCoord.current;
 
             const isMovedEnough = prev
@@ -98,11 +104,14 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
 
           // 2. 특정 대여소 실시간 재고 조회 요청
           case 'needUpdateStationBikeCountList': {
+            if (!isStationMarkersVisible) {
+              return;
+            }
+
             if (
               !Array.isArray(data.stationNumbers) ||
               data.stationNumbers.length === 0
             ) {
-              // 빈 배열이면 리턴 (에러 X)
               return;
             }
 
@@ -113,7 +122,7 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
                 });
               updateTargetedStationBikeCountListMessage(response);
             } catch (error) {
-              console.error('대여소 실시간 재고 조회 API 에러:', error);
+              handleCatch(error, { mode: 'silent' });
             }
             break;
           }
@@ -121,10 +130,6 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
           // 3. 대여소 마커 클릭
           case 'clickStationMarker': {
             if (!data.stationData) {
-              console.warn(
-                'clickStationMarker 페이로드에 대여소 데이터 없음:',
-                data,
-              );
               return;
             }
 
@@ -139,11 +144,12 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
             break;
         }
       } catch (error) {
-        console.error('Logic Error inside handleStationMessage', error);
+        handleCatch(error, { mode: 'silent' });
       }
     },
     [
       getLatestBikeCountList,
+      isStationMarkersVisible,
       setShowStationDetailModal,
       setStationMetaData,
       updateTargetedStationBikeCountListMessage,
@@ -152,9 +158,33 @@ export const useStation = ({ isMapReady }: UseStationsOptions) => {
 
   // 쿼리 데이터가 갱신되면 웹뷰에 전달
   useEffect(() => {
-    if (!enableQuery || !stationDataList) return;
+    if (!enableQuery || !stationDataList || !isStationMarkersVisible) return;
     updateStationDataList(stationDataList);
-  }, [stationDataList, updateStationDataList, enableQuery]);
+  }, [
+    stationDataList,
+    updateStationDataList,
+    enableQuery,
+    isStationMarkersVisible,
+    mapReadyVersion,
+  ]);
+
+  // 웹뷰가 다시 준비되거나 버튼이 재마운트되어도 대여소 마커 표시 상태를 유지한다.
+  useEffect(() => {
+    if (!isMapReady) return;
+
+    if (isStationMarkersVisible) {
+      turnOnStationMarkers();
+      return;
+    }
+
+    turnOffStationMarkers();
+  }, [
+    isMapReady,
+    isStationMarkersVisible,
+    mapReadyVersion,
+    turnOffStationMarkers,
+    turnOnStationMarkers,
+  ]);
 
   return {
     handleStationMessage,

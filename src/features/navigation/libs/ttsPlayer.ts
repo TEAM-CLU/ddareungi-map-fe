@@ -1,4 +1,3 @@
-// features/navigation/utils/ttsPlayer.ts
 import {
   COOLDOWN_BY_KEY,
   DEFAULT_COOLDOWN_MS,
@@ -6,24 +5,20 @@ import {
 } from '@/features/navigation/model/navigation.constants';
 import TrackPlayer, { Event, State } from 'react-native-track-player';
 
-// =========================
 // Queue state
-// =========================
 const queue: TtsItem[] = [];
 let isConsuming = false;
+let currentPlayingKey: string | null = null;
+let suppressIntervalGuidanceTts = false;
 
-// =========================
 // Dedupe & cooldown policy
-// =========================
 const lastSpokenAtByCooldownKey = new Map<string, number>();
+let isQueueHandlerRegistered = false;
 
-// =========================
 // Helpers
-// =========================
 const now = () => Date.now();
 
 /**
- * ✅ (1)(2) 핵심:
  * - 쿨다운/중복방지 기준을 "원본 key"가 아니라 "정책 key(prefix)"로 통일
  * - ex) tts-preview-12, tts-preview-13 => cooldownKey: "tts-preview"
  */
@@ -44,6 +39,30 @@ const isKeyAlreadyQueued = (key: string) => {
   return queue.some(item => getCooldownKey(item.key) === cooldownKey);
 };
 
+const isIntervalGuidanceKey = (key: string) => {
+  return (
+    key.startsWith('tts-turn') ||
+    key.startsWith('tts-preview') ||
+    key.startsWith('tts-actual')
+  );
+};
+
+const removeQueuedByKey = (key: string) => {
+  for (let i = queue.length - 1; i >= 0; i -= 1) {
+    if (queue[i].key === key) {
+      queue.splice(i, 1);
+    }
+  }
+};
+
+const removeQueuedByPredicate = (predicate: (item: TtsItem) => boolean) => {
+  for (let i = queue.length - 1; i >= 0; i -= 1) {
+    if (predicate(queue[i])) {
+      queue.splice(i, 1);
+    }
+  }
+};
+
 const isPlayingState = (s: State) => {
   return s === State.Playing || s === State.Buffering;
 };
@@ -58,9 +77,18 @@ const getPlaybackStateSafe = async () => {
   }
 };
 
-// =========================
+const stopCurrentIfKeyMatches = async (predicate: (key: string) => boolean) => {
+  if (!currentPlayingKey || !predicate(currentPlayingKey)) return;
+  try {
+    await TrackPlayer.reset();
+  } catch {
+    // ignore
+  } finally {
+    currentPlayingKey = null;
+  }
+};
+
 // Public API
-// =========================
 /**
  * enqueueTts:
  * - key(prefix)별 쿨다운 체크(“재생 시작” 기준)
@@ -70,15 +98,46 @@ const getPlaybackStateSafe = async () => {
 export const enqueueTts = (key: string, url: string, volume: number) => {
   const t = now();
   const cooldownKey = getCooldownKey(key);
+  const shouldPreemptOffRouteWarning =
+    key === 'tts-offroute-reroute' || key === 'tts-offroute-recover';
 
-  // ✅ (2) 같은 "정책 key(prefix)"가 이미 큐에 대기 중이면 또 넣지 않는다(난사 방지)
-  if (isKeyAlreadyQueued(key)) return;
+  if (shouldPreemptOffRouteWarning) {
+    suppressIntervalGuidanceTts = true;
+    removeQueuedByKey('tts-offroute-warning');
+    removeQueuedByPredicate(item => isIntervalGuidanceKey(item.key));
+    void stopCurrentIfKeyMatches(
+      currentKey =>
+        currentKey === 'tts-offroute-warning' ||
+        isIntervalGuidanceKey(currentKey),
+    );
+  }
 
-  // ✅ (1) prefix 기준 쿨다운(최근에 같은 prefix가 "재생 시작" 되었으면 컷)
+  if (suppressIntervalGuidanceTts) {
+    const isStartKey = key === 'tts-navigation-start';
+    const isFirstActualKey = key.startsWith('tts-actual');
+    if (isIntervalGuidanceKey(key) && !isFirstActualKey) {
+      return;
+    }
+    if (isFirstActualKey) {
+      suppressIntervalGuidanceTts = false;
+    }
+    if (isStartKey) {
+      // allow start without changing suppression
+    }
+  }
+
+  // (2) 같은 "정책 key(prefix)"가 이미 큐에 대기 중이면 또 넣지 않는다(난사 방지)
+  if (isKeyAlreadyQueued(key)) {
+    return;
+  }
+
+  // (1) prefix 기준 쿨다운(최근에 같은 prefix가 "재생 시작" 되었으면 컷)
   const lastSpokenAt = lastSpokenAtByCooldownKey.get(cooldownKey) ?? 0;
   const cooldown = getCooldownMs(key);
 
-  if (t - lastSpokenAt < cooldown) return;
+  if (t - lastSpokenAt < cooldown) {
+    return;
+  }
 
   queue.push({ key, url, volume, enqueuedAt: t });
   void consumeQueue();
@@ -90,10 +149,11 @@ export const enqueueTts = (key: string, url: string, volume: number) => {
 export const clearTtsQueue = async () => {
   queue.length = 0;
   isConsuming = false;
+  currentPlayingKey = null;
+  suppressIntervalGuidanceTts = false;
   try {
     await TrackPlayer.reset();
   } catch {
-    // ignore
   }
 };
 
@@ -102,20 +162,23 @@ export const clearTtsQueue = async () => {
  * (registerPlaybackService랑 별개로, 이벤트 리스너는 여기서 붙임)
  */
 export const registerTtsQueueHandler = () => {
+  if (isQueueHandlerRegistered) return;
+  isQueueHandlerRegistered = true;
+
   TrackPlayer.addEventListener(Event.PlaybackQueueEnded, () => {
+    currentPlayingKey = null;
     void consumeQueue();
   });
 
   TrackPlayer.addEventListener(Event.PlaybackState, async ({ state }) => {
     if (state === State.Stopped || state === State.Paused) {
+      currentPlayingKey = null;
       void consumeQueue();
     }
   });
 };
 
-// =========================
 // Internal
-// =========================
 const consumeQueue = async () => {
   if (isConsuming) return;
   isConsuming = true;
@@ -128,8 +191,9 @@ const consumeQueue = async () => {
       if (isPlayingState(state)) break;
 
       const item = queue.shift()!;
-      // ✅ (1) "이 prefix(key)를 재생 시작했다"를 기록 (쿨다운 기준점)
+      // (1) "이 prefix(key)를 재생 시작했다"를 기록 (쿨다운 기준점)
       lastSpokenAtByCooldownKey.set(getCooldownKey(item.key), now());
+      currentPlayingKey = item.key;
 
       await TrackPlayer.reset();
       await TrackPlayer.setVolume(item.volume);

@@ -7,7 +7,7 @@ import {
   findClosestCoordIndex,
   calculateIntervalDistanceByMyPosition,
 } from '@/features/navigation/utils/navigationController';
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 describe('navigationController 핵심 로직 검증', () => {
   const coord = (lat: number, lng: number) => ({ lat, lng });
@@ -129,10 +129,9 @@ describe('navigationController 핵심 로직 검증', () => {
         0,
         'traveled',
       );
+      const expected = getDistanceBetweenCoords(path[0], myPos);
 
-      // 시작점 -> closest + polyline 누적
-      expect(traveled).toBeGreaterThan(0);
-      expect(traveled).toBeLessThan(sumSegmentDistances(path));
+      expect(traveled).toBeCloseTo(expected, 1);
     });
 
     it('remaining은 내 위치부터 끝까지 거리를 계산한다', () => {
@@ -152,10 +151,38 @@ describe('navigationController 핵심 로직 검증', () => {
         0,
         'remaining',
       );
+      const expected =
+        getDistanceBetweenCoords(myPos, path[1]) +
+        getDistanceBetweenCoords(path[1], path[2]);
 
-      // 내 위치 -> 끝점
-      expect(remaining).toBeGreaterThan(0);
-      expect(remaining).toBeLessThan(sumSegmentDistances(path));
+      expect(remaining).toBeCloseTo(expected, 1);
+    });
+
+    it('같은 세그먼트 안에서는 traveled + remaining이 전체 인터벌 거리와 거의 같다', () => {
+      const path = [coord(0, 0), coord(0, 0.001), coord(0, 0.002)];
+      const pathData = [
+        {
+          intervalIndex: 0,
+          interval: [0, 2] as [number, number],
+          coordinateList: path,
+        },
+      ];
+      const myPos = coord(0, 0.00035);
+
+      const traveled = calculateIntervalDistanceByMyPosition(
+        myPos,
+        pathData,
+        0,
+        'traveled',
+      );
+      const remaining = calculateIntervalDistanceByMyPosition(
+        myPos,
+        pathData,
+        0,
+        'remaining',
+      );
+
+      expect(traveled + remaining).toBeCloseTo(sumSegmentDistances(path), 1);
     });
 
     it('경로의 끝에 가까우면 remaining이 작아진다', () => {

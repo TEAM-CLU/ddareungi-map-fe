@@ -3,10 +3,10 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconMinus, IconPlus } from '@/shared/components/icons';
 import React from 'react';
-import { useRouteStore } from '../../stores/useRouteStore';
 import { useModalStore } from '@/shared/stores/useModalStore';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useShallow } from 'zustand/react/shallow';
+import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 
 const RouteRecommendModal = () => {
   const { distance, setDistance } = useRouteStore(
@@ -21,17 +21,17 @@ const RouteRecommendModal = () => {
   );
   const globalNavigation = useMapStore(state => state.globalNavigation);
 
-  const handleOkBtnPress = () => {
+  const handleConfirmDistancePress = () => {
     // 현재 화면이 RouteRecommend가 아닐 때만 navigate
     const currentRoute =
-      globalNavigation.getState().routes[globalNavigation.getState().index];
-    if (currentRoute.name !== 'RouteRecommend') {
-      globalNavigation.navigate('RouteRecommend');
+      globalNavigation?.getState().routes[globalNavigation?.getState().index];
+    if (currentRoute?.name !== 'RouteRecommend') {
+      globalNavigation?.navigate('RouteRecommend');
     }
     setShowRouteRecommendModal(false);
   };
 
-  const handleDecreaseDistanceBtnPress = () => {
+  const handleDecreaseDistancePress = () => {
     if (distance === null || distance <= 0.25) {
       setDistance(0.25);
     } else if (distance > 0.25) {
@@ -39,7 +39,7 @@ const RouteRecommendModal = () => {
     }
   };
 
-  const handleIncreaseDistanceBtnPress = () => {
+  const handleIncreaseDistancePress = () => {
     if (distance === null) {
       setDistance(0.25);
     } else if (distance >= 22.5) {
@@ -77,7 +77,7 @@ const RouteRecommendModal = () => {
           ]}
         >
           <TouchableOpacity
-            onPress={handleDecreaseDistanceBtnPress}
+            onPress={handleDecreaseDistancePress}
             style={[
               tw('flex justify-center items-center rounded-full'),
               { width: 60, height: 60, backgroundColor: '#A7A7A74D' },
@@ -94,7 +94,7 @@ const RouteRecommendModal = () => {
             {distance !== null ? distance : 5}km
           </Text>
           <TouchableOpacity
-            onPress={handleIncreaseDistanceBtnPress}
+            onPress={handleIncreaseDistancePress}
             style={[
               tw('flex justify-center items-center rounded-full'),
               { width: 60, height: 60, backgroundColor: '#A7A7A74D' },
@@ -112,7 +112,11 @@ const RouteRecommendModal = () => {
           최소 거리 0.25km ~ 최대 거리 22.5km 입니다.
         </Text>
       </View>
-      <SquareButton title="확인" onPress={handleOkBtnPress} disabled={false} />
+      <SquareButton
+        title="확인"
+        onPress={handleConfirmDistancePress}
+        disabled={false}
+      />
     </View>
   );
 };

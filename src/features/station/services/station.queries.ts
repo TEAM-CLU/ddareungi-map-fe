@@ -1,11 +1,18 @@
-import { GetStationLatestBikeCountListPayload, MapAreaQueryPayload } from '@/features/station/model/station.types';
+import {
+  GetStationLatestBikeCountListPayload,
+  MapAreaQueryPayload,
+} from '@/features/station/model/station.types';
 import {
   getMapAreaStationList,
   getNearbyStationList,
   postStationLatestBikeCountList,
 } from '@/features/station/services/station.api';
 import { stationKeys } from '@/features/station/services/station.key';
+import { useIsFocused } from '@react-navigation/native';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useNetInfo } from '@react-native-community/netinfo';
+import { AppState } from 'react-native';
 
 // 가장 가까운 대여소 3개 조회
 export const useNearbyStationsQuery = (lat?: number, lng?: number) => {
@@ -22,22 +29,37 @@ export const useNearbyStationsQuery = (lat?: number, lng?: number) => {
 
 // 지도 특정 영역 내 대여소 조회
 export const useStationDataListQuery = (payload: MapAreaQueryPayload) => {
-  // 실행 조건: 위도, 경도, 반경이 모두 있고 + enable 플래그가 true일 때
-  const canRun =
-    !!payload.lat && !!payload.lng && !!payload.radius && !!payload.enable;
+  const netInfo = useNetInfo();
+  const isFocusedMap = useIsFocused();
+
+  const [isAppActive, setIsAppActive] = useState(true);
+
+  const isOnline = !!(netInfo.isConnected && netInfo.isInternetReachable);
+  const canRun = !!(payload.enable && isAppActive && isOnline && isFocusedMap);
+
+  useEffect(() => {
+    const appStateSubscription = AppState.addEventListener('change', state =>
+      setIsAppActive(state === 'active'),
+    );
+    return () => appStateSubscription.remove();
+  }, []);
 
   return useQuery({
     // 좌표 바뀌면 키도 바뀌어야 재요청
     queryKey: stationKeys.mapArea(payload.lat, payload.lng, payload.radius),
-    queryFn: ({ signal }) => {
-      return getMapAreaStationList(
-        {
-          latitude: payload.lat!,
-          longitude: payload.lng!,
-          radius: payload.radius!,
-        },
-        signal,
-      );
+    queryFn: async ({ signal }) => {
+      if (!!payload.lat && !!payload.lng && !!payload.radius) {
+        const response = await getMapAreaStationList(
+          {
+            latitude: payload.lat,
+            longitude: payload.lng,
+            radius: payload.radius,
+          },
+          signal,
+        );
+        return response;
+      }
+      return [];
     },
     enabled: canRun,
     staleTime: 1000 * 60 * 60 * 24 * 7,

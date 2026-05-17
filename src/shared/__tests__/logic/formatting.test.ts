@@ -1,362 +1,212 @@
 import {
-  getTimeText,
-  getDistanceText,
-  formatDistance,
-  formatDistanceAdaptive,
-  formatCalories,
-  formatTimeHHMMSS,
-  formatTime,
-  formatMinutes,
-  formatTimeWithSeconds,
-  formatTimeRange,
-  clampTags,
-  getCategoryText,
-  calculateWalkingTime,
+  formatCaloriesKcalText,
+  formatDistanceAdaptiveText,
+  formatTimeHHMMSSNumber,
+  formatTimeHMSText,
+  formatTimeHMText,
+  formatTimeHMWithPeriodText,
+  formatTimeMinutesNumber,
+  formatTimeRangeText,
+  getDistanceGuideText,
+  getRouteCategoryText,
+  getTimeGuideText,
 } from '@/shared/utils/formatting';
 
-describe('formatTimeHHMMSS', () => {
-  it('0초는 00:00:00으로 포맷된다', () => {
-    expect(formatTimeHHMMSS(0)).toBe('00:00:00');
+describe('formatTimeHHMMSSNumber', () => {
+  it('pads hours, minutes, and seconds to 2 digits', () => {
+    expect(formatTimeHHMMSSNumber(0)).toBe('00:00:00');
+    expect(formatTimeHHMMSSNumber(30)).toBe('00:00:30');
+    expect(formatTimeHHMMSSNumber(3599)).toBe('00:59:59');
+    expect(formatTimeHHMMSSNumber(3661)).toBe('01:01:01');
   });
 
-  it('1분 미만은 초만 표시된다', () => {
-    expect(formatTimeHHMMSS(30)).toBe('00:00:30');
-    expect(formatTimeHHMMSS(59)).toBe('00:00:59');
+  it('clamps negative values to zero', () => {
+    expect(formatTimeHHMMSSNumber(-100)).toBe('00:00:00');
   });
 
-  it('1시간 미만은 분과 초로 표시된다', () => {
-    expect(formatTimeHHMMSS(90)).toBe('00:01:30');
-    expect(formatTimeHHMMSS(3599)).toBe('00:59:59');
-  });
-
-  it('1시간 이상은 시:분:초로 표시된다', () => {
-    expect(formatTimeHHMMSS(3600)).toBe('01:00:00');
-    expect(formatTimeHHMMSS(3661)).toBe('01:01:01');
-    expect(formatTimeHHMMSS(7325)).toBe('02:02:05');
-  });
-
-  it('음수 입력은 00:00:00으로 처리된다', () => {
-    expect(formatTimeHHMMSS(-100)).toBe('00:00:00');
-  });
-
-  it('소수점 입력은 내림 처리된다', () => {
-    expect(formatTimeHHMMSS(90.9)).toBe('00:01:30');
+  it('floors fractional seconds', () => {
+    expect(formatTimeHHMMSSNumber(90.9)).toBe('00:01:30');
   });
 });
 
-describe('formatTime', () => {
-  it('1분 미만은 1분으로 표시된다', () => {
-    expect(formatTime(30)).toBe('1분');
-    expect(formatTime(59)).toBe('1분');
+describe('formatTimeHMText', () => {
+  it('returns minutes for durations under an hour', () => {
+    expect(formatTimeHMText(30)).toBe('1분');
+    expect(formatTimeHMText(59)).toBe('1분');
+    expect(formatTimeHMText(3540)).toBe('59분');
   });
 
-  it('1시간 미만은 분으로만 표시된다', () => {
-    expect(formatTime(60)).toBe('1분');
-    expect(formatTime(300)).toBe('5분');
-    expect(formatTime(3540)).toBe('59분');
+  it('returns hours and minutes for durations of at least an hour', () => {
+    expect(formatTimeHMText(3600)).toBe('1시간 0분');
+    expect(formatTimeHMText(3660)).toBe('1시간 1분');
+    expect(formatTimeHMText(7200)).toBe('2시간 0분');
+    expect(formatTimeHMText(5430)).toBe('1시간 31분');
   });
 
-  it('1시간 이상은 시간과 분으로 표시된다', () => {
-    expect(formatTime(3600)).toBe('1시간 0분');
-    expect(formatTime(3660)).toBe('1시간 1분');
-    expect(formatTime(7200)).toBe('2시간 0분');
-    expect(formatTime(5430)).toBe('1시간 31분');
-  });
-
-  it('초가 반올림되어 분으로 계산된다', () => {
-    expect(formatTime(89)).toBe('1분');
-    expect(formatTime(90)).toBe('2분');
+  it('rounds seconds to the nearest minute', () => {
+    expect(formatTimeHMText(89)).toBe('1분');
+    expect(formatTimeHMText(90)).toBe('2분');
   });
 });
 
-describe('formatMinutes', () => {
-  it('초를 분으로 변환하여 문자열로 반환한다', () => {
-    expect(formatMinutes(0)).toBe('0');
-    expect(formatMinutes(60)).toBe('1');
-    expect(formatMinutes(120)).toBe('2');
-    expect(formatMinutes(3600)).toBe('60');
+describe('formatTimeMinutesNumber', () => {
+  it('converts seconds to rounded minutes', () => {
+    expect(formatTimeMinutesNumber(0)).toBe('0');
+    expect(formatTimeMinutesNumber(60)).toBe('1');
+    expect(formatTimeMinutesNumber(120)).toBe('2');
+    expect(formatTimeMinutesNumber(3600)).toBe('60');
   });
 
-  it('초가 반올림되어 분으로 계산된다', () => {
-    expect(formatMinutes(89)).toBe('1');
-    expect(formatMinutes(90)).toBe('2');
-  });
-});
-
-describe('formatTimeWithSeconds', () => {
-  it('1분 미만은 초만 표시된다', () => {
-    expect(formatTimeWithSeconds(0)).toBe('0초');
-    expect(formatTimeWithSeconds(30)).toBe('30초');
-    expect(formatTimeWithSeconds(59)).toBe('59초');
-  });
-
-  it('1시간 미만은 분과 초로 표시된다', () => {
-    expect(formatTimeWithSeconds(60)).toBe('1분 0초');
-    expect(formatTimeWithSeconds(90)).toBe('1분 30초');
-    expect(formatTimeWithSeconds(3599)).toBe('59분 59초');
-  });
-
-  it('1시간 이상은 시간, 분, 초로 표시된다', () => {
-    expect(formatTimeWithSeconds(3600)).toBe('1시간 0초');
-    expect(formatTimeWithSeconds(3661)).toBe('1시간 1분 1초');
-    expect(formatTimeWithSeconds(7325)).toBe('2시간 2분 5초');
-  });
-
-  it('0분인 경우 분이 생략된다', () => {
-    expect(formatTimeWithSeconds(3605)).toBe('1시간 5초');
-  });
-
-  it('음수 입력은 0초로 처리된다', () => {
-    expect(formatTimeWithSeconds(-100)).toBe('0초');
+  it('rounds fractional minutes', () => {
+    expect(formatTimeMinutesNumber(89)).toBe('1');
+    expect(formatTimeMinutesNumber(90)).toBe('2');
   });
 });
 
-describe('formatTimeRange', () => {
-  it('출발 시간과 도착 시간을 오전/오후 형식으로 반환한다', () => {
-    const baseTime = new Date('2026-01-11T09:30:00');
-    expect(formatTimeRange(baseTime, 1800)).toBe('오전 9:30 - 오전 10:00');
+describe('formatTimeHMSText', () => {
+  it('formats seconds into natural Korean text', () => {
+    expect(formatTimeHMSText(0)).toBe('0초');
+    expect(formatTimeHMSText(30)).toBe('30초');
+    expect(formatTimeHMSText(60)).toBe('1분 0초');
+    expect(formatTimeHMSText(3599)).toBe('59분 59초');
+    expect(formatTimeHMSText(3600)).toBe('1시간 0초');
+    expect(formatTimeHMSText(3661)).toBe('1시간 1분 1초');
+    expect(formatTimeHMSText(7325)).toBe('2시간 2분 5초');
   });
 
-  it('오전에서 오후로 넘어가는 시간대를 처리한다', () => {
-    const baseTime = new Date('2026-01-11T11:45:00');
-    expect(formatTimeRange(baseTime, 1800)).toBe('오전 11:45 - 오후 12:15');
+  it('omits the minutes part when it is zero', () => {
+    expect(formatTimeHMSText(3605)).toBe('1시간 5초');
   });
 
-  it('자정을 12시로 표시한다', () => {
-    const baseTime = new Date('2026-01-11T00:00:00');
-    expect(formatTimeRange(baseTime, 1800)).toBe('오전 12:00 - 오전 12:30');
-  });
-
-  it('정오를 12시로 표시한다', () => {
-    const baseTime = new Date('2026-01-11T12:00:00');
-    expect(formatTimeRange(baseTime, 1800)).toBe('오후 12:00 - 오후 12:30');
+  it('clamps negative values to zero', () => {
+    expect(formatTimeHMSText(-100)).toBe('0초');
   });
 });
 
-describe('getTimeText', () => {
-  it('null 입력시 로딩 문구를 반환한다', () => {
-    expect(getTimeText(null)).toBe('시간을 계산 중이에요');
+describe('formatTimeHMWithPeriodText', () => {
+  it('formats morning times with 오전', () => {
+    const date = new Date(2026, 0, 11, 9, 5, 0);
+    expect(formatTimeHMWithPeriodText(date)).toBe('오전 9:05');
   });
 
-  it('undefined 입력시 에러 문구를 반환한다', () => {
-    expect(getTimeText(undefined)).toBe('시간을 측정할 수 없어요');
+  it('formats afternoon times with 오후', () => {
+    const date = new Date(2026, 0, 11, 15, 7, 0);
+    expect(formatTimeHMWithPeriodText(date)).toBe('오후 3:07');
   });
 
-  it('오전 시간을 AM 포맷으로 반환한다', () => {
-    const date = new Date('2026-01-11T09:05:00');
-    expect(getTimeText(date)).toBe('09:05AM');
+  it('formats midnight and noon as 12시', () => {
+    const midnight = new Date(2026, 0, 11, 0, 30, 0);
+    const noon = new Date(2026, 0, 11, 12, 30, 0);
+    expect(formatTimeHMWithPeriodText(midnight)).toBe('오전 12:30');
+    expect(formatTimeHMWithPeriodText(noon)).toBe('오후 12:30');
+  });
+});
+
+describe('formatTimeRangeText', () => {
+  it('returns start and arrival times with AM/PM text', () => {
+    const baseTime = new Date(2026, 0, 11, 9, 30, 0);
+    expect(formatTimeRangeText(baseTime, 1800)).toBe('오전 9:30 - 오전 10:00');
   });
 
-  it('오후 시간을 PM 포맷으로 반환한다', () => {
-    const date = new Date('2026-01-11T15:07:00');
-    expect(getTimeText(date)).toBe('03:07PM');
+  it('handles the transition from morning to afternoon', () => {
+    const baseTime = new Date(2026, 0, 11, 11, 45, 0);
+    expect(formatTimeRangeText(baseTime, 1800)).toBe('오전 11:45 - 오후 12:15');
   });
 
-  it('자정을 12시 AM으로 반환한다', () => {
-    const date = new Date('2026-01-11T00:30:00');
-    expect(getTimeText(date)).toBe('12:30AM');
+  it('formats midnight and noon correctly', () => {
+    const midnight = new Date(2026, 0, 11, 0, 0, 0);
+    const noon = new Date(2026, 0, 11, 12, 0, 0);
+    expect(formatTimeRangeText(midnight, 1800)).toBe('오전 12:00 - 오전 12:30');
+    expect(formatTimeRangeText(noon, 1800)).toBe('오후 12:00 - 오후 12:30');
+  });
+});
+
+describe('getTimeGuideText', () => {
+  it('returns loading text for null', () => {
+    expect(getTimeGuideText(null)).toBe('시간을 계산 중이에요');
   });
 
-  it('정오를 12시 PM으로 반환한다', () => {
-    const date = new Date('2026-01-11T12:30:00');
-    expect(getTimeText(date)).toBe('12:30PM');
+  it('returns error text for undefined', () => {
+    expect(getTimeGuideText(undefined)).toBe('시간을 측정할 수 없어요');
   });
 
-  it('커스텀 로딩/에러 문구를 반환한다', () => {
-    expect(getTimeText(null, { loadingText: '로딩 중' })).toBe('로딩 중');
-    expect(getTimeText(undefined, { errorText: '에러 발생' })).toBe(
+  it('formats dates using the AM/PM formatter', () => {
+    const date = new Date(2026, 0, 11, 9, 5, 0);
+    expect(getTimeGuideText(date)).toBe('오전 9:05');
+  });
+
+  it('returns custom loading and error text', () => {
+    expect(getTimeGuideText(null, { loadingText: '로딩 중' })).toBe('로딩 중');
+    expect(getTimeGuideText(undefined, { errorText: '에러 발생' })).toBe(
       '에러 발생',
     );
   });
 });
 
-describe('clampTags', () => {
-  it('빈 배열은 빈 배열을 반환한다', () => {
-    expect(clampTags([])).toEqual([]);
+describe('formatDistanceAdaptiveText', () => {
+  it('returns rounded meters for values under 1000', () => {
+    expect(formatDistanceAdaptiveText(0)).toBe('0m');
+    expect(formatDistanceAdaptiveText(500.4)).toBe('500m');
+    expect(formatDistanceAdaptiveText(500.6)).toBe('501m');
+    expect(formatDistanceAdaptiveText(999.6)).toBe('1000m');
   });
 
-  it('3개 이하의 태그는 그대로 반환한다', () => {
-    expect(clampTags(['태그1'])).toEqual(['태그1']);
-    expect(clampTags(['태그1', '태그2'])).toEqual(['태그1', '태그2']);
-    expect(clampTags(['태그1', '태그2', '태그3'])).toEqual([
-      '태그1',
-      '태그2',
-      '태그3',
-    ]);
-  });
-
-  it('3개를 초과하는 태그는 앞의 3개만 반환한다', () => {
-    expect(clampTags(['태그1', '태그2', '태그3', '태그4'])).toEqual([
-      '태그1',
-      '태그2',
-      '태그3',
-    ]);
-    expect(clampTags(['a', 'b', 'c', 'd', 'e'])).toEqual(['a', 'b', 'c']);
-  });
-
-  it('공백이 포함된 태그는 trim 처리된다', () => {
-    expect(clampTags(['  태그1  ', ' 태그2 '])).toEqual(['태그1', '태그2']);
-  });
-
-  it('빈 문자열과 공백만 있는 태그는 제거된다', () => {
-    expect(clampTags(['태그1', '', '태그2', '   ', '태그3'])).toEqual([
-      '태그1',
-      '태그2',
-      '태그3',
-    ]);
-  });
-
-  it('빈 문자열 제거 후 3개를 초과하면 앞의 3개만 반환한다', () => {
-    expect(clampTags(['태그1', '', '태그2', '태그3', '  ', '태그4'])).toEqual([
-      '태그1',
-      '태그2',
-      '태그3',
-    ]);
+  it('returns kilometers for values of at least 1000', () => {
+    expect(formatDistanceAdaptiveText(1000)).toBe('1km');
+    expect(formatDistanceAdaptiveText(1500)).toBe('1.5km');
+    expect(formatDistanceAdaptiveText(2345)).toBe('2.3km');
+    expect(formatDistanceAdaptiveText(2000)).toBe('2km');
   });
 });
 
-describe('formatDistance', () => {
-  it('정수 km는 소수점 없이 표시된다', () => {
-    expect(formatDistance(2000)).toBe('2km');
-    expect(formatDistance(10000)).toBe('10km');
+describe('getDistanceGuideText', () => {
+  it('returns loading text for null', () => {
+    expect(getDistanceGuideText(null)).toBe('계산 중...');
   });
 
-  it('소수 km는 기본 1자리로 표시된다', () => {
-    expect(formatDistance(1500)).toBe('1.5km');
-    expect(formatDistance(2345)).toBe('2.3km');
+  it('returns error text for undefined', () => {
+    expect(getDistanceGuideText(undefined)).toBe('거리 정보 없음');
   });
 
-  it('소수점 자릿수를 지정할 수 있다', () => {
-    expect(formatDistance(1234, 2)).toBe('1.23km');
-    expect(formatDistance(5678, 0)).toBe('6km');
+  it('formats distance using the adaptive formatter', () => {
+    expect(getDistanceGuideText(800)).toBe('800m');
+    expect(getDistanceGuideText(1500)).toBe('1.5km');
   });
 
-  it('1km 미만도 km 단위로 표시된다', () => {
-    expect(formatDistance(500)).toBe('0.5km');
-    expect(formatDistance(100, 2)).toBe('0.10km');
-  });
-});
-
-describe('formatDistanceAdaptive', () => {
-  it('1000m 미만은 m 단위로 표시된다', () => {
-    expect(formatDistanceAdaptive(0)).toBe('0m');
-    expect(formatDistanceAdaptive(500)).toBe('500m');
-    expect(formatDistanceAdaptive(999)).toBe('999m');
-  });
-
-  it('1000m 이상은 km 단위로 표시된다', () => {
-    expect(formatDistanceAdaptive(1000)).toBe('1.0km');
-    expect(formatDistanceAdaptive(1500)).toBe('1.5km');
-    expect(formatDistanceAdaptive(2345)).toBe('2.3km');
-  });
-
-  it('소수점은 반올림되어 m 단위로 표시된다', () => {
-    expect(formatDistanceAdaptive(500.4)).toBe('500m');
-    expect(formatDistanceAdaptive(500.6)).toBe('501m');
-  });
-});
-
-describe('getDistanceText', () => {
-  it('null 입력시 로딩 문구를 반환한다', () => {
-    expect(getDistanceText(null)).toBe('거리를 계산 중이에요');
-  });
-
-  it('undefined 입력시 에러 문구를 반환한다', () => {
-    expect(getDistanceText(undefined)).toBe('거리를 찾을 수 없어요');
-  });
-
-  it('1000m 미만은 m 단위로 반환한다', () => {
-    expect(getDistanceText(800)).toBe('800m');
-    expect(getDistanceText(0)).toBe('0m');
-  });
-
-  it('1000m 이상은 km 단위로 반환한다', () => {
-    expect(getDistanceText(1500)).toBe('1.5km');
-    expect(getDistanceText(2000)).toBe('2.0km');
-  });
-
-  it('커스텀 로딩/에러 문구를 반환한다', () => {
+  it('returns custom loading and error text', () => {
     expect(
-      getDistanceText(null, { loadingText: '계산 중', errorText: '에러' }),
+      getDistanceGuideText(null, { loadingText: '계산 중', errorText: '에러' }),
     ).toBe('계산 중');
     expect(
-      getDistanceText(undefined, { loadingText: '계산 중', errorText: '에러' }),
+      getDistanceGuideText(undefined, {
+        loadingText: '계산 중',
+        errorText: '에러',
+      }),
     ).toBe('에러');
   });
 });
 
-describe('formatCalories', () => {
-  it('천의 자리부터 콤마가 추가된다', () => {
-    expect(formatCalories(100)).toBe('100kcal');
-    expect(formatCalories(1000)).toBe('1,000kcal');
-    expect(formatCalories(1234)).toBe('1,234kcal');
+describe('formatCaloriesKcalText', () => {
+  it('adds thousands separators and appends kcal', () => {
+    expect(formatCaloriesKcalText(100)).toBe('100kcal');
+    expect(formatCaloriesKcalText(1000)).toBe('1,000kcal');
+    expect(formatCaloriesKcalText(1234567)).toBe('1,234,567kcal');
   });
 
-  it('백만 단위도 콤마로 구분된다', () => {
-    expect(formatCalories(1000000)).toBe('1,000,000kcal');
-    expect(formatCalories(1234567)).toBe('1,234,567kcal');
-  });
-
-  it('null 입력은 0kcal로 반환된다', () => {
-    expect(formatCalories(null)).toBe('0kcal');
-  });
-
-  it('0 입력은 0kcal로 반환된다', () => {
-    expect(formatCalories(0)).toBe('0kcal');
+  it('treats null as zero', () => {
+    expect(formatCaloriesKcalText(null)).toBe('0kcal');
   });
 });
 
-describe('getCategoryText', () => {
-  it('자전거도로 우선 카테고리를 반환한다', () => {
-    expect(getCategoryText('bike_priority')).toBe('자전거도로 우선');
+describe('getRouteCategoryText', () => {
+  it('maps known categories', () => {
+    expect(getRouteCategoryText('bike_priority')).toBe('자전거도로 우선');
+    expect(getRouteCategoryText('shortest')).toBe('최단 경로');
+    expect(getRouteCategoryText('fastest')).toBe('최소 시간');
   });
 
-  it('최단 경로 카테고리를 반환한다', () => {
-    expect(getCategoryText('shortest')).toBe('최단 경로');
-  });
-
-  it('최소 시간 카테고리를 반환한다', () => {
-    expect(getCategoryText('fastest')).toBe('최소 시간');
-  });
-
-  it('알 수 없는 카테고리는 추천 경로로 반환한다', () => {
-    expect(getCategoryText('unknown')).toBe('추천 경로');
-    expect(getCategoryText('')).toBe('추천 경로');
-    expect(getCategoryText('custom')).toBe('추천 경로');
-  });
-});
-
-describe('calculateWalkingTime', () => {
-  it('빈 세그먼트 배열은 0을 반환한다', () => {
-    expect(calculateWalkingTime([])).toBe(0);
-  });
-
-  it('walking 타입의 세그먼트 시간만 합산한다', () => {
-    const segments = [
-      { type: 'walking', summary: { time: 100 } },
-      { type: 'biking', summary: { time: 200 } },
-      { type: 'walking', summary: { time: 150 } },
-    ] as any;
-
-    expect(calculateWalkingTime(segments)).toBe(250);
-  });
-
-  it('walking 타입이 없으면 0을 반환한다', () => {
-    const segments = [
-      { type: 'biking', summary: { time: 100 } },
-      { type: 'biking', summary: { time: 200 } },
-    ] as any;
-
-    expect(calculateWalkingTime(segments)).toBe(0);
-  });
-
-  it('모든 세그먼트가 walking이면 모든 시간을 합산한다', () => {
-    const segments = [
-      { type: 'walking', summary: { time: 100 } },
-      { type: 'walking', summary: { time: 200 } },
-      { type: 'walking', summary: { time: 300 } },
-    ] as any;
-
-    expect(calculateWalkingTime(segments)).toBe(600);
+  it('falls back to the default category', () => {
+    expect(getRouteCategoryText('unknown')).toBe('추천 경로');
+    expect(getRouteCategoryText('')).toBe('추천 경로');
   });
 });

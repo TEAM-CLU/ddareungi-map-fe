@@ -2,7 +2,6 @@ import { RouteType } from '@/features/routing/model/routing.types';
 import { PlaceInfo } from '@/features/search/model/search.types';
 
 export type RootStackParamList = {
-  DevHub: undefined;
   Landing: undefined;
   Onboarding: undefined;
   Login:
@@ -10,7 +9,7 @@ export type RootStackParamList = {
         state?: string;
       }
     | undefined;
-  Register: undefined;
+  SignUp: undefined;
   Map:
     | {
         openSearchOverlay?: boolean; // 검색창 자동 열기 여부
@@ -31,7 +30,6 @@ export type RootStackParamList = {
         placeType?: string; // 채워질 위치 ('start')
       }
     | undefined;
-  MyPage: undefined;
-  TestCho: undefined;
-  TestPark: undefined;
+  Mypage: undefined;
+  Measure: undefined;
 };

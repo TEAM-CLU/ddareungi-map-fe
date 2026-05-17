@@ -16,11 +16,10 @@ import { useModalStore } from '@/shared/stores/useModalStore';
 import { convertToTrees } from '@/shared/utils/measure';
 import {
   BottomSheetFlatList,
-  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import Slider from '@react-native-community/slider';
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { VolumeManager } from 'react-native-volume-manager';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -70,8 +69,6 @@ const NavigationDetailModal = ({
       if (VolumeManager && typeof VolumeManager.setVolume === 'function') {
         await VolumeManager.setVolume(volume);
       }
-    } catch (error) {
-      console.error('시스템 볼륨을 설정하는 중 오류 발생:', error);
     } finally {
       isSlidingRef.current = false;
     }

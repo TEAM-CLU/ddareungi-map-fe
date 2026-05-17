@@ -1,3 +1,8 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useShallow } from 'zustand/react/shallow';
+
 import {
   RouteType,
   RoutePoint,
@@ -9,17 +14,18 @@ import { useSearchStore } from '@/features/search/stores/useSearchStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useAppRoute } from '@/shared/hooks/useAppRoute';
 import { useModalStore } from '@/shared/stores/useModalStore';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useState, useEffect, useCallback, use } from 'react';
-import { Alert } from 'react-native';
 import { useFullJourneyMutation } from '../services/routing.queries';
-import { useShallow } from 'zustand/react/shallow';
 
 export const useRouteSelect = () => {
   const route = useAppRoute<'RouteSelect'>();
   const { navigation } = useAppNavigation();
 
-  const { mutate: searchRoutes, data: routes, isPending: isLoadingRoutes, error: routeSearchError } = useFullJourneyMutation();
+  const {
+    mutate: searchRoutes,
+    data: routes,
+    isPending: isLoadingRoutes,
+    error: routeSearchError,
+  } = useFullJourneyMutation();
 
   const {
     routeType,
@@ -27,22 +33,16 @@ export const useRouteSelect = () => {
     start,
     end,
     waypoints,
-
     setPrevScreen,
-
     setTotalCaloriesBurned,
     setTotalTrees,
-
     setStart,
     setEnd,
     setSelectedRouteData,
-
     addWaypoint,
     updateWaypoint,
-
     syncStartEndInLoopMode,
     isRouteComplete,
-
     resetAllData,
   } = useRouteStore(
     useShallow(state => ({
@@ -65,100 +65,85 @@ export const useRouteSelect = () => {
     })),
   );
 
-  const { showSelectedRouteDetailModal, setShowSelectedRouteDetailModal } =
-    useModalStore(
-      useShallow(state => ({
-        showSelectedRouteDetailModal: state.showSelectedRouteDetailModal,
-        setShowSelectedRouteDetailModal: state.setShowSelectedRouteDetailModal,
-      })),
-    );
-
   const setSelectedPlaceInfoForModal = useSearchStore(
     state => state.setSelectedPlaceInfoForModal,
   );
 
-  // 경로 시간 계산 기준 시간 (리프레시 가능)
-  const [baseTime, setBaseTime] = React.useState<Date>(new Date());
-  // 파라미터 중복 소비 방지 플래그
-  const [paramsConsumed, setParamsConsumed] = useState(true);
+  const setShowSelectedRouteDetailModal = useModalStore(
+    state => state.setShowSelectedRouteDetailModal,
+  );
 
-  // ---------- LOOP/CONSTANT 동기화 처리 ----------
+  // 시간 계산 기준(렌더링에 영향 있으니 state 유지)
+  const [baseTime, setBaseTime] = useState(() => new Date());
 
-  useEffect(() => {
-    if (route.params?.routeType) {
-      setRouteType(route.params.routeType);
-    }
-  }, [route.params?.routeType, setRouteType]);
+  // params 소비 가드(렌더링 필요 없음 → ref가 정석)
+  const paramsConsumedRef = useRef(true);
 
-  // ---------- 화면 나갔을 때 경로 데이터 초기화 ----------
-  // 화면이 포커스될 때마다 파라미터 소비 준비
+  // 포커스될 때마다 “이번 진입에서 params 소비 가능” 상태로
   useFocusEffect(
     useCallback(() => {
-      setParamsConsumed(false);
+      paramsConsumedRef.current = false;
     }, []),
   );
 
+  // routeType param 반영
   useEffect(() => {
-    if (
-      route.params?.selectedPlace &&
-      route.params?.placeType &&
-      !paramsConsumed
-    ) {
-      setParamsConsumed(true);
-      const { selectedPlace, placeType } = route.params;
+    const nextRouteType = route.params?.routeType;
+    if (!nextRouteType) return;
+    setRouteType(nextRouteType);
+  }, [route.params?.routeType, setRouteType]);
 
-      // auto 모드: 검색이 아닌 지도에서 핀 찍는 등에서의 로직
-      // 자동으로 빈 곳을 찾아 할당
-      // 필요하면 사용 -> 추후 삭제 가능
-      if (placeType === 'auto') {
-        // 1순위: 출발지 비어있으면 출발지로 설정
-        if (!start?.name) {
-          setStart(selectedPlace);
-          // 2순위: CONSTANT 일 때 도착지 비어있으면 도착지로 설정
-        } else if (routeType === RouteType.CONSTANT && !end?.name) {
-          setEnd(selectedPlace);
-        } else {
-          // 3순위: LOOP 일 때 경유지로 설정
-          const emptyIndex = waypoints.findIndex(wp => !wp.place?.name);
-          if (emptyIndex !== -1) {
-            const targetId = `waypoint-${emptyIndex}`;
-            updateWaypoint(targetId, selectedPlace);
-          } else if (waypoints.length < 3) {
-            addWaypoint(selectedPlace);
-          }
-        }
-        return;
-      }
+  const consumeRouteParams = useCallback(() => {
+    const selectedPlace = route.params?.selectedPlace;
+    const placeType = route.params?.placeType;
 
-      // LOOP 모드
-      // 출발지/도착지 동기화 처리 -> 출발지/도착지 중 하나 변경 시 다른 하나도 동일하게 설정
-      if (
-        routeType === RouteType.LOOP &&
-        (placeType === 'start' || placeType === 'end')
-      ) {
-        syncStartEndInLoopMode(selectedPlace, placeType);
-        return;
-      }
+    if (!selectedPlace || !placeType) return;
+    if (paramsConsumedRef.current) return;
 
-      // 일반 지정 모드
-      // 명확한 출발지/도착지/경유지 지정
-      if (placeType === 'start') {
+    paramsConsumedRef.current = true;
+
+    // auto: 비어있는 슬롯에 자동 할당
+    if (placeType === 'auto') {
+      if (!start?.name) {
         setStart(selectedPlace);
-      } else if (placeType === 'end') {
-        setEnd(selectedPlace);
-      } else if (placeType === 'waypoint-new') {
-        addWaypoint(selectedPlace); // 새 경유지 배열에 추가
-      } else if (placeType.startsWith('waypoint-')) {
-        updateWaypoint(placeType, selectedPlace); // 기존 경유지 수정
+        return;
       }
+
+      if (routeType === RouteType.CONSTANT && !end?.name) {
+        setEnd(selectedPlace);
+        return;
+      }
+
+      const emptyIndex = waypoints.findIndex(wp => !wp.place?.name);
+      if (emptyIndex !== -1) {
+        updateWaypoint(`waypoint-${emptyIndex}`, selectedPlace);
+        return;
+      }
+
+      if (waypoints.length < 3) addWaypoint(selectedPlace);
+      return;
     }
+
+    // LOOP: start/end 동기화
+    if (
+      routeType === RouteType.LOOP &&
+      (placeType === 'start' || placeType === 'end')
+    ) {
+      syncStartEndInLoopMode(selectedPlace, placeType);
+      return;
+    }
+
+    // 일반 지정
+    if (placeType === 'start') setStart(selectedPlace);
+    else if (placeType === 'end') setEnd(selectedPlace);
+    else if (placeType === 'waypoint-new') addWaypoint(selectedPlace);
+    else if (placeType.startsWith('waypoint-'))
+      updateWaypoint(placeType, selectedPlace);
   }, [
     route.params?.selectedPlace,
     route.params?.placeType,
-    paramsConsumed,
-    setParamsConsumed,
-    start,
-    end,
+    start?.name,
+    end?.name,
     waypoints,
     routeType,
     setStart,
@@ -168,11 +153,31 @@ export const useRouteSelect = () => {
     syncStartEndInLoopMode,
   ]);
 
-  // ---------- Event handlers ----------
+  // params 소비 트리거 effect는 “호출만”
+  useEffect(() => {
+    consumeRouteParams();
+  }, [consumeRouteParams]);
 
-  // 출발지/도착지/경유지 입력창 터치
-  // Map으로 이동하여 SearchOverlay 오픈
-  const handleRoutePointPress = useCallback(
+  const fullJourneyPayload: FullJourneyPayload | null = useMemo(() => {
+    if (!start || !end) return null;
+
+    const filledWaypoints = waypoints
+      .filter(wp => wp.place?.latitude && wp.place?.longitude)
+      .map(wp => ({
+        lat: wp.place!.latitude!,
+        lng: wp.place!.longitude!,
+      }));
+
+    return {
+      start: { lat: start.latitude, lng: start.longitude },
+      end: { lat: end.latitude, lng: end.longitude },
+      waypoints: filledWaypoints.length > 0 ? filledWaypoints : undefined,
+    };
+  }, [start, end, waypoints]);
+
+  // ---------------- handlers ----------------
+
+  const handleSetPointPress = useCallback(
     (field: RoutePoint) => {
       navigation.navigate('Map', {
         openSearchOverlay: true,
@@ -183,57 +188,37 @@ export const useRouteSelect = () => {
     [navigation],
   );
 
-  // 새로운 경유지 추가 및 편집
-  const handleAddNewWaypointAndEdit = useCallback(() => {
+  const handleAddNewWaypointAndEditPress = useCallback(() => {
     navigation.navigate('Map', {
       openSearchOverlay: true,
-      placeType: 'waypoint-new', // 새로운 경유지 추가
+      placeType: 'waypoint-new',
       returnTo: 'RouteSelect',
     });
-  }, [navigation, waypoints.length]);
+  }, [navigation]);
 
-  // RouteInputBar 닫기 버튼
-  const handleRouteInputBarClose = useCallback(() => {
+  const handleCloseRouteInputBarPress = useCallback(() => {
     setSelectedPlaceInfoForModal(null);
     resetAllData();
     setRouteType(RouteType.CONSTANT);
     navigation.navigate('Map');
-  }, [resetAllData, navigation]);
+  }, [navigation, resetAllData, setRouteType, setSelectedPlaceInfoForModal]);
 
-  // 경로 검색 버튼
-  const handleRouteSearchConfirm = useCallback(() => {
+  const handleSearchRoutePress = useCallback(() => {
     if (!isRouteComplete()) {
       Alert.alert('경로 검색', '출발지, 도착지, 경유지를 모두 설정해주세요.');
       return;
     }
 
-    if (!start || !end) return;
+    if (!fullJourneyPayload) return;
 
-    const filledWaypoints = waypoints
-    .filter(wp => wp.place?.latitude && wp.place?.longitude)
-    .map(wp => ({
-      lat: wp.place!.latitude!,
-      lng: wp.place!.longitude!,
-    }));
-
-    const payload: FullJourneyPayload = {
-      start: { lat: start.latitude, lng: start.longitude },
-      end: { lat: end.latitude, lng: end.longitude },
-      waypoints: filledWaypoints.length > 0 ? filledWaypoints : undefined,
-    };
-
-    searchRoutes(payload, {
-      onSuccess: data => {
-        console.log('경로 검색 성공:', data);
-      },
+    searchRoutes(fullJourneyPayload, {
       onError: error => {
         Alert.alert('오류', error.message);
-      }
-    })
-  }, [isRouteComplete, start, end, waypoints, routeType, searchRoutes]);
+      },
+    });
+  }, [isRouteComplete, fullJourneyPayload, searchRoutes]);
 
-  // 검색된 경로 클릭 핸들러
-  const handleRouteItemPress = useCallback(
+  const handleSetRouteItemPress = useCallback(
     (
       selectedRouteData: Route,
       totalCaloriesBurned: number,
@@ -243,29 +228,32 @@ export const useRouteSelect = () => {
       setShowSelectedRouteDetailModal(true);
       setPrevScreen('RouteSelect');
       navigation.navigate('Map');
-
       setTotalCaloriesBurned(totalCaloriesBurned);
       setTotalTrees(totalTrees);
     },
     [
       navigation,
       setSelectedRouteData,
-      showSelectedRouteDetailModal,
+      setShowSelectedRouteDetailModal,
+      setPrevScreen,
       setTotalCaloriesBurned,
       setTotalTrees,
     ],
   );
 
   return {
+    // data
     baseTime,
     setBaseTime,
-    handleRoutePointPress,
-    handleAddNewWaypointAndEdit,
-    handleRouteInputBarClose,
-    handleRouteSearchConfirm,
-    handleRouteItemPress,
     routes,
     isLoadingRoutes,
     routeSearchError,
+
+    // handlers
+    handleSetPointPress,
+    handleAddNewWaypointAndEditPress,
+    handleCloseRouteInputBarPress,
+    handleSearchRoutePress,
+    handleSetRouteItemPress,
   };
 };

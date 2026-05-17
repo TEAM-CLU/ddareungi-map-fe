@@ -1,6 +1,6 @@
 import { tw } from '@/shared/libs/tw-helper';
-import { textInputAttrSettingMap } from '@/shared/model/index.data';
-import { InputType } from '@/shared/model/index.types';
+import { textInputAttrSettingMap } from '@/shared/model/shared.data';
+import { InputType } from '@/shared/model/shared.types';
 import { useMemo, useState } from 'react';
 import { TextInput } from 'react-native';
 

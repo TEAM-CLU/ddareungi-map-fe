@@ -1,0 +1,69 @@
+import React from 'react';
+import { View } from 'react-native';
+import { tw } from '@/shared/libs/tw-helper';
+import RouteRecommendInputBar from '@/features/routing/components/recommend/RouteRecommendInputBar';
+import RouteTimeRefreshBar from '@/features/routing/components/RouteTimeRefreshBar';
+import RouteSelectContainer from '@/features/routing/components/RouteSelectContainer';
+import RoundButton from '@/shared/components/button/RoundButton';
+import { useRouteRecommend } from '@/features/routing/hooks/useRouteRecommend';
+import { useBlockBackNavigation } from '@/shared/hooks/useBlockBackNavigation';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const RouteRecommendScreen = () => {
+  const {
+    handleSetStartPointPress,
+    handleSetDistanceAimedPress,
+    handleCloseRouteInputBarPress,
+    handleSearchRoutePress,
+    handleSetRouteItemPress,
+    baseTime,
+    setBaseTime,
+    routes,
+    isLoadingRoutes,
+    routeSearchError,
+  } = useRouteRecommend();
+
+  useBlockBackNavigation(true);
+
+  return (
+    <View style={tw('flex-1 bg-surface-primary')}>
+      <SafeAreaView edges={['top']} style={tw('bg-brand-primary w-full pb-4')}>
+        <View style={tw('mx-2')}>
+          <RouteRecommendInputBar
+            onRoutePointPress={handleSetStartPointPress}
+            onDistancePress={handleSetDistanceAimedPress}
+            onClose={handleCloseRouteInputBarPress}
+          />
+        </View>
+      </SafeAreaView>
+
+      <View
+        style={[
+          tw(
+            'bg-surface-primary flex flex-row w-full items-center justify-between px-4 py-1',
+          ),
+          { borderColor: '#D8D8D8', borderBottomWidth: 1 },
+        ]}
+      >
+        <RouteTimeRefreshBar
+          baseTime={baseTime}
+          onRefresh={() => setBaseTime(new Date())}
+        />
+        <RoundButton
+          title={'경로 검색하기'}
+          onPress={handleSearchRoutePress}
+          preset={'sm'}
+        />
+      </View>
+      <RouteSelectContainer
+        routes={routes}
+        isLoading={isLoadingRoutes}
+        error={routeSearchError}
+        baseTime={baseTime}
+        onRoutePress={handleSetRouteItemPress}
+      />
+    </View>
+  );
+};
+
+export default RouteRecommendScreen;

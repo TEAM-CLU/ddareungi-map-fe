@@ -1,23 +1,20 @@
 import Input from '@/shared/components/Input/Input';
 import { useMemo, useState } from 'react';
 import { tw } from '@/shared/libs/tw-helper';
-
 import { Text, View } from 'react-native';
 import SquareButton from '@/shared/components/button/SquareButton';
-import BirthDateInput from '@/shared/components/Input/BirthDateInput';
+import BirthYearInput from '@/shared/components/Input/BirthYearInput';
 import GenderButton from '@/shared/components/button/GenderButton';
+import { formatBirthYear } from '@/shared/utils/date';
 import AddressInput from '@/shared/components/Input/AddressInput';
-import { formatBirthDate } from '@/shared/utils/date';
-import { formatAddress } from '@/shared/utils/address';
+import { formatAddress } from '@/shared/utils/formatAddress';
 
 interface SignUpProfileStepProps {
   name: string;
   setName: React.Dispatch<React.SetStateAction<string>>;
-  birthDate: string;
-  setBirthDate: React.Dispatch<React.SetStateAction<string>>;
+  setBirthYear: React.Dispatch<React.SetStateAction<string>>;
   gender: 'M' | 'F' | undefined;
   setGender: React.Dispatch<React.SetStateAction<'M' | 'F' | undefined>>;
-  address: string | null;
   setAddress: React.Dispatch<React.SetStateAction<string | null>>;
   setSignUpStep: React.Dispatch<React.SetStateAction<1 | 2 | 3 | 4>>;
   isConsentOptionalAgreed: boolean;
@@ -25,49 +22,37 @@ interface SignUpProfileStepProps {
 const SignUpProfileStep = ({
   name,
   setName,
-  birthDate,
-  setBirthDate,
+  setBirthYear,
   gender,
   setGender,
-  address,
   setAddress,
   setSignUpStep,
   isConsentOptionalAgreed,
 }: SignUpProfileStepProps) => {
   const [year, setYear] = useState<number | null>(null);
-  const [month, setMonth] = useState<number | null>(null);
-  const [day, setDay] = useState<number | null>(null);
-
   const [gu, setGu] = useState<string | null>(null);
   const [dong, setDong] = useState<string | null>(null);
-
-  const formattedBirthDate = useMemo(() => {
-    if (year !== null && month !== null && day !== null) {
-      return formatBirthDate(year, month, day);
-    }
-    return '';
-  }, [year, month, day]);
-
+  const formattedBirthYear = useMemo(
+    () => (year !== null ? formatBirthYear(year) : ''),
+    [year],
+  );
   const formattedAddress = useMemo(() => {
-    if (gu && dong) {
-      // null 검사를 안해도 되는 이유: string은 falsy한 값이기 때문에
-      return formatAddress(gu, dong);
-    }
+    if (gu && dong) return formatAddress(gu, dong);
     return '';
   }, [gu, dong]);
 
   // 단순히 값만 입력하면 될 경우 상태보단 이런식이 더 최적화된 방향
   const isValidName = name.trim().length > 0 && name.trim() !== ''; // isValie* 상태로 선언안해도 값이 변하는 이유: 상태값으로 할당하기 때문에 상태가변하면 리렌더링됨
-  const isValidGender = gender === 'M' || gender === 'F';
-  const isValidBirthDate = !!formattedBirthDate;
-  const isValidAddress = isConsentOptionalAgreed ? !!formattedAddress : true;
+  const isValidOptional =
+    !isConsentOptionalAgreed ||
+    ((gender === 'M' || gender === 'F') &&
+      !!formattedBirthYear &&
+      !!formattedAddress);
+  const isFormReady = isValidName && isValidOptional;
 
-  const isFormReady =
-    isValidName && isValidGender && isValidBirthDate && isValidAddress;
-
-  const handleNextStepButtonPress = () => {
+  const handleJumpToNextStepPress = () => {
     if (!isFormReady) return;
-    setBirthDate(formattedBirthDate);
+    setBirthYear(isConsentOptionalAgreed ? formattedBirthYear : '');
     setAddress(isConsentOptionalAgreed ? formattedAddress : null);
     setSignUpStep(4);
   };
@@ -103,97 +88,93 @@ const SignUpProfileStep = ({
         <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
           <Text
             style={[
-              tw('font-primary-600 text-on-surface-label-input text-left'),
+              tw('font-primary-600 text-on-surface-input-label text-left'),
               { fontSize: 15 },
             ]}
           >
-            이름
+            닉네임
           </Text>
           <Input
             type="text"
-            placeholder="이름을 입력하세요."
+            placeholder="닉네임을 입력하세요."
             value={name}
             onChangeText={setName}
             isValid={isValidName}
           />
         </View>
-        <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-label-input text-left'),
-              { fontSize: 15 },
-            ]}
-          >
-            생년월일
-          </Text>
-          <BirthDateInput
-            year={year}
-            month={month}
-            day={day}
-            setYear={setYear}
-            setMonth={setMonth}
-            setDay={setDay}
-          />
-        </View>
-        <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-label-input text-left'),
-              { fontSize: 15 },
-            ]}
-          >
-            성별
-          </Text>
-          <View
-            style={[
-              tw('flex flex-row flex-nowrap items-center justify-start'),
-              { gap: 9 },
-            ]}
-          >
-            <GenderButton
-              title="남성"
-              onPress={() => setGender('M')}
-              selected={gender === 'M'}
-            />
-            <GenderButton
-              title="여성"
-              onPress={() => setGender('F')}
-              selected={gender === 'F'}
-            />
-          </View>
-        </View>
         {isConsentOptionalAgreed && (
-          <View
-            style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}
-          >
-            <Text
-              style={[
-                tw('font-primary-600 text-on-surface-label-input text-left'),
-                { fontSize: 15 },
-              ]}
-            >
-              주소
-            </Text>
-            <View
-              style={[
-                tw('flex flex-row flex-nowrap items-center justify-start'),
-                { gap: 9 },
-              ]}
-            >
-              <AddressInput
-                gu={gu}
-                setGu={setGu}
-                dong={dong}
-                setDong={setDong}
+          <>
+            <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
+              <Text
+                style={[
+                  tw('font-primary-600 text-on-surface-input-label text-left'),
+                  { fontSize: 15 },
+                ]}
+              >
+                태어난 연도 (선택)
+              </Text>
+              <BirthYearInput
+                year={year}
+                setYear={setYear}
               />
             </View>
-          </View>
+            <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
+              <Text
+                style={[
+                  tw('font-primary-600 text-on-surface-input-label text-left'),
+                  { fontSize: 15 },
+                ]}
+              >
+                성별 (선택)
+              </Text>
+              <View
+                style={[
+                  tw('flex flex-row flex-nowrap items-center justify-start'),
+                  { gap: 9 },
+                ]}
+              >
+                <GenderButton
+                  title="남성"
+                  onPress={() => setGender('M')}
+                  selected={gender === 'M'}
+                />
+                <GenderButton
+                  title="여성"
+                  onPress={() => setGender('F')}
+                  selected={gender === 'F'}
+                />
+              </View>
+            </View>
+            <View style={[tw('flex flex-col w-full justify-center'), { gap: 10 }]}>
+              <Text
+                style={[
+                  tw('font-primary-600 text-on-surface-input-label text-left'),
+                  { fontSize: 15 },
+                ]}
+              >
+                거주지 (선택)
+              </Text>
+              <View
+                style={[
+                  tw('flex flex-row flex-nowrap items-center justify-start'),
+                  { gap: 9 },
+                ]}
+              >
+                <AddressInput
+                  gu={gu}
+                  setGu={setGu}
+                  dong={dong}
+                  setDong={setDong}
+                />
+              </View>
+            </View>
+          </>
         )}
       </View>
 
       <SquareButton
         title="다음"
-        onPress={handleNextStepButtonPress}
+        onPress={handleJumpToNextStepPress}
         disabled={!isFormReady}
       />
     </View>

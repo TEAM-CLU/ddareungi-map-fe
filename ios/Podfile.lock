@@ -1810,7 +1810,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-netinfo (11.4.1):
+  - react-native-netinfo (11.5.2):
     - React-Core
   - react-native-pager-view (6.9.1):
     - boost
@@ -2629,7 +2629,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNScreens (4.19.0):
+  - RNScreens (4.23.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2660,7 +2660,7 @@ PODS:
     - Yoga
   - RNSensors (7.3.6):
     - React-Core
-  - RNShare (12.2.2):
+  - RNShare (12.2.5):
     - boost
     - DoubleConversion
     - fast_float
@@ -2688,7 +2688,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNSVG (15.15.1):
+  - RNSVG (15.15.3):
     - React-Core
   - RNVectorIcons (10.3.0):
     - boost
@@ -3083,7 +3083,7 @@ SPEC CHECKSUMS:
   react-native-compass-heading: 5840856acc2c7f531ccb9d829f9ffb0bd0339506
   react-native-geolocation-service: 32b2c2a3b91e70ce2a8d0c684801aaeb0a07e0ec
   react-native-image-picker: 2e2ae2d06f57565b25cca651c134a423027a5048
-  react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
+  react-native-netinfo: 387c95161b1971d0b2acd61f5ecf394c8fd3fb95
   react-native-pager-view: d5532793dc1770a3e75fd234f34e7cddd04c1882
   react-native-safe-area-context: 6c8805194166a9d6b3e53ba69ca76756c9bfb052
   react-native-slider: b69ae511bf4affd1fdc0f72a00d373fdfe31cfc2
@@ -3119,7 +3119,7 @@ SPEC CHECKSUMS:
   React-timing: 97ada2c47b4c5932e7f773c7d239c52b90d6ca68
   React-utils: f0949d247a46b4c09f03e5a3cb1167602d0b729a
   ReactAppDependencyProvider: 3eb9096cb139eb433965693bbe541d96eb3d3ec9
-  ReactCodegen: 4383fed91e34a79fb916eed8fc924423cf53fb32
+  ReactCodegen: 332cac4a526de520ff993c124efbb1fcaa91f0aa
   ReactCommon: ce5d4226dfaf9d5dacbef57b4528819e39d3a120
   RNBootSplash: cf2099b76af3eeacbd5dc26ac95347a30f561fb1
   RNCAsyncStorage: b44e8a4e798c3e1f56bffccd0f591f674fb9198f
@@ -3129,17 +3129,17 @@ SPEC CHECKSUMS:
   RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
   RNGestureHandler: 02b7c86f48e4cfe8338d59383811ac818945c973
   RNPermissions: f43d2af817513c5cb484c9336578be7de4338e14
-  RNReanimated: 20c6fbb2dc41b37bddc062338ba3fa4c75e708f2
-  RNScreens: 6b4d6d769549304860234eff55465082136cd994
+  RNReanimated: eb1a64a3f023a2a8137cd8ab417df2ef19f82772
+  RNScreens: 48fb9480a9c30517638338ab470467996b06f9f4
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
-  RNShare: 4d3dfae37f0e52d5d8e819d5f92794284fa32ddc
-  RNSVG: 866f818ba926c5d3f7863705abed51bb09d8ddd3
+  RNShare: 2df11ee286754d74a9d7ca249350418cac4a20bb
+  RNSVG: 026e354f91dc10fb5c322b5452f0d05a9f43bbd3
   RNVectorIcons: 9084b0cf37b3c5690b730c5627a21d750c9f517e
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftAudioEx: f6aa653770f3a0d3851edaf8d834a30aee4a7646
   VisionCamera: 7187b3dac1ff3071234ead959ce311875748e14f
   Yoga: 11c9686a21e2cd82a094a723649d9f4507200fb0
 
-PODFILE CHECKSUM: 7c29feb23290a5ddadcd01d562649de88dc6286d
+PODFILE CHECKSUM: 31d509dc3b3f0e2c0f336069ba3ab33dcb24348f
 
 COCOAPODS: 1.16.2

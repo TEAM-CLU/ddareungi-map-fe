@@ -1,5 +1,5 @@
+import { Coordinate } from '@/shared/model/shared.types';
 import { MotionVectorResult } from '@/features/navigation/model/navigation.types';
-import { Coordinate } from '@/features/routing/model/routing.types';
 
 export const calculateMotionVector = (
   prevPosition: Coordinate,

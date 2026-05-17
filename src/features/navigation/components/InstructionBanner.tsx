@@ -17,10 +17,10 @@ import {
 import { tw } from '@/shared/libs/tw-helper';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
 import { calculateIntervalDistanceByMyPosition } from '@/features/navigation/utils/navigationController';
-import { formatDistanceAdaptive } from '@/shared/utils/formatting';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
 import { playTts } from '@/features/navigation/libs/playTts';
 import { IntervalPathData } from '@/features/navigation/model/navigation.types';
+import { formatDistanceAdaptiveText } from '@/shared/utils/formatting';
 
 interface InstructionBannerProps {
   pathDataListByInterval: IntervalPathData[];
@@ -53,12 +53,10 @@ const InstructionBanner = ({
     return null;
   }
 
-  const myPosition = useMyPositionStore(state => state.myPosition);
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const myPosition = locationMetaData?.coordinate;
   const systemVolume = useVolumeStore(state => state.systemVolume);
 
-  const { PREVIEW_THRESHOLD_METER, PREVIEW_ENTER_COUNT_MIN } = PREVIEW_CONIFG;
-  const { FALLBACK_TTS_URL, START_TTS_URL, CURRENT_FIXED_TTS_URL } =
-    TTS_URL_PRESET;
   const hasPlayedStartTtsRef = useRef(false);
 
   // ----------------------------
@@ -71,6 +69,10 @@ const InstructionBanner = ({
 
   const [currentRemainingDistanceMeter, setCurrentRemainingDistanceMeter] =
     useState<number | null>(null);
+
+  const { PREVIEW_THRESHOLD_METER, PREVIEW_ENTER_COUNT_MIN } = PREVIEW_CONIFG;
+  const { FALLBACK_TTS_URL, START_TTS_URL, CURRENT_FIXED_TTS_URL } =
+    TTS_URL_PRESET;
 
   // 인터벌 바뀌면 남은거리 계산값 리셋
   useEffect(() => {
@@ -97,16 +99,25 @@ const InstructionBanner = ({
       'remaining',
     );
 
-    // 10m 이하 변화 무시
+    // 첫 계산은 안정화 없이 즉시 반영
+    if (prevRemainingDistanceRef.current === null) {
+      prevRemainingDistanceRef.current = remainingDistanceMeter;
+      setCurrentRemainingDistanceMeter(remainingDistanceMeter);
+      if (remainingDistanceMeter <= PREVIEW_THRESHOLD_METER) {
+        previewEnterCountSet(prev => Math.min(prev + 1, PREVIEW_ENTER_COUNT_MIN));
+      }
+      return;
+    }
+
+    // MIN_INTERVAL_DISTANCE_METER 이하 변화 무시 (GPS 노이즈 억제)
     if (
-      Math.abs(
-        (prevRemainingDistanceRef.current ?? 0) - remainingDistanceMeter,
-      ) <= INTERVAL_DISTANCE_OPTIONS.MIN_INTERVAL_DISTANCE_METER
+      Math.abs(prevRemainingDistanceRef.current - remainingDistanceMeter) <=
+      INTERVAL_DISTANCE_OPTIONS.MIN_INTERVAL_DISTANCE_METER
     ) {
       return;
     }
 
-    // 10m 이상 변화도 3번 누적 후 반영
+    // 변화가 있을 때 2회 누적 후 반영 (단발 튐 방지)
     passCountRef.current += 1;
     if (passCountRef.current < MOTION_COMMON_OPTIONS.PASS_CONFIRM_COUNT) return;
 
@@ -138,6 +149,9 @@ const InstructionBanner = ({
     ? previewInstructionText
     : '다음 안내까지 직진하세요';
   const displaySign = isPreviewMode ? (previewSign as number) : 0; // 0은 직진 아이콘
+  const directionIcon =
+    DIRECTION_ICONS[String(displaySign) as keyof typeof DIRECTION_ICONS] ??
+    DIRECTION_ICONS['0'];
 
   const instructionLines = useMemo(() => {
     const words = (displayText ?? '').trim().split(/\s+/).filter(Boolean);
@@ -229,9 +243,7 @@ const InstructionBanner = ({
         style={[tw('flex flex-col justify-center items-center'), { gap: 1 }]}
       >
         <Image
-          source={
-            DIRECTION_ICONS[String(displaySign) as keyof typeof DIRECTION_ICONS]
-          }
+          source={directionIcon}
           style={{ width: 50, height: 50 } as ImageStyle}
           resizeMode="cover"
         />
@@ -266,7 +278,7 @@ const InstructionBanner = ({
             ]}
           >
             {currentRemainingDistanceMeter !== null
-              ? formatDistanceAdaptive(currentRemainingDistanceMeter)
+              ? formatDistanceAdaptiveText(currentRemainingDistanceMeter)
               : '계산중'}
           </Text>
         </View>

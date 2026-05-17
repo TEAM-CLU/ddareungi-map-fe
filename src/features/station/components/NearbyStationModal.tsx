@@ -1,4 +1,3 @@
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
 import { MapAreaStationData } from '@/features/station/model/station.types';
 import { tw } from '@/shared/libs/tw-helper';
 import { useModalStore } from '@/shared/stores/useModalStore';
@@ -8,18 +7,20 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useStationStore } from '../stores/useStationStore';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
 import { useNearbyStationsQuery } from '../services/station.queries';
-import { getDistanceText } from '@/shared/utils/formatting';
 import { DISTANCE_LAMBDA } from '../model/station.constants';
 import { useShallow } from 'zustand/react/shallow';
+import { getDistanceGuideText } from '@/shared/utils/formatting';
+import { useStableMyPosition } from '@/features/station/hooks/useStableMyPosition';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 const NearbyStationModal = () => {
-  const myPosition = useMyPositionStore(state => state.myPosition);
-
+  const { focusOnTargetedNearbyStation } = useStationMessenger();
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const myPosition = useStableMyPosition({ locationMetaData });
   const { data: nearbyStationDataList, isLoading } = useNearbyStationsQuery(
     myPosition?.lat,
     myPosition?.lng,
   );
-
   const { setShowStationDetailModal, setShowNearByStationModal } =
     useModalStore(
       useShallow(state => ({
@@ -28,10 +29,11 @@ const NearbyStationModal = () => {
       })),
     );
   const setStationMetaData = useStationStore(state => state.setStationMetaData);
-  const { focusOnTargetedNearbyStation } = useStationMessenger();
 
   // 리스트 클릭시 상세대여소 모달로 이동
-  const handleStationItemBtnPress = (stationMetaData: MapAreaStationData) => {
+  const handleMoveToStationItemDetailsPress = (
+    stationMetaData: MapAreaStationData,
+  ) => {
     setStationMetaData(stationMetaData);
     focusOnTargetedNearbyStation(stationMetaData);
     setShowNearByStationModal(false);
@@ -45,17 +47,17 @@ const NearbyStationModal = () => {
 
     return nearbyStationDataList.map(station => {
       // 1. 직선 거리 계산
-      const rawDist = getDistanceBetweenCoords(
+      const rawDistance = getDistanceBetweenCoords(
         { lat: myPosition.lat, lng: myPosition.lng },
         { lat: station.latitude, lng: station.longitude },
       );
 
       // 2. lamda 보정 적용
-      const adjustedDist = rawDist * DISTANCE_LAMBDA;
+      const adjustedDistance = rawDistance * DISTANCE_LAMBDA;
 
       return {
         ...station,
-        calculatedDistance: adjustedDist, // 계산된 거리값 저장
+        calculatedDistance: adjustedDistance, // 계산된 거리값 저장
       };
     });
   }, [myPosition, nearbyStationDataList, DISTANCE_LAMBDA]);
@@ -85,7 +87,9 @@ const NearbyStationModal = () => {
       {stationsWithDistance.map(nearbyStationData => {
         return (
           <TouchableOpacity
-            onPress={() => handleStationItemBtnPress(nearbyStationData)}
+            onPress={() =>
+              handleMoveToStationItemDetailsPress(nearbyStationData)
+            }
             key={nearbyStationData.number}
             style={[
               tw('w-full flex flex-col justify-start border-b pb-5'),
@@ -134,7 +138,7 @@ const NearbyStationModal = () => {
               <Text
                 style={[tw('font-primary-500 text-black'), { fontSize: 15 }]}
               >
-                {getDistanceText(nearbyStationData.calculatedDistance)}
+                {getDistanceGuideText(nearbyStationData.calculatedDistance)}
               </Text>
             </View>
           </TouchableOpacity>

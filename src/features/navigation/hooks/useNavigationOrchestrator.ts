@@ -1,229 +1,72 @@
-import { travelMode } from './../model/navigation.types';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { useMapStore } from '@/features/map/stores/useMapStore';
 import { useNavigationMessenger } from '@/features/navigation/hooks/useNavigationMessenger';
 import {
-  TURN_CONFIG,
-  MOTION_COMMON_OPTIONS,
-  OFF_ROUTE_CONFIG,
-  TTS_URL_PRESET,
-  TRAVELED_DISTANCE_OPTIONS,
-  ACCURACY_OK,
-  WAYPOINT_CONFIG,
-  TRANSPORT_STATE_CONFIG,
-} from '@/features/navigation/model/navigation.constants';
-
-import {
   IntervalPathData,
-  keepNavigationSessionAlivePayload,
   LocationMetaData,
   NavigationInstruction,
-  StartNavigationSessionPayload,
-  StartNavigationSessionResponse,
 } from '@/features/navigation/model/navigation.types';
-import {
-  useKeepNavigationSessionAliveMutation,
-  useReRouteMutation,
-  useReturnToExistingRouteMutation,
-  useStartNavigationSessionMutation,
-} from '@/features/navigation/services/navigation.queries';
 import { useNavigationDetailModalStore } from '@/features/navigation/stores/useNavigationDetailModalStore';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
 import { useVolumeStore } from '@/features/navigation/stores/useVolumeStore';
-import { calculateMotionVector } from '@/features/navigation/utils/calculateMotionVector';
-import { classifyTransportBySpeed } from '@/features/navigation/utils/classifyTransportBySpeed';
-import { getMinDistanceInWindow } from '@/features/navigation/utils/getMindistanceInWindow';
-import {
-  calculateEta,
-  returnAccurateSpeed,
-  calculateRemainingDistance,
-  calculateTraveledDistance,
-  findClosestCoordIndex,
-} from '@/features/navigation/utils/navigationController';
-import { playTts } from '@/features/navigation/libs/playTts';
-
-import { Coordinate, RouteType } from '@/features/routing/model/routing.types';
 import { useRouteStore } from '@/features/routing/stores/useRouteStore';
 import { useMyPositionStore } from '@/shared/stores/useMyPositionStore';
-import { NavigationWalkingPolicy } from '@/shared/model/map.webview.types';
-import {
-  measureCaloriesBurned,
-  measureCarbonSaved,
-} from '@/shared/utils/measure';
-import axios from 'axios';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert } from 'react-native';
-import { VolumeManager } from 'react-native-volume-manager';
+import { Gender } from '@/shared/model/shared.types';
 import { useShallow } from 'zustand/react/shallow';
 import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
+import { useNavigationSessionLifecycle } from '@/features/navigation/hooks/useNavigationSessionLifecycle';
+import { useNavigationSessionKeepAlive } from '@/features/navigation/hooks/useNavigationSessionKeepAlive';
+import { useNavigationDataApply } from '@/features/navigation/hooks/useNavigationDataApply';
+import { useTurnController } from '@/features/navigation/hooks/useTurnController';
+import { useStationaryState } from '@/features/navigation/hooks/useStationaryState';
+import { useWaypointController } from '@/features/navigation/hooks/useWaypointController';
+import { useOffRouteController } from '@/features/navigation/hooks/useOffRouteController';
+import { useNavigationMetrics } from '@/features/navigation/hooks/useNavigationMetrics';
+import { useSystemVolumeSync } from '@/features/navigation/hooks/useSystemVolumeSync';
+import { useLocationMetaHistory } from '@/features/navigation/hooks/useLocationMetaHistory';
+import { useDestinationArrival } from '@/features/navigation/hooks/useDestinationArrival';
+import { useModalStore } from '@/shared/stores/useModalStore';
 
 export const useNavigationOrchestrator = () => {
-  const { mutateAsync: startNavigationSession } =
-    useStartNavigationSessionMutation();
-
-  const { mutateAsync: keepNavigationSessionAlive } =
-    useKeepNavigationSessionAliveMutation();
-
   const { data: userInfoData } = useUserInfoQuery();
-  const userGender = userInfoData?.data.gender;
-
-  const {
-    replaceMyLocationMarker,
-    drawNavigationPath,
-    updateNavigationCurrentInterval,
-    clearNavigationPath,
-  } = useNavigationMessenger();
+  const userGender = (userInfoData?.data.gender as Gender) ?? 'M';
+  const userBirthYear = userInfoData?.data.birthYear ?? null;
 
   const isMapReady = useMapStore(state => state.isMapReady);
-
-  const { isNavigationMode, routeId, addCaloriesBurned, addCarbonSaved } =
-    useNavigationStore(
-      useShallow(state => ({
-        isNavigationMode: state.isNavigationMode,
-        routeId: state.routeId,
-        addCaloriesBurned: state.addCaloriesBurned,
-        addCarbonSaved: state.addCarbonSaved,
-      })),
-    );
-  // 지시 배너 업데이트 기준: 내 위치가 다음 턴 좌표에 가까워지면 다음 지시로 업데이트
-  const { myPosition, locationMetaData } = useMyPositionStore(
-    useShallow(state => ({
-      myPosition: state.myPosition,
-      locationMetaData: state.locationMetaData,
-    })),
+  const selectedRouteData = useRouteStore(state => state.selectedRouteData);
+  const locationMetaData = useMyPositionStore(state => state.locationMetaData);
+  const locationTick = useMyPositionStore(
+    state => state.locationMetaData?.timestamp,
   );
-  const nextTurnCoordinate = useRef<Coordinates | null>(null);
 
-  //  네비게이션 경로 생성 및 실시간 업데이트용
-  const fullPathCoordinateList = useRef<[number, number][]>([]);
-  const pathDataListByInterval = useRef<IntervalPathData[]>([]);
-
-  // 지시 및 현재 지시
-  const instructionList = useRef<NavigationInstruction[]>([]);
-  const [currentInstruction, setCurrentInstruction] =
-    useState<NavigationInstruction | null>(null);
-
-  // 네비게이션 컨트롤러 필요 안내
-  const prevLocationMetaData = useRef<LocationMetaData | null>(null);
-  const currentLocationMetaData = useRef<LocationMetaData | null>(null);
-  const prevEmaSpeedMps = useRef<number | null>(null);
-  const [eta, setEta] = useState<Date | undefined | null>(null);
-  const [remainingDistanceMeter, setRemainingDistance] = useState<
-    number | undefined | null
-  >(null);
   const {
-    traveledDistanceMeter,
-    setTraveledDistance,
+    isNavigationMode,
+    routeId,
     sessionId,
     setSessionId,
+    traveledDistanceMeter,
+    setTraveledDistance,
+    addCaloriesBurned,
+    addCarbonSaved,
+    setIsNavigationMode,
+    setTimerStatus,
   } = useNavigationStore(
     useShallow(state => ({
-      traveledDistanceMeter: state.traveledDistanceMeter,
-      setTraveledDistance: state.setTraveledDistanceMeter,
+      isNavigationMode: state.isNavigationMode,
+      routeId: state.routeId,
       sessionId: state.sessionId,
       setSessionId: state.setSessionId,
+      traveledDistanceMeter: state.traveledDistanceMeter,
+      setTraveledDistance: state.setTraveledDistanceMeter,
+      addCaloriesBurned: state.addCaloriesBurned,
+      addCarbonSaved: state.addCarbonSaved,
+      setIsNavigationMode: state.setIsNavigationMode,
+      setTimerStatus: state.setTimerStatus,
     })),
   );
-  const currentTtsUrl = useRef<string | null>(null);
 
-  // 턴 진입/지나침 판정용 상태
-  const isEnteredRef = useRef<boolean>(false);
-  const passCountRef = useRef<number>(0);
-  const lastDistanceFromMyPosToNextTurnPosRef = useRef<number | null>(null);
-  const prevMyPositionForTurnRef = useRef<Coordinate | null>(null);
-  const prevTimestampForTurnRef = useRef<number | null>(null);
-  const previewInstructionText = useRef<string>('');
-  const previewTtsUrl = useRef<string | null>(null);
-  const previewSign = useRef<number | null>(null);
-  const previewEnterCount = useRef<number>(0);
-
-  const {
-    ENTRY_RADIUS_METER,
-    EXIT_RADIUS_METER,
-    DEADZONE_DISTANCE_METER,
-    MIN_EFFECTIVE_MOVE_METER,
-    DOT_DEADZONE,
-    PASS_COUNT_DECAY,
-    PASS_COUNT_MAX,
-  } = TURN_CONFIG;
-
-  const { MAX_PHYSICAL_SPEED_MPS, PASS_CONFIRM_COUNT } = MOTION_COMMON_OPTIONS;
-
-  // 경로 복귀
-
-  const {
-    RECOVERY_TRIGGER_METER,
-    REROUTE_TRIGGER_METER,
-    MAX_TRIGGER_COUNT,
-    COUNT_DECAY,
-  } = OFF_ROUTE_CONFIG;
-
-  const recoverTriggerCount = useRef(0);
-  const rerouteTriggerCount = useRef(0);
-  const isHandlingOffRouteRef = useRef(false);
-  const [isLoadingForOffRoute, setIsLoadingForOffRoute] = useState(false);
-
-  const { mutateAsync: recoveryRoute } = useReturnToExistingRouteMutation();
-  const { mutateAsync: reroute } = useReRouteMutation();
-
-  const {
-    WARNING_OFFROUTE_TTS_URL,
-    ARRIVE_WAYPOINT_TTS_URL,
-    REROUTE_TTS_URL,
-    RECOVER_TTS_URL,
-    SUCCESS_REROUTE_TTS_URL,
-  } = TTS_URL_PRESET;
-  // 경유지 지나침 판단
-  const selectedRouteData = useRouteStore(state => state.selectedRouteData);
-
-  // 지나친 waypoint index들을 누적 (원하는 결과)
-  const passedWaypointIdxSetRef = useRef<Set<number>>(new Set());
-  const [passedWaypointIndexes, setPassedWaypointIndexes] = useState<number[]>(
-    [],
-  );
-
-  // waypoint 상태(entered / lastNearest / count)
-  const isWaypointEnteredRef = useRef(false);
-  const waypointCandidateIdxRef = useRef<number>(-1);
-  const waypointPassCountRef = useRef<number>(0);
-
-  // 현재 인터벌 기준 남은 거리, 예상 도착시간 계산, 소요거리용
-  const currentIntervalIndex = useRef<number>(0);
-  const prevTimestampForDistanceRef = useRef<number | null>(null);
-  const prevMyPositionForDistanceRef = useRef<Coordinates | null>(null);
-  // 정지 판정용 별도 prev refs (거리/속도 계산용 prev와 분리)
-  const prevTimestampForStationaryRef = useRef<number | null>(null);
-  const prevMyPositionForStationaryRef = useRef<Coordinates | null>(null);
-  const prevTraveledDistanceMeterRef = useRef<number>(0);
-  const prevRemainingDistanceMeterRef = useRef<number>(
-    Number.POSITIVE_INFINITY,
-  );
-
-  // 재탐색 시 소요거리 누적용
-  const accumulatedTraveledDistanceRef = useRef<number>(0);
-
-  // 칼로리, 탄소 저감 측정용
-  const prevTimestampForMeasureRef = useRef<number | null>(null);
-  const prevTraveledDistanceForMeasureRef = useRef<number | null>(null);
-  const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
-
-  // 주행 상태 추적용 (단순 속도가 아닌 지속적 주행 여부)
-  const isBikingStateRef = useRef<boolean>(false);
-  const bikingStateCountRef = useRef<number>(0);
-
-  // 정지 상태 추적용 (신호 대기 등 짧은 정지 감지)
-  const isStationaryRef = useRef<boolean>(false);
-  const stationaryCountRef = useRef<number>(0);
-
-  const {
-    BIKING_STATE_THRESHOLD,
-    STATIONARY_THRESHOLD,
-    STATIONARY_DISTANCE_THRESHOLD,
-  } = TRANSPORT_STATE_CONFIG;
-
-  // 볼륨 상태
   const { systemVolume, setSystemVolume } = useVolumeStore(
     useShallow(state => ({
       systemVolume: state.systemVolume,
@@ -231,7 +74,6 @@ export const useNavigationOrchestrator = () => {
     })),
   );
 
-  // 네비게이션 디테일 모달 계산용
   const { setInstructionList, setCurrentIntervalIndex } =
     useNavigationDetailModalStore(
       useShallow(state => ({
@@ -240,1145 +82,383 @@ export const useNavigationOrchestrator = () => {
       })),
     );
 
-  // 초기화 완료 트리거
-  const [isNavigationInitialized, setIsNavigationInitialized] = useState(false);
+  const { setShowNavigationEndModal, setShowNavigationFinishModal } =
+    useModalStore(
+      useShallow(state => ({
+        setShowNavigationEndModal: state.setShowNavigationEndModal,
+        setShowNavigationFinishModal: state.setShowNavigationFinishModal,
+      })),
+    );
 
-  // 틱 트리거
-  const locationTick = useMyPositionStore(
-    state => state.locationMetaData?.timestamp,
-  );
+  const {
+    replaceMyLocationMarker,
+    drawNavigationPath,
+    updateNavigationCurrentInterval,
+    clearNavigationPath,
+  } = useNavigationMessenger();
 
-  // 이동수단 분류용
-  const travelModeRef = useRef<travelMode>('walking');
-
-  // 즐겨찾기 마커 제거
   const { turnOffBookmarkMarkers } = useBookmarkMessenger();
+
+  const fullPathCoordinateList = useRef<[number, number][]>([]);
+  const pathDataListByInterval = useRef<IntervalPathData[]>([]);
+  const instructionList = useRef<NavigationInstruction[]>([]);
+  const nextTurnCoordinate = useRef<Coordinate | null>(null);
+
+  const currentIntervalIndex = useRef<number>(0);
+  const currentTtsUrl = useRef<string | null>(null);
+
+  const isEnteredRef = useRef<boolean>(false);
+  const passCountRef = useRef<number>(0);
+  const lastDistanceFromMyPosToNextTurnPosRef = useRef<number | null>(null);
+  const prevMyPositionForTurnRef = useRef<Coordinate | null>(null);
+  const prevTimestampForTurnRef = useRef<number | null>(null);
+
+  const previewInstructionText = useRef<string>('');
+  const previewTtsUrl = useRef<string | null>(null);
+  const previewSign = useRef<number | null>(null);
+  const previewEnterCount = useRef<number>(0);
+
+  const prevLocationMetaData = useRef<LocationMetaData | null>(null);
+  const currentLocationMetaData = useRef<LocationMetaData | null>(null);
+  const prevEmaSpeedMps = useRef<number | null>(null);
+
+  const prevTimestampForDistanceRef = useRef<number | null>(null);
+  const prevMyPositionForDistanceRef = useRef<Coordinate | null>(null);
+  const prevTraveledDistanceMeterRef = useRef<number>(0);
+  const routeTraveledBaselineRef = useRef<number | null>(null);
+  const prevRemainingDistanceMeterRef = useRef<number>(
+    Number.POSITIVE_INFINITY,
+  );
+  const accumulatedTraveledDistanceRef = useRef<number>(0);
+
+  const prevTimestampForMeasureRef = useRef<number | null>(null);
+  const prevTraveledDistanceForMeasureRef = useRef<number | null>(null);
+
+  const recoverTriggerCount = useRef(0);
+  const rerouteTriggerCount = useRef(0);
+  const hasReroutedRef = useRef(false);
+  const isHandlingOffRouteRef = useRef(false);
+  const lastOffRouteTimestampRef = useRef<number | null>(null);
+  const offRouteJudgeCooldownUntilRef = useRef<number>(0);
+  const offRouteTickBusyRef = useRef(false);
+
+  const passedWaypointIdxSetRef = useRef<Set<number>>(new Set());
+  const isWaypointEnteredRef = useRef(false);
+  const waypointCandidateIdxRef = useRef<number>(-1);
+  const waypointPassCountRef = useRef<number>(0);
+
+  const isBikingStateRef = useRef<boolean>(false);
+  const bikingStateCountRef = useRef<number>(0);
+  const isStationaryRef = useRef<boolean>(false);
+  const stationaryCountRef = useRef<number>(0);
+  const prevMyPositionForStationaryRef = useRef<Coordinate | null>(null);
+  const prevTimestampForStationaryRef = useRef<number | null>(null);
+
+  const [currentInstruction, setCurrentInstruction] =
+    useState<NavigationInstruction | null>(null);
+  const [eta, setEta] = useState<Date | undefined | null>(null);
+  const [remainingDistanceMeter, setRemainingDistance] = useState<
+    number | undefined | null
+  >(null);
+  const [passedWaypointIndexes, setPassedWaypointIndexes] = useState<number[]>(
+    [],
+  );
+  const [isLoadingForOffRoute, setIsLoadingForOffRoute] = useState(false);
+  const [isNavigationInitialized, setIsNavigationInitialized] = useState(false);
 
   useEffect(() => {
     if (!isNavigationMode) return;
-
     turnOffBookmarkMarkers();
-  }, [isNavigationMode]);
+  }, [isNavigationMode, turnOffBookmarkMarkers]);
+
+  // 네비게이션 안전 종료 (크래시 방지용)
+  const terminateNavigationSafely = useCallback(() => {
+    setIsNavigationMode(false);
+    setShowNavigationEndModal(true);
+  }, [setIsNavigationMode, setShowNavigationEndModal]);
 
   // 완전초기화
-  const resetAllNavigationState = () => {
+  const resetAllNavigationState = useCallback(() => {
     replaceMyLocationMarker(true);
     clearNavigationPath();
+    setInstructionList([]);
+    setCurrentIntervalIndex(0);
+
     pathDataListByInterval.current = [];
     instructionList.current = [];
     fullPathCoordinateList.current = [];
-    setSessionId(null);
-    setCurrentInstruction(null);
     nextTurnCoordinate.current = null;
     currentIntervalIndex.current = 0;
     currentTtsUrl.current = null;
+
     previewInstructionText.current = '';
     previewTtsUrl.current = null;
     previewSign.current = null;
     previewEnterCount.current = 0;
-    recoverTriggerCount.current = 0;
-    rerouteTriggerCount.current = 0;
-    passedWaypointIdxSetRef.current.clear();
-    setPassedWaypointIndexes([]);
-    isHandlingOffRouteRef.current = false;
-    setIsLoadingForOffRoute(false);
-    isWaypointEnteredRef.current = false;
-    waypointCandidateIdxRef.current = -1;
-    waypointPassCountRef.current = 0;
+    isEnteredRef.current = false;
+    passCountRef.current = 0;
+    lastDistanceFromMyPosToNextTurnPosRef.current = null;
+    prevMyPositionForTurnRef.current = null;
+    prevTimestampForTurnRef.current = null;
+
     prevTimestampForDistanceRef.current = null;
     prevMyPositionForDistanceRef.current = null;
     prevTraveledDistanceMeterRef.current = 0;
+    routeTraveledBaselineRef.current = null;
     prevRemainingDistanceMeterRef.current = Number.POSITIVE_INFINITY;
     accumulatedTraveledDistanceRef.current = 0;
     prevTimestampForMeasureRef.current = null;
     prevTraveledDistanceForMeasureRef.current = null;
+
+    recoverTriggerCount.current = 0;
+    rerouteTriggerCount.current = 0;
+    hasReroutedRef.current = false;
+    isHandlingOffRouteRef.current = false;
+    lastOffRouteTimestampRef.current = null;
+    offRouteJudgeCooldownUntilRef.current = 0;
+    offRouteTickBusyRef.current = false;
+
+    passedWaypointIdxSetRef.current.clear();
+    isWaypointEnteredRef.current = false;
+    waypointCandidateIdxRef.current = -1;
+    waypointPassCountRef.current = 0;
+
     isBikingStateRef.current = false;
     bikingStateCountRef.current = 0;
     isStationaryRef.current = false;
     stationaryCountRef.current = 0;
     prevMyPositionForStationaryRef.current = null;
     prevTimestampForStationaryRef.current = null;
-  };
+    prevLocationMetaData.current = null;
+    currentLocationMetaData.current = null;
+    prevEmaSpeedMps.current = null;
 
-  // 네비게이션 데이터 적용 함수 (init과 reroute/recovery에서 공통 사용)
-  const applyNavigationData = useCallback(
-    (
-      navigationData: {
-        coordinates: [number, number][];
-        instructions: NavigationInstruction[];
-        startStation?: {
-          lat: number;
-          lng: number;
-          stationId?: string;
-          stationName?: string;
-        };
-        endStation?: {
-          lat: number;
-          lng: number;
-          stationId?: string;
-          stationName?: string;
-        };
-        waypoints?: [number, number][];
-      },
-      walkingPolicy: NavigationWalkingPolicy = 'all',
-    ) => {
-      // coordinates와 instructions 적용
-      fullPathCoordinateList.current = navigationData.coordinates;
-      instructionList.current = navigationData.instructions;
+    setSessionId(null);
+    setIsNavigationInitialized(false);
+    setCurrentInstruction(null);
+    setPassedWaypointIndexes([]);
+    setIsLoadingForOffRoute(false);
+  }, [
+    replaceMyLocationMarker,
+    clearNavigationPath,
+    setInstructionList,
+    setCurrentIntervalIndex,
+    setSessionId,
+    setIsNavigationInitialized,
+  ]);
 
-      // TTS 및 preview 관련 상태 설정
-      currentTtsUrl.current =
-        navigationData.instructions.length > 0
-          ? navigationData.instructions[0].ttsUrl
-          : null;
-      previewInstructionText.current =
-        navigationData.instructions.length > 1
-          ? navigationData.instructions[1].text
-          : '';
-      previewTtsUrl.current =
-        navigationData.instructions.length > 1
-          ? navigationData.instructions[1].ttsUrl
-          : null;
-      previewSign.current =
-        navigationData.instructions.length > 1
-          ? navigationData.instructions[1].sign
-          : null;
-
-      // 현재 instruction 및 turn 좌표 설정
-      if (navigationData.instructions.length > 0) {
-        setCurrentInstruction(navigationData.instructions[0]);
-        nextTurnCoordinate.current =
-          navigationData.instructions[0].nextTurnCoordinate;
-
-        // 네비게이션 디테일 모달 상태 초기화
-        setInstructionList(navigationData.instructions);
-        setCurrentIntervalIndex(0);
-      }
-
-      // currentIntervalIndex 리셋
-      currentIntervalIndex.current = 0;
-
-      // pathDataListByInterval 재구성
-      pathDataListByInterval.current = [];
-      for (let i = 0; i < navigationData.instructions.length; i++) {
-        const interval = navigationData.instructions[i].interval;
-        const segmentCoordinates = navigationData.coordinates
-          .slice(interval[0], interval[1] + 1)
-          .map(coord => ({ lat: coord[1], lng: coord[0] }));
-        pathDataListByInterval.current.push({
-          intervalIndex: i,
-          interval,
-          coordinateList: segmentCoordinates,
-        });
-      }
-
-      // 턴 관련 상태 리셋
-      isEnteredRef.current = false;
-      passCountRef.current = 0;
-      lastDistanceFromMyPosToNextTurnPosRef.current = null;
-      prevMyPositionForTurnRef.current = null;
-      prevTimestampForTurnRef.current = null;
-      previewEnterCount.current = 0;
-
-      // 네비게이션 경로 그리기
-      if (selectedRouteData && isMapReady) {
-        // routeType은 useRouteStore의 routeType 사용
-        const storeRouteType = useRouteStore.getState().routeType;
-        const routeType =
-          storeRouteType === 'loop' ? RouteType.LOOP : RouteType.CONSTANT;
-
-        // 실제 출발지/도착지 좌표
-        const coordinates = navigationData.coordinates;
-        const startPoint: [number, number] = coordinates[0];
-        const endPoint: [number, number] = coordinates[coordinates.length - 1];
-
-        const intervals = navigationData.instructions.map(
-          instruction => instruction.interval,
-        );
-
-        console.log('coordinates.length:', coordinates.length);
-        console.log('intervals.length:', intervals.length);
-
-        // 대여소 정보: 새로운 정보가 있으면 사용, 없으면 selectedRouteData 사용
-        const startStation =
-          navigationData.startStation || selectedRouteData.startStation;
-        const endStation =
-          navigationData.endStation ||
-          selectedRouteData.endStation ||
-          startStation;
-
-        // 경유지 정보: 새로운 정보가 있으면 사용, 없으면 selectedRouteData 사용
-        const waypoints = navigationData.waypoints
-          ? navigationData.waypoints.map(wp => ({ lat: wp[1], lng: wp[0] }))
-          : selectedRouteData.waypoints || null;
-
-        // loop 모드일 때는 startStationPoint와 endStationPoint를 동일하게 설정
-        // (splitPathByStations가 좌표 비교로 loop를 판단하기 때문)
-        const startStationPoint = {
-          lat: startStation.lat,
-          lng: startStation.lng,
-        };
-        const endStationPoint =
-          routeType === RouteType.LOOP
-            ? startStationPoint
-            : {
-                lat: endStation.lat,
-                lng: endStation.lng,
-              };
-
-        drawNavigationPath({
-          routeType,
-          startPoint,
-          endPoint,
-          waypoints,
-          fullPathCoordinateList: navigationData.coordinates,
-          intervals,
-          currentIntervalIndex: 0,
-          startStationPoint,
-          endStationPoint,
-          walkingPolicy,
-        });
-      }
+  const { applyNavigationData } = useNavigationDataApply({
+    selectedRouteData,
+    isMapReady,
+    drawNavigationPath,
+    setCurrentInstruction,
+    setInstructionList,
+    setCurrentIntervalIndex,
+    onError: terminateNavigationSafely,
+    refs: {
+      fullPathCoordinateList,
+      pathDataListByInterval,
+      instructionList,
+      nextTurnCoordinate,
+      currentIntervalIndex,
+      currentTtsUrl,
+      previewInstructionText,
+      previewTtsUrl,
+      previewSign,
+      isEnteredRef,
+      passCountRef,
+      lastDistanceFromMyPosToNextTurnPosRef,
+      prevMyPositionForTurnRef,
+      prevTimestampForTurnRef,
+      previewEnterCount,
+      prevTimestampForDistanceRef,
+      prevMyPositionForDistanceRef,
+      prevTraveledDistanceMeterRef,
+      routeTraveledBaselineRef,
+      prevRemainingDistanceMeterRef,
+      prevTimestampForMeasureRef,
+      prevTraveledDistanceForMeasureRef,
     },
-    [
-      selectedRouteData,
-      isMapReady,
-      drawNavigationPath,
-      setCurrentInstruction,
-      setInstructionList,
-      setCurrentIntervalIndex,
-    ],
-  );
+  });
 
-  // 초기화
-  useEffect(() => {
-    if (!isNavigationMode || !routeId) return;
-    // 초기화
-    resetAllNavigationState();
+  useNavigationSessionLifecycle({
+    isNavigationMode,
+    routeId,
+    isMapReady,
+    resetAllNavigationState,
+    applyNavigationData,
+    setSessionId,
+    setIsNavigationInitialized,
+    isHandlingOffRouteRef,
+  });
 
-    const initNavigation = async () => {
-      try {
-        const payload: StartNavigationSessionPayload = {
-          routeId,
-        };
+  useLocationMetaHistory({
+    isNavigationMode,
+    isNavigationInitialized,
+    locationMetaData,
+    locationTick,
+    prevLocationMetaData,
+    currentLocationMetaData,
+  });
 
-        const response: StartNavigationSessionResponse =
-          await startNavigationSession(payload);
-        setSessionId(response.data.sessionId);
+  useStationaryState({
+    locationMetaData,
+    locationTick,
+    currentLocationMetaData,
+    isStationaryRef,
+    stationaryCountRef,
+    prevMyPositionForStationaryRef,
+    prevTimestampForStationaryRef,
+  });
 
-        // 공통 데이터 적용 함수 사용
-        applyNavigationData({
-          coordinates: response.data.coordinates,
-          instructions: response.data.instructions,
-        });
-
-        setIsNavigationInitialized(true);
-        isHandlingOffRouteRef.current = false;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          Alert.alert(
-            `${
-              error.response?.data?.message ??
-              '내비게이션 세션 시작 중 오류가 발생했습니다. 다시 시도해주세요.'
-            }`,
-          );
-        }
-      }
-    };
-
-    initNavigation();
-  }, [isNavigationMode, routeId, isMapReady, applyNavigationData]);
+  useTurnController({
+    isNavigationMode,
+    isNavigationInitialized,
+    locationMetaData,
+    currentInstruction,
+    setCurrentInstruction,
+    setCurrentIntervalIndex,
+    refs: {
+      nextTurnCoordinate,
+      currentIntervalIndex,
+      instructionList,
+      pathDataListByInterval,
+      currentTtsUrl,
+      previewInstructionText,
+      previewTtsUrl,
+      previewSign,
+      isEnteredRef,
+      passCountRef,
+      lastDistanceFromMyPosToNextTurnPosRef,
+      prevMyPositionForTurnRef,
+      prevTimestampForTurnRef,
+      previewEnterCount,
+      currentLocationMetaData,
+    },
+  });
 
   // currentIntervalIndex 변경 시 경로 업데이트 (지나온 구간 회색 처리)
   useEffect(() => {
     if (!isNavigationInitialized || !isMapReady) return;
 
-    const intervals = instructionList.current.map(
-      instruction => instruction.interval,
-    );
+    const currentIndex = currentIntervalIndex.current;
 
-    if (intervals.length > 0 && fullPathCoordinateList.current.length > 0) {
-      updateNavigationCurrentInterval(currentIntervalIndex.current);
+    if (currentIndex >= 0 && fullPathCoordinateList.current.length > 0) {
+      updateNavigationCurrentInterval(currentIndex);
     }
   }, [
-    currentIntervalIndex.current,
+    currentInstruction,
     isNavigationInitialized,
     isMapReady,
     updateNavigationCurrentInterval,
   ]);
 
-  // 턴 진입/지나침 감지 및 지시 업데이트
-  useEffect(() => {
-    if (
-      !isNavigationMode ||
-      !myPosition ||
-      !nextTurnCoordinate.current ||
-      !currentInstruction ||
-      !isNavigationInitialized
-    ) {
-      return;
-    }
-
-    const resetTurnState = () => {
-      isEnteredRef.current = false;
-      passCountRef.current = 0;
-      lastDistanceFromMyPosToNextTurnPosRef.current = null;
-    };
-
-    // 1) 정확도 체크
-    const currentAccuracy = currentLocationMetaData.current?.accuracy;
-    if (typeof currentAccuracy === 'number' && currentAccuracy > ACCURACY_OK) {
-      return;
-    }
-
-    // 2) 턴까지 거리
-    const distanceToNextTurn = getDistanceBetweenCoords(
-      myPosition,
-      nextTurnCoordinate.current,
-    );
-
-    const nowTimestamp = Date.now();
-
-    // =========================
-    // 3) entry / exit
-    // =========================
-    if (!isEnteredRef.current && distanceToNextTurn <= ENTRY_RADIUS_METER) {
-      isEnteredRef.current = true;
-      passCountRef.current = 0;
-      lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
-      prevMyPositionForTurnRef.current = myPosition;
-      prevTimestampForTurnRef.current = nowTimestamp;
-      previewEnterCount.current += 1;
-
-      return;
-    }
-
-    if (isEnteredRef.current && distanceToNextTurn >= EXIT_RADIUS_METER) {
-      resetTurnState();
-
-      prevMyPositionForTurnRef.current = myPosition;
-      prevTimestampForTurnRef.current = nowTimestamp;
-      return;
-    }
-
-    // entry 아니면 passed 판정 자체 안 함
-    if (!isEnteredRef.current) {
-      prevMyPositionForTurnRef.current = myPosition;
-      prevTimestampForTurnRef.current = nowTimestamp;
-      lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
-      return;
-    }
-
-    // =========================
-    // 4) 거리 증가 추세 (멀어지기 시작, isEntering 이후부터 측정)
-    // =========================
-    const prevDistance = lastDistanceFromMyPosToNextTurnPosRef.current;
-    lastDistanceFromMyPosToNextTurnPosRef.current = distanceToNextTurn;
-
-    if (prevDistance == null) {
-      prevMyPositionForTurnRef.current = myPosition;
-      prevTimestampForTurnRef.current = nowTimestamp;
-      return;
-    }
-
-    const deltaDistance = distanceToNextTurn - prevDistance;
-    const isGettingFarther = deltaDistance > DEADZONE_DISTANCE_METER;
-
-    // =========================
-    // 5) 벡터/내적 + 속도 게이트
-    // =========================
-    const prevPosition = prevMyPositionForTurnRef.current;
-    const prevTimestamp = prevTimestampForTurnRef.current;
-
-    // prev 갱신은 여기서 한번만
-    prevMyPositionForTurnRef.current = myPosition;
-    prevTimestampForTurnRef.current = nowTimestamp;
-
-    if (!prevPosition || prevTimestamp == null) return;
-
-    const dtSec = (nowTimestamp - prevTimestamp) / 1000;
-    const { moveMag, speedMps, dot } = calculateMotionVector(
-      prevPosition,
-      myPosition,
-      nextTurnCoordinate.current,
-      dtSec,
-    );
-
-    // GPS 점프 컷오프
-    if (speedMps > MAX_PHYSICAL_SPEED_MPS) {
-      passCountRef.current = Math.max(
-        0,
-        passCountRef.current - PASS_COUNT_DECAY,
-      );
-      return;
-    }
-
-    // 이동이 너무 작으면 방향 판정 의미 없음
-    if (moveMag < MIN_EFFECTIVE_MOVE_METER) {
-      passCountRef.current = Math.max(
-        0,
-        passCountRef.current - PASS_COUNT_DECAY,
-      );
-      return;
-    }
-
-    // dot < 0 => 턴포인트를 등지고 움직임(멀어지는 방향)
-    const isMovingAwayFromTurn = dot < DOT_DEADZONE;
-
-    // =========================
-    // 6) passed 카운트
-    // =========================
-    const isPassedCandidate = isGettingFarther && isMovingAwayFromTurn;
-
-    if (!isPassedCandidate) {
-      passCountRef.current = Math.max(
-        0,
-        passCountRef.current - PASS_COUNT_DECAY,
-      );
-      return;
-    }
-    passCountRef.current = Math.min(PASS_COUNT_MAX, passCountRef.current + 1);
-
-    // =========================
-    // 7) 통과 확정 → 다음 instruction
-    // =========================
-    if (passCountRef.current < PASS_CONFIRM_COUNT) return;
-
-    const nextIndex = currentIntervalIndex.current + 1;
-    if (nextIndex >= instructionList.current.length) return;
-    const nextInstruction = instructionList.current[nextIndex];
-    setCurrentInstruction(nextInstruction);
-    nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
-    currentIntervalIndex.current = nextIndex;
-    currentTtsUrl.current = nextInstruction.ttsUrl;
-    previewInstructionText.current =
-      instructionList.current[nextIndex + 1]?.text ?? '';
-    previewTtsUrl.current =
-      instructionList.current[nextIndex + 1]?.ttsUrl ?? null;
-    previewSign.current = instructionList.current[nextIndex + 1]?.sign ?? null;
-    previewEnterCount.current = 0;
-    resetTurnState();
-    prevMyPositionForTurnRef.current = myPosition;
-    prevTimestampForTurnRef.current = Date.now();
-  }, [
-    myPosition,
+  useWaypointController({
     isNavigationMode,
-    currentInstruction,
     isNavigationInitialized,
-  ]);
-
-  // prevLocationMetaData와 currentLocationMetaData 구분 저장
-  useEffect(() => {
-    if (!isNavigationMode || !locationMetaData || !isNavigationInitialized)
-      return;
-    prevLocationMetaData.current = currentLocationMetaData.current;
-    currentLocationMetaData.current = locationMetaData;
-  }, [locationTick, isNavigationMode, isNavigationInitialized]);
-
-  // 정지 상태 판정 전용 (location tick 기반으로 항상 실행)
-  useEffect(() => {
-    // 항상 실행되어야 하므로 어떤 조건에 의한 early return을 두지 않습니다.
-    const currentLocationMeta =
-      currentLocationMetaData.current ?? locationMetaData;
-
-    if (!currentLocationMeta) {
-      // 위치 정보가 아직 없으면 정지 상태 초기화
-      stationaryCountRef.current = 0;
-      isStationaryRef.current = false;
-      // 정상적으로 끝냄
-      return;
-    }
-
-    const currentCoord = (currentLocationMeta as LocationMetaData).coordinate;
-    const currentTimestamp =
-      typeof currentLocationMeta.timestamp === 'number'
-        ? currentLocationMeta.timestamp
-        : Date.now();
-
-    const prevPosition = prevMyPositionForStationaryRef.current;
-    const prevTimestamp = prevTimestampForStationaryRef.current;
-
-    // 위치 정보가 아직 없으면 정지 상태 초기화
-    if (!currentCoord) {
-      stationaryCountRef.current = 0;
-      isStationaryRef.current = false;
-      // 정상적으로 끝냄
-      return;
-    }
-
-    // 첫 샘플이면 prev로 세팅하고 정지 상태 초기화
-    if (!prevPosition || prevTimestamp == null) {
-      prevMyPositionForStationaryRef.current = currentCoord;
-      prevTimestampForStationaryRef.current = currentTimestamp;
-      stationaryCountRef.current = 0;
-      isStationaryRef.current = false;
-      return;
-    }
-
-    // 이동 거리 계산
-    const movedDistance = getDistanceBetweenCoords(prevPosition, currentCoord);
-
-    if (movedDistance <= STATIONARY_DISTANCE_THRESHOLD) {
-      stationaryCountRef.current += 1;
-      if (stationaryCountRef.current >= STATIONARY_THRESHOLD) {
-        isStationaryRef.current = true;
-      }
-    } else {
-      // 이동이 감지되면 즉시 정지 상태 해제
-      stationaryCountRef.current = 0;
-      isStationaryRef.current = false;
-    }
-
-    // prev 갱신
-    prevMyPositionForStationaryRef.current = currentCoord;
-    prevTimestampForStationaryRef.current = currentTimestamp;
-  }, [locationTick]);
-
-  // 경유지 도착/지나침 감지
-
-  useEffect(() => {
-    if (
-      !isNavigationMode ||
-      !locationMetaData ||
-      !selectedRouteData ||
-      !isNavigationInitialized
-    )
-      return;
-
-    const myPosition = locationMetaData.coordinate;
-    const positionAccuracy = locationMetaData.accuracy;
-    if (typeof positionAccuracy !== 'number') return;
-    if (positionAccuracy > ACCURACY_OK) return;
-
-    const waypoints: Coordinates[] = selectedRouteData.waypoints ?? [];
-    if (waypoints.length === 0) return;
-
-    // 이미 다 지나쳤으면 끝
-    if (passedWaypointIdxSetRef.current.size >= waypoints.length) return;
-
-    // 아직 안 지나친 waypoint 중 "가장 가까운 것" 찾기
-    let bestIdx = -1;
-    let bestDistance = Number.POSITIVE_INFINITY;
-
-    for (let i = 0; i < waypoints.length; i++) {
-      if (passedWaypointIdxSetRef.current.has(i)) continue;
-
-      const d = getDistanceBetweenCoords(myPosition, waypoints[i]);
-      if (d < bestDistance) {
-        bestDistance = d;
-        bestIdx = i;
-      }
-    }
-
-    if (bestIdx < 0) return;
-
-    const ENTRY_METER = WAYPOINT_CONFIG.ENTRY_RADIUS_METER;
-    const EXIT_METER = WAYPOINT_CONFIG.EXIT_RADIUS_METER;
-    const PASS_CONFIRM = WAYPOINT_CONFIG.PASS_CONFIRM_COUNT;
-
-    // 1) entry: 반경 안으로 들어오면 "이번 후보 waypoint"를 고정
-    if (!isWaypointEnteredRef.current && bestDistance <= ENTRY_METER) {
-      isWaypointEnteredRef.current = true;
-      waypointCandidateIdxRef.current = bestIdx;
-      waypointPassCountRef.current = 0;
-      return;
-    }
-
-    // entry 상태가 아니면 종료
-    if (!isWaypointEnteredRef.current) return;
-
-    const candidateIdx = waypointCandidateIdxRef.current;
-    if (candidateIdx < 0) {
-      isWaypointEnteredRef.current = false;
-      return;
-    }
-
-    // 후보 waypoint 기준 거리로 다시 측정 (bestIdx가 바뀌면 흔들리니까 "후보 고정"이 중요)
-    const candidateDist = getDistanceBetweenCoords(
-      myPosition,
-      waypoints[candidateIdx],
-    );
-
-    // 2) exit: 후보에서 멀어졌으면 "지나침 후보" 카운트
-    if (candidateDist >= EXIT_METER) {
-      waypointPassCountRef.current += 1;
-
-      if (waypointPassCountRef.current < PASS_CONFIRM) return;
-
-      // 지나침 확정
-      passedWaypointIdxSetRef.current.add(candidateIdx);
-
-      // 원하는 결과값: 지나친 모든 waypoint index
-      const nextArr = Array.from(passedWaypointIdxSetRef.current).sort(
-        (a, b) => a - b,
-      );
-      setPassedWaypointIndexes(nextArr);
-
-      playTts('tts-waypoint-arrive', ARRIVE_WAYPOINT_TTS_URL, systemVolume);
-
-      // 상태 리셋
-      isWaypointEnteredRef.current = false;
-      waypointCandidateIdxRef.current = -1;
-      waypointPassCountRef.current = 0;
-      return;
-    }
-
-    // 3) 아직 exit 아니면 passCount는 감쇠/리셋 (튐 방지)
-    waypointPassCountRef.current = 0;
-  }, [
-    isNavigationMode,
+    locationMetaData,
     locationTick,
     selectedRouteData,
-    isNavigationInitialized,
-  ]);
-  const lastOffRouteTimestampRef = useRef<number | null>(null);
-  const offRouteTickBusyRef = useRef(false);
+    systemVolume,
+    setPassedWaypointIndexes,
+    refs: {
+      passedWaypointIdxSetRef,
+      isWaypointEnteredRef,
+      waypointCandidateIdxRef,
+      waypointPassCountRef,
+      fullPathCoordinateList,
+      instructionList,
+      currentIntervalIndex,
+    },
+  });
 
-  // 경로복귀
-  // 경로복귀 (OFF-ROUTE JUDGE)
-  useEffect(() => {
-    if (
-      !isNavigationMode ||
-      !currentLocationMetaData.current ||
-      !sessionId ||
-      !isNavigationInitialized
-    )
-      return;
-
-    const locationMeta = currentLocationMetaData.current;
-
-    const timestamp =
-      typeof locationMeta.timestamp === 'number'
-        ? locationMeta.timestamp
-        : null;
-
-    if (timestamp !== null) {
-      if (lastOffRouteTimestampRef.current === timestamp) return;
-      lastOffRouteTimestampRef.current = timestamp;
-    }
-
-    const myPosition = locationMeta.coordinate;
-    const accuracy = locationMeta.accuracy;
-    if (typeof accuracy !== 'number' || accuracy > ACCURACY_OK) return;
-
-    if (offRouteTickBusyRef.current) return;
-    offRouteTickBusyRef.current = true;
-
-    const judgeOffRoute = async () => {
-      const intervalCoordinateList =
-        pathDataListByInterval.current[currentIntervalIndex.current]
-          ?.coordinateList ?? [];
-
-      if (intervalCoordinateList.length < 2) return;
-
-      const bestIdx = findClosestCoordIndex(myPosition, intervalCoordinateList);
-      if (bestIdx < 0) return;
-
-      const minDistance = getMinDistanceInWindow(
-        myPosition,
-        intervalCoordinateList,
-        bestIdx,
-      );
-
-      const isOffForRecovery = minDistance >= RECOVERY_TRIGGER_METER;
-      const isOffForReroute = minDistance >= REROUTE_TRIGGER_METER;
-      const isNearByStart = bestIdx === 0;
-
-      const routeType =
-        useRouteStore.getState().routeType === 'loop'
-          ? RouteType.LOOP
-          : RouteType.CONSTANT;
-
-      // ===============================
-      // 1️⃣ off 카운트는 "항상" 누적
-      // ===============================
-      if (routeType === RouteType.LOOP) {
-        if (isOffForRecovery || isOffForReroute) {
-          recoverTriggerCount.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            recoverTriggerCount.current + 1,
-          );
-        } else {
-          recoverTriggerCount.current = Math.max(
-            0,
-            recoverTriggerCount.current - COUNT_DECAY,
-          );
-        }
-      } else {
-        if (isOffForReroute) {
-          rerouteTriggerCount.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            rerouteTriggerCount.current + 1,
-          );
-          recoverTriggerCount.current = Math.max(
-            0,
-            recoverTriggerCount.current - COUNT_DECAY,
-          );
-        } else if (isOffForRecovery) {
-          recoverTriggerCount.current = Math.min(
-            MAX_TRIGGER_COUNT,
-            recoverTriggerCount.current + 1,
-          );
-          rerouteTriggerCount.current = Math.max(
-            0,
-            rerouteTriggerCount.current - COUNT_DECAY,
-          );
-        } else {
-          recoverTriggerCount.current = Math.max(
-            0,
-            recoverTriggerCount.current - COUNT_DECAY,
-          );
-          rerouteTriggerCount.current = Math.max(
-            0,
-            rerouteTriggerCount.current - COUNT_DECAY,
-          );
-        }
-      }
-
-      // ===============================
-      // 2️⃣ TTS (edge-trigger, 정지 아닐 때만)
-      // ===============================
-      if (!isStationaryRef.current && !isHandlingOffRouteRef.current) {
-        if (rerouteTriggerCount.current === 1) {
-          playTts(
-            'tts-offroute-warning',
-            WARNING_OFFROUTE_TTS_URL,
-            systemVolume,
-          );
-        }
-        if (recoverTriggerCount.current === 1) {
-          playTts(
-            'tts-offroute-warning',
-            WARNING_OFFROUTE_TTS_URL,
-            systemVolume,
-          );
-        }
-      }
-
-      // ===============================
-      // 3️⃣ remainingWaypoints (⚠️ 유지)
-      // ===============================
-      const remainingWaypoints = selectedRouteData?.waypoints
-        ?.map((wp, idx) =>
-          passedWaypointIdxSetRef.current.has(idx)
-            ? null
-            : { lat: wp.lat, lng: wp.lng },
-        )
-        .filter((wp): wp is Coordinates => wp !== null);
-
-      // ===============================
-      // 4️⃣ reroute (정지 아닐 때만 실행)
-      // ===============================
-      if (
-        !isStationaryRef.current &&
-        !isHandlingOffRouteRef.current &&
-        routeType === RouteType.CONSTANT &&
-        rerouteTriggerCount.current >= MAX_TRIGGER_COUNT
-      ) {
-        const shouldWalkingReroute = isNearByStart && !isBikingStateRef.current;
-        const shouldBikingReroute = isBikingStateRef.current;
-
-        if (!shouldWalkingReroute && !shouldBikingReroute) return;
-
-        isHandlingOffRouteRef.current = true;
-        setIsLoadingForOffRoute(true);
-        rerouteTriggerCount.current = 0;
-        recoverTriggerCount.current = 0;
-
-        if (traveledDistanceMeter != null) {
-          accumulatedTraveledDistanceRef.current = traveledDistanceMeter;
-        }
-
-        try {
-          const response = await reroute({
-            sessionId,
-            currentLocation: myPosition,
-            travelMode: shouldWalkingReroute ? 'walking' : 'biking',
-            remainingWaypoints: remainingWaypoints ?? [],
-          });
-
-          applyNavigationData(
-            {
-              coordinates: response.data.coordinates,
-              instructions: response.data.instructions,
-              startStation: response.data.startStation
-                ? {
-                    lat: response.data.startStation.location.lat,
-                    lng: response.data.startStation.location.lng,
-                    stationId: response.data.startStation.stationId,
-                    stationName: response.data.startStation.stationName,
-                  }
-                : undefined,
-              endStation: response.data.endStation
-                ? {
-                    lat: response.data.endStation.location.lat,
-                    lng: response.data.endStation.location.lng,
-                    stationId: response.data.endStation.stationId,
-                    stationName: response.data.endStation.stationName,
-                  }
-                : undefined,
-              waypoints: response.data.waypoints
-                ? response.data.waypoints.map(
-                    wp => [wp.lng, wp.lat] as [number, number],
-                  )
-                : undefined,
-            },
-            shouldBikingReroute ? 'only-end' : 'all',
-          );
-
-          playTts('tts-offroute-reroute', REROUTE_TTS_URL, systemVolume);
-        } finally {
-          isHandlingOffRouteRef.current = false;
-          setIsLoadingForOffRoute(false);
-        }
-      }
-
-      // ===============================
-      // 5️⃣ recover (주행 중 + 정지 아닐 때)
-      // ===============================
-      if (
-        !isStationaryRef.current &&
-        !isHandlingOffRouteRef.current &&
-        isBikingStateRef.current &&
-        recoverTriggerCount.current >= MAX_TRIGGER_COUNT
-      ) {
-        isHandlingOffRouteRef.current = true;
-        setIsLoadingForOffRoute(true);
-        recoverTriggerCount.current = 0;
-        rerouteTriggerCount.current = 0;
-
-        if (traveledDistanceMeter != null) {
-          accumulatedTraveledDistanceRef.current = traveledDistanceMeter;
-        }
-
-        try {
-          const response = await recoveryRoute({
-            sessionId,
-            currentLocation: myPosition,
-            remainingWaypoints: remainingWaypoints ?? [],
-          });
-
-          applyNavigationData(
-            {
-              coordinates: response.data.coordinates,
-              instructions: response.data.instructions,
-            },
-            'only-end',
-          );
-
-          playTts('tts-offroute-recover', RECOVER_TTS_URL, systemVolume);
-        } finally {
-          isHandlingOffRouteRef.current = false;
-          setIsLoadingForOffRoute(false);
-        }
-      }
-    };
-
-    (async () => {
-      try {
-        await judgeOffRoute();
-      } finally {
-        offRouteTickBusyRef.current = false;
-      }
-    })();
-  }, [
+  useOffRouteController({
     isNavigationMode,
-    locationTick,
-    sessionId,
     isNavigationInitialized,
+    sessionId,
+    locationTick,
     systemVolume,
     traveledDistanceMeter,
-  ]);
+    selectedRouteData,
+    applyNavigationData,
+    setIsLoadingForOffRoute,
+    refs: {
+      currentLocationMetaData,
+      pathDataListByInterval,
+      currentIntervalIndex,
+      currentTtsUrl,
+      recoverTriggerCount,
+      rerouteTriggerCount,
+      hasReroutedRef,
+      isHandlingOffRouteRef,
+      isStationaryRef,
+      isBikingStateRef,
+      lastOffRouteTimestampRef,
+      offRouteJudgeCooldownUntilRef,
+      offRouteTickBusyRef,
+      accumulatedTraveledDistanceRef,
+      passedWaypointIdxSetRef,
+    },
+  });
 
-  // 소요거리/남은거리 업데이트
-  useEffect(() => {
-    if (
-      pathDataListByInterval.current.length === 0 ||
-      instructionList.current.length === 0 ||
-      !isNavigationInitialized
-    )
-      return;
-
-    if (!isNavigationMode || !myPosition || !locationMetaData) return;
-
-    const currentTimestamp =
-      typeof locationMetaData.timestamp === 'number'
-        ? locationMetaData.timestamp
-        : Date.now();
-
-    const prevMyPositionForDistance = prevMyPositionForDistanceRef.current;
-    const prevTimestampForDistance = prevTimestampForDistanceRef.current;
-
-    // 첫 샘플(초기값) 처리: prevPos/prevTs가 없으면 "prev 세팅"부터 하고 종료
-    if (
-      prevMyPositionForDistance === null ||
-      prevTimestampForDistance === null
-    ) {
-      // traveled (첫 값은 증가/감소 안정화보단 "기준값 세팅" 의미)
-      const firstTraveledDistanceMeter = calculateTraveledDistance(
-        myPosition,
-        pathDataListByInterval.current,
-        currentIntervalIndex.current,
-        instructionList.current,
-
-        prevTraveledDistanceMeterRef.current, //  0
-        null,
-        null,
-        currentTimestamp,
-      );
-
-      // remaining (첫 값도 기준값 세팅)
-      const firstRemainingDistanceMeter = calculateRemainingDistance(
-        myPosition,
-        pathDataListByInterval.current,
-        currentIntervalIndex.current,
-        instructionList.current,
-
-        prevRemainingDistanceMeterRef.current, //  0
-        null,
-        null,
-        currentTimestamp,
-      );
-
-      setTraveledDistance(firstTraveledDistanceMeter);
-      setRemainingDistance(firstRemainingDistanceMeter);
-
-      // 다음 tick부터 stabilize가 제대로 먹도록 prev 갱신
-      prevTraveledDistanceMeterRef.current = firstTraveledDistanceMeter;
-      prevRemainingDistanceMeterRef.current = firstRemainingDistanceMeter;
-
-      prevMyPositionForDistanceRef.current = myPosition;
-      prevTimestampForDistanceRef.current = currentTimestamp;
-      return;
-    }
-
-    // traveled 계산 (내부에서 stabilizeDistance까지 끝남)
-    const nextTraveledDistanceMeter = calculateTraveledDistance(
-      myPosition,
-      pathDataListByInterval.current,
-      currentIntervalIndex.current,
-      instructionList.current,
-
-      prevTraveledDistanceMeterRef.current,
-      prevMyPositionForDistance,
-      prevTimestampForDistance,
-      currentTimestamp,
-    );
-
-    // 누적 소요거리 더하기 (재탐색 시 이전 거리 유지)
-    const finalTraveledDistanceMeter =
-      nextTraveledDistanceMeter + accumulatedTraveledDistanceRef.current;
-
-    // remaining 계산 (내부에서 stabilizeDistance까지 끝남)
-    const nextRemainingDistanceMeter = calculateRemainingDistance(
-      myPosition,
-      pathDataListByInterval.current,
-      currentIntervalIndex.current,
-      instructionList.current,
-
-      prevRemainingDistanceMeterRef.current,
-      prevMyPositionForDistance,
-      prevTimestampForDistance,
-      currentTimestamp,
-    );
-
-    setTraveledDistance(finalTraveledDistanceMeter);
-    setRemainingDistance(nextRemainingDistanceMeter);
-
-    // prevDistance는 각각 갱신 (단조성 기준)
-    prevTraveledDistanceMeterRef.current = finalTraveledDistanceMeter;
-    prevRemainingDistanceMeterRef.current = nextRemainingDistanceMeter;
-
-    // 공통 prevPos/prevTs 갱신 (속도/정지/점프 판정 기준)
-    prevMyPositionForDistanceRef.current = myPosition;
-    prevTimestampForDistanceRef.current = currentTimestamp;
-  }, [myPosition, locationTick, isNavigationMode, isNavigationInitialized]);
-
-  // eta 업데이트
-  useEffect(() => {
-    if (
-      prevLocationMetaData.current === null ||
-      currentLocationMetaData.current === null ||
-      !isNavigationInitialized
-    )
-      return;
-
-    if (!remainingDistanceMeter) return;
-    if (!isNavigationMode || !myPosition || !locationMetaData) return;
-
-    // eta 계산
-    // 1) 정확하고 보정된 속도 사용
-    const accurateSpeedMps = returnAccurateSpeed(
-      prevLocationMetaData.current,
-      currentLocationMetaData.current,
-    );
-    prevEmaSpeedMps.current = accurateSpeedMps;
-
-    // 2) 남은 거리 / 속도 = 남은 시간
-    setEta(calculateEta(remainingDistanceMeter, accurateSpeedMps));
-  }, [
-    myPosition,
-    locationTick,
-    remainingDistanceMeter,
+  useNavigationMetrics({
     isNavigationMode,
     isNavigationInitialized,
-  ]);
-
-  // 칼로리, 탄소 저감 측정
-  useEffect(() => {
-    if (
-      !isNavigationMode ||
-      traveledDistanceMeter == null ||
-      !locationMetaData ||
-      !isNavigationInitialized
-    )
-      return;
-
-    // 첫 샘플 세팅
-    if (prevTraveledDistanceForMeasureRef.current === null) {
-      prevTraveledDistanceForMeasureRef.current = traveledDistanceMeter;
-      return;
-    }
-
-    const prevTraveledDistanceForMeasure =
-      prevTraveledDistanceForMeasureRef.current;
-    const deltaDistance =
-      traveledDistanceMeter - prevTraveledDistanceForMeasure;
-
-    // 다음 tick 준비
-    prevTraveledDistanceForMeasureRef.current = traveledDistanceMeter;
-    const safeDeltaDistance = Math.max(0, deltaDistance);
-
-    if (safeDeltaDistance <= STOP_JUDGE_MOVE_METER) return;
-
-    // 시간 delta는 timestamp로
-    const currentTimestamp =
-      typeof locationMetaData.timestamp === 'number'
-        ? locationMetaData.timestamp
-        : Date.now();
-
-    const prevTimestampForMeasure = prevTimestampForMeasureRef.current;
-    if (prevTimestampForMeasure == null) {
-      prevTimestampForMeasureRef.current = currentTimestamp;
-      return;
-    }
-
-    const rawDtSec = Math.max(
-      0.001,
-      (currentTimestamp - prevTimestampForMeasure) / 1000,
-    );
-
-    const dtSec = Math.min(rawDtSec, MOTION_COMMON_OPTIONS.DT_SEC_CAP);
-
-    prevTimestampForMeasureRef.current = currentTimestamp;
-
-    const currentSpeedMps = safeDeltaDistance / dtSec;
-
-    // 말도 안 되는 speed는 컷
-    if (currentSpeedMps > MOTION_COMMON_OPTIONS.MAX_PHYSICAL_SPEED_MPS) return;
-
-    const transportationType = classifyTransportBySpeed(currentSpeedMps);
-
-    // 정지 상태 추적: 이동 거리가 매우 작으면 정지로 판단
-    // NOTE: 정지 판정 로직은 이제 별도 useEffect에서 처리합니다.
-
-    // 주행 상태 추적: 지속적으로 biking으로 판정되면 주행 상태로 간주
-    if (transportationType === 'biking') {
-      bikingStateCountRef.current += 1;
-      if (bikingStateCountRef.current >= BIKING_STATE_THRESHOLD) {
-        isBikingStateRef.current = true;
-      }
-    } else {
-      bikingStateCountRef.current = Math.max(
-        0,
-        bikingStateCountRef.current - 1,
-      );
-      if (bikingStateCountRef.current === 0) {
-        isBikingStateRef.current = false;
-      }
-    }
-
-    const currentCaloriesDelta = measureCaloriesBurned(
-      transportationType,
-      userGender,
-      dtSec,
-    );
-
-    const currentCarbonDelta = measureCarbonSaved(
-      transportationType,
-      safeDeltaDistance,
-    );
-
-    addCaloriesBurned(currentCaloriesDelta);
-    addCarbonSaved(currentCarbonDelta);
-  }, [
-    isNavigationMode,
-    traveledDistanceMeter,
+    locationMetaData,
     locationTick,
     userGender,
+    userBirthYear,
+    traveledDistanceMeter,
+    remainingDistanceMeter,
+    setTraveledDistance,
+    setRemainingDistance,
+    setEta,
+    addCaloriesBurned,
+    addCarbonSaved,
+    onError: terminateNavigationSafely,
+    refs: {
+      pathDataListByInterval,
+      instructionList,
+      currentIntervalIndex,
+      prevTimestampForDistanceRef,
+      prevMyPositionForDistanceRef,
+      prevTraveledDistanceMeterRef,
+      routeTraveledBaselineRef,
+      prevRemainingDistanceMeterRef,
+      accumulatedTraveledDistanceRef,
+      prevLocationMetaData,
+      currentLocationMetaData,
+      prevEmaSpeedMps,
+      prevTimestampForMeasureRef,
+      prevTraveledDistanceForMeasureRef,
+      isBikingStateRef,
+      bikingStateCountRef,
+    },
+  });
+
+  useDestinationArrival({
+    isNavigationMode,
     isNavigationInitialized,
-  ]);
+    locationMetaData,
+    locationTick,
+    remainingDistanceMeter,
+    setIsNavigationMode,
+    setTimerStatus,
+    setShowNavigationEndModal,
+    setShowNavigationFinishModal,
+    refs: {
+      currentIntervalIndex,
+      instructionList,
+    },
+  });
 
-  // 시스템 볼륨 초기값 설정 및 리스너 등록
-  useEffect(() => {
-    const canUseVolumeManager =
-      VolumeManager &&
-      typeof VolumeManager.getVolume === 'function' &&
-      typeof VolumeManager.addVolumeListener === 'function';
+  useSystemVolumeSync(setSystemVolume);
 
-    if (!canUseVolumeManager) {
-      return;
-    }
-
-    try {
-      VolumeManager.getVolume().then(volumeData =>
-        setSystemVolume(volumeData.volume),
-      );
-    } catch (error) {
-      console.error('시스템 볼륨을 가져오는 중 오류 발생:', error);
-    }
-
-    const volumeListener = VolumeManager.addVolumeListener(
-      (volumeData: { volume: number }) => {
-        setSystemVolume(volumeData.volume);
-      },
-    );
-
-    return () => {
-      volumeListener.remove();
-    };
-  }, []);
-
-  // 세션 유지
-  useEffect(() => {
-    if (!isNavigationMode || !sessionId || !isNavigationInitialized) return;
-    const keepSessionAlive = async () => {
-      try {
-        const payload: keepNavigationSessionAlivePayload = {
-          sessionId: sessionId,
-        };
-
-        await keepNavigationSessionAlive(payload);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          Alert.alert(
-            `${
-              error.response?.data?.message ??
-              '내비게이션 세션 유지 중 오류가 발생했습니다. 다시 시도해주세요.'
-            }`,
-          );
-        }
-      }
-    };
-
-    const intervalId = setInterval(() => {
-      keepSessionAlive();
-    }, 9 * 60 * 1000); // 9분마다 세션 유지 요청
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [isNavigationMode, sessionId, isNavigationInitialized]);
+  useNavigationSessionKeepAlive({
+    isNavigationMode,
+    sessionId,
+    isNavigationInitialized,
+  });
 
   return {
     pathDataListByInterval: pathDataListByInterval.current,

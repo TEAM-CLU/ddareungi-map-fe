@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import IconBackArrow from '@/shared/components/icons/IconBackArrow';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { IconBackArrow } from '../icons';
 
 interface BackButtonProps {
   type: 'previous' | 'custom';
@@ -37,7 +37,10 @@ const BackButton = ({
   };
 
   return (
-    <TouchableOpacity onPress={handlePress}>
+    <TouchableOpacity
+      onPress={handlePress}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
       <IconBackArrow color={iconColor} width={iconWidth} height={iconHeight} />
     </TouchableOpacity>
   );

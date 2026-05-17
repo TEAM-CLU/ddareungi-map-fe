@@ -1,7 +1,8 @@
+import { Route } from '@/features/routing/model/routing.types';
 import { IconBicycle, IconRun } from '@/shared/components/icons';
 import { tw } from '@/shared/libs/tw-helper';
+import { formatTimeHMText } from '@/shared/utils/formatting';
 import { Text, View } from 'react-native';
-import { Route } from '../model/routing.types';
 
 interface RouteProgressStepBarProps {
   route: Route;
@@ -34,18 +35,10 @@ const RouteProgressStepBar = ({
           <Text
             style={[
               tw('font-primary-600 text-on-surface-quaternary'),
-              { fontSize: 12 },
-            ]}
-          >
-            {firstWalkingMinutes}
-          </Text>
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-quaternary'),
               { fontSize: 10 },
             ]}
           >
-            분
+            {formatTimeHMText(firstWalkingMinutes * 60)}
           </Text>
           <View
             style={[
@@ -118,18 +111,10 @@ const RouteProgressStepBar = ({
         <Text
           style={[
             tw('font-primary-600 text-on-surface-secondary'),
-            { fontSize: 12 },
-          ]}
-        >
-          {bikingMinutes}
-        </Text>
-        <Text
-          style={[
-            tw('font-primary-600 text-on-surface-secondary'),
             { fontSize: 10 },
           ]}
         >
-          분
+          {formatTimeHMText(bikingMinutes * 60)}
         </Text>
         <View
           style={[
@@ -170,18 +155,10 @@ const RouteProgressStepBar = ({
           <Text
             style={[
               tw('font-primary-600 text-on-surface-quaternary'),
-              { fontSize: 12 },
-            ]}
-          >
-            {lastWalkingMinutes}
-          </Text>
-          <Text
-            style={[
-              tw('font-primary-600 text-on-surface-quaternary'),
               { fontSize: 10 },
             ]}
           >
-            분
+            {formatTimeHMText(lastWalkingMinutes * 60)}
           </Text>
           <View
             style={[

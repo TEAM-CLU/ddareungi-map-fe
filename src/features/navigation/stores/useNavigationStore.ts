@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { TimerStatus } from '../model/navigation.types';
 
 interface NavigationState {
   isNavigationMode: boolean;
@@ -19,6 +20,9 @@ interface NavigationState {
 
   seconds: number;
   setSeconds: (seconds: number) => void;
+
+  timerStatus: TimerStatus;
+  setTimerStatus: (status: TimerStatus) => void;
 
   setTotalCaloriesBurned: (calories: number) => void;
   setTotalCarbonSaved: (carbon: number) => void;
@@ -40,9 +44,13 @@ export const useNavigationStore = create<NavigationState>()(
       totalCarbonSaved: 0,
       traveledDistanceMeter: null,
       seconds: 0,
+      timerStatus: 'idle',
 
       setSeconds: (seconds: number) =>
         set({ seconds }, false, 'navigation/setSeconds'),
+
+      setTimerStatus: (status: TimerStatus) =>
+        set({ timerStatus: status }, false, 'navigation/setTimerStatus'),
 
       setRouteId: (routeId: string | null) =>
         set({ routeId }, false, 'navigation/setRouteId'),
@@ -60,11 +68,11 @@ export const useNavigationStore = create<NavigationState>()(
           'navigation/setTotalCaloriesBurned',
         ),
 
-      setTotalCarbonReduced: (carbon: number) =>
+      setTotalCarbonSaved: (carbon: number) =>
         set(
           { totalCarbonSaved: carbon },
           false,
-          'navigation/setTotalCarbonReduced',
+          'navigation/setTotalCarbonSaved',
         ),
 
       addCaloriesBurned: (delta: number) =>
@@ -74,11 +82,11 @@ export const useNavigationStore = create<NavigationState>()(
           'navigation/addCaloriesBurned',
         ),
 
-      addCarbonReduced: (delta: number) =>
+      addCarbonSaved: (delta: number) =>
         set(
           state => ({ totalCarbonSaved: state.totalCarbonSaved + delta }),
           false,
-          'navigation/addCarbonReduced',
+          'navigation/addCarbonSaved',
         ),
 
       addSeconds: (delta: number) =>
@@ -105,6 +113,7 @@ export const useNavigationStore = create<NavigationState>()(
             totalCarbonSaved: 0,
             traveledDistanceMeter: null,
             seconds: 0,
+            timerStatus: 'idle',
           },
           false,
           'navigation/resetAllData',

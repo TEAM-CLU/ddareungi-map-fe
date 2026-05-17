@@ -1,10 +1,8 @@
-import { TimerStatus } from '@/features/navigation/model/navigation.types';
 import { useNavigationStore } from '@/features/navigation/stores/useNavigationStore';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 let sharedIntervalId: ReturnType<typeof setInterval> | null = null;
-let sharedOwnerCount = 0;
 
 // 전역적으로 타이머를 정리하는 함수 (네비게이션 종료 시 사용)
 export const clearSharedTimer = () => {
@@ -12,65 +10,48 @@ export const clearSharedTimer = () => {
     clearInterval(sharedIntervalId);
     sharedIntervalId = null;
   }
-  sharedOwnerCount = 0;
 };
 
-export const useTimer = (initialSeconds = 0) => {
-  const { seconds, setSeconds, addSeconds } = useNavigationStore(
-    useShallow(state => ({
-      seconds: state.seconds,
-      setSeconds: state.setSeconds,
-      addSeconds: state.addSeconds,
-    })),
-  );
-  const [timerStatus, setTimerStatus] = useState<TimerStatus>('idle');
+export const useTimer = () => {
+  const { seconds, setSeconds, addSeconds, timerStatus, setTimerStatus } =
+    useNavigationStore(
+      useShallow(state => ({
+        seconds: state.seconds,
+        setSeconds: state.setSeconds,
+        addSeconds: state.addSeconds,
+        timerStatus: state.timerStatus,
+        setTimerStatus: state.setTimerStatus,
+      })),
+    );
 
-  const clearTimer = useCallback(() => {
-    if (sharedIntervalId) {
-      clearInterval(sharedIntervalId);
-      sharedIntervalId = null;
-    }
-  }, []);
-
-  const startTimer = useCallback(() => {
-    if (sharedIntervalId) return;
-    setTimerStatus('running');
-
-    sharedIntervalId = setInterval(() => {
-      addSeconds(1);
-    }, 1000);
-  }, [addSeconds]);
-
-  const pauseTimer = useCallback(() => {
-    clearTimer();
-    setTimerStatus(prev => (prev === 'running' ? 'paused' : prev));
-  }, [clearTimer]);
-
-  const resetTimer = useCallback(
-    (nextSeconds = 0) => {
-      clearTimer();
-      setSeconds(nextSeconds);
-      setTimerStatus('idle');
-    },
-    [clearTimer, setSeconds],
-  );
-
-  // 컴포넌트 unmount 시 누수 방지
   useEffect(() => {
-    sharedOwnerCount += 1;
-    return () => {
-      sharedOwnerCount -= 1;
-      if (sharedOwnerCount <= 0) {
-        clearTimer();
-        sharedOwnerCount = 0;
+    // 1. 실행 중(running) 상태일 때만 인터벌 생성
+    if (timerStatus === 'running') {
+      if (!sharedIntervalId) {
+        sharedIntervalId = setInterval(() => {
+          addSeconds(1);
+        }, 1000);
       }
-    };
-  }, [clearTimer]);
+    } else {
+      // 2. idle이나 paused면 인터벌 정지
+      if (sharedIntervalId) {
+        clearInterval(sharedIntervalId);
+        sharedIntervalId = null;
+      }
+    }
+  }, [timerStatus, addSeconds]);
+
+  const startTimer = useCallback(() => setTimerStatus('running'), [setTimerStatus]);
+  const pauseTimer = useCallback(() => setTimerStatus('paused'), [setTimerStatus]);
+
+  const resetTimer = useCallback((nextSeconds = 0) => {
+    setSeconds(nextSeconds);
+    setTimerStatus('idle');
+  }, [setSeconds, setTimerStatus]);
 
   return {
     seconds,
     timerStatus,
-    setTimerStatus,
     startTimer,
     pauseTimer,
     resetTimer,

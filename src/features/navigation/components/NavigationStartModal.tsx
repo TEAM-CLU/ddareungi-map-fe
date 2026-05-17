@@ -33,6 +33,7 @@ const NavigationStartModal = ({
         <TouchableOpacity
           onPress={() => setShowNavigationStartModal(false)}
           style={[tw('absolute top-3 right-3')]}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <IconClose color="#01DA86" />
         </TouchableOpacity>

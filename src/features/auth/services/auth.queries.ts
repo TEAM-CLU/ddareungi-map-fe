@@ -46,7 +46,6 @@ export const useResetPasswordMutation = () => {
 // 로그아웃
 export const useLogoutMutation = () => {
   const { removeToken } = useAuth();
-
   return useMutation({
     mutationFn: postLogout,
     onSettled: async () => {

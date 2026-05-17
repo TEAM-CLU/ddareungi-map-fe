@@ -1,6 +1,7 @@
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import { PlaceInfo } from '@/features/search/model/search.types';
 
+export type { Coordinate };
 export enum RouteType {
   CONSTANT = 'constant',
   LOOP = 'loop',
@@ -28,10 +29,6 @@ export interface DraggableItem {
 export type RouteData = { [key: string]: PlaceInfo };
 
 /********** API 타입 **********/
-export interface Coordinate {
-  lat: number | undefined;
-  lng: number | undefined;
-}
 
 // 경로 요약 (전체 요약 정보)
 export interface Summary {
@@ -124,7 +121,7 @@ export interface Route {
   bbox: Bbox;
   startStation: Station;
   endStation?: Station;
-  waypoints?: Coordinates[];
+  waypoints?: Coordinate[];
   segments: Segment[];
   coordinates: [number, number][];
 }
@@ -142,73 +139,4 @@ export interface Waypoint {
 export interface RouteItem {
   key: string;
   place: PlaceInfo | null;
-}
-
-// ---------------- 스토어 ------------------
-
-export interface RouteState {
-  // --- [Data State] 기본 경로 데이터 ---
-  routeType: RouteType; // 경로 모드 (LOOP / CONSTANT)
-  start: PlaceInfo | null; // 출발지
-  end: PlaceInfo | null; // 도착지
-  waypoints: Waypoint[]; // 경유지 목록
-  distance: number | null; // 목표 거리 (왕복 모드용)
-  getItems: () => RouteItem[];
-
-  // --- [Acitivity Data State] 활동 관련 데이터 ---
-  totalCaloriesBurned: number | null; // 예상 소모 칼로리
-  totalTrees: number | null; // 예상 나무 심기 효과
-
-  // --- [UI State] 화면 제어 상태 ---
-  currentSelectedPoint: RoutePoint | null; // 현재 선택된 포인트 정보
-  currentFieldType: 'start' | 'end' | 'waypoint' | null; // 현재 활성화된 입력 필드 타입
-  prevScreen: 'RouteSelect' | 'RouteRecommend' | null; // 이전 화면 정보 판정을 통한 뒤로가기 버튼 누를시 돌아갈 화면 지정
-
-  // --- [API State] 비동기 통신 상태 ---
-  // routes: RouteResponse | null; // 서버로부터 받은 검색된 경로 결과
-  selectedRouteData: Route | null; // 사용자가 선택한 경로 데이터
-  // isLoadingRoutes: boolean; // 로딩 중 여부
-  // routeSearchError: string | null; // 에러 메시지
-
-  // --- [Basic Actions] 기본 설정 액션 ---
-  setRouteType: (type: RouteType) => void;
-  setStart: (place: PlaceInfo | null) => void;
-  setEnd: (place: PlaceInfo | null) => void;
-  setDistance: (distance: number) => void;
-  setSelectedRouteData: (route: Route | null) => void;
-  setPrevScreen: (screen: 'RouteSelect' | 'RouteRecommend' | null) => void;
-
-  // --- [Acitivity Data Actions] 활동 관련 데이터 액션 ---
-  setTotalCaloriesBurned: (calories: number | null) => void;
-  setTotalTrees: (trees: number | null) => void;
-
-  // --- [Waypoint Actions] 경유지 조작 액션 ---
-  addWaypoint: (place: PlaceInfo) => void;
-  removeWaypoint: (id: string) => void;
-  updateWaypoint: (id: string, place: PlaceInfo) => void;
-  reorderWaypoints: (newWaypoints: Waypoint[]) => void; // 드래그 후 전체 경유지 배열을 통째로 교체하는 함수
-  updateRouteFromDrag: (
-    newStart: PlaceInfo | null,
-    newEnd: PlaceInfo | null,
-    newWaypoints: Waypoint[],
-  ) => void; // ✅ 추가: 드래그 완료 후 start/end/waypoints를 한 번에 업데이트
-
-  // --- [System Actions] 초기화 및 UI 제어 ---
-  clearAllRoutes: () => void;
-  setCurrentSelectedPoint: (point: RoutePoint | null) => void;
-  setCurrentFieldType: (type: 'start' | 'end' | 'waypoint' | null) => void;
-
-  // --- [Async Actions] API 호출 액션 ---
-  searchRoutes: () => Promise<void>; // 일반 경로 검색
-  searchCircularRoutes: () => Promise<void>; // 원형(왕복) 경로 검색
-  resetRouteSearch: () => void; // 검색 결과만 초기화
-
-  // --- [Utility Actions] 편의 기능 ---
-  syncStartEndInLoopMode: (
-    newPlace: PlaceInfo,
-    fieldType: 'start' | 'end',
-  ) => void;
-  resetAllData: () => void; // 스토어 전체 초기화
-  isRouteComplete: () => boolean; // 검색 가능 상태인지 확인
-  hasAnyRouteData: () => boolean; // 데이터 존재 여부 확인
 }

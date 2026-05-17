@@ -1,7 +1,5 @@
-import { Segment } from '@/features/routing/model/routing.types';
-
-// 시간 포맷팅 (초 → HH:MM:SS)
-export const formatTimeHHMMSS = (totalSeconds: number) => {
+// 초 → HH:MM:SS (항상 2자리 패딩)
+export const formatTimeHHMMSSNumber = (totalSeconds: number) => {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));
 
   const hours = Math.floor(safeSeconds / 3600);
@@ -13,20 +11,21 @@ export const formatTimeHHMMSS = (totalSeconds: number) => {
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 };
 
-// 시간 포맷팅 (초 → n시간 n분)
-export const formatTime = (seconds: number): string => {
+// 초 → n시간 n분 (UI 요약용)
+export const formatTimeHMText = (seconds: number): string => {
   const totalMinutes = Math.round(seconds / 60);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
+
   return hours > 0 ? `${hours}시간 ${minutes}분` : `${minutes}분`;
 };
 
-// 시간 포맷팅 (초 → n분)
-export const formatMinutes = (seconds: number): string =>
+// 초 → n분 (숫자 문자열)
+export const formatTimeMinutesNumber = (seconds: number): string =>
   String(Math.round(seconds / 60));
 
-// 시간 포맷팅 (초 -> n시간 n분 n초)
-export const formatTimeWithSeconds = (totalSeconds: number): string => {
+// 초 → n시간 n분 n초 (자연어 텍스트)
+export const formatTimeHMSText = (totalSeconds: number): string => {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));
 
   const hours = Math.floor(safeSeconds / 3600);
@@ -39,26 +38,33 @@ export const formatTimeWithSeconds = (totalSeconds: number): string => {
 
   return `${hoursPart}${minutesPart}${secondsPart}`.trim();
 };
-// 시간대 포맷팅 함수 (baseTime 기준 ~ 도착 예정 시간)
-export const formatTimeRange = (
+
+// Date → 오전/오후 H:MM
+export const formatTimeHMWithPeriodText = (date: Date) => {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  const ampm = hours < 12 ? '오전' : '오후';
+  const displayHour = hours % 12 === 0 ? 12 : hours % 12;
+  const displayMinutes = minutes.toString().padStart(2, '0');
+
+  return `${ampm} ${displayHour}:${displayMinutes}`;
+};
+
+// 기준 시간 ~ 도착 예정 시간 텍스트
+export const formatTimeRangeText = (
   baseTime: Date,
   durationSeconds: number,
 ): string => {
   const arrival = new Date(baseTime.getTime() + durationSeconds * 1000);
 
-  const formatHourMinute = (date: Date): string => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const period = hours < 12 ? '오전' : '오후';
-    const displayHours = hours % 12 || 12;
-    return `${period} ${displayHours}:${minutes.toString().padStart(2, '0')}`;
-  };
-
-  return `${formatHourMinute(baseTime)} - ${formatHourMinute(arrival)}`;
+  return `${formatTimeHMWithPeriodText(
+    baseTime,
+  )} - ${formatTimeHMWithPeriodText(arrival)}`;
 };
 
-// 시간 텍스트 계산 함수
-export const getTimeText = (
+// 시간 안내 문구 (로딩/에러 포함)
+export const getTimeGuideText = (
   time: Date | null | undefined,
   options?: {
     loadingText?: string;
@@ -71,49 +77,21 @@ export const getTimeText = (
   if (time === null) return loading;
   if (time === undefined) return error;
 
-  let hours = time.getHours();
-  const minutes = time.getMinutes();
-
-  const isPM = hours >= 12;
-  const period = isPM ? 'PM' : 'AM';
-
-  hours = hours % 12;
-  if (hours === 0) hours = 12;
-
-  const hourText = String(hours).padStart(2, '0');
-  const minuteText = String(minutes).padStart(2, '0');
-
-  return `${hourText}:${minuteText}${period}`;
+  return formatTimeHMWithPeriodText(time);
 };
 
-// 태그 최대 3개로 제한
-export const clampTags = (tags: string[]) =>
-  tags
-    .map(t => t.trim())
-    .filter(Boolean)
-    .slice(0, 3);
-
-// 거리 포맷팅 (미터 → km)
-export const formatDistance = (meters: number): string => {
+// 거리 → m / km 자동 변환
+export const formatDistanceAdaptiveText = (meters: number): string => {
   if (meters >= 1000) {
-    // 1. km 변환 후 소수점 첫째 자리까지 반올림
     const km = (meters / 1000).toFixed(1);
-    // 2. "2.0" -> 2 처럼 불필요한 소수점 0을 자동으로 제거
-    return `${parseFloat(km)}km`;
+    return `${parseFloat(km)}km`; // 불필요한 .0 제거
   }
-  // 3. 1000m 미만은 정수로 반올림
+
   return `${Math.round(meters)}m`;
 };
 
-// 거리 포맷팅 (1000m 이상일 때 km, 미만일 때 m)
-export const formatDistanceAdaptive = (distanceMeter: number): string => {
-  return distanceMeter >= 1000
-    ? `${(distanceMeter / 1000).toFixed(1)}km`
-    : `${Math.round(distanceMeter)}m`;
-};
-
-// 거리 텍스트 계산 함수
-export const getDistanceText = (
+// 거리 안내 문구 (로딩/에러 포함)
+export const getDistanceGuideText = (
   distance: number | null | undefined,
   options?: {
     loadingText?: string;
@@ -123,27 +101,24 @@ export const getDistanceText = (
   const { loadingText = '계산 중...', errorText = '거리 정보 없음' } =
     options || {};
 
-  if (distance === null) return loadingText; // 로딩 중
-  if (distance === undefined) return errorText; // 계산 실패
-  return formatDistance(distance);
+  if (distance === null) return loadingText;
+  if (distance === undefined) return errorText;
+
+  return formatDistanceAdaptiveText(distance);
 };
 
-// 칼로리 포맷팅 (3자리 콤마)
-export const formatCalories = (calories: number | null): string => {
-  return `${(calories ?? 0).toLocaleString()}kcal`;
-};
+// 칼로리 → kcal 텍스트 (소수점 최대 1자리)
+export const formatCaloriesKcalText = (calories: number | null): string =>
+  `${(calories ?? 0).toLocaleString('ko-KR', {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0,
+  })}kcal`;
 
-// 도보 시간 계산 (segments에서 walking 구간 찾기)
-export const calculateWalkingTime = (segments: Segment[]): number => {
-  return segments
-    .filter(seg => seg.type === 'walking')
-    .reduce((total, seg) => total + seg.summary.time, 0);
-};
-
-// 경로 카테고리 매칭
-export const getCategoryText = (category: string) => {
+// 경로 카테고리 텍스트 매핑
+export const getRouteCategoryText = (category: string) => {
   if (category === 'bike_priority') return '자전거도로 우선';
   if (category === 'shortest') return '최단 경로';
   if (category === 'fastest') return '최소 시간';
+
   return '추천 경로';
 };

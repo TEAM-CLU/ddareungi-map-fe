@@ -1,7 +1,7 @@
 // AuthProvider와 Axios 연결 훅
 import { useEffect } from 'react';
 import { api } from '@/shared/services/axios';
-import { commonErrorInterceptor } from '@/shared/services/axiosConfig';
+import { commonErrorInterceptor } from '@/config/axiosConfig';
 
 export const useAxiosInterceptor = (removeToken: () => Promise<void>) => {
   useEffect(() => {

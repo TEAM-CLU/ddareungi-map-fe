@@ -1,7 +1,7 @@
 import IconChevronDown from '@/shared/components/icons/IconChevronDown';
 import IconClose from '@/shared/components/icons/IconClose';
 import { tw } from '@/shared/libs/tw-helper';
-import { dongMap, guList } from '@/shared/model/index.data';
+import { dongMap, guList } from '@/shared/model/shared.data';
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
@@ -52,7 +52,7 @@ const AddressInput = ({ gu, dong, setGu, setDong }: AddressInputProps) => {
         setItems={setGuItems}
         listMode="MODAL"
         placeholder="자치구"
-        placeholderStyle={tw('text-base text-placeholder font-primary-500')}
+        placeholderStyle={tw('text-base text-on-surface-placeholder font-primary-500')}
         closeAfterSelecting={true}
         containerStyle={tw('flex-1 min-w-0')}
         style={tw('border border-line-default h-12 bg-transparent')}
@@ -94,7 +94,7 @@ const AddressInput = ({ gu, dong, setGu, setDong }: AddressInputProps) => {
         setItems={setDongItems}
         listMode="MODAL"
         placeholder="행정동"
-        placeholderStyle={tw('text-base text-placeholder font-primary-500')}
+        placeholderStyle={tw('text-base text-on-surface-placeholder font-primary-500')}
         closeAfterSelecting={true}
         disabled={!gu}
         containerStyle={tw('flex-1 min-w-0')}

@@ -2,6 +2,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
 import { IconRefresh } from '@/shared/components/icons';
 import { useEffect, useState } from 'react';
+import { formatTimeHMWithPeriodText } from '@/shared/utils/formatting';
 
 interface RouteTimeRefreshBarProps {
   baseTime: Date;
@@ -14,20 +15,11 @@ const RouteTimeRefreshBar = ({
 }: RouteTimeRefreshBarProps) => {
   const [currentTime, setCurrentTime] = useState('');
 
-  const formatTime = (date: Date) => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours < 12 ? '오전' : '오후';
-    const displayHour = hours % 12 === 0 ? 12 : hours % 12;
-    const displayMinutes = minutes.toString().padStart(2, '0');
-    return `${ampm} ${displayHour}:${displayMinutes}`;
-  };
-
   useEffect(() => {
-    setCurrentTime(formatTime(baseTime));
+    setCurrentTime(formatTimeHMWithPeriodText(baseTime));
   }, [baseTime]);
 
-  const handleRefreshTime = () => {
+  const handleRefreshTimePress = () => {
     onRefresh();
   };
 
@@ -49,7 +41,7 @@ const RouteTimeRefreshBar = ({
         {`${currentTime}에 출발`}
       </Text>
       <TouchableOpacity
-        onPress={handleRefreshTime}
+        onPress={handleRefreshTimePress}
         style={tw('px-1 pb-1 rounded-full')}
       >
         <IconRefresh color="#414548" width={16} height={16} />

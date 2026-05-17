@@ -1,19 +1,23 @@
-import {
-  BookmarkItem,
-  UseBookmarkOptions,
-} from '../../../shared/model/index.types';
-import { useModalStore } from '../../../shared/stores/useModalStore';
+import { useModalStore } from '@/shared/stores/useModalStore';
 import { useCallback, useEffect } from 'react';
-import { UpdateBookmarksMessage } from '../../../shared/model/map.webview.types';
 import { WebViewMessageEvent } from 'react-native-webview';
 import { useSearchStore } from '@/features/search/stores/useSearchStore';
-import { useProvideWebviewMessenger } from '../../../shared/hooks/useProvideWebviewMessenger';
 import { Alert } from 'react-native';
 import { PlaceInfo } from '@/features/search/model/search.types';
 import { useBookmarkStore } from '@/features/bookmark/stores/useBookmarkStore';
+import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
+import { useBookmarkMessenger } from '@/features/bookmark/hooks/useBookmarkMessenger';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
-export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
-  const { sendMessage } = useProvideWebviewMessenger();
+interface UseBookmarkParams {
+  isMapReady: boolean;
+  mapReadyVersion: number;
+}
+export const useBookmark = ({
+  isMapReady,
+  mapReadyVersion,
+}: UseBookmarkParams) => {
+  const { updateBookmarks } = useBookmarkMessenger();
   const { bookmarks } = useBookmarkStore();
   const { setSelectedPlaceInfoForModal } = useSearchStore();
   const { setShowPlaceDetailModal } = useModalStore();
@@ -21,13 +25,8 @@ export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
   // 스토어 북마크 변경되면 웹뷰로 전송
   useEffect(() => {
     if (!isMapReady) return;
-
-    const message: UpdateBookmarksMessage = {
-      type: 'updateBookmarks',
-      bookmarks: bookmarks,
-    };
-    sendMessage(message);
-  }, [bookmarks, isMapReady, sendMessage]);
+    updateBookmarks(bookmarks);
+  }, [bookmarks, isMapReady, mapReadyVersion, updateBookmarks]);
 
   // 즐겨찾기 마커 클릭
   const handleBookmarkMarkerClick = useCallback(
@@ -44,7 +43,6 @@ export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
           !clickedBookmark?.latitude ||
           !clickedBookmark?.longitude
         ) {
-          console.error('유효하지 않은 즐겨찾기 데이터:', clickedBookmark);
           Alert.alert('오류', '즐겨찾기 정보를 불러올 수 없습니다.');
           return;
         }
@@ -60,7 +58,7 @@ export const useBookmark = ({ isMapReady }: UseBookmarkOptions) => {
         setSelectedPlaceInfoForModal(bookmarkInfoForModal);
         setShowPlaceDetailModal(true);
       } catch (error) {
-        console.error('Bookmark Marker Click Error:', error);
+        handleCatch(error, { mode: 'silent' });
       }
     },
     [setSelectedPlaceInfoForModal, setShowPlaceDetailModal],

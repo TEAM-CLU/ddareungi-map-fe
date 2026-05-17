@@ -1,12 +1,11 @@
 // WebView와 React Native 간 통신을 타입 안정성 있게 관리
 
+import { BookmarkItem } from '@/features/bookmark/model/bookmark.types';
 import { Coordinate, RouteType } from '@/features/routing/model/routing.types';
 import {
   MapAreaStationData,
   StationLatestBikeCountData,
 } from '@/features/station/model/station.types';
-import { BookmarkItem } from '@/shared/model/index.types';
-
 
 // === 위치 관련 메시지 ===
 export interface UpdateMyLocationMessage {
@@ -112,11 +111,6 @@ export interface ClearBookmarksMessage {
   type: 'clearBookmarks';
 }
 
-export interface FocusOnBookmarkMessage {
-  type: 'focusOnBookmark';
-  bookmarkId: string;
-}
-
 export interface ToggleBookmarkMarkersMessage {
   type: 'toggleBookmarkMarkers';
   isVisible: boolean;
@@ -136,16 +130,19 @@ export interface NavigationPathData {
   routeType: RouteType;
   startPoint: [number, number];
   endPoint: [number, number];
+  originPoint?: [number, number] | null;
   waypoints: Coordinate[] | null;
   fullPathCoordinateList: [number, number][];
   intervals: [number, number][];
   currentIntervalIndex: number;
-  startStationPoint: Coordinate;
+  startStationPoint: Coordinate | null;
   endStationPoint: Coordinate;
+  pathMode?: NavigationPathMode;
   walkingPolicy?: NavigationWalkingPolicy; // 도보 경로 표시 정책
 }
 
 export type NavigationWalkingPolicy = 'all' | 'only-end' | 'none';
+export type NavigationPathMode = 'normal' | 'loop-recovery';
 
 export interface DrawNavigationPathMessage {
   type: 'drawNavigationPath';
@@ -183,7 +180,6 @@ export type WebViewMessageToWeb =
   | UpdateStationDataListMessage
   | UpdateBookmarksMessage
   | ToggleBookmarkMarkersMessage
-  | FocusOnBookmarkMessage
   | ShowSingleBookmarkMarkerMessage
   | ClearBookmarksMessage
   | StopFollowingMyLocationMessage

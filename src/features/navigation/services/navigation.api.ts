@@ -1,6 +1,6 @@
 import {
-  keepNavigationSessionAlivePayload,
-  keepNavigationSessionAliveResponse,
+  KeepNavigationSessionAlivePayload,
+  KeepNavigationSessionAliveResponse,
   ReRoutePayload,
   ReRouteResponse,
   ReturnToExistingRoutePayload,
@@ -22,8 +22,8 @@ export const postStartNavigationSession = async (
 
 // 내비게이션 세션 유지, 갱신 10분
 export const postKeepNavigationSessionAlive = async (
-  payload: keepNavigationSessionAlivePayload,
-): Promise<keepNavigationSessionAliveResponse> => {
+  payload: KeepNavigationSessionAlivePayload,
+): Promise<KeepNavigationSessionAliveResponse> => {
   const response = await api.post(`/${payload.sessionId}/heartbeat`);
   return response.data;
 };

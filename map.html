@@ -192,48 +192,43 @@
 
         // === 대여소 관련 메시지 처리 ===
 
-        // 12. 대여소 마커 표시
+        // 11. 대여소 마커 표시
         if (data.type === 'updateStationDataList') {
           Station.createStationMarkers(data.stations);
         }
-        // 13. 대여소 재고정보 업데이트
+        // 12. 대여소 재고정보 업데이트
         if (data.type === 'updateTargetedStationBikeCountList') {
           Station.updateStationBikeCountList(data.stationBikeCountList);
         }
 
-        // 14. 대여소 마커 표시 on/off
+        // 13. 대여소 마커 표시 on/off
         if (data.type === 'toggleStationMarkers') {
           Station.toggleStationMarkers(data.isVisible);
         }
 
-        // 15. Nearby 클릭 대여소 포커싱
+        // 14. Nearby 클릭 대여소 포커싱
         if (data.type === 'focusOnTargetedNearbyStation') {
           Station.focusOnTargetedNearbyStation(data.targetedStationData);
         }
 
         // === 즐겨찾기 관련 메시지 처리 ===
 
-        // 16. 즐겨찾기 마커 업데이트 (생성 및 갱신)
+        // 15. 즐겨찾기 마커 업데이트 (생성 및 갱신)
         if (data.type === 'updateBookmarks') {
           Bookmark.createBookmarkMarkers(data.bookmarks);
         }
 
-        // 17. 즐겨찾기 마커 지우기
+        // 16. 즐겨찾기 마커 지우기
         if (data.type === 'clearBookmarks') {
           Bookmark.clearBookmarkMarkers();
         }
 
-        // 18. 특정 즐겨찾기로 이동
-        if (data.type === 'focusOnBookmark') {
-          Bookmark.focusOnBookmark(data.bookmarkId);
-        }
-
-        // 19. 즐겨찾기 마커 표시 on/off
+        // 17. 즐겨찾기 마커 표시 on/off
         if (data.type === 'toggleBookmarkMarkers') {
           Bookmark.toggleBookmarkMarkers(data.isVisible);
         }
 
-        // 20. 단일 즐겨찾기 마커 표시 (토글 상태와 무관)
+        // 18. 단일 즐겨찾기 마커 표시 (토글 상태와 무관)
         if (data.type === 'showSingleBookmarkMarker') {
           Bookmark.showSingleBookmarkMarker(data.bookmarkData);
         }
@@ -242,12 +237,12 @@
           MyLocation.replaceMyLocationMarker(data.isNavigationMode);
         }
 
-        // 21. 네비게이션 경로 그리기
+        // 19. 네비게이션 경로 그리기
         if (data.type === 'drawNavigationPath') {
           Navigation.drawNavigationPath(data.navigationPathData);
         }
 
-        // 22. 네비게이션 현재 interval 업데이트
+        // 20. 네비게이션 현재 interval 업데이트
         if (data.type === 'updateNavigationCurrentInterval') {
           Navigation.updateNavigationCurrentInterval({
             currentIntervalIndex: data.currentIntervalIndex,
@@ -256,16 +251,15 @@
           });
         }
 
-        // 23. 네비게이션 경로 지우기
+        // 21. 네비게이션 경로 지우기
         if (data.type === 'clearNavigationPath') {
           Navigation.clearNavigationPath();
         }
 
-        // 24. 네비게이션 경로에 맞게 지도 bounds 조정
+        // 22. 네비게이션 경로에 맞게 지도 bounds 조정
         if (data.type === 'focusOnNavigationPath') {
           Navigation.focusOnNavigationPath();
         }
-
       } catch (error) {
         console.error('메시지 처리 실패:', error);
       }
@@ -279,5 +273,5 @@
   <script src="./src/features/navigation/utils/navigation.js" defer></script>
   <script src="./src/features/search/utils/search.js" defer></script>
   <script src="./src/features/station/utils/station.js" defer></script>
-  <script src="./src/shared/utils/bookmark.js" defer></script>
+  <script src="./src/features/bookmark/utils/bookmark.js" defer></script>
 </html>

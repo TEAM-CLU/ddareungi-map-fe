@@ -1,23 +1,32 @@
 import RouteProgressStepBar from '@/features/routing/components/RouteProgressStepBar';
-import { CalorieBadge, StationBadge, TreeBadge, WalkTimeBadge } from '@/shared/components/badge';
+import {
+  CalorieBadge,
+  StationBadge,
+  TreeBadge,
+  WalkTimeBadge,
+} from '@/shared/components/badge';
 import { tw } from '@/shared/libs/tw-helper';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import type { Route, RouteResponse } from '../model/routing.types';
-import {
-  calculateWalkingTime,
-  formatDistance,
-  formatTime,
-  formatTimeRange,
-  getCategoryText,
-} from '@/shared/utils/formatting';
 import {
   convertToTrees,
   measureCaloriesBurned,
   measureCarbonSaved,
 } from '@/shared/utils/measure';
-import { Gender } from '@/shared/model/index.types';
 import { useUserInfoQuery } from '@/features/auth/services/user.queries';
-
+import {
+  getRouteCategoryText,
+  formatTimeHMText,
+  formatDistanceAdaptiveText,
+  formatTimeRangeText,
+} from '@/shared/utils/formatting';
+import { calculateWalkingTime } from '@/features/routing/utils/calculateWalkingTime';
+import { RouteResponse } from '@/features/routing/model/routing.types';
+import { Route } from '@/features/routing/model/routing.types';
+import {
+  IconError,
+  IconRouteIndicator,
+  IconSearch,
+} from '@/shared/components/icons';
 interface RouteSelectContainerProps {
   routes?: RouteResponse | null;
   isLoading?: boolean;
@@ -37,20 +46,27 @@ const RouteSelectContainer = ({
   baseTime,
   onRoutePress,
 }: RouteSelectContainerProps) => {
-  const userGender: Gender = useUserInfoQuery().data?.data.gender;
-
+  const userInfoData = useUserInfoQuery().data?.data;
+  const userGender = userInfoData?.gender ?? undefined;
+  const userBirthYear = userInfoData?.birthYear ?? null;
   // 로딩 상태
   if (isLoading) {
     return (
       <View
         style={[
           tw(
-            'bg-surface-primary w-full px-4 py-5 flex items-center justify-center',
+            'bg-surface-primary w-full px-4 py-5 flex flex-col items-center justify-center',
           ),
-          { height: 300 },
+          { height: 300, gap: 16 },
         ]}
       >
-        <Text style={tw('text-on-surface-placeholder font-primary-500')}>
+        <IconSearch width={80} height={80} color="#A7A7A7" />
+        <Text
+          style={[
+            tw('text-on-surface-placeholder font-primary-600'),
+            { fontSize: 15 },
+          ]}
+        >
           경로를 검색하고 있습니다...
         </Text>
       </View>
@@ -63,14 +79,30 @@ const RouteSelectContainer = ({
       <View
         style={[
           tw(
-            'bg-surface-primary w-full px-4 py-5 flex items-center justify-center',
+            'bg-surface-primary w-full px-4 py-5 flex flex-col items-center justify-center',
           ),
-          { height: 300 },
+          { height: 300, gap: 16 },
         ]}
       >
-        <Text style={tw('text-error font-primary-500 text-center')}>
-          {error.message}
-        </Text>
+        <IconError width={80} height={80} color="#A7A7A7" />
+        <View style={tw('flex flex-col justify-center items-center')}>
+          <Text
+            style={[
+              tw('text-error font-primary-600 text-center mb-1'),
+              { fontSize: 15 },
+            ]}
+          >
+            오류 발생! 잠시 후 다시 시도해주세요.
+          </Text>
+          <Text
+            style={[
+              tw('text-on-surface-placeholder font-primary-500 text-center'),
+              { fontSize: 13 },
+            ]}
+          >
+            {error.message}
+          </Text>
+        </View>
       </View>
     );
   }
@@ -81,15 +113,19 @@ const RouteSelectContainer = ({
       <View
         style={[
           tw(
-            'bg-surface-primary w-full px-4 py-5 flex items-center justify-center',
+            'bg-surface-primary w-full px-4 py-5 flex flex-col items-center justify-center',
           ),
-          { height: 300 },
+          { height: 300, gap: 16 },
         ]}
       >
+        <IconRouteIndicator width={80} height={80} color="#A7A7A7" />
         <Text
-          style={tw('text-on-surface-placeholder font-primary-500 text-center')}
+          style={[
+            tw('text-on-surface-placeholder font-primary-600 text-center'),
+            { fontSize: 15 },
+          ]}
         >
-          출발지와 도착지를 설정하면{'\n'}경로를 검색할 수 있어요
+          출발지와 도착지를 설정하면{'\n'}경로를 검색할 수 있어요.
         </Text>
       </View>
     );
@@ -107,11 +143,11 @@ const RouteSelectContainer = ({
         const { routeCategory, summary, startStation, endStation, segments } =
           route;
 
-        const formattedRouteCategory = getCategoryText(routeCategory);
-        const timeText = formatTime(summary.time);
-        const distanceKm = formatDistance(summary.distance);
+        const formattedRouteCategory = getRouteCategoryText(routeCategory);
+        const timeText = formatTimeHMText(summary.time);
+        const distanceKm = formatDistanceAdaptiveText(summary.distance);
         const walkingMinutes = Math.round(calculateWalkingTime(segments) / 60);
-        const timeRange = formatTimeRange(baseTime, summary.time);
+        const timeRange = formatTimeRangeText(baseTime, summary.time);
         const firstWalkingSegment = segments.find(
           seg => seg.type === 'walking',
         );
@@ -140,11 +176,13 @@ const RouteSelectContainer = ({
           'walking',
           userGender,
           walkingSeconds,
+          Number(userBirthYear),
         );
         const caloriesBurendBiking = measureCaloriesBurned(
           'biking',
           userGender,
           bikingSeconds,
+          Number(userBirthYear),
         );
         const totalCaloriesBurned = Math.trunc(
           caloriesBurnedWalking + caloriesBurendBiking,
@@ -154,7 +192,7 @@ const RouteSelectContainer = ({
           if (segment.type === 'walking') {
             return acc + segment.summary.distance;
           }
-          return acc;
+          return acc; 
         }, 0);
 
         const bikingDistance = segments.reduce((acc, segment) => {

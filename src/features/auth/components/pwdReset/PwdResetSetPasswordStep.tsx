@@ -4,26 +4,28 @@ import { tw } from '@/shared/libs/tw-helper';
 import { Alert, Text, View } from 'react-native';
 import RoundButton from '@/shared/components/button/RoundButton';
 import { useResetPasswordMutation } from '@/features/auth/services/auth.queries';
-import {
-  ResetPasswordPayload,
-} from '@/features/auth/model/auth.types';
+import { ResetPasswordPayload } from '@/features/auth/model/auth.types';
+import { PrevScreenForFeatureBranch } from '@/shared/model/shared.types';
 
 interface PwdResetSetPasswordStepProps {
   email: string;
-  setEmail: React.Dispatch<React.SetStateAction<string>>;
   setResetPwdStep: React.Dispatch<React.SetStateAction<1 | 2>>;
   setAccountFeatures: React.Dispatch<
     React.SetStateAction<'findAccount' | 'resetPwd' | null>
   >;
+  prevScreen: PrevScreenForFeatureBranch;
+  onDone: () => void;
 }
 
 const PwdResetSetPasswordStep = ({
   email,
-  setEmail,
   setResetPwdStep,
   setAccountFeatures,
+  prevScreen,
+  onDone,
 }: PwdResetSetPasswordStepProps) => {
   const { mutate: resetPwd } = useResetPasswordMutation();
+
   const [newPwd, setNewPwd] = useState<string>('');
   const [confirmNewPwd, setConfirmNewPwd] = useState<string>('');
   const [isValidNewPwd, setIsValidNewPwd] = useState<boolean>(true);
@@ -47,7 +49,31 @@ const PwdResetSetPasswordStep = ({
 
   const [isReadyToPwdReset, setIsReadyToPwdReset] = useState(false); // 비밀번호 재설정 요청 가능 여부
 
-  const handleValidatePwdButtonPress = () => {
+  useEffect(() => {
+    if (newPwd !== '') setShowConfirmNewPwdInput(true);
+  }, [newPwd]);
+
+  useEffect(() => {
+    const canProceed =
+      isValidNewPwd &&
+      isValidConfirmNewPwd &&
+      showConfirmNewPwdInput &&
+      !!email &&
+      !!newPwd &&
+      !!confirmNewPwd &&
+      newPwd === confirmNewPwd &&
+      canCompletePwdReset;
+    setIsReadyToPwdReset(canProceed);
+  }, [
+    isValidNewPwd,
+    isValidConfirmNewPwd,
+    showConfirmNewPwdInput,
+    newPwd,
+    confirmNewPwd,
+    canCompletePwdReset,
+  ]);
+
+  const handleValidatePwdPress = () => {
     // 비밀번호 입력 검사
     if (newPwd === '') {
       setConfirmNewPwdErrorDescription('');
@@ -109,7 +135,7 @@ const PwdResetSetPasswordStep = ({
     }
   };
 
-  const handleCompletePwdResetButtonPress = () => {
+  const handleCompletePwdResetPress = () => {
     // 이메일 양식 재확인 -> 외부에서 프롭스로 들어오는 값인기 때문에
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -126,10 +152,11 @@ const PwdResetSetPasswordStep = ({
 
       resetPwd(payload, {
         onSuccess: data => {
-          setAccountFeatures(null);
+          if (prevScreen === 'login') setAccountFeatures(null);
+          if (prevScreen === 'mypage') onDone();
           Alert.alert('알림', data.message);
         },
-        onError: (error) => {
+        onError: error => {
           setIsValidNewPwd(false);
           setNewPwdSuccessDescription('');
           setConfirmNewPwdSuccessDescription('');
@@ -138,30 +165,6 @@ const PwdResetSetPasswordStep = ({
       });
     }
   };
-
-  useEffect(() => {
-    if (newPwd !== '') setShowConfirmNewPwdInput(true);
-  }, [newPwd]);
-
-  useEffect(() => {
-    const canProceed =
-      isValidNewPwd &&
-      isValidConfirmNewPwd &&
-      showConfirmNewPwdInput &&
-      !!email &&
-      !!newPwd &&
-      !!confirmNewPwd &&
-      newPwd === confirmNewPwd &&
-      canCompletePwdReset;
-    setIsReadyToPwdReset(canProceed);
-  }, [
-    isValidNewPwd,
-    isValidConfirmNewPwd,
-    showConfirmNewPwdInput,
-    newPwd,
-    confirmNewPwd,
-    canCompletePwdReset,
-  ]);
 
   return (
     <View
@@ -246,7 +249,7 @@ const PwdResetSetPasswordStep = ({
               </Text>
               <RoundButton
                 title="확인하기"
-                onPress={handleValidatePwdButtonPress}
+                onPress={handleValidatePwdPress}
                 preset="sm"
               />
             </View>
@@ -255,7 +258,7 @@ const PwdResetSetPasswordStep = ({
       </View>
       <RoundButton
         title="재설정 완료"
-        onPress={handleCompletePwdResetButtonPress}
+        onPress={handleCompletePwdResetPress}
         preset="lg"
         disabled={!isReadyToPwdReset}
       />

@@ -1,5 +1,4 @@
-import { getDistanceBetweenCoords } from '@/features/location/utils/location';
-import { Coordinates } from '@/features/map/model/map.types';
+import { Coordinate } from '@/shared/model/shared.types';
 import {
   ACCURACY_OK,
   MOTION_COMMON_OPTIONS,
@@ -12,6 +11,7 @@ import {
   NavigationInstruction,
   StabilizeDistanceInput,
 } from '@/features/navigation/model/navigation.types';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 /* 예상 도착 시간 계산 (예: "12:07AM"), 남은 거리 계산 (예: "1.8km")
  1. 현재 내가 속한 인터벌의 lastCoordinate와 현재 내 좌표간 거리 계산(보정 필요)
@@ -28,21 +28,41 @@ import {
  *
  */
 export const findClosestCoordIndex = (
-  myPosition: Coordinates,
-  coordinateList: Coordinates[],
+  myPosition: Coordinate,
+  coordinateList: Coordinate[],
 ): number => {
-  if (coordinateList.length === 0) return 0;
-  if (coordinateList.length === 1) return 0;
+  return findClosestSegmentProjection(myPosition, coordinateList).closestIdx;
+};
+
+export const findClosestSegmentProjection = (
+  myPosition: Coordinate,
+  coordinateList: Coordinate[],
+) => {
+  if (coordinateList.length === 0) {
+    return {
+      closestIdx: 0,
+      projectionRatio: 0,
+      distanceMeter: Number.POSITIVE_INFINITY,
+    };
+  }
+  if (coordinateList.length === 1) {
+    return {
+      closestIdx: 0,
+      projectionRatio: 0,
+      distanceMeter: getDistanceBetweenCoords(myPosition, coordinateList[0]),
+    };
+  }
 
   let bestIdx = 0;
   let bestDistance = Infinity;
+  let bestProjectionRatio = 0;
 
   // 위경도를 로컬 평면(m 단위)으로 근사
   const lat0 = myPosition.lat;
   const meterPerDegLat = 111_320;
   const meterPerDegLng = 111_320 * Math.cos((lat0 * Math.PI) / 180);
 
-  const toXY = (p: Coordinates) => ({
+  const toXY = (p: Coordinate) => ({
     x: (p.lng - myPosition.lng) * meterPerDegLng,
     y: (p.lat - myPosition.lat) * meterPerDegLat,
   });
@@ -59,6 +79,7 @@ export const findClosestCoordIndex = (
     const denom = ABx * ABx + ABy * ABy;
 
     let distToSegment: number;
+    let projectionRatio = 0;
 
     if (denom === 0) {
       // a == b (이상 케이스)
@@ -68,6 +89,7 @@ export const findClosestCoordIndex = (
       const t = (-A.x * ABx + -A.y * ABy) / denom;
 
       const tClamped = Math.max(0, Math.min(1, t));
+      projectionRatio = tClamped;
 
       const projX = A.x + ABx * tClamped;
       const projY = A.y + ABy * tClamped;
@@ -78,10 +100,15 @@ export const findClosestCoordIndex = (
     if (distToSegment < bestDistance) {
       bestDistance = distToSegment;
       bestIdx = i;
+      bestProjectionRatio = projectionRatio;
     }
   }
 
-  return bestIdx;
+  return {
+    closestIdx: bestIdx,
+    projectionRatio: bestProjectionRatio,
+    distanceMeter: bestDistance,
+  };
 };
 
 /**
@@ -91,15 +118,14 @@ export const findClosestCoordIndex = (
  *
  * 계산 방식:
  * - interval 좌표가 2개 이상:
- *    traveled  = (start -> closest) + polyline(start..closest)
- *    remaining = (myPos -> closest) + polyline(closest..end)
+ *    traveled  = polyline(start..closestSegmentStart) + 현재 세그먼트 진행분
+ *    remaining = 현재 세그먼트 남은 진행분 + polyline(closestSegmentEnd..end)
  * - interval 좌표가 1개:
- *    traveled  = (onlyCoord -> myPos)
- *    remaining = (myPos -> onlyCoord)
+ *    traveled/remaining 모두 (onlyCoord ↔ myPos) 직선거리
  * - interval 좌표 없음: 0
  */
 export const calculateIntervalDistanceByMyPosition = (
-  myPosition: Coordinates,
+  myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
   currentIntervalIndex: number,
   type: DistanceType,
@@ -111,32 +137,35 @@ export const calculateIntervalDistanceByMyPosition = (
 
   // case 1: 현재 인터벌 좌표가 2개 이상일 때
   if (intervalCoordinateList.length > 1) {
-    const closestIdx = findClosestCoordIndex(
+    const { closestIdx, projectionRatio } = findClosestSegmentProjection(
       myPosition,
       intervalCoordinateList,
     );
-    const closestCoord = intervalCoordinateList[closestIdx];
+    const currentSegmentStart = intervalCoordinateList[closestIdx];
+    const currentSegmentEnd = intervalCoordinateList[closestIdx + 1];
+    const currentSegmentDistance = getDistanceBetweenCoords(
+      currentSegmentStart,
+      currentSegmentEnd,
+    );
 
     if (type === 'traveled') {
-      // 1) start -> closest (직선) + 2) start..closest polyline 누적
-      distanceMeter += getDistanceBetweenCoords(
-        intervalCoordinateList[0],
-        closestCoord,
-      );
-
+      // 1) 이전 세그먼트 polyline 누적 + 2) 현재 세그먼트 진행분
       for (let i = 0; i < closestIdx; i++) {
         distanceMeter += getDistanceBetweenCoords(
           intervalCoordinateList[i],
           intervalCoordinateList[i + 1],
         );
       }
+
+      distanceMeter += currentSegmentDistance * projectionRatio;
     }
 
     if (type === 'remaining') {
-      // 1) myPos -> closest (직선) + 2) closest..end polyline 누적
-      distanceMeter += getDistanceBetweenCoords(myPosition, closestCoord);
+      // 현재 세그먼트의 남은 진행분 + 이후 세그먼트 polyline 누적
+      const nextIdx = closestIdx + 1;
+      distanceMeter += currentSegmentDistance * (1 - projectionRatio);
 
-      for (let i = closestIdx; i < intervalCoordinateList.length - 1; i++) {
+      for (let i = nextIdx; i < intervalCoordinateList.length - 1; i++) {
         distanceMeter += getDistanceBetweenCoords(
           intervalCoordinateList[i],
           intervalCoordinateList[i + 1],
@@ -176,14 +205,14 @@ export const calculateIntervalDistanceByMyPosition = (
 const { MAX_PHYSICAL_SPEED_MPS, DT_SEC_CAP } = MOTION_COMMON_OPTIONS;
 
 export const calculateRemainingDistance = (
-  myPosition: Coordinates,
+  myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
   currentIntervalIndex: number,
   instructionList: NavigationInstruction[],
 
   // 안정화(튐 방지)용 입력
   prevRemainingDistanceMeter: number,
-  prevMyPositionForRemaining: Coordinates | null,
+  prevMyPositionForRemaining: Coordinate | null,
   prevTimestampForRemaining: number | null,
   currentTimestamp: number,
 ) => {
@@ -230,7 +259,7 @@ export const calculateRemainingDistance = (
 
   if (currentIntervalIndex < instructionList.length - 1) {
     for (let i = currentIntervalIndex + 1; i < instructionList.length; i++) {
-      remainingIntervalsDistance += instructionList[i].distance;
+      remainingIntervalsDistance += instructionList[i]?.distance ?? 0;
     }
   }
 
@@ -345,8 +374,17 @@ export const calculateEta = (
   if (currentEmaSpeedMps <= 0) return undefined;
   if (totalRemainingDistanceMeter <= 0) return undefined;
 
-  const remainingTimeSec = totalRemainingDistanceMeter / currentEmaSpeedMps;
-  return new Date(Date.now() + remainingTimeSec * 1000);
+  const { MIN_EFFECTIVE_SPEED_MPS, MAX_ETA_HOURS } = MOTION_COMMON_OPTIONS;
+  const effectiveSpeedMps = Math.max(
+    currentEmaSpeedMps,
+    MIN_EFFECTIVE_SPEED_MPS,
+  );
+  const remainingTimeSec = totalRemainingDistanceMeter / effectiveSpeedMps;
+  const cappedRemainingTimeSec = Math.min(
+    remainingTimeSec,
+    MAX_ETA_HOURS * 60 * 60,
+  );
+  return new Date(Date.now() + cappedRemainingTimeSec * 1000);
 };
 /* 소요 거리 측정
 1. 현재 내가 속한 인터벌의 firstCoordinate와 현재 내 좌표간 거리 계산(보정 필요)
@@ -358,14 +396,14 @@ export const calculateEta = (
    - 정지 판정 시 증가 억제
 */
 export const calculateTraveledDistance = (
-  myPosition: Coordinates,
+  myPosition: Coordinate,
   pathDataListByInterval: IntervalPathData[],
   currentIntervalIndex: number,
   instructionList: NavigationInstruction[],
 
   // 안정화(튐 방지)용 입력
   prevTraveledDistanceMeter: number, // 이전에 확정해서 UI에 보여주던 진행거리
-  prevMyPositionForTravel: Coordinates | null, // 이전 위치(정지 판정)
+  prevMyPositionForTravel: Coordinate | null, // 이전 위치(정지 판정)
   prevTimestampForTravel: number | null, // 이전 타임스탬프(ms)
   currentTimestamp: number, // 현재 타임스탬프(ms)
 ) => {
@@ -420,7 +458,7 @@ export const calculateTraveledDistance = (
   // 첫 인터벌이 아닐 때만 계산
   if (currentIntervalIndex > 0) {
     for (let i = 0; i < currentIntervalIndex; i++) {
-      traveledIntervalsDistance += instructionList[i].distance;
+      traveledIntervalsDistance += instructionList[i]?.distance ?? 0;
     }
   }
 
@@ -462,6 +500,7 @@ export const stabilizeDistance = ({
 }: StabilizeDistanceInput) => {
   const { MAX_PHYSICAL_SPEED_MPS } = MOTION_COMMON_OPTIONS;
   const { STOP_JUDGE_MOVE_METER } = TRAVELED_DISTANCE_OPTIONS;
+  const MOVEMENT_CAP_BUFFER_METER = STOP_JUDGE_MOVE_METER;
 
   // =========================
   // 0) dtSec 계산
@@ -486,8 +525,9 @@ export const stabilizeDistance = ({
   // =========================
   // 2) 정지 판정이면 변화 막기
   // =========================
+  let movedDistanceMeter: number | null = null;
   if (prevMyPosition) {
-    const movedDistanceMeter = getDistanceBetweenCoords(
+    movedDistanceMeter = getDistanceBetweenCoords(
       prevMyPosition,
       currentMyPosition,
     );
@@ -501,7 +541,15 @@ export const stabilizeDistance = ({
   // 3) 최대 물리 속도 기반 "변화 최대폭" 제한 (GPS 점프 컷)
   // =========================
   if (dtSec !== null) {
-    const maxChangeDistanceMeter = MAX_PHYSICAL_SPEED_MPS * dtSec;
+    const maxChangeBySpeedMeter = MAX_PHYSICAL_SPEED_MPS * dtSec;
+    const maxChangeByMovementMeter =
+      movedDistanceMeter != null
+        ? movedDistanceMeter * 2 + MOVEMENT_CAP_BUFFER_METER
+        : Number.POSITIVE_INFINITY;
+    const maxChangeDistanceMeter = Math.min(
+      maxChangeBySpeedMeter,
+      maxChangeByMovementMeter,
+    );
 
     if (type === 'traveled') {
       stabilizedDistanceMeter = Math.min(

@@ -26,6 +26,14 @@ export const DIRECTION_ICONS: Record<string, any> = {
 
   // KEEP_RIGHT
   '7': require('@/assets/imgs/instruction/arrow_keep_right.png'),
+
+  // U-TURN 계열(백엔드 sign 변동 대응)
+  '-8': require('@/assets/imgs/instruction/arrow_left.png'),
+  '8': require('@/assets/imgs/instruction/arrow_right.png'),
+  '-11': require('@/assets/imgs/instruction/arrow_left.png'),
+  '11': require('@/assets/imgs/instruction/arrow_right.png'),
+  '-98': require('@/assets/imgs/instruction/arrow_left.png'),
+  '98': require('@/assets/imgs/instruction/arrow_right.png'),
 };
 export const BIKING_POLYLINE_COLORS = [
   '#00E676', // 0 Green
@@ -57,16 +65,35 @@ export const MOTION_COMMON_OPTIONS = {
   MAX_PHYSICAL_SPEED_MPS: 15,
   PASS_CONFIRM_COUNT: 3,
   DT_SEC_CAP: 3,
+  BACKGROUND_RESUME_RESET_GAP_SEC: 10,
+  MIN_EFFECTIVE_SPEED_MPS: 1.0,
+  MAX_ETA_HOURS: 12,
 } as const;
 
 export const TURN_CONFIG = {
-  ENTRY_RADIUS_METER: 40,
-  EXIT_RADIUS_METER: 60,
-  DEADZONE_DISTANCE_METER: 6,
+  // 턴포인트 50m 이내 진입 시 감지 시작 (40 → 50: 더 여유 있게 사전 감지)
+  ENTRY_RADIUS_METER: 50,
+  // 70m 이상 멀어지면 리셋 (60 → 70: 좁은 골목/커브에서 오탈출 방지)
+  EXIT_RADIUS_METER: 70,
+  // 3m 이상 멀어져야 "멀어지는 중" (6 → 3: 조금만 벗어나도 카운트)
+  DEADZONE_DISTANCE_METER: 3,
+  // 최소 유효 이동 거리 (기존 유지)
   MIN_EFFECTIVE_MOVE_METER: 10,
   DOT_DEADZONE: 0,
   PASS_COUNT_DECAY: 1,
+  // 최대 카운트 기존 유지
   PASS_COUNT_MAX: 3,
+  // 현재 인터벌의 끝에 붙었으면 복잡한 턴 상태와 무관하게 다음 안내로 넘긴다.
+  PROGRESS_REACHED_REMAINING_METER: 15,
+  PROGRESS_SEGMENT_DISTANCE_METER: 25,
+  PROGRESS_CATCHUP_SEGMENT_DISTANCE_METER: 120,
+  PROGRESS_END_RATIO: 0.85,
+  PROGRESS_SHORT_INTERVAL_REMAINING_METER: 10,
+  PROGRESS_SHORT_INTERVAL_END_RATIO: 0.9,
+  PROGRESS_CONFIRM_COUNT: 2,
+  PROGRESS_MIN_INTERVAL_DISTANCE_METER: 35,
+  STATION_PASS_RADIUS_METER: 120,
+  WAYPOINT_PASS_RADIUS_METER: 50,
 } as const;
 
 export const TRAVELED_DISTANCE_OPTIONS = {
@@ -82,9 +109,14 @@ export const INTERVAL_DISTANCE_OPTIONS = {
 } as const;
 
 export const WAYPOINT_CONFIG = {
-  ENTRY_RADIUS_METER: 20, // waypoint 근처로 들어왔다 판정
-  EXIT_RADIUS_METER: 35, // 다시 멀어지면 지나침 확정 후보
-  PASS_CONFIRM_COUNT: 2, // 2회 반복되면 진짜 지나침
+  // waypoint 근처로 들어왔다 판정 (20 → 30: 자전거 속도에서 더 일찍 감지)
+  ENTRY_RADIUS_METER: 30,
+  // 다시 멀어지면 지나침 확정 후보 (35 → 45)
+  EXIT_RADIUS_METER: 45,
+  // 2회 반복되면 진짜 지나침 (기존 유지)
+  PASS_CONFIRM_COUNT: 2,
+  // 경로 진행도가 경유지 인근 path index를 지나면 반경 판정 누락을 보정한다.
+  PROGRESS_PASS_DISTANCE_METER: 50,
 };
 
 // classifyTransportBySpeed.ts
@@ -113,10 +145,10 @@ export const PREVIEW_THRESHOLD_METER = 50;
 // 재탐색 관련
 export const OFF_ROUTE_CONFIG = {
   // 이 정도 벗어나면 "경로로 복귀하세요" (soft)
-  RECOVERY_TRIGGER_METER: PREVIEW_THRESHOLD_METER,
+  RECOVERY_TRIGGER_METER: 500,
 
   // 이 정도면 "경로 이탈 → 재탐색" (hard)
-  REROUTE_TRIGGER_METER: 150,
+  REROUTE_TRIGGER_METER: 700,
 
   // bestIdx 튐 방지: 이전 bestIdx 기준 ±N개만 탐색
   CLOSEST_INDEX_WINDOW_SIZE: 5,
@@ -126,6 +158,16 @@ export const OFF_ROUTE_CONFIG = {
 
   // 재탐색/복귀 카운트 감쇠량
   COUNT_DECAY: 1,
+
+  // 재탐색은 시작 초반(출발지 인근)에서만 허용
+  REROUTE_MAX_TRAVELED_METER: 120,
+  REROUTE_MAX_INTERVAL_INDEX: 1,
+
+  // 새 경로 적용 직후 즉시 off-route 재트리거 방지
+  POST_APPLY_JUDGE_COOLDOWN_MS: 7000,
+
+  // reroute 직후 recovery 즉시 재발동 방지
+  POST_REROUTE_RECOVERY_LOCK_MS: 30_000,
 };
 
 // playTts.ts

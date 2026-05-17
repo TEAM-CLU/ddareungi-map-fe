@@ -4,49 +4,36 @@ import { useStation } from '@/features/station/hooks/useStation';
 import { useMapStore } from '../stores/useMapStore';
 import { useBookmark } from '@/features/bookmark/hooks/useBookmark';
 import { useWebViewRef } from '@/app/providers/webview';
-import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 interface MapProps {
-  isLocalMapReady: boolean;
-  setIsLocalMapReady: React.Dispatch<React.SetStateAction<boolean>>;
-  handleMapReadyMessage: (event: WebViewMessageEvent) => void;
+  onMessage: (event: WebViewMessageEvent) => void;
 }
-const Map = ({ isLocalMapReady, handleMapReadyMessage }: MapProps) => {
-  const { isMapReady, setIsMapReady } = useMapStore(
+const Map = ({ onMessage }: MapProps) => {
+  const { isMapReady, mapReadyVersion } = useMapStore(
     useShallow(state => ({
       isMapReady: state.isMapReady,
-      setIsMapReady: state.setIsMapReady,
+      mapReadyVersion: state.mapReadyVersion,
     })),
   );
 
+  useMyLocation({ isMapReady, mapReadyVersion });
   const webViewRef = useWebViewRef();
-  useMyLocation({ isMapReady });
 
   const { handleStationMessage } = useStation({
     isMapReady,
+    mapReadyVersion,
   });
 
-  const { handleBookmarkMarkerClick } = useBookmark({ isMapReady });
+  const { handleBookmarkMarkerClick } = useBookmark({
+    isMapReady,
+    mapReadyVersion,
+  });
 
   const handleWebViewMessage = (event: WebViewMessageEvent) => {
-    handleMapReadyMessage(event);
+    onMessage(event);
     handleStationMessage(event);
     handleBookmarkMarkerClick(event);
   };
-
-  // 디자인 후에 삭제
-  // [수정] 컴포넌트가 처음 렌더링될 때 딱 한 번만 URL을 생성해서 state에 저장합니다.
-  const [mapUrl] = useState(() => {
-    const timestamp = new Date().getTime();
-    // iOS/Android 환경에 따라 주소 분기 (ngrok 주소면 그대로 사용)
-    const baseUrl = 'https://6b2a34c11338.ngrok-free.app/map.html';
-    return `${baseUrl}?t=${timestamp}`;
-  });
-
-  // selectedRouteDetailModal에서 쓰기 위해 zustand용 isMapReady 동기화
-  useEffect(() => {
-    setIsMapReady(isLocalMapReady);
-  }, [isLocalMapReady]);
 
   return (
     <WebView
@@ -55,17 +42,10 @@ const Map = ({ isLocalMapReady, handleMapReadyMessage }: MapProps) => {
       domStorageEnabled={true}
       originWhitelist={['*']}
       onMessage={handleWebViewMessage}
-      onError={e => console.log('WebView error', e.nativeEvent)}
-      // 캐시 끄기 옵션도 확실하게 추가 디자인 후 삭제
-      cacheEnabled={false}
-      cacheMode="LOAD_NO_CACHE"
-      incognito={true}
+      onError={() => {}}
       source={{
-        uri: 'https://6b2a34c11338.ngrok-free.app/dev/ddareungi-map-fe/map.html',
+        uri: 'https://ssumpick.com/map',
       }}
-      // source={{
-      //   uri: 'https://3f3d893368a5.ngrok-free.app/map.html',
-      // }}
     />
   );
 };

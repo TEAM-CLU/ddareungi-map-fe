@@ -1,31 +1,32 @@
 import { TouchableOpacity } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import { useState } from 'react';
-import IconStationMarkerOn from '@/shared/components/icons/IconStationMarkerOn';
-import IconStationMarkerOff from '@/shared/components/icons/IconStationMarkerOff';
 import { useStationMessenger } from '@/features/station/hooks/useStationMessenger';
+import { IconStationMarkerOff, IconStationMarkerOn } from '@/shared/components/icons';
+import { useStationStore } from '@/features/station/stores/useStationStore';
 
 const StationMarkersToggleBtn = () => {
   const { turnOnStationMarkers, turnOffStationMarkers } = useStationMessenger();
-  const [mode, setMode] = useState<'on' | 'off'>('on');
+  const isStationMarkersVisible = useStationStore(
+    state => state.isStationMarkersVisible,
+  );
+  const setStationMarkersVisible = useStationStore(
+    state => state.setStationMarkersVisible,
+  );
 
-  const handleToggleBtnPress = () => {
-    if (mode === 'on') {
-      setMode('off');
+  const handleToggleShowingStationMarkersPress = () => {
+    if (isStationMarkersVisible) {
+      setStationMarkersVisible(false);
       turnOffStationMarkers();
       return;
     }
 
-    if (mode === 'off') {
-      setMode('on');
-      turnOnStationMarkers();
-      return;
-    }
+    setStationMarkersVisible(true);
+    turnOnStationMarkers();
   };
 
   return (
     <TouchableOpacity
-      onPress={handleToggleBtnPress}
+      onPress={handleToggleShowingStationMarkersPress}
       style={[
         tw(
           'bg-icon-container-secondary rounded-full w-10 h-10 flex justify-center items-center shadow-md',
@@ -33,7 +34,11 @@ const StationMarkersToggleBtn = () => {
         { zIndex: 10 },
       ]}
     >
-      {mode === 'on' ? <IconStationMarkerOn /> : <IconStationMarkerOff />}
+      {isStationMarkersVisible ? (
+        <IconStationMarkerOn />
+      ) : (
+        <IconStationMarkerOff />
+      )}
     </TouchableOpacity>
   );
 };

@@ -2,7 +2,6 @@ import AccountLinks from '@/features/auth/components/AccountLinks';
 import SocialLoginLinks from '@/features/auth/components/SocialLoginLinks';
 import { useLoginUserMutation } from '@/features/auth/services/user.queries';
 import SquareButton from '@/shared/components/button/SquareButton';
-import IconClose from '@/shared/components/icons/IconClose';
 import Input from '@/shared/components/Input/Input';
 import { tw } from '@/shared/libs/tw-helper';
 import { useEffect, useState } from 'react';
@@ -12,6 +11,8 @@ import AccountFinder from '@/features/auth/components/AccountFinder';
 import PwdResetContainer from '@/features/auth/components/pwdReset/PwdResetContainer';
 import { CommonActions } from '@react-navigation/native';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { AccountFeatureType } from '@/features/auth/model/common.types';
+import { IconClose } from '@/shared/components/icons';
 
 interface AuthGatewayProps {
   setLoginScreenStep: React.Dispatch<React.SetStateAction<1 | 2>>;
@@ -26,9 +27,10 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
   const [isIdValid, setIsIdValid] = useState<boolean>(true);
   const [isPwdValid, setIsPwdValid] = useState<boolean>(true);
   const [isAvailable, setIsAvailable] = useState<boolean>(false);
-  const [accountFeatures, setAccountFeatures] = useState<
-    'findAccount' | 'resetPwd' | null
-  >(null);
+  const [accountFeatures, setAccountFeatures] =
+    useState<AccountFeatureType>(null);
+
+  const [loginErrorMsg, setLoginErrorMsg] = useState('');
 
   useEffect(() => {
     if (!!id && !!pwd) {
@@ -36,12 +38,17 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     }
   }, [id, pwd]);
 
-  const handleCloseButtonPress = () => setLoginScreenStep(1);
+  useEffect(() => {
+    setIsIdValid(true);
+    setIsPwdValid(true);
+  }, [id, pwd]);
 
-  const handleLoginButtonPress = async () => {
+  const handleClosePress = () => setLoginScreenStep(1);
+
+  const handleLoginPress = async () => {
     // 아이디 입력 검사
     if (id.trim() === '') {
-      Alert.alert('아이디를 입력해주세요.');
+      setLoginErrorMsg('아이디를 입력해주세요.');
       setIsIdValid(false);
       return;
     }
@@ -49,14 +56,14 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     // 아이디 양식 검사(이메일 양식과 동일)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(id)) {
-      Alert.alert('올바른 이메일 형식으로 입력해주세요.');
+      setLoginErrorMsg('올바른 이메일 형식으로 입력해주세요.');
       setIsIdValid(false);
       return;
     }
 
     // 비밀번호 입력 검사
     if (pwd.trim() === '') {
-      Alert.alert('비밀번호를 입력해주세요.');
+      setLoginErrorMsg('비밀번호를 입력해주세요.');
       setIsPwdValid(false);
       return;
     }
@@ -64,7 +71,7 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
     // 비밀번호 양식 검사 (영어, 숫자 포함 8자 이상, 특수문자 허용)
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(pwd)) {
-      Alert.alert('비밀번호는 영어, 숫자 포함 8자 이상이어야 합니다.');
+      setLoginErrorMsg('비밀번호는 영어, 숫자 포함 8자 이상이어야 합니다.');
       setIsPwdValid(false);
       return;
     }
@@ -86,32 +93,34 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
           );
         } else {
           // 성공했으나 토큰이 없는 경우
-          Alert.alert('로그인 실패', '토큰이 존재하지 않습니다.');
+          Alert.alert('오류', '서버 응답에 토큰이 없습니다.');
         }
       },
       onError: error => {
-        Alert.alert('로그인 실패', error.message);
+        setLoginErrorMsg('아이디 또는 비밀번호를 확인해주세요.');
         setIsIdValid(false);
         setIsPwdValid(false);
       },
     });
   };
 
-  useEffect(() => {
-    setIsIdValid(true);
-    setIsPwdValid(true);
-  }, [id, pwd]);
-
   if (accountFeatures === 'findAccount')
     return <AccountFinder setAccountFeatures={setAccountFeatures} />;
   if (accountFeatures === 'resetPwd')
-    return <PwdResetContainer setAccountFeatures={setAccountFeatures} />;
+    return (
+      <PwdResetContainer
+        setAccountFeatures={setAccountFeatures}
+        prevScreen="login"
+        onDone={() => {}}
+      />
+    );
 
   return (
-    <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20')}>
+    <SafeAreaView style={tw('w-full flex-1 bg-surface-primary mb-20 relative')}>
       <TouchableOpacity
-        onPress={handleCloseButtonPress}
-        style={tw('fixed top-5 left-4')}
+        onPress={handleClosePress}
+        style={tw('absolute top-20 right-4')}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
         <IconClose />
       </TouchableOpacity>
@@ -152,11 +161,20 @@ const AuthGateway = ({ setLoginScreenStep }: AuthGatewayProps) => {
               onChangeText={setPwd}
               isValid={isPwdValid}
             />
+
+            {loginErrorMsg !== '' && (
+              <Text
+                style={[tw('font-primary-500 text-error'), { fontSize: 13 }]}
+              >
+                {loginErrorMsg}
+              </Text>
+            )}
           </View>
+
           {/* loginButton */}
           <SquareButton
             title="로그인"
-            onPress={handleLoginButtonPress}
+            onPress={handleLoginPress}
             disabled={!isAvailable}
           />
           {/* relatedwithAuthFeatures */}

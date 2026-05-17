@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { tw } from '@/shared/libs/tw-helper';
-import IconRun from '@/shared/components/icons/IconRun';
+import { IconRun } from '../icons';
+import { formatTimeHMText } from '@/shared/utils/formatting';
 
 interface WalkTimeBadgeProps {
   minutes: number;
@@ -24,7 +25,7 @@ const WalkTimeBadge = ({ minutes }: WalkTimeBadgeProps) => (
     <Text
       style={[tw('text-on-surface-primary font-primary-600'), { fontSize: 13 }]}
     >
-      {minutes}분
+    {formatTimeHMText(minutes * 60)}
     </Text>
   </View>
 );

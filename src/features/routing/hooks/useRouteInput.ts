@@ -37,6 +37,14 @@ export const useRouteInput = () => {
 
   const items = useMemo(() => getItems(), [getItems, start, end, waypoints]);
   const renderItems = isDragging && localItems ? localItems : items;
+  const hasWaypoints = waypoints.length > 0;
+
+  useEffect(() => {
+    if (!start || !end) return;
+    if (start?.address === end?.address && routeType !== RouteType.LOOP) {
+      setRouteType(RouteType.LOOP);
+    }
+  }, [start, end, routeType, setRouteType]);
 
   const handleDragBegin = useCallback(() => {
     setLocalItems(items);
@@ -93,15 +101,6 @@ export const useRouteInput = () => {
     },
     [routeType, waypoints.length, removeWaypoint],
   );
-
-  const hasWaypoints = waypoints.length > 0;
-
-  useEffect(() => {
-    if (!start || !end) return;
-    if (start?.address === end?.address && routeType !== RouteType.LOOP) {
-      setRouteType(RouteType.LOOP);
-    }
-  }, [start, end, routeType, setRouteType]);
 
   return {
     items: renderItems,

@@ -1,13 +1,18 @@
-import { permission } from '@/features/map/model/map.data';
+import { permissionAboutLocation } from '@/features/map/model/map.data';
 import { Alert, Linking, BackHandler } from 'react-native';
 import { check, RESULTS, request } from 'react-native-permissions';
+import { handleCatch } from '@/shared/utils/errorHandler';
 
 // 위치 퍼미션 확인하기
 export const hasLocationPermission = async () => {
   try {
-    return (await check(permission!)) === RESULTS.GRANTED;
-  } catch (_) {
-    Alert.alert('오류', '권한 확인 중 오류가 발생했습니다.');
+    return (await check(permissionAboutLocation!)) === RESULTS.GRANTED;
+  } catch (error) {
+    handleCatch(error, {
+      mode: 'alert',
+      title: '오류',
+      message: '권한 확인 중 오류가 발생했습니다.',
+    });
     return false;
   }
 };
@@ -19,9 +24,9 @@ export const requestLocationPermission = async () => {
     if (await hasLocationPermission()) {
       return true;
     }
-    
+
     // 2. 권한 요청
-    const result = await request(permission);
+    const result = await request(permissionAboutLocation!);
 
     if (result === RESULTS.GRANTED) {
       return true;
@@ -73,11 +78,16 @@ export const requestLocationPermission = async () => {
     }
 
     return false;
-  } catch (_) {
-    Alert.alert('오류', '권한 요청 중 오류가 발생했습니다.', [
-      { text: '취소', style: 'cancel' },
-      { text: '설정으로 이동', onPress: () => Linking.openSettings() },
-    ]);
+  } catch (error) {
+    handleCatch(error, {
+      mode: 'alert',
+      title: '오류',
+      message: '권한 요청 중 오류가 발생했습니다.',
+      buttons: [
+        { text: '취소', style: 'cancel' },
+        { text: '설정으로 이동', onPress: () => Linking.openSettings() },
+      ],
+    });
     return false;
   }
 };

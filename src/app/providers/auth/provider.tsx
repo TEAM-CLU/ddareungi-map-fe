@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from './context';
-import { ACCESS_TOKEN_KEY } from '@/shared/model/index.constants';
+import { ACCESS_TOKEN_KEY } from '@/shared/model/shared.constants';
 import { useAxiosInterceptor } from '@/shared/hooks/useAxiosInterceptor';
 import { setClientToken } from '@/shared/services/axios';
 import { useQueryClient } from '@tanstack/react-query';
+import { handleCatch } from '@/shared/utils/errorHandler';
+import { resetAuth401Flag } from '@/config/axiosConfig';
 
 export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
@@ -24,7 +26,7 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
           setClientToken(token);
         }
       } catch (error) {
-        console.error('토큰 로드 실패:', error);
+        handleCatch(error, { mode: 'silent' });
       } finally {
         setIsAuthLoading(false);
       }
@@ -34,6 +36,7 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
 
   // 토큰 저장
   const setToken = useCallback(async (token: string) => {
+    resetAuth401Flag(); // 새 로그인 성공 시 인증 만료 Alert 플래그 리셋
     setAccessTokenState(token);
     setClientToken(token);
     await AsyncStorage.setItem(ACCESS_TOKEN_KEY, token);
@@ -54,7 +57,7 @@ export const AuthProvider: React.FC<{ children?: React.ReactNode }> = ({
     try {
       await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
     } catch (error) {
-      console.error('토큰 삭제 실패:', error);
+      handleCatch(error, { mode: 'silent' });
     }
   }, []);
 
