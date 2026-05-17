@@ -16,7 +16,6 @@ import {
   findClosestSegmentProjection,
 } from '@/features/navigation/utils/navigationController';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
-import { writeNavigationQaLog } from '@/features/navigation/utils/navigationQaLog';
 
 export interface UseTurnControllerParams {
   isNavigationMode: boolean;
@@ -136,16 +135,6 @@ export const useTurnController = ({
         nextIndex,
         at: wallClockNow,
       };
-
-      if (__DEV__) {
-        writeNavigationQaLog('turn:advance', {
-          fromIndex: currentIndex,
-          toIndex: nextIndex,
-          nextText: nextInstruction.text,
-          afterNextText: afterNextInstruction?.text ?? null,
-          reason,
-        });
-      }
 
       setCurrentInstruction(nextInstruction);
       refs.nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;

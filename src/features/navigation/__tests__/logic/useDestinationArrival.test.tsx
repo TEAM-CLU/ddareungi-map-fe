@@ -3,10 +3,6 @@ import { render } from '@testing-library/react-native';
 import { useDestinationArrival } from '@/features/navigation/hooks/useDestinationArrival';
 import { NavigationInstruction } from '@/features/navigation/model/navigation.types';
 
-jest.mock('@/features/navigation/utils/navigationQaLog', () => ({
-  writeNavigationQaLog: jest.fn(),
-}));
-
 jest.mock('@/features/navigation/hooks/useTimer', () => ({
   clearSharedTimer: jest.fn(),
 }));

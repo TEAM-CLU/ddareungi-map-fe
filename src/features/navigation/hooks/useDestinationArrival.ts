@@ -8,7 +8,6 @@ import {
   NavigationInstruction,
   TimerStatus,
 } from '@/features/navigation/model/navigation.types';
-import { writeNavigationQaLog } from '@/features/navigation/utils/navigationQaLog';
 import { clearSharedTimer } from '@/features/navigation/hooks/useTimer';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
@@ -112,14 +111,6 @@ export const useDestinationArrival = ({
     if (hasTriggeredRef.current) return;
 
     hasTriggeredRef.current = true;
-    if (__DEV__) {
-      writeNavigationQaLog('destination:arrived', {
-        remainingDistanceMeter,
-        distanceToDestinationMeter,
-        currentIntervalIndex,
-        instructionCount,
-      });
-    }
     clearSharedTimer();
     setTimerStatus('paused');
     setShowNavigationEndModal(false);

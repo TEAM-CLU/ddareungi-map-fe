@@ -11,7 +11,6 @@ import {
 import { playTts } from '@/features/navigation/libs/playTts';
 import { Route } from '@/features/routing/model/routing.types';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
-import { writeNavigationQaLog } from '@/features/navigation/utils/navigationQaLog';
 import { Coordinate } from '@/shared/model/shared.types';
 
 export interface UseWaypointControllerParams {
@@ -94,12 +93,6 @@ export const useWaypointController = ({
       );
       setPassedWaypointIndexes(nextArr);
 
-      if (__DEV__) {
-        writeNavigationQaLog('waypoint:passed', {
-          waypointIndex,
-          distanceMeter,
-        });
-      }
       playTts('tts-waypoint-arrive', ARRIVE_WAYPOINT_TTS_URL, systemVolume);
 
       refs.isWaypointEnteredRef.current = false;
@@ -203,12 +196,6 @@ export const useWaypointController = ({
 
     // 진입 반경 안에 들어왔는지 확인
     if (bestIdx >= 0 && bestDistanceMeter <= ENTRY_RADIUS_METER) {
-      if (__DEV__) {
-        writeNavigationQaLog('waypoint:enter', {
-          waypointIndex: bestIdx,
-          distanceMeter: bestDistanceMeter,
-        });
-      }
       refs.isWaypointEnteredRef.current = true;
       refs.waypointCandidateIdxRef.current = bestIdx;
       refs.waypointPassCountRef.current = 0;

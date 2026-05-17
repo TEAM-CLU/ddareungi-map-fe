@@ -9,10 +9,6 @@ jest.mock('@/features/navigation/libs/playTts', () => ({
   playTts: jest.fn(),
 }));
 
-jest.mock('@/features/navigation/utils/navigationQaLog', () => ({
-  writeNavigationQaLog: jest.fn(),
-}));
-
 type TestProps = Parameters<typeof useWaypointController>[0];
 
 const TestHarness = (props: TestProps) => {

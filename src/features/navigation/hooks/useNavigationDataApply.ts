@@ -12,7 +12,6 @@ import {
   ApplyNavigationDataInput,
 } from '@/features/navigation/model/navigation.types';
 import { handleCatch } from '@/shared/utils/errorHandler';
-import { writeNavigationQaLog } from '@/features/navigation/utils/navigationQaLog';
 
 export interface UseNavigationDataApplyParams {
   selectedRouteData: Route | null;
@@ -280,32 +279,6 @@ export const useNavigationDataApply = ({
         const waypoints = normalizedNavigationData.waypoints
           ? normalizedNavigationData.waypoints.map(wp => ({ lat: wp[1], lng: wp[0] }))
           : selectedRouteData.waypoints || null;
-
-        if (__DEV__) {
-          const startStationName =
-            'name' in startStation
-              ? startStation.name
-              : startStation.stationName ?? null;
-          const endStationName =
-            'name' in endStation
-              ? endStation.name
-              : endStation.stationName ?? null;
-
-          writeNavigationQaLog('navigation:apply', {
-            routeId: selectedRouteData.routeId,
-            routeCategory: selectedRouteData.routeCategory,
-            coordinateCount: normalizedNavigationData.coordinates.length,
-            instructionCount: normalizedNavigationData.instructions.length,
-            waypointCount: waypoints?.length ?? 0,
-            startStation: startStationName,
-            endStation: endStationName,
-            firstInstruction: normalizedNavigationData.instructions[0]?.text,
-            lastInstruction:
-              normalizedNavigationData.instructions[
-                normalizedNavigationData.instructions.length - 1
-              ]?.text,
-          });
-        }
 
         // loop 모드일 때는 startStationPoint와 endStationPoint를 동일하게 설정
         // (splitPathByStations가 좌표 비교로 loop를 판단하기 때문)

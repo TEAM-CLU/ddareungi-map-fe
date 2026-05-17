@@ -14,10 +14,6 @@ jest.mock('@/features/navigation/utils/calculateMotionVector', () => ({
   })),
 }));
 
-jest.mock('@/features/navigation/utils/navigationQaLog', () => ({
-  writeNavigationQaLog: jest.fn(),
-}));
-
 type TestProps = Parameters<typeof useTurnController>[0];
 
 const TestHarness = (props: TestProps) => {

@@ -105,7 +105,6 @@ export const useMapOrchestrator = ({
 
       if (data.type === 'mapReady') {
         setIsMapReady(data.isReady);
-        console.log('✅ 지도 준비 완료');
         bumpMapReadyVersion();
       }
     } catch (error) {
