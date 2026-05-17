@@ -34,7 +34,7 @@ export const findClosestCoordIndex = (
   return findClosestSegmentProjection(myPosition, coordinateList).closestIdx;
 };
 
-const findClosestSegmentProjection = (
+export const findClosestSegmentProjection = (
   myPosition: Coordinate,
   coordinateList: Coordinate[],
 ) => {
@@ -42,12 +42,14 @@ const findClosestSegmentProjection = (
     return {
       closestIdx: 0,
       projectionRatio: 0,
+      distanceMeter: Number.POSITIVE_INFINITY,
     };
   }
   if (coordinateList.length === 1) {
     return {
       closestIdx: 0,
       projectionRatio: 0,
+      distanceMeter: getDistanceBetweenCoords(myPosition, coordinateList[0]),
     };
   }
 
@@ -105,6 +107,7 @@ const findClosestSegmentProjection = (
   return {
     closestIdx: bestIdx,
     projectionRatio: bestProjectionRatio,
+    distanceMeter: bestDistance,
   };
 };
 
@@ -371,10 +374,7 @@ export const calculateEta = (
   if (currentEmaSpeedMps <= 0) return undefined;
   if (totalRemainingDistanceMeter <= 0) return undefined;
 
-  const {
-    MIN_EFFECTIVE_SPEED_MPS,
-    MAX_ETA_HOURS,
-  } = MOTION_COMMON_OPTIONS;
+  const { MIN_EFFECTIVE_SPEED_MPS, MAX_ETA_HOURS } = MOTION_COMMON_OPTIONS;
   const effectiveSpeedMps = Math.max(
     currentEmaSpeedMps,
     MIN_EFFECTIVE_SPEED_MPS,

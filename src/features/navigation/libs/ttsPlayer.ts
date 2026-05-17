@@ -3,6 +3,7 @@ import {
   DEFAULT_COOLDOWN_MS,
   TtsItem,
 } from '@/features/navigation/model/navigation.constants';
+import { writeNavigationQaLog } from '@/features/navigation/utils/navigationQaLog';
 import TrackPlayer, { Event, State } from 'react-native-track-player';
 
 // Queue state
@@ -101,6 +102,15 @@ export const enqueueTts = (key: string, url: string, volume: number) => {
   const shouldPreemptOffRouteWarning =
     key === 'tts-offroute-reroute' || key === 'tts-offroute-recover';
 
+  if (__DEV__) {
+    writeNavigationQaLog('tts:enqueue', {
+      key,
+      cooldownKey,
+      volume,
+      queueLength: queue.length,
+    });
+  }
+
   if (shouldPreemptOffRouteWarning) {
     suppressIntervalGuidanceTts = true;
     removeQueuedByKey('tts-offroute-warning');
@@ -115,7 +125,12 @@ export const enqueueTts = (key: string, url: string, volume: number) => {
   if (suppressIntervalGuidanceTts) {
     const isStartKey = key === 'tts-navigation-start';
     const isFirstActualKey = key.startsWith('tts-actual');
-    if (isIntervalGuidanceKey(key) && !isFirstActualKey) return;
+    if (isIntervalGuidanceKey(key) && !isFirstActualKey) {
+      if (__DEV__) {
+        writeNavigationQaLog('tts:skip:suppressed', { key });
+      }
+      return;
+    }
     if (isFirstActualKey) {
       suppressIntervalGuidanceTts = false;
     }
@@ -125,13 +140,28 @@ export const enqueueTts = (key: string, url: string, volume: number) => {
   }
 
   // (2) 같은 "정책 key(prefix)"가 이미 큐에 대기 중이면 또 넣지 않는다(난사 방지)
-  if (isKeyAlreadyQueued(key)) return;
+  if (isKeyAlreadyQueued(key)) {
+    if (__DEV__) {
+      writeNavigationQaLog('tts:skip:queued', { key, cooldownKey });
+    }
+    return;
+  }
 
   // (1) prefix 기준 쿨다운(최근에 같은 prefix가 "재생 시작" 되었으면 컷)
   const lastSpokenAt = lastSpokenAtByCooldownKey.get(cooldownKey) ?? 0;
   const cooldown = getCooldownMs(key);
 
-  if (t - lastSpokenAt < cooldown) return;
+  if (t - lastSpokenAt < cooldown) {
+    if (__DEV__) {
+      writeNavigationQaLog('tts:skip:cooldown', {
+        key,
+        cooldownKey,
+        elapsedMs: t - lastSpokenAt,
+        cooldown,
+      });
+    }
+    return;
+  }
 
   queue.push({ key, url, volume, enqueuedAt: t });
   void consumeQueue();
@@ -188,6 +218,13 @@ const consumeQueue = async () => {
       // (1) "이 prefix(key)를 재생 시작했다"를 기록 (쿨다운 기준점)
       lastSpokenAtByCooldownKey.set(getCooldownKey(item.key), now());
       currentPlayingKey = item.key;
+
+      if (__DEV__) {
+        writeNavigationQaLog('tts:play', {
+          key: item.key,
+          queuedForMs: now() - item.enqueuedAt,
+        });
+      }
 
       await TrackPlayer.reset();
       await TrackPlayer.setVolume(item.volume);

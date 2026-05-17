@@ -1,13 +1,18 @@
-import { useEffect, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import {
   ACCURACY_OK,
   TTS_URL_PRESET,
   WAYPOINT_CONFIG,
 } from '@/features/navigation/model/navigation.constants';
-import { LocationMetaData } from '@/features/navigation/model/navigation.types';
+import {
+  LocationMetaData,
+  NavigationInstruction,
+} from '@/features/navigation/model/navigation.types';
 import { playTts } from '@/features/navigation/libs/playTts';
 import { Route } from '@/features/routing/model/routing.types';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
+import { writeNavigationQaLog } from '@/features/navigation/utils/navigationQaLog';
+import { Coordinate } from '@/shared/model/shared.types';
 
 export interface UseWaypointControllerParams {
   isNavigationMode: boolean;
@@ -22,6 +27,9 @@ export interface UseWaypointControllerParams {
     isWaypointEnteredRef: RefObject<boolean>;
     waypointCandidateIdxRef: RefObject<number>;
     waypointPassCountRef: RefObject<number>;
+    fullPathCoordinateList: RefObject<[number, number][]>;
+    instructionList: RefObject<NavigationInstruction[]>;
+    currentIntervalIndex: RefObject<number>;
   };
 }
 
@@ -36,6 +44,13 @@ export const useWaypointController = ({
   refs,
 }: UseWaypointControllerParams) => {
   const { ARRIVE_WAYPOINT_TTS_URL } = TTS_URL_PRESET;
+  const prevCoordRef = useRef<Coordinate | null>(null);
+
+  useEffect(() => {
+    if (!isNavigationMode || !isNavigationInitialized) {
+      prevCoordRef.current = null;
+    }
+  }, [isNavigationMode, isNavigationInitialized]);
 
   // 경유지 도착/지나침 감지
   useEffect(() => {
@@ -54,15 +69,77 @@ export const useWaypointController = ({
       return;
 
     // 2. 정확도 체크
-    if (typeof currentAccuracy !== 'number' || currentAccuracy > ACCURACY_OK) {
+    if (typeof currentAccuracy === 'number' && currentAccuracy > ACCURACY_OK) {
       return;
     }
 
     // 3. 모든 경유지 다 지나쳤으면 끝
     if (refs.passedWaypointIdxSetRef.current.size >= waypoints.length) return;
 
-    const { ENTRY_RADIUS_METER, EXIT_RADIUS_METER, PASS_CONFIRM_COUNT } =
-      WAYPOINT_CONFIG;
+    const {
+      ENTRY_RADIUS_METER,
+      EXIT_RADIUS_METER,
+      PASS_CONFIRM_COUNT,
+      PROGRESS_PASS_DISTANCE_METER,
+    } = WAYPOINT_CONFIG;
+
+    const confirmWaypointPassed = (
+      waypointIndex: number,
+      distanceMeter: number,
+    ) => {
+      refs.passedWaypointIdxSetRef.current.add(waypointIndex);
+
+      const nextArr = Array.from(refs.passedWaypointIdxSetRef.current).sort(
+        (a, b) => a - b,
+      );
+      setPassedWaypointIndexes(nextArr);
+
+      if (__DEV__) {
+        writeNavigationQaLog('waypoint:passed', {
+          waypointIndex,
+          distanceMeter,
+        });
+      }
+      playTts('tts-waypoint-arrive', ARRIVE_WAYPOINT_TTS_URL, systemVolume);
+
+      refs.isWaypointEnteredRef.current = false;
+      refs.waypointCandidateIdxRef.current = -1;
+      refs.waypointPassCountRef.current = 0;
+    };
+
+    const prevCoord = prevCoordRef.current;
+    const updatePrevCoord = () => {
+      prevCoordRef.current = currentCoord;
+    };
+
+    const currentInstruction =
+      refs.instructionList.current[refs.currentIntervalIndex.current];
+    const currentRouteEndIndex = currentInstruction?.interval[1] ?? -1;
+    const fullPathCoordinateList = refs.fullPathCoordinateList.current;
+
+    if (fullPathCoordinateList.length > 0 && currentRouteEndIndex >= 0) {
+      for (let i = 0; i < waypoints.length; i++) {
+        if (refs.passedWaypointIdxSetRef.current.has(i)) continue;
+
+        const waypointPathIndex = findNearestPathIndexToPoint(
+          fullPathCoordinateList,
+          waypoints[i],
+        );
+        const distanceMeter = getDistanceBetweenCoords(
+          currentCoord,
+          waypoints[i],
+        );
+        const hasPassedWaypointByRouteProgress =
+          currentRouteEndIndex >= waypointPathIndex &&
+          distanceMeter <= PROGRESS_PASS_DISTANCE_METER;
+
+        if (hasPassedWaypointByRouteProgress) {
+          confirmWaypointPassed(i, distanceMeter);
+          updatePrevCoord();
+          return;
+        }
+      }
+    }
 
     // Case A: 이미 특정 경유지 반경에 진입한 상태 (Exit 감시)
     if (refs.isWaypointEnteredRef.current) {
@@ -71,6 +148,7 @@ export const useWaypointController = ({
       // 방어 코드: 후보 인덱스가 유효하지 않으면 리셋
       if (candidateIdx < 0 || candidateIdx >= waypoints.length) {
         refs.isWaypointEnteredRef.current = false;
+        updatePrevCoord();
         return;
       }
 
@@ -82,30 +160,18 @@ export const useWaypointController = ({
       // 아직 탈출 반경(Exit) 안쪽이라면 -> 카운트 초기화하고 대기
       if (distanceMeter < EXIT_RADIUS_METER) {
         refs.waypointPassCountRef.current = 0;
+        updatePrevCoord();
         return;
       }
 
       // 탈출 반경 밖으로 나감 -> 지나침 카운트 증가
-      refs.waypointPassCountRef.current += 1;
+      refs.waypointPassCountRef.current = PASS_CONFIRM_COUNT;
 
       // 카운트 충족 시 "지나침 확정"
       if (refs.waypointPassCountRef.current >= PASS_CONFIRM_COUNT) {
-        refs.passedWaypointIdxSetRef.current.add(candidateIdx);
-
-        // 상태 업데이트 (오름차순 정렬)
-        const nextArr = Array.from(refs.passedWaypointIdxSetRef.current).sort(
-          (a, b) => a - b,
-        );
-        setPassedWaypointIndexes(nextArr);
-
-        // 안내 방송
-        playTts('tts-waypoint-arrive', ARRIVE_WAYPOINT_TTS_URL, systemVolume);
-
-        // 상태 리셋 (다음 경유지 찾을 준비)
-        refs.isWaypointEnteredRef.current = false;
-        refs.waypointCandidateIdxRef.current = -1;
-        refs.waypointPassCountRef.current = 0;
+        confirmWaypointPassed(candidateIdx, distanceMeter);
       }
+      updatePrevCoord();
       return;
     }
 
@@ -117,7 +183,18 @@ export const useWaypointController = ({
     for (let i = 0; i < waypoints.length; i++) {
       if (refs.passedWaypointIdxSetRef.current.has(i)) continue;
 
-      const d = getDistanceBetweenCoords(currentCoord, waypoints[i]);
+      const directDistanceMeter = getDistanceBetweenCoords(
+        currentCoord,
+        waypoints[i],
+      );
+      const pathDistanceMeter = prevCoord
+        ? getDistanceFromPointToSegmentMeter(
+            waypoints[i],
+            prevCoord,
+            currentCoord,
+          )
+        : directDistanceMeter;
+      const d = Math.min(directDistanceMeter, pathDistanceMeter);
       if (d < bestDistanceMeter) {
         bestDistanceMeter = d;
         bestIdx = i;
@@ -126,10 +203,25 @@ export const useWaypointController = ({
 
     // 진입 반경 안에 들어왔는지 확인
     if (bestIdx >= 0 && bestDistanceMeter <= ENTRY_RADIUS_METER) {
+      if (__DEV__) {
+        writeNavigationQaLog('waypoint:enter', {
+          waypointIndex: bestIdx,
+          distanceMeter: bestDistanceMeter,
+        });
+      }
       refs.isWaypointEnteredRef.current = true;
       refs.waypointCandidateIdxRef.current = bestIdx;
       refs.waypointPassCountRef.current = 0;
+
+      const directDistanceMeter = getDistanceBetweenCoords(
+        currentCoord,
+        waypoints[bestIdx],
+      );
+      if (directDistanceMeter >= EXIT_RADIUS_METER) {
+        confirmWaypointPassed(bestIdx, directDistanceMeter);
+      }
     }
+    updatePrevCoord();
   }, [
     isNavigationMode,
     locationTick,
@@ -138,4 +230,53 @@ export const useWaypointController = ({
     systemVolume,
     setPassedWaypointIndexes,
   ]);
+};
+
+const getDistanceFromPointToSegmentMeter = (
+  point: Coordinate,
+  segmentStart: Coordinate,
+  segmentEnd: Coordinate,
+) => {
+  const lat0 = point.lat;
+  const meterPerDegLat = 111_320;
+  const meterPerDegLng = 111_320 * Math.cos((lat0 * Math.PI) / 180);
+
+  const toXY = (coord: Coordinate) => ({
+    x: (coord.lng - point.lng) * meterPerDegLng,
+    y: (coord.lat - point.lat) * meterPerDegLat,
+  });
+
+  const start = toXY(segmentStart);
+  const end = toXY(segmentEnd);
+  const abX = end.x - start.x;
+  const abY = end.y - start.y;
+  const denom = abX * abX + abY * abY;
+
+  if (denom === 0) {
+    return getDistanceBetweenCoords(point, segmentStart);
+  }
+
+  const t = Math.max(0, Math.min(1, -(start.x * abX + start.y * abY) / denom));
+  const projectedX = start.x + abX * t;
+  const projectedY = start.y + abY * t;
+
+  return Math.hypot(projectedX, projectedY);
+};
+
+const findNearestPathIndexToPoint = (
+  pathCoordinateList: [number, number][],
+  point: Coordinate,
+) => {
+  let bestIndex = 0;
+  let bestDistanceMeter = Number.POSITIVE_INFINITY;
+
+  pathCoordinateList.forEach(([lng, lat], index) => {
+    const distanceMeter = getDistanceBetweenCoords(point, { lat, lng });
+    if (distanceMeter < bestDistanceMeter) {
+      bestDistanceMeter = distanceMeter;
+      bestIndex = index;
+    }
+  });
+
+  return bestIndex;
 };

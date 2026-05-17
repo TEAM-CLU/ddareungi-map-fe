@@ -1,14 +1,22 @@
-import { useEffect, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { Coordinate } from '@/shared/model/shared.types';
 import {
   ACCURACY_OK,
   MOTION_COMMON_OPTIONS,
   TURN_CONFIG,
 } from '@/features/navigation/model/navigation.constants';
-import { NavigationInstruction } from '@/features/navigation/model/navigation.types';
+import {
+  IntervalPathData,
+  LocationMetaData,
+  NavigationInstruction,
+} from '@/features/navigation/model/navigation.types';
 import { calculateMotionVector } from '@/features/navigation/utils/calculateMotionVector';
-import { LocationMetaData } from '@/features/navigation/model/navigation.types';
+import {
+  calculateIntervalDistanceByMyPosition,
+  findClosestSegmentProjection,
+} from '@/features/navigation/utils/navigationController';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
+import { writeNavigationQaLog } from '@/features/navigation/utils/navigationQaLog';
 
 export interface UseTurnControllerParams {
   isNavigationMode: boolean;
@@ -21,6 +29,7 @@ export interface UseTurnControllerParams {
     nextTurnCoordinate: RefObject<Coordinate | null>;
     currentIntervalIndex: RefObject<number>;
     instructionList: RefObject<NavigationInstruction[]>;
+    pathDataListByInterval: RefObject<IntervalPathData[]>;
     currentTtsUrl: RefObject<string | null>;
     previewInstructionText: RefObject<string>;
     previewTtsUrl: RefObject<string | null>;
@@ -52,9 +61,27 @@ export const useTurnController = ({
     DOT_DEADZONE: _DOT_DEADZONE,
     PASS_COUNT_DECAY,
     PASS_COUNT_MAX,
+    PROGRESS_CATCHUP_SEGMENT_DISTANCE_METER,
+    PROGRESS_CONFIRM_COUNT,
+    PROGRESS_END_RATIO,
+    PROGRESS_MIN_INTERVAL_DISTANCE_METER,
+    PROGRESS_REACHED_REMAINING_METER,
+    PROGRESS_SEGMENT_DISTANCE_METER,
+    PROGRESS_SHORT_INTERVAL_END_RATIO,
+    PROGRESS_SHORT_INTERVAL_REMAINING_METER,
+    STATION_PASS_RADIUS_METER,
+    WAYPOINT_PASS_RADIUS_METER,
   } = TURN_CONFIG;
 
   const { MAX_PHYSICAL_SPEED_MPS, PASS_CONFIRM_COUNT } = MOTION_COMMON_OPTIONS;
+  const lastAdvanceTimestampRef = useRef<number | null>(null);
+  const lastAdvanceWallClockRef = useRef<{
+    fromIndex: number;
+    nextIndex: number;
+    at: number;
+  } | null>(null);
+  const progressCandidateIndexRef = useRef<number | null>(null);
+  const progressConfirmCountRef = useRef(0);
 
   // 턴 진입/지나침 감지 및 지시 업데이트
   useEffect(() => {
@@ -71,10 +98,71 @@ export const useTurnController = ({
       return;
     }
 
+    const nowTimestamp = locationMetaData.timestamp ?? Date.now();
+
     const resetTurnState = () => {
       refs.isEnteredRef.current = false;
       refs.passCountRef.current = 0;
       refs.lastDistanceFromMyPosToNextTurnPosRef.current = null;
+    };
+
+    const resetProgressCandidate = () => {
+      progressCandidateIndexRef.current = null;
+      progressConfirmCountRef.current = 0;
+    };
+
+    const advanceToNextInstruction = (reason: string) => {
+      const currentIndex = refs.currentIntervalIndex.current;
+      const nextIndex = currentIndex + 1;
+      const instructionList = refs.instructionList.current;
+      const lastAdvance = lastAdvanceWallClockRef.current;
+      const wallClockNow = Date.now();
+
+      if (nextIndex >= instructionList.length) return false;
+      if (lastAdvanceTimestampRef.current === nowTimestamp) return false;
+      if (
+        lastAdvance?.fromIndex === currentIndex &&
+        lastAdvance.nextIndex === nextIndex &&
+        wallClockNow - lastAdvance.at < 800
+      ) {
+        return false;
+      }
+
+      const nextInstruction = instructionList[nextIndex];
+      const afterNextInstruction = instructionList[nextIndex + 1];
+      lastAdvanceTimestampRef.current = nowTimestamp;
+      lastAdvanceWallClockRef.current = {
+        fromIndex: currentIndex,
+        nextIndex,
+        at: wallClockNow,
+      };
+
+      if (__DEV__) {
+        writeNavigationQaLog('turn:advance', {
+          fromIndex: currentIndex,
+          toIndex: nextIndex,
+          nextText: nextInstruction.text,
+          afterNextText: afterNextInstruction?.text ?? null,
+          reason,
+        });
+      }
+
+      setCurrentInstruction(nextInstruction);
+      refs.nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
+      refs.currentIntervalIndex.current = nextIndex;
+      setCurrentIntervalIndex(nextIndex);
+      refs.currentTtsUrl.current = nextInstruction.ttsUrl;
+
+      refs.previewInstructionText.current = afterNextInstruction?.text ?? '';
+      refs.previewTtsUrl.current = afterNextInstruction?.ttsUrl ?? null;
+      refs.previewSign.current = afterNextInstruction?.sign ?? null;
+      refs.previewEnterCount.current = 0;
+
+      resetTurnState();
+      resetProgressCandidate();
+      refs.prevMyPositionForTurnRef.current = currentCoord;
+      refs.prevTimestampForTurnRef.current = nowTimestamp;
+      return true;
     };
 
     // 1) 정확도 체크
@@ -89,10 +177,98 @@ export const useTurnController = ({
       nextTurnCoord,
     );
 
-    const nowTimestamp = locationMetaData.timestamp ?? Date.now();
+    const hasReachedCurrentIntervalEnd = () => {
+      const currentIndex = refs.currentIntervalIndex.current;
+      const pathDataListByInterval = refs.pathDataListByInterval.current;
+      const currentIntervalPath =
+        pathDataListByInterval[currentIndex]?.coordinateList ?? [];
+      const currentText =
+        refs.instructionList.current[currentIndex]?.text ??
+        currentInstruction.text;
+      const currentDistanceMeter =
+        refs.instructionList.current[currentIndex]?.distance ?? 0;
 
-    // 3) entry / exit
-    // 3-1) 진입
+      if (currentIndex >= refs.instructionList.current.length - 1) {
+        return false;
+      }
+
+      const isStationOrWaypointInstruction =
+        currentText.includes('대여소') || currentText.includes('경유지');
+      const isWaypointInstruction = currentText.includes('경유지');
+      const isArriveStationInstruction = currentText.includes('도착 대여소');
+      const milestonePassRadiusMeter = isWaypointInstruction
+        ? WAYPOINT_PASS_RADIUS_METER
+        : STATION_PASS_RADIUS_METER;
+
+      if (isArriveStationInstruction) {
+        return false;
+      }
+
+      if (
+        isStationOrWaypointInstruction &&
+        distanceToNextTurnMeter <= milestonePassRadiusMeter
+      ) {
+        return true;
+      }
+
+      if (currentIntervalPath.length < 2) {
+        return false;
+      }
+
+      const isShortInterval =
+        currentDistanceMeter > 0 &&
+        currentDistanceMeter < PROGRESS_MIN_INTERVAL_DISTANCE_METER;
+      const reachedRemainingMeter = isShortInterval
+        ? PROGRESS_SHORT_INTERVAL_REMAINING_METER
+        : PROGRESS_REACHED_REMAINING_METER;
+      const reachedEndRatio = isShortInterval
+        ? PROGRESS_SHORT_INTERVAL_END_RATIO
+        : PROGRESS_END_RATIO;
+      const projection = findClosestSegmentProjection(
+        currentCoord,
+        currentIntervalPath,
+      );
+      const remainingDistanceMeter = calculateIntervalDistanceByMyPosition(
+        currentCoord,
+        pathDataListByInterval,
+        currentIndex,
+        'remaining',
+      );
+      const lastSegmentStartIndex = Math.max(0, currentIntervalPath.length - 2);
+      const isNearCurrentInterval =
+        projection.distanceMeter <= PROGRESS_SEGMENT_DISTANCE_METER;
+      const isCloseEnoughForCatchup =
+        projection.distanceMeter <= PROGRESS_CATCHUP_SEGMENT_DISTANCE_METER;
+      const isAtIntervalTail =
+        projection.closestIdx >= lastSegmentStartIndex &&
+        projection.projectionRatio >= reachedEndRatio;
+
+      if (!isCloseEnoughForCatchup) return false;
+
+      return isShortInterval
+        ? isAtIntervalTail || remainingDistanceMeter <= reachedRemainingMeter
+        : isNearCurrentInterval &&
+            (remainingDistanceMeter <= reachedRemainingMeter ||
+              isAtIntervalTail);
+    };
+
+    if (hasReachedCurrentIntervalEnd()) {
+      const currentIndex = refs.currentIntervalIndex.current;
+      progressConfirmCountRef.current =
+        progressCandidateIndexRef.current === currentIndex
+          ? progressConfirmCountRef.current + 1
+          : 1;
+      progressCandidateIndexRef.current = currentIndex;
+
+      if (progressConfirmCountRef.current >= PROGRESS_CONFIRM_COUNT) {
+        advanceToNextInstruction('interval-progress');
+        return;
+      }
+    } else {
+      resetProgressCandidate();
+    }
+
+    // 3) 진입: 통과 판정은 진입 후 위치 변화로만 판단한다.
     if (
       !refs.isEnteredRef.current &&
       distanceToNextTurnMeter <= ENTRY_RADIUS_METER
@@ -107,19 +283,36 @@ export const useTurnController = ({
       return;
     }
 
-    // 3-2) 이탈
-    if (
-      refs.isEnteredRef.current &&
-      distanceToNextTurnMeter >= EXIT_RADIUS_METER
-    ) {
-      resetTurnState();
-      refs.prevMyPositionForTurnRef.current = currentCoord;
-      refs.prevTimestampForTurnRef.current = nowTimestamp;
-      return;
-    }
-
     // entry 아니면 passed 판정 자체 안 함
     if (!refs.isEnteredRef.current) {
+      const prevDistanceMeter =
+        refs.lastDistanceFromMyPosToNextTurnPosRef.current;
+      const prevPosition = refs.prevMyPositionForTurnRef.current;
+      const prevTimestamp = refs.prevTimestampForTurnRef.current;
+
+      if (prevDistanceMeter != null && prevPosition && prevTimestamp != null) {
+        const deltaDistanceMeter = distanceToNextTurnMeter - prevDistanceMeter;
+        const dtSec = (nowTimestamp - prevTimestamp) / 1000;
+        const { moveMag, speedMps, dot } = calculateMotionVector(
+          prevPosition,
+          currentCoord,
+          nextTurnCoord,
+          dtSec,
+        );
+        const hasMissedEntryWhilePassing =
+          prevDistanceMeter <= EXIT_RADIUS_METER &&
+          distanceToNextTurnMeter > ENTRY_RADIUS_METER &&
+          deltaDistanceMeter > DEADZONE_DISTANCE_METER &&
+          moveMag >= MIN_EFFECTIVE_MOVE_METER &&
+          speedMps <= MAX_PHYSICAL_SPEED_MPS &&
+          dot < _DOT_DEADZONE;
+
+        if (hasMissedEntryWhilePassing) {
+          advanceToNextInstruction('missed-entry');
+          return;
+        }
+      }
+
       refs.prevMyPositionForTurnRef.current = currentCoord;
       refs.prevTimestampForTurnRef.current = nowTimestamp;
       refs.lastDistanceFromMyPosToNextTurnPosRef.current =
@@ -155,12 +348,11 @@ export const useTurnController = ({
     if (!prevPosition || prevTimestamp == null) return;
 
     const dtSec = (nowTimestamp - prevTimestamp) / 1000;
-    const { moveMag, speedMps, dot: _dot } = calculateMotionVector(
-      prevPosition,
-      currentCoord,
-      nextTurnCoord,
-      dtSec,
-    );
+    const {
+      moveMag,
+      speedMps,
+      dot: _dot,
+    } = calculateMotionVector(prevPosition, currentCoord, nextTurnCoord, dtSec);
 
     // GPS 점프 컷오프
     if (speedMps > MAX_PHYSICAL_SPEED_MPS) {
@@ -193,36 +385,19 @@ export const useTurnController = ({
       );
       return;
     }
+    // 위치 갱신 간격이 길면 PASS_CONFIRM_COUNT를 채우기 전에 EXIT 반경 밖으로 나갈 수 있다.
+    // 이미 멀어지는 중이고 EXIT 밖이라면 실제 턴 포인트를 지난 것으로 본다.
     refs.passCountRef.current = Math.min(
       PASS_COUNT_MAX,
-      refs.passCountRef.current + 1,
+      distanceToNextTurnMeter >= EXIT_RADIUS_METER
+        ? PASS_CONFIRM_COUNT
+        : refs.passCountRef.current + 1,
     );
 
     // 7) 통과 확정 → 다음 instruction
     if (refs.passCountRef.current < PASS_CONFIRM_COUNT) return;
 
-    const nextIndex = refs.currentIntervalIndex.current + 1;
-    const instructionList = refs.instructionList.current;
-
-    if (nextIndex >= instructionList.length) return;
-
-    const nextInstruction = instructionList[nextIndex];
-    const afterNextInstruction = instructionList[nextIndex + 1];
-
-    setCurrentInstruction(nextInstruction);
-    refs.nextTurnCoordinate.current = nextInstruction.nextTurnCoordinate;
-    refs.currentIntervalIndex.current = nextIndex;
-    setCurrentIntervalIndex(nextIndex);
-    refs.currentTtsUrl.current = nextInstruction.ttsUrl;
-
-    refs.previewInstructionText.current = afterNextInstruction?.text ?? '';
-    refs.previewTtsUrl.current = afterNextInstruction?.ttsUrl ?? null;
-    refs.previewSign.current = afterNextInstruction?.sign ?? null;
-    refs.previewEnterCount.current = 0;
-
-    resetTurnState();
-    refs.prevMyPositionForTurnRef.current = currentCoord;
-    refs.prevTimestampForTurnRef.current = nowTimestamp;
+    advanceToNextInstruction('turn-pass');
   }, [
     locationMetaData?.coordinate,
     isNavigationMode,

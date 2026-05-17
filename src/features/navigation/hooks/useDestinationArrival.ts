@@ -6,9 +6,15 @@ import {
 import {
   LocationMetaData,
   NavigationInstruction,
+  TimerStatus,
 } from '@/features/navigation/model/navigation.types';
+import { writeNavigationQaLog } from '@/features/navigation/utils/navigationQaLog';
+import { clearSharedTimer } from '@/features/navigation/hooks/useTimer';
+import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
 const ARRIVAL_CONFIRM_COUNT = 2;
+const ARRIVAL_NEAR_INTERVAL_COUNT = 2;
+const DESTINATION_PROXIMITY_METER = 15;
 
 export interface UseDestinationArrivalParams {
   isNavigationMode: boolean;
@@ -17,6 +23,7 @@ export interface UseDestinationArrivalParams {
   locationTick: number | undefined;
   remainingDistanceMeter: number | null | undefined;
   setIsNavigationMode: (isNavigationMode: boolean) => void;
+  setTimerStatus: (status: TimerStatus) => void;
   setShowNavigationEndModal: (isVisible: boolean) => void;
   setShowNavigationFinishModal: (isVisible: boolean) => void;
   refs: {
@@ -32,6 +39,7 @@ export const useDestinationArrival = ({
   locationTick,
   remainingDistanceMeter,
   setIsNavigationMode,
+  setTimerStatus,
   setShowNavigationEndModal,
   setShowNavigationFinishModal,
   refs,
@@ -69,22 +77,51 @@ export const useDestinationArrival = ({
       return;
     }
 
-    const isLastInterval =
-      refs.currentIntervalIndex.current >= instructionCount - 1;
-    const hasReachedDestination =
+    const currentIntervalIndex = refs.currentIntervalIndex.current;
+    const destinationCoord =
+      refs.instructionList.current[instructionCount - 1]?.nextTurnCoordinate ??
+      null;
+    const distanceToDestinationMeter = destinationCoord
+      ? getDistanceBetweenCoords(locationMetaData.coordinate, destinationCoord)
+      : null;
+
+    const isLastInterval = currentIntervalIndex >= instructionCount - 1;
+    const isNearLastInterval =
+      currentIntervalIndex >= instructionCount - ARRIVAL_NEAR_INTERVAL_COUNT;
+    const isCloseByRemainingDistance =
       remainingDistanceMeter <=
       REMAINING_DISTANCE_OPTIONS.REACHED_JUDGE_DISTANCE_METER;
+    const isCloseByDestinationCoord =
+      distanceToDestinationMeter != null &&
+      distanceToDestinationMeter <= DESTINATION_PROXIMITY_METER;
+    const isInArrivalWindow =
+      isLastInterval || (isNearLastInterval && isCloseByDestinationCoord);
+    const hasReachedDestination =
+      isCloseByRemainingDistance || isCloseByDestinationCoord;
 
-    if (!isLastInterval || !hasReachedDestination) {
+    if (!isInArrivalWindow || !hasReachedDestination) {
       confirmCountRef.current = 0;
       return;
     }
 
     confirmCountRef.current += 1;
-    if (confirmCountRef.current < ARRIVAL_CONFIRM_COUNT) return;
+    const requiredConfirmCount = isCloseByDestinationCoord
+      ? 1
+      : ARRIVAL_CONFIRM_COUNT;
+    if (confirmCountRef.current < requiredConfirmCount) return;
     if (hasTriggeredRef.current) return;
 
     hasTriggeredRef.current = true;
+    if (__DEV__) {
+      writeNavigationQaLog('destination:arrived', {
+        remainingDistanceMeter,
+        distanceToDestinationMeter,
+        currentIntervalIndex,
+        instructionCount,
+      });
+    }
+    clearSharedTimer();
+    setTimerStatus('paused');
     setShowNavigationEndModal(false);
     setShowNavigationFinishModal(true);
     setIsNavigationMode(false);
@@ -95,6 +132,7 @@ export const useDestinationArrival = ({
     locationMetaData,
     remainingDistanceMeter,
     setIsNavigationMode,
+    setTimerStatus,
     setShowNavigationEndModal,
     setShowNavigationFinishModal,
     refs,

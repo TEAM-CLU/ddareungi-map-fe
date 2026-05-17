@@ -28,7 +28,6 @@ describe('NavigationController', () => {
     mockUseTimer.mockReturnValue({
       seconds: 0,
       timerStatus: 'idle',
-      setTimerStatus: jest.fn(),
       startTimer: mockStartTimer,
       pauseTimer: mockPauseTimer,
       resetTimer: jest.fn(),
@@ -227,7 +226,6 @@ describe('NavigationController', () => {
       mockUseTimer.mockReturnValue({
         seconds: 0,
         timerStatus: 'idle',
-        setTimerStatus: jest.fn(),
         startTimer: mockStartTimer,
         pauseTimer: mockPauseTimer,
         resetTimer: jest.fn(),
@@ -245,7 +243,6 @@ describe('NavigationController', () => {
       mockUseTimer.mockReturnValue({
         seconds: 90,
         timerStatus: 'running',
-        setTimerStatus: jest.fn(),
         startTimer: mockStartTimer,
         pauseTimer: mockPauseTimer,
         resetTimer: jest.fn(),
@@ -263,7 +260,6 @@ describe('NavigationController', () => {
       mockUseTimer.mockReturnValue({
         seconds: 3661,
         timerStatus: 'running',
-        setTimerStatus: jest.fn(),
         startTimer: mockStartTimer,
         pauseTimer: mockPauseTimer,
         resetTimer: jest.fn(),
@@ -426,7 +422,6 @@ describe('NavigationController', () => {
       mockUseTimer.mockReturnValue({
         seconds: 36000, // 10시간
         timerStatus: 'running',
-        setTimerStatus: jest.fn(),
         startTimer: mockStartTimer,
         pauseTimer: mockPauseTimer,
         resetTimer: jest.fn(),

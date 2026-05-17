@@ -1,7 +1,10 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { useTurnController } from '@/features/navigation/hooks/useTurnController';
-import { NavigationInstruction } from '@/features/navigation/model/navigation.types';
+import {
+  IntervalPathData,
+  NavigationInstruction,
+} from '@/features/navigation/model/navigation.types';
 
 jest.mock('@/features/navigation/utils/calculateMotionVector', () => ({
   calculateMotionVector: jest.fn(() => ({
@@ -9,6 +12,10 @@ jest.mock('@/features/navigation/utils/calculateMotionVector', () => ({
     speedMps: 5,
     dot: -1,
   })),
+}));
+
+jest.mock('@/features/navigation/utils/navigationQaLog', () => ({
+  writeNavigationQaLog: jest.fn(),
 }));
 
 type TestProps = Parameters<typeof useTurnController>[0];
@@ -36,6 +43,7 @@ const createRefs = (instructionList: NavigationInstruction[]) => ({
   nextTurnCoordinate: { current: instructionList[0].nextTurnCoordinate },
   currentIntervalIndex: { current: 0 },
   instructionList: { current: instructionList },
+  pathDataListByInterval: { current: [] as IntervalPathData[] },
   currentTtsUrl: { current: null as string | null },
   previewInstructionText: { current: '' },
   previewTtsUrl: { current: null as string | null },
@@ -205,5 +213,239 @@ describe('useTurnController interval 판정', () => {
     expect(setCurrentInstruction).not.toHaveBeenCalled();
     expect(setCurrentIntervalIndex).not.toHaveBeenCalled();
     expect(refs.currentIntervalIndex.current).toBe(0);
+  });
+
+  it('진입 후 다음 위치가 이탈 반경 밖이어도 통과로 인정한다', () => {
+    const instructionList = [
+      makeInstruction('첫 구간', [0, 1], { lat: 37.0, lng: 127.0 }),
+      makeInstruction('둘째 구간', [2, 3], { lat: 37.001, lng: 127.001 }),
+      makeInstruction('셋째 구간', [4, 5], { lat: 37.002, lng: 127.002 }),
+    ];
+    const refs = createRefs(instructionList);
+    const setCurrentInstruction = jest.fn();
+    const setCurrentIntervalIndex = jest.fn();
+
+    const baseProps: TestProps = {
+      isNavigationMode: true,
+      isNavigationInitialized: true,
+      locationMetaData: refs.currentLocationMetaData.current,
+      currentInstruction: instructionList[0],
+      setCurrentInstruction,
+      setCurrentIntervalIndex,
+      refs,
+    };
+
+    const { rerender } = render(<TestHarness {...baseProps} />);
+
+    refs.currentLocationMetaData.current = {
+      timestamp: 3000,
+      accuracy: 10,
+      coordinate: { lat: 37.0, lng: 127.0008 },
+    };
+    rerender(
+      <TestHarness
+        {...baseProps}
+        locationMetaData={refs.currentLocationMetaData.current}
+      />,
+    );
+
+    expect(setCurrentInstruction).toHaveBeenCalledWith(instructionList[1]);
+    expect(setCurrentIntervalIndex).toHaveBeenCalledWith(1);
+    expect(refs.currentIntervalIndex.current).toBe(1);
+  });
+
+  it('진입 반경을 놓친 짧은 인터벌도 멀어지는 중이면 통과로 인정한다', () => {
+    const instructionList = [
+      makeInstruction('첫 구간', [0, 1], { lat: 37.0, lng: 127.0 }),
+      makeInstruction('둘째 구간', [2, 3], { lat: 37.001, lng: 127.001 }),
+      makeInstruction('셋째 구간', [4, 5], { lat: 37.002, lng: 127.002 }),
+    ];
+    const refs = createRefs(instructionList);
+    refs.currentLocationMetaData.current = {
+      timestamp: 2000,
+      accuracy: 10,
+      coordinate: { lat: 37.0, lng: 127.00078 },
+    };
+    refs.lastDistanceFromMyPosToNextTurnPosRef.current = 58;
+    refs.prevMyPositionForTurnRef.current = { lat: 37.0, lng: 127.00065 };
+    refs.prevTimestampForTurnRef.current = 1000;
+    const setCurrentInstruction = jest.fn();
+    const setCurrentIntervalIndex = jest.fn();
+
+    const baseProps: TestProps = {
+      isNavigationMode: true,
+      isNavigationInitialized: true,
+      locationMetaData: refs.currentLocationMetaData.current,
+      currentInstruction: instructionList[0],
+      setCurrentInstruction,
+      setCurrentIntervalIndex,
+      refs,
+    };
+
+    render(<TestHarness {...baseProps} />);
+
+    expect(setCurrentInstruction).toHaveBeenCalledWith(instructionList[1]);
+    expect(setCurrentIntervalIndex).toHaveBeenCalledWith(1);
+    expect(refs.currentIntervalIndex.current).toBe(1);
+  });
+
+  it('현재 인터벌 끝에 도달하면 턴 상태와 무관하게 다음 인터벌로 진행한다', () => {
+    const instructionList = [
+      makeInstruction('첫 구간', [0, 2], { lat: 37.0, lng: 127.001 }),
+      makeInstruction('둘째 구간', [3, 4], { lat: 37.001, lng: 127.002 }),
+    ];
+    const refs = createRefs(instructionList);
+    refs.pathDataListByInterval.current = [
+      {
+        intervalIndex: 0,
+        interval: [0, 2],
+        coordinateList: [
+          { lat: 37.0, lng: 127.0 },
+          { lat: 37.0, lng: 127.0005 },
+          { lat: 37.0, lng: 127.001 },
+        ],
+      },
+      {
+        intervalIndex: 1,
+        interval: [3, 4],
+        coordinateList: [
+          { lat: 37.0, lng: 127.001 },
+          { lat: 37.001, lng: 127.002 },
+        ],
+      },
+    ];
+    refs.currentLocationMetaData.current = {
+      timestamp: 2000,
+      accuracy: 10,
+      coordinate: { lat: 37.0, lng: 127.00098 },
+    };
+    const setCurrentInstruction = jest.fn();
+    const setCurrentIntervalIndex = jest.fn();
+
+    const { rerender } = render(
+      <TestHarness
+        isNavigationMode
+        isNavigationInitialized
+        locationMetaData={refs.currentLocationMetaData.current}
+        currentInstruction={instructionList[0]}
+        setCurrentInstruction={setCurrentInstruction}
+        setCurrentIntervalIndex={setCurrentIntervalIndex}
+        refs={refs}
+      />,
+    );
+
+    expect(setCurrentInstruction).not.toHaveBeenCalled();
+
+    refs.currentLocationMetaData.current = {
+      timestamp: 3000,
+      accuracy: 10,
+      coordinate: { lat: 37.0, lng: 127.00099 },
+    };
+    rerender(
+      <TestHarness
+        isNavigationMode
+        isNavigationInitialized
+        locationMetaData={refs.currentLocationMetaData.current}
+        currentInstruction={instructionList[0]}
+        setCurrentInstruction={setCurrentInstruction}
+        setCurrentIntervalIndex={setCurrentIntervalIndex}
+        refs={refs}
+      />,
+    );
+
+    expect(setCurrentInstruction).toHaveBeenCalledWith(instructionList[1]);
+    expect(setCurrentIntervalIndex).toHaveBeenCalledWith(1);
+    expect(refs.currentIntervalIndex.current).toBe(1);
+  });
+
+  it('짧은 인터벌은 끝부분까지 진행한 뒤에만 다음 인터벌로 진행한다', () => {
+    const instructionList = [
+      {
+        ...makeInstruction('짧은 구간', [0, 1], { lat: 37.0, lng: 127.00028 }),
+        distance: 25,
+      },
+      makeInstruction('둘째 구간', [2, 3], { lat: 37.001, lng: 127.002 }),
+    ];
+    const refs = createRefs(instructionList);
+    refs.pathDataListByInterval.current = [
+      {
+        intervalIndex: 0,
+        interval: [0, 1],
+        coordinateList: [
+          { lat: 37.0, lng: 127.0 },
+          { lat: 37.0, lng: 127.00028 },
+        ],
+      },
+      {
+        intervalIndex: 1,
+        interval: [2, 3],
+        coordinateList: [
+          { lat: 37.0, lng: 127.00028 },
+          { lat: 37.001, lng: 127.002 },
+        ],
+      },
+    ];
+    const setCurrentInstruction = jest.fn();
+    const setCurrentIntervalIndex = jest.fn();
+    refs.currentLocationMetaData.current = {
+      timestamp: 1000,
+      accuracy: 10,
+      coordinate: { lat: 37.0, lng: 127.00006 },
+    };
+
+    const baseProps: TestProps = {
+      isNavigationMode: true,
+      isNavigationInitialized: true,
+      locationMetaData: refs.currentLocationMetaData.current,
+      currentInstruction: instructionList[0],
+      setCurrentInstruction,
+      setCurrentIntervalIndex,
+      refs,
+    };
+
+    const { rerender } = render(<TestHarness {...baseProps} />);
+
+    refs.currentLocationMetaData.current = {
+      timestamp: 2000,
+      accuracy: 10,
+      coordinate: { lat: 37.0, lng: 127.00012 },
+    };
+    rerender(
+      <TestHarness
+        {...baseProps}
+        locationMetaData={refs.currentLocationMetaData.current}
+      />,
+    );
+
+    expect(setCurrentInstruction).not.toHaveBeenCalled();
+
+    refs.currentLocationMetaData.current = {
+      timestamp: 3000,
+      accuracy: 10,
+      coordinate: { lat: 37.0, lng: 127.000265 },
+    };
+    rerender(
+      <TestHarness
+        {...baseProps}
+        locationMetaData={refs.currentLocationMetaData.current}
+      />,
+    );
+
+    expect(setCurrentInstruction).not.toHaveBeenCalled();
+
+    refs.currentLocationMetaData.current = {
+      timestamp: 4000,
+      accuracy: 10,
+      coordinate: { lat: 37.0, lng: 127.00027 },
+    };
+    rerender(
+      <TestHarness
+        {...baseProps}
+        locationMetaData={refs.currentLocationMetaData.current}
+      />,
+    );
+
+    expect(setCurrentInstruction).toHaveBeenCalledWith(instructionList[1]);
+    expect(setCurrentIntervalIndex).toHaveBeenCalledWith(1);
   });
 });

@@ -51,6 +51,7 @@ export const useNavigationOrchestrator = () => {
     addCaloriesBurned,
     addCarbonSaved,
     setIsNavigationMode,
+    setTimerStatus,
   } = useNavigationStore(
     useShallow(state => ({
       isNavigationMode: state.isNavigationMode,
@@ -62,6 +63,7 @@ export const useNavigationOrchestrator = () => {
       addCaloriesBurned: state.addCaloriesBurned,
       addCarbonSaved: state.addCarbonSaved,
       setIsNavigationMode: state.setIsNavigationMode,
+      setTimerStatus: state.setTimerStatus,
     })),
   );
 
@@ -80,12 +82,13 @@ export const useNavigationOrchestrator = () => {
       })),
     );
 
-  const { setShowNavigationEndModal, setShowNavigationFinishModal } = useModalStore(
-    useShallow(state => ({
-      setShowNavigationEndModal: state.setShowNavigationEndModal,
-      setShowNavigationFinishModal: state.setShowNavigationFinishModal,
-    })),
-  );
+  const { setShowNavigationEndModal, setShowNavigationFinishModal } =
+    useModalStore(
+      useShallow(state => ({
+        setShowNavigationEndModal: state.setShowNavigationEndModal,
+        setShowNavigationFinishModal: state.setShowNavigationFinishModal,
+      })),
+    );
 
   const {
     replaceMyLocationMarker,
@@ -319,6 +322,7 @@ export const useNavigationOrchestrator = () => {
       nextTurnCoordinate,
       currentIntervalIndex,
       instructionList,
+      pathDataListByInterval,
       currentTtsUrl,
       previewInstructionText,
       previewTtsUrl,
@@ -362,6 +366,9 @@ export const useNavigationOrchestrator = () => {
       isWaypointEnteredRef,
       waypointCandidateIdxRef,
       waypointPassCountRef,
+      fullPathCoordinateList,
+      instructionList,
+      currentIntervalIndex,
     },
   });
 
@@ -436,6 +443,7 @@ export const useNavigationOrchestrator = () => {
     locationTick,
     remainingDistanceMeter,
     setIsNavigationMode,
+    setTimerStatus,
     setShowNavigationEndModal,
     setShowNavigationFinishModal,
     refs: {

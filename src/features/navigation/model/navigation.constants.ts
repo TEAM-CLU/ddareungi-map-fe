@@ -83,6 +83,17 @@ export const TURN_CONFIG = {
   PASS_COUNT_DECAY: 1,
   // 최대 카운트 기존 유지
   PASS_COUNT_MAX: 3,
+  // 현재 인터벌의 끝에 붙었으면 복잡한 턴 상태와 무관하게 다음 안내로 넘긴다.
+  PROGRESS_REACHED_REMAINING_METER: 15,
+  PROGRESS_SEGMENT_DISTANCE_METER: 25,
+  PROGRESS_CATCHUP_SEGMENT_DISTANCE_METER: 120,
+  PROGRESS_END_RATIO: 0.85,
+  PROGRESS_SHORT_INTERVAL_REMAINING_METER: 10,
+  PROGRESS_SHORT_INTERVAL_END_RATIO: 0.9,
+  PROGRESS_CONFIRM_COUNT: 2,
+  PROGRESS_MIN_INTERVAL_DISTANCE_METER: 35,
+  STATION_PASS_RADIUS_METER: 120,
+  WAYPOINT_PASS_RADIUS_METER: 50,
 } as const;
 
 export const TRAVELED_DISTANCE_OPTIONS = {
@@ -104,6 +115,8 @@ export const WAYPOINT_CONFIG = {
   EXIT_RADIUS_METER: 45,
   // 2회 반복되면 진짜 지나침 (기존 유지)
   PASS_CONFIRM_COUNT: 2,
+  // 경로 진행도가 경유지 인근 path index를 지나면 반경 판정 누락을 보정한다.
+  PROGRESS_PASS_DISTANCE_METER: 50,
 };
 
 // classifyTransportBySpeed.ts
@@ -132,10 +145,10 @@ export const PREVIEW_THRESHOLD_METER = 50;
 // 재탐색 관련
 export const OFF_ROUTE_CONFIG = {
   // 이 정도 벗어나면 "경로로 복귀하세요" (soft)
-  RECOVERY_TRIGGER_METER: 300,
+  RECOVERY_TRIGGER_METER: 500,
 
   // 이 정도면 "경로 이탈 → 재탐색" (hard)
-  REROUTE_TRIGGER_METER: 500,
+  REROUTE_TRIGGER_METER: 700,
 
   // bestIdx 튐 방지: 이전 bestIdx 기준 ±N개만 탐색
   CLOSEST_INDEX_WINDOW_SIZE: 5,
