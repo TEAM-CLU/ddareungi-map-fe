@@ -3,6 +3,7 @@ import { useMeasurementStore } from '../stores/useMeasurementStore';
 import { useMeasurementMetrics } from './useMeasurementMetrics';
 import { useMeasurementGoalReached } from './useMeasurementGoalReached';
 import { playMeasurementTts } from '../utils/playMeasurementTts';
+import { createMeasurementSessionResult } from '../utils/createMeasurementSessionResult';
 
 export function useMeasurementOrchestrator() {
   const {
@@ -15,7 +16,6 @@ export function useMeasurementOrchestrator() {
     resetMetrics,
     setSessionResult,
     metrics,
-    targetDistanceKm,
     resetSession,
   } = useMeasurementStore();
 
@@ -81,21 +81,12 @@ export function useMeasurementOrchestrator() {
     }
     playMeasurementTts.finish();
 
-    const distKm = metrics.traveledDistanceMeter / 1000;
-    const totalAvgSpeedKmh =
-      elapsedTimeSeconds > 0 && distKm > 0
-        ? distKm / (elapsedTimeSeconds / 3600)
-        : 0;
-    const avgPace = totalAvgSpeedKmh > 0 ? 60 / totalAvgSpeedKmh : null;
-
-    setSessionResult({
-      traveledDistanceMeter: metrics.traveledDistanceMeter,
-      elapsedTimeSeconds,
-      caloriesBurned: metrics.caloriesBurned,
-      averagePaceMinutesPerKm: avgPace,
-      averageSpeedKmh: totalAvgSpeedKmh,
-      maxSpeedKmh: metrics.maxSpeedKmh,
-    });
+    setSessionResult(
+      createMeasurementSessionResult({
+        metrics,
+        elapsedTimeSeconds,
+      }),
+    );
     setPhase('ended');
   }, [
     metrics,

@@ -1,8 +1,11 @@
 import {
   calculateFreeTraveledDistanceMeter,
+  calculateMeasurementTraveledDistanceMeter,
   calculateSpeedMps,
+  calculateUsableOsSpeedDistanceDeltaMeter,
   getDistanceNoiseGateMeter,
   hasTrustedMeasurementOsSpeed,
+  hasUsableMeasurementOsSpeed,
 } from '@/features/measurement/utils/measurementDistanceUtils';
 import { getDistanceBetweenCoords } from '@/shared/utils/measure';
 
@@ -158,9 +161,18 @@ describe('measurementDistanceUtils', () => {
 
       expect(result).toBeGreaterThan(4.9);
     });
+
+    it('accuracy가 흔들려도 물리적으로 가능한 현재 OS speed는 표시 속도에 즉시 반영한다', () => {
+      const prev = meta(37.5665, 126.978, 0, 120, 1.5);
+      const curr = meta(37.566501, 126.978, 1000, 140, 5.2);
+
+      const result = calculateSpeedMps(prev, curr, 1.5);
+
+      expect(result).toBeCloseTo(5.2, 5);
+    });
   });
 
-  describe('hasTrustedMeasurementOsSpeed', () => {
+  describe('measurement OS speed trust', () => {
     it('측정 허용 정확도 범위에서는 OS speed를 trusted로 본다', () => {
       expect(
         hasTrustedMeasurementOsSpeed(meta(37.5665, 126.978, 0, 70, 4.8)),
@@ -171,6 +183,13 @@ describe('measurementDistanceUtils', () => {
       expect(
         hasTrustedMeasurementOsSpeed(meta(37.5665, 126.978, 0, 90, 4.8)),
       ).toBe(false);
+    });
+
+    it('정확도가 낮아도 물리적으로 가능한 OS speed는 표시 속도용 usable로 본다', () => {
+      const locationMetaData = meta(37.5665, 126.978, 0, 140, 4.8);
+
+      expect(hasTrustedMeasurementOsSpeed(locationMetaData)).toBe(false);
+      expect(hasUsableMeasurementOsSpeed(locationMetaData)).toBe(true);
     });
   });
 
@@ -241,6 +260,63 @@ describe('measurementDistanceUtils', () => {
       expect(distances[1]).toBeGreaterThanOrEqual(4);
       expect(distances[2]).toBe(distances[1]);
       expect(distances[3]).toBe(distances[1]);
+    });
+  });
+
+  describe('calculateMeasurementTraveledDistanceMeter', () => {
+    it('좌표 이동이 noise gate 아래여도 usable OS speed로 거리 누락을 보완한다', () => {
+      const prev = meta(37.5665, 126.978, 0, 70, 5);
+      const curr = meta(37.566501, 126.978, 1000, 70, 5);
+
+      const result = calculateMeasurementTraveledDistanceMeter({
+        distanceAnchorMeta: prev,
+        currentMeta: curr,
+        prevTraveledMeter: 0,
+        minEffectiveMoveMeter: 6,
+      });
+
+      expect(result).toBeCloseTo(5, 5);
+    });
+
+    it('좌표 정확도가 낮아 좌표 거리를 쓰지 않아도 usable OS speed로 누적을 준비한다', () => {
+      const prev = meta(37.5665, 126.978, 0, 120, 5);
+      const curr = meta(37.566501, 126.978, 1000, 140, 5);
+
+      const result = calculateMeasurementTraveledDistanceMeter({
+        distanceAnchorMeta: prev,
+        currentMeta: curr,
+        prevTraveledMeter: 0,
+        minEffectiveMoveMeter: 6,
+        shouldUseCoordinateDistance: false,
+      });
+
+      expect(result).toBeCloseTo(5, 5);
+    });
+
+    it('정지 수준 OS speed는 거리 fallback으로 누적하지 않는다', () => {
+      const prev = meta(37.5665, 126.978, 0, 70, 0.2);
+      const curr = meta(37.566501, 126.978, 1000, 70, 0.2);
+
+      const result = calculateMeasurementTraveledDistanceMeter({
+        distanceAnchorMeta: prev,
+        currentMeta: curr,
+        prevTraveledMeter: 0,
+        minEffectiveMoveMeter: 6,
+      });
+
+      expect(result).toBe(0);
+    });
+
+    it('usable OS speed 거리 delta는 dt cap과 물리 속도 상한을 따른다', () => {
+      const prev = meta(37.5665, 126.978, 0, 8, 5);
+      const curr = meta(37.566501, 126.978, 10_000, 8, 5);
+
+      const result = calculateUsableOsSpeedDistanceDeltaMeter({
+        prevMeta: prev,
+        currentMeta: curr,
+      });
+
+      expect(result).toBeCloseTo(15, 5);
     });
   });
 });

@@ -18,10 +18,24 @@ const {
   OS_SPEED_BLEND_WEIGHT,
   SPEED_RISE_EMA_ALPHA,
   SPEED_FALL_EMA_ALPHA,
+  STOPPED_SPEED_CUTOFF_MPS,
 } = MEASUREMENT_METRICS_CONFIG;
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
+
+interface CalculateMeasurementTraveledDistanceMeterParams {
+  distanceAnchorMeta: LocationMetaData;
+  currentMeta: LocationMetaData;
+  prevTraveledMeter: number;
+  minEffectiveMoveMeter?: number;
+  shouldUseCoordinateDistance?: boolean;
+}
+
+interface CalculateUsableOsSpeedDistanceDeltaMeterParams {
+  prevMeta: LocationMetaData;
+  currentMeta: LocationMetaData;
+}
 
 /**
  * 경로 없이 자유 이동 시 누적 거리 계산 (GPS 점프·정지 보정 적용)
@@ -45,6 +59,55 @@ export function calculateFreeTraveledDistanceMeter(
   );
 
   return prevTraveledMeter + deltaMeter;
+}
+
+export function calculateMeasurementTraveledDistanceMeter({
+  distanceAnchorMeta,
+  currentMeta,
+  prevTraveledMeter,
+  minEffectiveMoveMeter = STOP_JUDGE_MOVE_METER,
+  shouldUseCoordinateDistance = true,
+}: CalculateMeasurementTraveledDistanceMeterParams): number {
+  const coordinateTraveledMeter = shouldUseCoordinateDistance
+    ? calculateFreeTraveledDistanceMeter(
+        distanceAnchorMeta.coordinate,
+        currentMeta.coordinate,
+        prevTraveledMeter,
+        distanceAnchorMeta.timestamp,
+        currentMeta.timestamp,
+        minEffectiveMoveMeter,
+      )
+    : prevTraveledMeter;
+  const coordinateDeltaMeter = coordinateTraveledMeter - prevTraveledMeter;
+
+  if (coordinateDeltaMeter > 0) return coordinateTraveledMeter;
+
+  const osSpeedDeltaMeter = calculateUsableOsSpeedDistanceDeltaMeter({
+    prevMeta: distanceAnchorMeta,
+    currentMeta,
+  });
+
+  if (osSpeedDeltaMeter <= 0) return coordinateTraveledMeter;
+
+  return prevTraveledMeter + osSpeedDeltaMeter;
+}
+
+export function calculateUsableOsSpeedDistanceDeltaMeter({
+  prevMeta,
+  currentMeta,
+}: CalculateUsableOsSpeedDistanceDeltaMeterParams): number {
+  if (!hasUsableMeasurementOsSpeed(currentMeta)) return 0;
+
+  const rawDtSec = (currentMeta.timestamp - prevMeta.timestamp) / 1000;
+  if (rawDtSec <= 0 || !Number.isFinite(rawDtSec)) return 0;
+
+  const osSpeedMps = currentMeta.osSpeed as number;
+  if (osSpeedMps < STOPPED_SPEED_CUTOFF_MPS) return 0;
+
+  const dtSec = Math.min(rawDtSec, DT_SEC_CAP);
+  const cappedSpeedMps = Math.min(osSpeedMps, MAX_PHYSICAL_SPEED_MPS);
+
+  return cappedSpeedMps * dtSec;
 }
 
 export function calculateDistanceDeltaMeter(
@@ -87,15 +150,25 @@ const hasNum = (v: unknown): v is number =>
 const hasUsableAccuracy = (accuracy?: number): accuracy is number =>
   hasNum(accuracy) && accuracy >= 0;
 
-export function hasTrustedMeasurementOsSpeed(
-  locationMetaData?: Pick<LocationMetaData, 'accuracy' | 'osSpeed'> | null,
+export function hasUsableMeasurementOsSpeed(
+  locationMetaData?: Pick<LocationMetaData, 'osSpeed'> | null,
 ): boolean {
   if (!locationMetaData) return false;
 
   return (
     hasNum(locationMetaData.osSpeed) &&
     locationMetaData.osSpeed >= 0 &&
-    locationMetaData.osSpeed <= MAX_PHYSICAL_SPEED_MPS &&
+    locationMetaData.osSpeed <= MAX_PHYSICAL_SPEED_MPS
+  );
+}
+
+export function hasTrustedMeasurementOsSpeed(
+  locationMetaData?: Pick<LocationMetaData, 'accuracy' | 'osSpeed'> | null,
+): boolean {
+  if (!locationMetaData) return false;
+
+  return (
+    hasUsableMeasurementOsSpeed(locationMetaData) &&
     (!hasUsableAccuracy(locationMetaData.accuracy) ||
       locationMetaData.accuracy <= OS_SPEED_TRUST_ACCURACY_METER)
   );
@@ -128,13 +201,18 @@ export function getDistanceNoiseGateMeter(
 }
 
 /**
- * 측정용 속도(m/s) — EMA 보정
+ * 측정용 표시 속도(m/s) — OS raw speed 우선, GPS 좌표 속도는 fallback으로 사용
  */
 export function calculateSpeedMps(
   prevMeta: LocationMetaData,
   currMeta: LocationMetaData,
   prevEmaMps?: number,
 ): number {
+  const hasUsableCurrOsSpeed = hasUsableMeasurementOsSpeed(currMeta);
+  if (hasUsableCurrOsSpeed) {
+    return currMeta.osSpeed as number;
+  }
+
   const dt = (currMeta.timestamp - prevMeta.timestamp) / 1000;
   if (dt <= 0 || !Number.isFinite(dt)) {
     return ema(prevEmaMps ?? 0, 0, SPEED_FALL_EMA_ALPHA);
@@ -145,13 +223,12 @@ export function calculateSpeedMps(
   const normalizedRaw =
     Number.isFinite(raw) && raw >= 0 && raw <= MAX_PHYSICAL_SPEED_MPS ? raw : 0;
 
-  const hasTrustedCurrOsSpeed = hasTrustedMeasurementOsSpeed(currMeta);
   const hasTrustedPrevOsSpeed = hasTrustedMeasurementOsSpeed(prevMeta);
 
   let targetMps = normalizedRaw;
-  if (hasTrustedCurrOsSpeed) {
-    return currMeta.osSpeed as number;
-  } else if (hasTrustedPrevOsSpeed && normalizedRaw > 0) {
+  // 이전 방식: accuracy 조건을 만족한 현재 OS speed만 즉시 반영했다.
+  // if (hasTrustedMeasurementOsSpeed(currMeta)) return currMeta.osSpeed as number;
+  if (hasTrustedPrevOsSpeed && normalizedRaw > 0) {
     const previousOsSpeed = prevMeta.osSpeed as number;
     targetMps =
       previousOsSpeed * (OS_SPEED_BLEND_WEIGHT * 0.5) +
@@ -160,9 +237,7 @@ export function calculateSpeedMps(
 
   const base =
     prevEmaMps ??
-    (hasTrustedCurrOsSpeed
-      ? (currMeta.osSpeed as number)
-      : hasTrustedPrevOsSpeed
+    (hasTrustedPrevOsSpeed
       ? (prevMeta.osSpeed as number)
       : targetMps);
   const alpha = targetMps >= base ? SPEED_RISE_EMA_ALPHA : SPEED_FALL_EMA_ALPHA;

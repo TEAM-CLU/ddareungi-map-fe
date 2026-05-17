@@ -5,10 +5,11 @@ import { useUserInfoQuery } from '@/features/auth/services/user.queries';
 import { MEASUREMENT_METRICS_CONFIG } from '../model/measurement.constants';
 import { measureCaloriesBurned } from '@/shared/utils/measure';
 import {
-  calculateFreeTraveledDistanceMeter,
+  calculateMeasurementTraveledDistanceMeter,
   calculateSpeedMps,
   getDistanceNoiseGateMeter,
   hasTrustedMeasurementOsSpeed,
+  hasUsableMeasurementOsSpeed,
   isLocationAccurateEnoughForMeasurement,
   speedMpsToKmh,
   paceMinPerKmFromSpeedKmh,
@@ -19,7 +20,12 @@ export function useMeasurementMetrics(): void {
   const locationMetaData = useMyPositionStore(s => s.locationMetaData);
   const locationTick = locationMetaData?.timestamp;
 
-  const { phase, isPaused, setMetrics } = useMeasurementStore();
+  const {
+    phase,
+    isPaused,
+    elapsedTimeSeconds,
+    setMetrics,
+  } = useMeasurementStore();
   const accumulatedCaloriesRef = useRef(0);
 
   const { data: userInfo } = useUserInfoQuery();
@@ -34,6 +40,8 @@ export function useMeasurementMetrics(): void {
   const prevCalorieTraveledRef = useRef<number | null>(null);
   const speedHistoryRef = useRef<number[]>([]);
   const maxSpeedKmhRef = useRef(0);
+  const lastLocationUpdateWallClockRef = useRef<number | null>(null);
+  const hasResetStaleSpeedRef = useRef(false);
   const prevPhasePausedStateRef = useRef<{
     phase: typeof phase;
     isPaused: boolean;
@@ -43,13 +51,23 @@ export function useMeasurementMetrics(): void {
     phase === 'measuring' && !isPaused && locationMetaData?.coordinate;
 
   useEffect(() => {
+    if (locationTick == null) return;
+
+    lastLocationUpdateWallClockRef.current = Date.now();
+    hasResetStaleSpeedRef.current = false;
+  }, [locationTick]);
+
+  useEffect(() => {
     if (!isMeasuring || !locationMetaData?.coordinate) return;
 
-    const coord = locationMetaData.coordinate;
     const ts = locationMetaData.timestamp ?? Date.now();
     const prevSpeedMeta = prevSpeedMetaRef.current;
     const distanceAnchorMeta = distanceAnchorMetaRef.current;
     const prevTimestamp = prevSpeedMeta?.timestamp ?? null;
+    const hasUsableLiveOsSpeed = hasUsableMeasurementOsSpeed(locationMetaData);
+    const canUseCoordinateDistance = isLocationAccurateEnoughForMeasurement(
+      locationMetaData.accuracy,
+    );
 
     const resumeGapSec =
       prevTimestamp != null ? (ts - prevTimestamp) / 1000 : null;
@@ -67,7 +85,7 @@ export function useMeasurementMetrics(): void {
       return;
     }
 
-    if (!isLocationAccurateEnoughForMeasurement(locationMetaData.accuracy)) {
+    if (!canUseCoordinateDistance && !hasUsableLiveOsSpeed) {
       return;
     }
 
@@ -83,14 +101,23 @@ export function useMeasurementMetrics(): void {
       distanceAnchorMeta.accuracy,
       locationMetaData.accuracy,
     );
-    const traveledMeter = calculateFreeTraveledDistanceMeter(
-      distanceAnchorMeta.coordinate,
-      coord,
-      prevTraveledRef.current,
-      distanceAnchorMeta.timestamp,
-      ts,
-      distanceNoiseGateMeter,
-    );
+    // 이전 방식: 좌표 이동량만 거리 누적에 반영한다.
+    // trusted OS speed가 안정적이어도 GPS 좌표가 noise gate 아래면 평균 속도가 과하게 낮아질 수 있어 보존만 한다.
+    // const traveledMeter = calculateFreeTraveledDistanceMeter(
+    //   distanceAnchorMeta.coordinate,
+    //   locationMetaData.coordinate,
+    //   prevTraveledRef.current,
+    //   distanceAnchorMeta.timestamp,
+    //   ts,
+    //   distanceNoiseGateMeter,
+    // );
+    const traveledMeter = calculateMeasurementTraveledDistanceMeter({
+      distanceAnchorMeta,
+      currentMeta: locationMetaData,
+      prevTraveledMeter: prevTraveledRef.current,
+      minEffectiveMoveMeter: distanceNoiseGateMeter,
+      shouldUseCoordinateDistance: canUseCoordinateDistance,
+    });
     const acceptedDistanceDeltaMeter = traveledMeter - prevTraveledRef.current;
 
     let speedMps = calculateSpeedMps(
@@ -98,12 +125,11 @@ export function useMeasurementMetrics(): void {
       locationMetaData,
       prevEmaMpsRef.current ?? undefined,
     );
-    const hasTrustedLiveOsSpeed =
-      hasTrustedMeasurementOsSpeed(locationMetaData) ||
-      hasTrustedMeasurementOsSpeed(prevSpeedMeta);
+    const hasLiveSpeedEvidence =
+      hasUsableLiveOsSpeed || hasTrustedMeasurementOsSpeed(prevSpeedMeta);
     if (
       acceptedDistanceDeltaMeter === 0 &&
-      !hasTrustedLiveOsSpeed &&
+      !hasLiveSpeedEvidence &&
       speedMps < MEASUREMENT_METRICS_CONFIG.STOPPED_SPEED_CUTOFF_MPS
     ) {
       speedMps = 0;
@@ -113,8 +139,15 @@ export function useMeasurementMetrics(): void {
     const speedKmh = clampSpeedKmh(speedMpsToKmh(speedMps));
     const paceMinPerKm = paceMinPerKmFromSpeedKmh(speedKmh);
 
-    speedHistoryRef.current.push(speedKmh);
-    if (speedHistoryRef.current.length > 100) speedHistoryRef.current.shift();
+    // 이전 방식은 정지/콜드스타트 0km/h 샘플까지 평균에 포함해 주행 중 평균이 2~3km/h로 눌릴 수 있었다.
+    // speedHistoryRef.current.push(speedKmh);
+    const shouldRecordAverageSpeedSample =
+      acceptedDistanceDeltaMeter > 0 ||
+      speedMps >= MEASUREMENT_METRICS_CONFIG.STOPPED_SPEED_CUTOFF_MPS;
+    if (shouldRecordAverageSpeedSample) {
+      speedHistoryRef.current.push(speedKmh);
+      if (speedHistoryRef.current.length > 100) speedHistoryRef.current.shift();
+    }
     const avgSpeedKmh =
       speedHistoryRef.current.length > 0
         ? speedHistoryRef.current.reduce((a, b) => a + b, 0) /
@@ -166,6 +199,30 @@ export function useMeasurementMetrics(): void {
   ]);
 
   useEffect(() => {
+    if (phase !== 'measuring' || isPaused) return;
+    if (hasResetStaleSpeedRef.current) return;
+
+    const lastLocationUpdateWallClock = lastLocationUpdateWallClockRef.current;
+    if (lastLocationUpdateWallClock == null) return;
+
+    const staleLocationSec =
+      (Date.now() - lastLocationUpdateWallClock) / 1000;
+    if (
+      staleLocationSec <
+      MEASUREMENT_METRICS_CONFIG.STALE_LOCATION_SPEED_RESET_SEC
+    ) {
+      return;
+    }
+
+    hasResetStaleSpeedRef.current = true;
+    prevEmaMpsRef.current = null;
+    setMetrics({
+      speedKmh: 0,
+      paceMinutesPerKm: null,
+    });
+  }, [elapsedTimeSeconds, isPaused, phase, setMetrics]);
+
+  useEffect(() => {
     const prev = prevPhasePausedStateRef.current;
     const resumedFromPause =
       prev != null &&
@@ -196,6 +253,8 @@ export function useMeasurementMetrics(): void {
       speedHistoryRef.current = [];
       accumulatedCaloriesRef.current = 0;
       maxSpeedKmhRef.current = 0;
+      lastLocationUpdateWallClockRef.current = null;
+      hasResetStaleSpeedRef.current = false;
       prevPhasePausedStateRef.current = null;
     }
   }, [phase]);

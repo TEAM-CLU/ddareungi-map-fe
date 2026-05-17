@@ -1,13 +1,21 @@
 import { useEffect, useRef } from 'react';
 import { useMeasurementStore } from '../stores/useMeasurementStore';
 import { playMeasurementTts } from '../utils/playMeasurementTts';
+import { createMeasurementSessionResult } from '../utils/createMeasurementSessionResult';
 
 /**
  * 목표 거리 도달 시 TTS 재생 후 자동 종료
  */
 export function useMeasurementGoalReached(): void {
-  const { phase, isPaused, targetDistanceKm, metrics, setPhase, setSessionResult, elapsedTimeSeconds } =
-    useMeasurementStore();
+  const {
+    phase,
+    isPaused,
+    targetDistanceKm,
+    metrics,
+    setPhase,
+    setSessionResult,
+    elapsedTimeSeconds,
+  } = useMeasurementStore();
   const hasTriggeredRef = useRef(false);
 
   useEffect(() => {
@@ -22,21 +30,12 @@ export function useMeasurementGoalReached(): void {
     playMeasurementTts.arriveAimedDistance();
     playMeasurementTts.finish();
 
-    const distKm = metrics.traveledDistanceMeter / 1000;
-    const totalAvgSpeedKmh =
-      elapsedTimeSeconds > 0 && distKm > 0
-        ? distKm / (elapsedTimeSeconds / 3600)
-        : 0;
-    const avgPace = totalAvgSpeedKmh > 0 ? 60 / totalAvgSpeedKmh : null;
-
-    setSessionResult({
-      traveledDistanceMeter: metrics.traveledDistanceMeter,
-      elapsedTimeSeconds,
-      caloriesBurned: metrics.caloriesBurned,
-      averagePaceMinutesPerKm: avgPace,
-      averageSpeedKmh: totalAvgSpeedKmh,
-      maxSpeedKmh: metrics.maxSpeedKmh,
-    });
+    setSessionResult(
+      createMeasurementSessionResult({
+        metrics,
+        elapsedTimeSeconds,
+      }),
+    );
     setPhase('ended');
   }, [
     phase,
